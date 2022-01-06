@@ -1,20 +1,16 @@
-import { TopBar } from "../components/topbar"
-import { SideBar, SideBarRoute } from "../components/sidebar"
-import { Switch, Route } from "react-router"
-import { Dashboard } from "./dashboard"
-import { AuthContainer } from "../containers/auth"
-import { VerificationComplete } from "./verificationComplete"
-import { Loading } from "../components/loading"
-import { Home } from "./home"
-import { Perm } from "../types/enums"
-import { ListPage } from "./listPages"
-import { ViewPage } from "./viewPages"
 import { Box } from "@mui/material"
-import { Settings } from "./settings"
-import { SidebarStateProvider } from "../containers/sidebar"
+import { Route, Switch } from "react-router"
+import { SideBar, SideBarRoute } from "../components/sidebar"
+import { TopBar } from "../components/topbar"
+import { TwoFactorAuthenticationRecoveryCode } from "../components/twoFactorAuthentication/recoveryCode"
 import { TwoFactorAuthenticationSetup } from "../components/twoFactorAuthentication/setup"
 import { TwoFactorAuthenticationVerification } from "../components/twoFactorAuthentication/verification"
-import { TwoFactorAuthenticationRecoveryCode } from "../components/twoFactorAuthentication/recoveryCode"
+import { AuthContainer } from "../containers/auth"
+import { SidebarStateProvider } from "../containers/sidebar"
+import { Perm } from "../types/enums"
+import { Dashboard } from "./dashboard"
+import { Home } from "./home"
+import { VerificationComplete } from "./verificationComplete"
 
 export const SideBarRoutes: SideBarRoute[] = [
 	{
@@ -59,9 +55,9 @@ const PortalInner = () => {
 	const { user, loading, hasPermission, verifyCompleteType } = AuthContainer.useContainer()
 
 	if (!user) {
-		if (loading) {
-			return <Loading />
-		}
+		// if (loading) {
+		// 	return <Loading />
+		// }
 		return <Home />
 	}
 
@@ -107,9 +103,9 @@ const PortalInner = () => {
 						}}
 					>
 						<Switch>
-							<Route path="/settings" component={Settings} />
+							{/* <Route path="/settings" component={Settings} /> */}
 
-							{hasPermission(Perm.ProductRead) && <Route path={["/products/create", "/products/:slug"]} exact component={ViewPage.Product} />}
+							{/* {hasPermission(Perm.ProductRead) && <Route path={["/products/create", "/products/:slug"]} exact component={ViewPage.Product} />}
 							{hasPermission(Perm.ProductList) && <Route path="/products" component={ListPage.Products} />}
 
 							{hasPermission(Perm.RoleRead) && <Route path={["/roles/create", "/roles/:name"]} exact component={ViewPage.Role} />}
@@ -123,7 +119,7 @@ const PortalInner = () => {
 							{hasPermission(Perm.UserRead) && <Route path={["/users/create", "/users/:username"]} exact component={ViewPage.User} />}
 							{hasPermission(Perm.UserList) && <Route path="/users" component={ListPage.Users} />}
 
-							{hasPermission(Perm.UserActivityList) && <Route path={"/user-activity"} component={ListPage.UserActivity} />}
+							{hasPermission(Perm.UserActivityList) && <Route path={"/user-activity"} component={ListPage.UserActivity} />} */}
 
 							<Route path="/" component={Dashboard} />
 						</Switch>
