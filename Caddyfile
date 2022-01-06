@@ -1,0 +1,7 @@
+http://localhost:5003 {
+	log {
+		output discard
+	}
+	reverse_proxy * localhost:3000
+	reverse_proxy /api/* localhost:8086
+}
