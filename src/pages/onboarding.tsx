@@ -1,20 +1,31 @@
 import { useHistory } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { Logo } from "../components/logo"
-import { Alert } from "@mui/material"
-import { Button, Typography, Paper } from "@mui/material"
+import { Alert, Box, Button, Paper, Typography } from "@mui/material"
 import { InputField } from "../components/form/inputField"
 import { Spaced } from "../components/spaced"
 import { useQuery } from "../hooks/useSend"
 import HubKey from "../keys"
 import { User } from "../types/types"
-import { Box } from "@mui/material"
+import { useState } from "react"
+import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
+import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
+import { useAuth } from "../containers/auth"
+
+enum SignUpMethod {
+	Email,
+	MetaMask,
+	Google,
+	Facebook,
+	Twitter,
+}
 
 interface SignUpInput {
-	firstName: string
-	lastName: string
-	email: string
-	password: string
+	username: string
+	firstName?: string
+	lastName?: string
+	email?: string
+	password?: string
 }
 
 /**
@@ -22,14 +33,36 @@ interface SignUpInput {
  */
 export const Onboarding = () => {
 	const history = useHistory()
-	const { control, handleSubmit } = useForm<SignUpInput>()
+	const { loginFacebook, loginGoogle, loginMetamask } = useAuth()
+	const { control, handleSubmit, watch } = useForm<SignUpInput>()
 	const { query: signUp, payload, loading, error } = useQuery<User>(HubKey.AuthRegister)
+	const [emailSignup, setEmailSignup] = useState<boolean>(false)
 	const success = !!payload && !error
-
+	const [errorMessage, setErrorMessage] = useState<string | null>(null)
+	const username = watch("username")
 	// Callback Handlers
 	const submitHandler = handleSubmit((input) => {
 		signUp(input)
 	})
+
+	const onGoogleLoginFailure = (error: Error) => {
+		setErrorMessage(error.message)
+	}
+
+	const onFacebookLogin = async (response: any) => {
+		if (!!response && !!response.status) {
+			setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
+			return
+		}
+		setErrorMessage(null)
+		const r = response as ReactFacebookLoginInfo
+		const err = await loginFacebook(r.accessToken, username)
+		if (!!err) setErrorMessage(err)
+	}
+
+	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
+		setErrorMessage(error.status || "Failed to signup with Facebook.")
+	}
 
 	// Render
 	return (
@@ -63,63 +96,93 @@ export const Onboarding = () => {
 						<Typography variant="h3">Sign up</Typography>
 
 						<InputField
-							name="firstName"
-							label="First Name"
+							name="username"
+							label="Username"
 							control={control}
-							rules={{ required: "First Name is required." }}
+							rules={{ required: "Username is required." }}
 							fullWidth
 							disabled={loading}
 						/>
 
-						<InputField
-							name="lastName"
-							label="Last Name"
-							control={control}
-							rules={{ required: "Last Name is required." }}
-							fullWidth
-							disabled={loading}
-						/>
-
-						<InputField
-							name="email"
-							label="Email"
-							type="email"
-							control={control}
-							rules={{
-								required: "Email is required.",
-								pattern: {
-									value: /.+@.+\..+/,
-									message: "Invalid email address",
-								},
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: "row",
+								justifyContent: "space-between",
+								gap: "0.5rem",
+								margin: "0.5rem",
 							}}
-							fullWidth
-							disabled={loading}
-						/>
-
-						<InputField
-							name="password"
-							label="Password"
-							type="password"
-							control={control}
-							rules={{ required: "Please enter a password." }}
-							placeholder="Password"
-							fullWidth
-							disabled={loading}
-						/>
-
-						<Spaced alignRight height="60px">
-							<Button type="submit" variant="contained" color="primary" disabled={loading}>
-								Create Account
+						>
+							<Button variant="contained" onClick={() => setEmailSignup((prev) => !prev)}>
+								Email Signup
 							</Button>
+							<FacebookLogin
+								appId="577913423867745"
+								fields="email"
+								callback={onFacebookLogin}
+								onFailure={onFacebookLoginFailure}
+								render={(props) => (
+									<Button
+										title="Login with Facebook"
+										onClick={props.onClick}
+										disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
+										startIcon={<FacebookIcon />}
+										variant="contained"
+									>
+										Sign Up with Facebook
+									</Button>
+								)}
+							/>
+						</Box>
 
-							<Button type="button" variant="contained" onClick={() => history.push("/")}>
-								Cancel
-							</Button>
+						{emailSignup && (
+							<>
+								<InputField name="firstName" label="First Name" control={control} fullWidth disabled={loading} />
 
-							{!!error && <Alert severity="error">{error}</Alert>}
-						</Spaced>
+								<InputField name="lastName" label="Last Name" control={control} fullWidth disabled={loading} />
+
+								<InputField
+									name="email"
+									label="Email"
+									type="email"
+									control={control}
+									rules={{
+										pattern: {
+											value: /.+@.+\..+/,
+											message: "Invalid email address",
+										},
+									}}
+									fullWidth
+									disabled={loading}
+								/>
+
+								<InputField
+									name="password"
+									label="Password"
+									type="password"
+									control={control}
+									placeholder="Password"
+									fullWidth
+									disabled={loading}
+								/>
+
+								<Spaced alignRight height="60px">
+									<Button type="submit" variant="contained" color="primary" disabled={loading}>
+										Create Account
+									</Button>
+
+									<Button type="button" variant="contained" onClick={() => history.push("/")}>
+										Cancel
+									</Button>
+
+									{!!error && <Alert severity="error">{error}</Alert>}
+								</Spaced>
+							</>
+						)}
 					</form>
 				)}
+				{!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+
 				{/* Onboard Complete */}
 				{!!payload && success && (
 					<>

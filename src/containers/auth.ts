@@ -107,12 +107,16 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Google token id
 	 */
 	const loginGoogle = useCallback(
-		async (token: string): Promise<string | null> => {
+		async (token: string, username?: string): Promise<string | null> => {
 			if (state !== WebSocket.OPEN) {
 				return null
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginGoogle, { token, admin })
+				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginGoogle, {
+					token,
+					admin,
+					username,
+				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
@@ -135,15 +139,20 @@ export const AuthContainer = createContainer(() => {
 	/**
 	 * Logs a User in using a Facebook oauth token
 	 *
-	 * @param token Google token id
+	 * @param token Facebook token id
 	 */
 	const loginFacebook = useCallback(
-		async (token: string): Promise<string | null> => {
+		async (token: string, username?: string): Promise<string | null> => {
 			if (state !== WebSocket.OPEN) {
 				return null
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginFacebook, { token, admin })
+				console.log(username)
+				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginFacebook, {
+					token,
+					admin,
+					username,
+				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
@@ -163,32 +172,36 @@ export const AuthContainer = createContainer(() => {
 		[send, state, admin],
 	)
 
-	const loginMetamask = useCallback(async (): Promise<string | null> => {
-		if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
+	const loginMetamask = useCallback(
+		async (username?: string): Promise<string | null> => {
+			if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
 
-		try {
-			const signature = await sign()
-			const resp = await send<WalletLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
-				publicAddress: account,
-				signature,
-				admin,
-			})
-			setUser(resp.user)
-			if (!resp || !resp.user) {
+			try {
+				const signature = await sign()
+				const resp = await send<WalletLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
+					publicAddress: account,
+					signature,
+					admin,
+					username,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return null
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
 				localStorage.clear()
 				setUser(null)
-				return null
+				return typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			setUser(resp.user)
-			localStorage.setItem("token", resp.token)
-			setAuthorised(true)
-		} catch (e) {
-			localStorage.clear()
-			setUser(null)
-			return typeof e === "string" ? e : "Something went wrong, please try again."
-		}
-		return null
-	}, [send, state, admin, account, metaMaskState, sign])
+			return null
+		},
+		[send, state, admin, account, metaMaskState, sign],
+	)
 
 	/**
 	 * Verifies a User and takes them to the next page.
@@ -226,19 +239,19 @@ export const AuthContainer = createContainer(() => {
 
 	/** Impersonate a User */
 	const impersonateUser = async (user?: User) => {
-		if (user === undefined || impersonatedUser !== undefined) setImpersonatedUser(undefined)
-		if (!hasPermission(Perm.ImpersonateUser)) return
-
-		if (!!user && !user.role?.permissions) {
-			// Fetch user with full details
-			const resp = await send<User>(HubKey.UserGet)
-			if (!!resp) {
-				setImpersonatedUser(resp)
-			}
-			return
-		}
-
-		setImpersonatedUser(user)
+		// if (user === undefined || impersonatedUser !== undefined) setImpersonatedUser(undefined)
+		// if (!hasPermission(Perm.ImpersonateUser)) return
+		//
+		// if (!!user && !user.role?.permissions) {
+		// 	// Fetch user with full details
+		// 	const resp = await send<User>(HubKey.UserGet)
+		// 	if (!!resp) {
+		// 		setImpersonatedUser(resp)
+		// 	}
+		// 	return
+		// }
+		//
+		// setImpersonatedUser(user)
 	}
 
 	/** Checks if current user has a permission */

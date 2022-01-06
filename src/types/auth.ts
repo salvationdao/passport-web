@@ -28,6 +28,7 @@ export interface PasswordLoginResponse {
 export interface TokenLoginRequest {
 	token: string
 	admin?: boolean
+	username?: string
 }
 
 export interface TokenLoginResponse {
@@ -42,6 +43,7 @@ export interface WalletLoginRequest {
 	publicAddress: string
 	signature: string
 	admin?: boolean
+	username?: string
 }
 
 export interface WalletLoginResponse {

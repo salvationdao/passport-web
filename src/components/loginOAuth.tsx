@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { AuthContainer } from "../containers/auth"
-import { Button, Box, Alert } from "@mui/material"
-import { FacebookLogin, ReactFacebookLoginInfo, ReactFacebookFailureResponse } from "./facebookLogin"
+import { Alert, Box, Button } from "@mui/material"
+import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "./facebookLogin"
 import { GoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
@@ -48,7 +48,7 @@ export const LoginOAuth = ({ admin }: { admin?: boolean }) => {
 				}}
 			>
 				<FacebookLogin
-					appId="410539243818262"
+					appId="577913423867745"
 					fields="email"
 					callback={onFacebookLogin}
 					onFailure={onFacebookLoginFailure}
