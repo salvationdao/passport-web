@@ -13,5 +13,5 @@ or
 make init-windows
 
 make lb
-make serve
+make watch
 ```
