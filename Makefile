@@ -6,7 +6,7 @@ init-linux: install
 	cd $(BIN) && curl -L https://github.com/caddyserver/caddy/releases/download/v2.4.6/caddy_2.4.6_linux_amd64.tar.gz  | tar xvz
 
 .PHONY: init-windows
-init:
+init-windows:
 	install
 	-mkdir bin
 	cd $(BIN) && powershell Invoke-WebRequest -Uri "https://github.com/caddyserver/caddy/releases/download/v2.4.6/caddy_2.4.6_windows_amd64.zip" -OutFile "./caddy_2.4.6_windows_amd64.zip" -UseBasicParsing

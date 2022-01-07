@@ -1,12 +1,13 @@
-import { createClient, Client, Action, ClientContextProvider } from "react-fetching-library"
-import { ThemeProvider } from "@mui/material/styles"
 import { CssBaseline } from "@mui/material"
+import { ThemeProvider } from "@mui/material/styles"
+import { Action, Client, ClientContextProvider, createClient } from "react-fetching-library"
 import { Themes } from "./containers"
-import { loadIcons } from "./helpers/loadicons"
 import { AuthProvider } from "./containers/auth"
-import { Routes } from "./routes"
 import { API_ENDPOINT_HOSTNAME, SocketProvider } from "./containers/socket"
 import { Web3Provider } from "./containers/web3"
+import "./fonts.css"
+import { loadIcons } from "./helpers/loadicons"
+import { Routes } from "./routes"
 
 loadIcons()
 
@@ -29,14 +30,14 @@ const AppAdmin = () => {
 	return (
 		<SocketProvider>
 			<Web3Provider>
-			<ClientContextProvider client={client}>
-				<AuthProvider>
-					<ThemeProvider theme={currentTheme}>
-						<CssBaseline />
-						<Routes />
-					</ThemeProvider>
-				</AuthProvider>
-			</ClientContextProvider>
+				<ClientContextProvider client={client}>
+					<AuthProvider>
+						<ThemeProvider theme={currentTheme}>
+							<CssBaseline />
+							<Routes />
+						</ThemeProvider>
+					</AuthProvider>
+				</ClientContextProvider>
 			</Web3Provider>
 		</SocketProvider>
 	)

@@ -4,24 +4,30 @@ import AvatarDefault from "../assets/images/NinjaSoftwareLogo.svg"
 declare module "@mui/material/styles" {
 	interface PaletteOptions {
 		lightgrey: string
+		darkPurple: string
 	}
 }
 
 const lightTheme = createTheme({
 	palette: {
 		primary: {
-			main: "#1565c0",
+			main: "#f72485",
 		},
 		secondary: {
-			main: "#f50057",
+			main: "#4CC9F0",
 		},
 		success: {
 			main: "#44b700",
 		},
 		background: {
-			default: "#F7F9FC",
+			default: "#030208",
+		},
+		text: {
+			primary: "#fff",
+			secondary: "#fff"
 		},
 		lightgrey: "#f7f7f7",
+		darkPurple: "#0a061f"
 	},
 	breakpoints: {
 		values: {
@@ -34,7 +40,7 @@ const lightTheme = createTheme({
 	},
 	typography: {
 		fontFamily: [
-			"Nunito",
+			"bizmomedium",
 			"-apple-system",
 			"BlinkMacSystemFont",
 			'"Segoe UI"',
@@ -88,6 +94,18 @@ const lightTheme = createTheme({
 		},
 	},
 	components: {
+		MuiCssBaseline: {
+			styleOverrides: {
+				html: {
+					"@media (max-width: 1000px)": {
+						fontSize: "80%",
+					}
+				},
+				body: {
+					backgroundColor: "#030208",
+				},
+			}
+		},
 		MuiCardHeader: {
 			defaultProps: {
 				titleTypographyProps: { variant: "h6" },

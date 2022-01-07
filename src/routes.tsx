@@ -1,26 +1,23 @@
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
-import { Verify } from "./pages/verify"
-import { Portal } from "./pages/portal"
+import { Home } from "./pages/home"
+import { ProfilePage } from "./pages/profile"
 import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
-import { Box } from "@mui/material"
 import { Onboarding } from "./pages/onboarding"
 
 export const Routes = () => {
 	return (
-		<Box
-			sx={{
-				width: "100%",
-				minHeight: "100vh",
-			}}
-		>
+		<>
 			<Router>
 				<Switch>
 					<Route path="/onboarding" component={Onboarding} />
-					<Route path="/verify" exact component={Verify} />
-					<Route path="/" component={Portal} />
+					{/* <Route path="/" component={Portal} /> */}
+					<Route exact path="/" component={Home} />
+					<Route path="/profile" component={ProfilePage} />
+					<Route path="/privacy-policy" component={Home} />
+					<Route path="/terms-and-conditions" component={Home} />
 				</Switch>
 			</Router>
 			<ConnectionLostSnackbar app="admin" />
-		</Box>
+		</>
 	)
 }
