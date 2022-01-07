@@ -13,27 +13,34 @@ export const LoginOAuth = ({ admin }: { admin?: boolean }) => {
 
 	// OAuth
 	const onGoogleLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-		if (!!response.code) {
-			setErrorMessage(`Couldn't connect to Google: ${response.code}`)
-			return
+		try {
+			if (!!response.code) {
+				setErrorMessage(`Couldn't connect to Google: ${response.code}`)
+				return
+			}
+			setErrorMessage(null)
+			const r = response as GoogleLoginResponse
+			await loginGoogle(r.tokenId)
+		} catch (e) {
+			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
 		}
-		setErrorMessage(null)
-		const r = response as GoogleLoginResponse
-		const err = await loginGoogle(r.tokenId)
-		if (!!err) setErrorMessage(err)
 	}
 	const onGoogleLoginFailure = (error: Error) => {
 		setErrorMessage(error.message)
 	}
+
 	const onFacebookLogin = async (response: any) => {
-		if (!!response && !!response.status) {
-			setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
-			return
+		try {
+			if (!!response && !!response.status) {
+				setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
+				return
+			}
+			setErrorMessage(null)
+			const r = response as ReactFacebookLoginInfo
+			await loginFacebook(r.accessToken)
+		} catch (e) {
+			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
 		}
-		setErrorMessage(null)
-		const r = response as ReactFacebookLoginInfo
-		const err = await loginFacebook(r.accessToken)
-		if (!!err) setErrorMessage(err)
 	}
 	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Facebook.")

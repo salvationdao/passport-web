@@ -28,3 +28,7 @@ watch:
 .PHONY: lb
 lb:
 	./bin/caddy run
+
+.PHONY: lb-disown
+lb-disown:
+	./bin/caddy run & disown

@@ -107,7 +107,7 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Google token id
 	 */
 	const loginGoogle = useCallback(
-		async (token: string, username?: string): Promise<string | null> => {
+		async (token: string, username?: string) => {
 			if (state !== WebSocket.OPEN) {
 				return null
 			}
@@ -129,7 +129,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
-				return typeof e === "string" ? e : "Something went wrong, please try again."
+				throw e === "string" ? e : "Something went wrong, please try again."
 			}
 			return null
 		},
@@ -142,12 +142,11 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Facebook token id
 	 */
 	const loginFacebook = useCallback(
-		async (token: string, username?: string): Promise<string | null> => {
+		async (token: string, username?: string) => {
 			if (state !== WebSocket.OPEN) {
-				return null
+				return
 			}
 			try {
-				console.log(username)
 				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginFacebook, {
 					token,
 					admin,
@@ -157,7 +156,7 @@ export const AuthContainer = createContainer(() => {
 				if (!resp || !resp.user) {
 					localStorage.clear()
 					setUser(null)
-					return null
+					return
 				}
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
@@ -165,9 +164,9 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
-				return typeof e === "string" ? e : "Something went wrong, please try again."
+				throw e === "string" ? e : "Something went wrong, please try again."
 			}
-			return null
+			return
 		},
 		[send, state, admin],
 	)
@@ -177,7 +176,10 @@ export const AuthContainer = createContainer(() => {
 			if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
 
 			try {
-				const signature = await sign()
+				let signature = ""
+				if (username === undefined || username === "") {
+					signature = await sign()
+				}
 				const resp = await send<WalletLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 					publicAddress: account,
 					signature,

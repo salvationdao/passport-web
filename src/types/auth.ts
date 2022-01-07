@@ -1,17 +1,8 @@
 import { User } from "./types"
 
-export interface RegisterRequest {
-	username: string
-	email: string
-	password: string
-}
-
 export interface RegisterResponse {
-	id: string
-	account_book_id: string
-	username: string
-	email: string
-	verified: boolean
+	user: User
+	token: string
 }
 
 export interface PasswordLoginRequest {

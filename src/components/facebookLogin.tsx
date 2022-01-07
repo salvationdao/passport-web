@@ -61,7 +61,6 @@ interface FacebookLoginButtonRenderProps {
 
 interface FacebookLoginProps {
 	appId: string
-	isSignUp?: boolean
 
 	callback(userInfo: ReactFacebookLoginInfo | ReactFacebookFailureResponse): void
 
@@ -100,7 +99,6 @@ interface FacebookLoginProps {
 
 export const FacebookLogin = (props: FacebookLoginProps) => {
 	const {
-		isSignUp,
 		appId,
 		xfbml,
 		cookie,
@@ -198,7 +196,7 @@ export const FacebookLogin = (props: FacebookLoginProps) => {
 	}, [appId, xfbml, cookie, version, autoLoad, isRedirectedFromFb, checkLoginAfterRefresh])
 
 	const click = useCallback(
-		(e) => {
+		async (e) => {
 			if (!isSdkLoaded || isProcessing || isDisabled) {
 				return
 			}
