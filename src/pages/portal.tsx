@@ -1,5 +1,7 @@
+import { Dashboard, Settings } from "@mui/icons-material"
 import { Box } from "@mui/material"
-import { Route, Switch } from "react-router"
+import { Route, Switch } from "react-router-dom"
+import { Loading } from "../components/loading"
 import { SideBar, SideBarRoute } from "../components/sidebar"
 import { TopBar } from "../components/topbar"
 import { TwoFactorAuthenticationRecoveryCode } from "../components/twoFactorAuthentication/recoveryCode"
@@ -8,9 +10,10 @@ import { TwoFactorAuthenticationVerification } from "../components/twoFactorAuth
 import { AuthContainer } from "../containers/auth"
 import { SidebarStateProvider } from "../containers/sidebar"
 import { Perm } from "../types/enums"
-import { Dashboard } from "./dashboard"
 import { Home } from "./home"
+import { ListPage } from "./listPages"
 import { VerificationComplete } from "./verificationComplete"
+import { ViewPage } from "./viewPages"
 
 export const SideBarRoutes: SideBarRoute[] = [
 	{
@@ -55,9 +58,9 @@ const PortalInner = () => {
 	const { user, loading, hasPermission, verifyCompleteType } = AuthContainer.useContainer()
 
 	if (!user) {
-		// if (loading) {
-		// 	return <Loading />
-		// }
+		if (loading) {
+			return <Loading />
+		}
 		return <Home />
 	}
 
@@ -103,9 +106,9 @@ const PortalInner = () => {
 						}}
 					>
 						<Switch>
-							{/* <Route path="/settings" component={Settings} /> */}
+							<Route path="/settings" component={Settings} />
 
-							{/* {hasPermission(Perm.ProductRead) && <Route path={["/products/create", "/products/:slug"]} exact component={ViewPage.Product} />}
+							{hasPermission(Perm.ProductRead) && <Route path={["/products/create", "/products/:slug"]} exact component={ViewPage.Product} />}
 							{hasPermission(Perm.ProductList) && <Route path="/products" component={ListPage.Products} />}
 
 							{hasPermission(Perm.RoleRead) && <Route path={["/roles/create", "/roles/:name"]} exact component={ViewPage.Role} />}
@@ -119,7 +122,7 @@ const PortalInner = () => {
 							{hasPermission(Perm.UserRead) && <Route path={["/users/create", "/users/:username"]} exact component={ViewPage.User} />}
 							{hasPermission(Perm.UserList) && <Route path="/users" component={ListPage.Users} />}
 
-							{hasPermission(Perm.UserActivityList) && <Route path={"/user-activity"} component={ListPage.UserActivity} />} */}
+							{hasPermission(Perm.UserActivityList) && <Route path={"/user-activity"} component={ListPage.UserActivity} />}
 
 							<Route path="/" component={Dashboard} />
 						</Switch>

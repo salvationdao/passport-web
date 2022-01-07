@@ -24,6 +24,7 @@ const lightTheme = createTheme({
 		},
 		text: {
 			primary: "#fff",
+			secondary: "#fff"
 		},
 		lightgrey: "#f7f7f7",
 		darkPurple: "#0a061f"
@@ -102,7 +103,7 @@ const lightTheme = createTheme({
 				},
 				body: {
 					backgroundColor: "#030208",
-				}
+				},
 			}
 		},
 		MuiCardHeader: {
