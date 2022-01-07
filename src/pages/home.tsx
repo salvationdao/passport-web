@@ -1,12 +1,13 @@
 import { LoadingButton } from "@mui/lab"
 import { Box, Button, Link, Menu, MenuItem, MenuList, Typography } from "@mui/material"
-import { keyframes, styled } from "@mui/system"
+import { styled } from "@mui/system"
 import { useState } from 'react'
 import BinanceCoinBnbLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import AxieInfinityLogo from "../assets/images/games/axie infinity.png"
 import SupremacyLogo from "../assets/images/supremacy-logo.svg"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
 import XSYNWordmarkImage from "../assets/images/XSYN Wordmark White.png"
+import { GradientCircleThing } from "../components/home/gradientCircleThing"
 
 export const Home = () => {
 	return (
@@ -18,30 +19,13 @@ export const Home = () => {
 					borderBottom: `1px solid ${theme.palette.secondary.main}`
 				})}
 			>
-				<OuterCircle>
-					<Box sx={(theme) => ({
-						zIndex: 1,
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						backgroundColor: theme.palette.background.default,
-						opacity: .6
-					})} />
-					<Box sx={{
-						position: "absolute",
-						top: "50%",
-						left: "50%",
-						height: "60%",
-						width: "60%",
-						transform: "translate(-50%, -50%)",
-						borderRadius: "50%",
-						background: "linear-gradient(300deg,#5072d9,#8020ec,#d957cc,#449deb)",
-						backgroundSize: "130% 130%",
-						animation: `${gradientAnimation} 16s ease infinite`
-					}} />
-				</OuterCircle>
+				<GradientCircleThing sx={{
+					zIndex: -1,
+					position: "absolute",
+					top: "50%",
+					left: "50%",
+					transform: "translate(-50%, -50%)",
+				}} />
 				<Box sx={{
 					display: "flex",
 					justifyContent: "space-between",
@@ -215,34 +199,13 @@ export const Home = () => {
 					maxWidth: "800px",
 					fontSize: "3rem"
 				}}>Start Exploring Blockchain Apps In Seconds</Typography>
-				<OuterCircle sx={{
-					top: "initial",
+				<GradientCircleThing sx={{
+					zIndex: -1,
+					position: "absolute",
+					left: "50%",
 					bottom: "-35vw",
 					transform: "translate(-50%, 0)",
-				}}>
-					<Box sx={(theme) => ({
-						zIndex: 1,
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						backgroundColor: theme.palette.background.default,
-						opacity: .6
-					})} />
-					<Box sx={{
-						position: "absolute",
-						top: "50%",
-						left: "50%",
-						height: "60%",
-						width: "60%",
-						transform: "translate(-50%, -50%)",
-						borderRadius: "50%",
-						background: "linear-gradient(300deg,#5072d9,#8020ec,#d957cc,#449deb)",
-						backgroundSize: "130% 130%",
-						animation: `${gradientAnimation} 16s ease infinite`
-					}} />
-				</OuterCircle>
+				}} />
 				<Box sx={{
 					flex: 1
 				}} />
@@ -271,9 +234,9 @@ const OuterCircle = styled("div")(({ theme }) => ({
 	position: "absolute",
 	top: "50%",
 	left: "50%",
+	transform: "translate(-50%, -50%)",
 	height: "70vw",
 	width: "70vw",
-	transform: "translate(-50%, -50%)",
 	borderRadius: "50%",
 	border: `2px solid ${theme.palette.secondary.main}`
 }))
@@ -281,18 +244,6 @@ const OuterCircle = styled("div")(({ theme }) => ({
 const LogoImage = styled("img")({
 	width: "100%"
 })
-
-const gradientAnimation = keyframes`
-	0% {
-		background-position: 0% 50%;
-	}
-	50% {
-		background-position: 100% 50%;
-	}
-	100% {
-		background-position: 0% 50%;
-	}
-`
 
 const MenuButton: React.FC = () => {
 	const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
