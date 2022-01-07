@@ -39,7 +39,7 @@ const lightTheme = createTheme({
 	},
 	typography: {
 		fontFamily: [
-			"Nunito",
+			"bizmomedium",
 			"-apple-system",
 			"BlinkMacSystemFont",
 			'"Segoe UI"',
