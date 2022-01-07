@@ -1,5 +1,6 @@
 import YouTubeIcon from '@mui/icons-material/YouTube';
-import { Avatar, Box, IconButton, Link, Typography } from "@mui/material";
+import { Avatar, Box, BoxProps, Button, IconButton, Link, Typography } from "@mui/material";
+import { useState } from 'react';
 import FacebookLogo from "../assets/images/icons/facebook.svg";
 import { Navbar } from "../components/home/navbar";
 
@@ -43,7 +44,8 @@ export const ProfilePage: React.FC = () => {
                 }}>Ash Thomas</Typography>
                 <Typography variant="h2" sx={(theme) => ({
                     marginBottom: "2rem",
-                    color: theme.palette.primary.main
+                    color: theme.palette.primary.main,
+                    textTransform: "uppercase"
                 })}>
                     Connected Apps
                 </Typography>
@@ -53,46 +55,17 @@ export const ProfilePage: React.FC = () => {
                     gap: "4rem",
                     width: "100%",
                     maxWidth: "1000px",
+                    marginBottom: "2rem",
+                    "@media (max-width: 800px)": {
+                        gap: "2rem"
+                    },
+                    "@media (max-width: 600px)": {
+                        gridTemplateColumns: "repeat(2, 1fr)"
+                    },
                 }}>
-                    <Box sx={(theme) => ({
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        padding: "2rem",
-                        border: `2px solid ${theme.palette.secondary.main}`
-                    })}>
-                        <Box component="img" src={FacebookLogo} alt="Facebook Logo" sx={{
-                            width: "5rem",
-                            marginBottom: "1rem",
-                        }} />
-                        Ash Aaron Thomas
-                    </Box>
-                    <Box sx={(theme) => ({
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        padding: "2rem",
-                        border: `2px solid ${theme.palette.secondary.main}`
-                    })}>
-                        <Box component="img" src={FacebookLogo} alt="Facebook Logo" sx={{
-                            width: "5rem",
-                            marginBottom: "1rem",
-                        }} />
-                        Ash Aaron Thomas
-                    </Box>
-                    <Box sx={(theme) => ({
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        padding: "2rem",
-                        border: `2px solid ${theme.palette.secondary.main}`
-                    })}>
-                        <Box component="img" src={FacebookLogo} alt="Facebook Logo" sx={{
-                            width: "5rem",
-                            marginBottom: "1rem",
-                        }} />
-                        Ash Aaron Thomas
-                    </Box>
+                    <ConnectedAppCard />
+                    <ConnectedAppCard />
+                    <ConnectedAppCard />
                 </Box>
             </Box>
             <Box sx={{
@@ -129,11 +102,62 @@ export const ProfilePage: React.FC = () => {
                 width: "100%",
                 maxWidth: "600px",
                 margin: "0 auto",
-                marginBottom: "1rem",
+                padding: "0 3rem",
+                paddingBottom: "1rem",
             }}>
                 <Link href="/privacy-policy" underline="none" color="white">Privacy Policy</Link>
                 <Link href="/terms-and-conditions" underline="none" color="white">Terms And Conditions</Link>
             </Box>
+        </Box>
+    )
+}
+
+interface ConnectedAppCardProps extends BoxProps {
+
+}
+
+const ConnectedAppCard: React.FC = () => {
+    const [isFocused, setIsFocused] = useState(false)
+
+    return (
+        <Box sx={(theme) => ({
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "2rem",
+            border: `2px solid ${theme.palette.secondary.main}`,
+            cursor: "pointer"
+        })}>
+            <Box
+                onClick={() => setIsFocused(!isFocused)}
+                onMouseLeave={() => setIsFocused(false)}
+                sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: isFocused ? 1 : 0,
+                    backgroundColor: "rgba(0, 0, 0, .8)",
+                    transition: "opacity .3s ease-in",
+                    "&:hover": {
+                        opacity: 1
+                    },
+                }}>
+                <Button onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}>
+                    Manage
+                </Button>
+            </Box>
+            <Box component="img" src={FacebookLogo} alt="Facebook Logo" sx={{
+                width: "5rem",
+                marginBottom: "1rem",
+            }} />
+            Ash Aaron Thomas
         </Box>
     )
 }
