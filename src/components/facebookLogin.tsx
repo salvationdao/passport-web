@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 const getParamsFromObject = (params: any) =>
 	"?" +
@@ -61,7 +61,9 @@ interface FacebookLoginButtonRenderProps {
 
 interface FacebookLoginProps {
 	appId: string
+
 	callback(userInfo: ReactFacebookLoginInfo | ReactFacebookFailureResponse): void
+
 	onFailure?(response: ReactFacebookFailureResponse): void
 
 	autoLoad?: boolean
@@ -74,7 +76,9 @@ interface FacebookLoginProps {
 	icon?: React.ReactNode
 	isDisabled?: boolean
 	language?: string
+
 	onClick?(event: React.MouseEvent<HTMLDivElement>): void
+
 	reAuthenticate?: boolean
 	redirectUri?: string
 	scope?: string
@@ -192,7 +196,7 @@ export const FacebookLogin = (props: FacebookLoginProps) => {
 	}, [appId, xfbml, cookie, version, autoLoad, isRedirectedFromFb, checkLoginAfterRefresh])
 
 	const click = useCallback(
-		(e) => {
+		async (e) => {
 			if (!isSdkLoaded || isProcessing || isDisabled) {
 				return
 			}

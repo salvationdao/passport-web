@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { AuthContainer } from "../containers/auth"
-import { Button, Box, Alert } from "@mui/material"
-import { FacebookLogin, ReactFacebookLoginInfo, ReactFacebookFailureResponse } from "./facebookLogin"
+import { Alert, Box, Button } from "@mui/material"
+import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "./facebookLogin"
 import { GoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
@@ -13,27 +13,34 @@ export const LoginOAuth = ({ admin }: { admin?: boolean }) => {
 
 	// OAuth
 	const onGoogleLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-		if (!!response.code) {
-			setErrorMessage(`Couldn't connect to Google: ${response.code}`)
-			return
+		try {
+			if (!!response.code) {
+				setErrorMessage(`Couldn't connect to Google: ${response.code}`)
+				return
+			}
+			setErrorMessage(null)
+			const r = response as GoogleLoginResponse
+			await loginGoogle(r.tokenId)
+		} catch (e) {
+			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
 		}
-		setErrorMessage(null)
-		const r = response as GoogleLoginResponse
-		const err = await loginGoogle(r.tokenId)
-		if (!!err) setErrorMessage(err)
 	}
 	const onGoogleLoginFailure = (error: Error) => {
 		setErrorMessage(error.message)
 	}
+
 	const onFacebookLogin = async (response: any) => {
-		if (!!response && !!response.status) {
-			setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
-			return
+		try {
+			if (!!response && !!response.status) {
+				setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
+				return
+			}
+			setErrorMessage(null)
+			const r = response as ReactFacebookLoginInfo
+			await loginFacebook(r.accessToken)
+		} catch (e) {
+			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
 		}
-		setErrorMessage(null)
-		const r = response as ReactFacebookLoginInfo
-		const err = await loginFacebook(r.accessToken)
-		if (!!err) setErrorMessage(err)
 	}
 	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Facebook.")
@@ -48,7 +55,7 @@ export const LoginOAuth = ({ admin }: { admin?: boolean }) => {
 				}}
 			>
 				<FacebookLogin
-					appId="410539243818262"
+					appId="577913423867745"
 					fields="email"
 					callback={onFacebookLogin}
 					onFailure={onFacebookLoginFailure}

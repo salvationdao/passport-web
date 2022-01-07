@@ -1,13 +1,15 @@
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
 import { Home } from "./pages/home"
 import { ProfilePage } from "./pages/profile"
+import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
+import { Onboarding } from "./pages/onboarding"
 
 export const Routes = () => {
 	return (
 		<>
 			<Router>
 				<Switch>
-					{/* <Route path="/verify" exact component={Verify} /> */}
+					<Route path="/onboarding" component={Onboarding} />
 					{/* <Route path="/" component={Portal} /> */}
 					<Route exact path="/" component={Home} />
 					<Route path="/profile" component={ProfilePage} />
@@ -15,8 +17,7 @@ export const Routes = () => {
 					<Route path="/terms-and-conditions" component={Home} />
 				</Switch>
 			</Router>
-			{/* <ConnectionLostSnackbar app="admin" /> */}
+			<ConnectionLostSnackbar app="admin" />
 		</>
 	)
 }
-
