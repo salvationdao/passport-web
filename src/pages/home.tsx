@@ -50,10 +50,10 @@ export const Home = () => {
 						textTransform: "uppercase",
 						"&:hover": {
 							"&::before": {
-								opacity: 1,
+								opacity: .4,
 							},
 							"&::after": {
-								opacity: 1,
+								opacity: .2,
 								transitionDelay: ".1s",
 							},
 						},

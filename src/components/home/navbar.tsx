@@ -1,7 +1,7 @@
 import { LoadingButton } from '@mui/lab';
-import { Box, BoxProps, Link, Menu, MenuItem, MenuList } from '@mui/material';
+import { Box, BoxProps, Link, Menu, MenuItem, MenuItemProps, MenuList, useTheme } from '@mui/material';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import SupremacyLogo from "../../assets/images/supremacy-logo.svg";
 import XSYNLogoImage from "../../assets/images/XSYN Stack White.svg";
 
@@ -10,6 +10,7 @@ interface NavbarProps extends BoxProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
+
     return (
         <Box sx={{
             display: "flex",
@@ -32,7 +33,6 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 
 const MenuButton: React.FC = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const history = useHistory()
     const open = Boolean(anchorEl);
 
     const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -60,39 +60,15 @@ const MenuButton: React.FC = () => {
                 }}
             >
                 <MenuList>
-                    <MenuItem onClick={() => {
-                        handleClose()
-                        history.push("/profile")
-                    }} sx={(theme) => ({
-                        padding: ".5rem 0",
-                        fontSize: "1.6rem",
-                        lineHeight: 1,
-                        color: theme.palette.primary.main
-                    })}><Box component="span" sx={{
-                        marginRight: ".5rem"
-                    }}>&#62;</Box>Profile</MenuItem>
-                    <MenuItem onClick={handleClose} sx={(theme) => ({
-                        padding: ".5rem 0",
-                        fontSize: "1.6rem",
-                        lineHeight: 1,
-                        color: theme.palette.primary.main
-                    })}><Box component="span" sx={{
-                        marginRight: ".5rem"
-                    }}>&#62;</Box>Wallet</MenuItem>
-                    <MenuItem onClick={handleClose} sx={(theme) => ({
-                        padding: ".5rem 0",
-                        fontSize: "1.6rem",
-                        lineHeight: 1,
-                        color: theme.palette.primary.main
-                    })}><Box component="span" sx={{
-                        marginRight: ".5rem"
-                    }}>&#62;</Box>Badges</MenuItem>
+                    <MenuItemRoute route="/profile" label="Profile" handleClose={handleClose} />
+                    <MenuItemRoute route="/wallet" label="Wallet" handleClose={handleClose} />
+                    <MenuItemRoute route="/badges" label="Badges" handleClose={handleClose} />
                 </MenuList>
-                <Box sx={(theme) => ({
+                <Box sx={{
                     marginBottom: ".5rem",
                     fontSize: "1rem",
                     color: "#807f82"
-                })}>My Games</Box>
+                }}>My Games</Box>
                 <Link href="https://supremacy.game"><Box component="img" sx={{
                     width: "100%",
                 }} src={SupremacyLogo} alt="Supremacy Logo" /></Link>
@@ -164,5 +140,32 @@ const MenuButton: React.FC = () => {
                 })} />
             </LoadingButton>
         </>
+    )
+}
+
+interface MenuItemRoute extends Omit<MenuItemProps, "children"> {
+    route: string
+    label: string
+    handleClose: () => void
+}
+
+const MenuItemRoute: React.FC<MenuItemRoute> = ({ route, label, handleClose, sx, ...props }) => {
+    const location = useLocation()
+    const history = useHistory()
+    const theme = useTheme()
+
+    return (
+        <MenuItem onClick={() => {
+            handleClose()
+            history.push(route)
+        }} sx={{
+            padding: ".5rem 0",
+            fontSize: "1.6rem",
+            lineHeight: 1,
+            color: location.pathname === route ? theme.palette.secondary.main : theme.palette.primary.main,
+            ...sx
+        }} {...props}><Box component="span" sx={{
+            marginRight: ".5rem"
+        }}>&#62;</Box>{label}</MenuItem>
     )
 }
