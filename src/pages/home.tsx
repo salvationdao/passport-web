@@ -1,8 +1,8 @@
 import ButtonUnstyled from '@mui/base/ButtonUnstyled'
-import { Box, Button, Typography } from "@mui/material"
+import { Box, Button, Link, Typography } from "@mui/material"
 import { keyframes, styled } from "@mui/system"
-import CompatibleGames from "../assets/images/Compatible-Games.png"
-import SyncYourCurrency from "../assets/images/Sync-Your-Currency.png"
+import BinanceCoinBnbLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg"
+import AxieInfinityLogo from "../assets/images/games/axie infinity.png"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
 import XSYNWordmarkImage from "../assets/images/XSYN Wordmark White.png"
 
@@ -10,10 +10,11 @@ export const Home = () => {
 	return (
 		<>
 			<Box
-				sx={{
+				sx={(theme) => ({
 					position: "relative",
 					minHeight: "100vh",
-				}}
+					borderBottom: `1px solid ${theme.palette.secondary.main}`
+				})}
 			>
 				<OuterCircle>
 					<Box sx={(theme) => ({
@@ -35,8 +36,8 @@ export const Home = () => {
 						transform: "translate(-50%, -50%)",
 						borderRadius: "50%",
 						background: "linear-gradient(300deg,#5072d9,#8020ec,#d957cc,#449deb)",
-						backgroundSize: "100% 100%",
-						animation: `${gradientAnimation} 4s ease infinite`
+						backgroundSize: "130% 130%",
+						animation: `${gradientAnimation} 16s ease infinite`
 					}} />
 				</OuterCircle>
 				<Box sx={{
@@ -47,9 +48,11 @@ export const Home = () => {
 					maxWidth: "1700px",
 					margin: "0 auto",
 					marginTop: "3rem",
-					padding: "0 3rem"
+					padding: "0 3rem",
 				}}>
-					<Box component="img" src={XSYNLogoImage} alt="XSYN Logo" />
+					<Link href="/">
+						<Box component="img" src={XSYNLogoImage} alt="XSYN Logo" />
+					</Link>
 					<ButtonUnstyled component={styled("button")({
 						position: "relative",
 						height: "3.3rem",
@@ -60,14 +63,25 @@ export const Home = () => {
 						backgroundColor: "transparent",
 						border: "none",
 						"&:hover": {
-							"& > *:nth-child(1)": {
+							"& > *:nth-of-type(1)": {
 								transform: "rotate(30deg) translate(-3px, 0)",
 							},
-							"& > *:nth-child(2)": {
+							"& > *:nth-of-type(2)": {
 
 							},
-							"& > *:nth-child(3)": {
+							"& > *:nth-of-type(3)": {
 								transform: "rotate(30deg) translate(3px, 0)",
+							},
+						},
+						"&:active": {
+							"& > *:nth-of-type(1)": {
+								transform: "rotate(30deg) translate(1px, 0)",
+							},
+							"& > *:nth-of-type(2)": {
+
+							},
+							"& > *:nth-of-type(3)": {
+								transform: "rotate(30deg) translate(-1px, 0)",
 							},
 						}
 					})}
@@ -79,7 +93,7 @@ export const Home = () => {
 							height: "2rem",
 							width: ".2rem",
 							transform: "rotate(30deg)",
-							transition: "transform .2s ease-in-out",
+							transition: "transform .2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
 							backgroundColor: theme.palette.common.white,
 						})} />
 						<Box component="span" sx={(theme) => ({
@@ -89,7 +103,7 @@ export const Home = () => {
 							height: "2rem",
 							width: ".2rem",
 							transform: "rotate(30deg)",
-							transition: "transform .2s ease-in-out",
+							transition: "transform .2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
 							backgroundColor: theme.palette.common.white,
 						})} />
 						<Box component="span" sx={(theme) => ({
@@ -99,7 +113,7 @@ export const Home = () => {
 							height: "2rem",
 							width: ".2rem",
 							transform: "rotate(30deg)",
-							transition: "transform .2s ease-in-out",
+							transition: "transform .2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
 							backgroundColor: theme.palette.common.white,
 						})} />
 					</ButtonUnstyled>
@@ -164,7 +178,7 @@ export const Home = () => {
 					})}>Connect Wallet</Button>
 				</Box>
 			</Box >
-			<Typography variant="h1" component="p" sx={(theme) => ({
+			{/* <Typography variant="h1" component="p" sx={(theme) => ({
 				marginTop: "16rem",
 				padding: "4rem 3rem",
 				fontSize: "3rem",
@@ -172,17 +186,78 @@ export const Home = () => {
 				borderBottom: `1px solid ${theme.palette.secondary.main}`
 			})}>
 				Start exploring blockchain apps in seconds
-			</Typography>
+			</Typography> */}
 			<Box sx={(theme) => ({
 				display: "flex",
 				flexDirection: "column",
 				alignItems: "center",
-				padding: "4rem 1rem",
+				padding: "4rem 3rem",
 				backgroundColor: "#0a061f",
 				borderBottom: `1px solid ${theme.palette.secondary.main}`
 			})}>
-				<Box component="img" src={SyncYourCurrency} alt="Sync Your Currency" />
-				<Box component="img" src={CompatibleGames} alt="Compatible Games" />
+				<Typography variant="h1" component="h2" sx={(theme) => ({
+					marginBottom: "3rem",
+					fontSize: "3rem",
+					color: theme.palette.secondary.main
+				})}>Sync Your Currency</Typography>
+				<Box sx={{
+					display: "grid",
+					gridTemplateColumns: "repeat(4, 100px)",
+					columnGap: "8rem",
+					rowGap: "4rem",
+					justifyItems: "center",
+					marginBottom: "4rem",
+					"@media (max-width: 800px)": {
+						gridTemplateColumns: "repeat(3, 100px)",
+						columnGap: "4rem",
+						rowGap: "2rem",
+					},
+					"@media (max-width: 500px)": {
+						gridTemplateColumns: "repeat(2, 100px)",
+					}
+				}}>
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+				</Box>
+				<Typography variant="h1" component="h2" sx={(theme) => ({
+					marginBottom: "3rem",
+					fontSize: "3rem",
+					color: theme.palette.primary.main
+				})}>Compatible Games</Typography>
+				<Box sx={{
+					display: "grid",
+					gridTemplateColumns: "repeat(4, 100px)",
+					columnGap: "8rem",
+					rowGap: "4rem",
+
+					justifyItems: "center",
+					"@media (max-width: 800px)": {
+						gridTemplateColumns: "repeat(3, 100px)",
+						columnGap: "4rem",
+						rowGap: "2rem",
+					},
+					"@media (max-width: 500px)": {
+						gridTemplateColumns: "repeat(2, 100px)",
+					}
+				}}>
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+				</Box>
 			</Box>
 			<Box sx={{
 				overflowY: "hidden",
@@ -193,7 +268,7 @@ export const Home = () => {
 				width: "100%",
 				maxWidth: "1700px",
 				margin: "0 auto",
-				padding: "4rem 1rem",
+				padding: "4rem 3rem",
 				paddingBottom: "1rem",
 			}}>
 				<Typography variant="h1" component="h2" sx={{
@@ -203,7 +278,7 @@ export const Home = () => {
 				}}>Start Exploring Blockchain Apps In Seconds</Typography>
 				<OuterCircle sx={{
 					top: "initial",
-					bottom: "-70%",
+					bottom: "-35vw",
 					transform: "translate(-50%, 0)",
 				}}>
 					<Box sx={(theme) => ({
@@ -225,8 +300,8 @@ export const Home = () => {
 						transform: "translate(-50%, -50%)",
 						borderRadius: "50%",
 						background: "linear-gradient(300deg,#5072d9,#8020ec,#d957cc,#449deb)",
-						backgroundSize: "100% 100%",
-						animation: `${gradientAnimation} 4s ease infinite`
+						backgroundSize: "130% 130%",
+						animation: `${gradientAnimation} 16s ease infinite`
 					}} />
 				</OuterCircle>
 				<Box sx={{
@@ -243,8 +318,8 @@ export const Home = () => {
 					maxWidth: "600px",
 					margin: "0 auto",
 				}}>
-					<p>Privacy Policy</p>
-					<p>Terms And Conditions</p>
+					<Link href="/privacy-policy" underline="none">Privacy Policy</Link>
+					<Link href="/terms-and-conditions" underline="none">Terms And Conditions</Link>
 				</Box>
 			</Box>
 		</>
@@ -263,6 +338,10 @@ const OuterCircle = styled("div")(({ theme }) => ({
 	borderRadius: "50%",
 	border: `2px solid ${theme.palette.secondary.main}`
 }))
+
+const LogoImage = styled("img")({
+	width: "100%"
+})
 
 const gradientAnimation = keyframes`
 	0% {

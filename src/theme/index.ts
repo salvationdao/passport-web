@@ -27,7 +27,6 @@ const lightTheme = createTheme({
 		},
 		lightgrey: "#f7f7f7",
 		darkPurple: "#0a061f"
-
 	},
 	breakpoints: {
 		values: {
@@ -96,8 +95,13 @@ const lightTheme = createTheme({
 	components: {
 		MuiCssBaseline: {
 			styleOverrides: {
+				html: {
+					"@media (max-width: 1000px)": {
+						fontSize: "80%",
+					}
+				},
 				body: {
-					backgroundColor: "#030208"
+					backgroundColor: "#030208",
 				}
 			}
 		},
