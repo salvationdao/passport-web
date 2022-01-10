@@ -89,12 +89,6 @@ export const ProfilePage: React.FC = () => {
                 <IconButton color="inherit" >
                     <YouTubeIcon />
                 </IconButton>
-                <IconButton color="inherit" >
-                    <YouTubeIcon />
-                </IconButton>
-                <IconButton color="inherit" >
-                    <YouTubeIcon />
-                </IconButton>
             </Box>
             <Box sx={{
                 display: "flex",
