@@ -2,9 +2,14 @@ import { createTheme } from "@mui/material/styles"
 import AvatarDefault from "../assets/images/NinjaSoftwareLogo.svg"
 
 declare module "@mui/material/styles" {
+	interface Palette {
+		neutral: Palette['primary']
+	}
+
 	interface PaletteOptions {
 		lightgrey: string
 		darkPurple: string
+		neutral: PaletteOptions['primary']
 	}
 }
 
@@ -19,8 +24,12 @@ const lightTheme = createTheme({
 		success: {
 			main: "#44b700",
 		},
+		neutral: {
+			main: "#0a061f"
+		},
 		background: {
 			default: "#030208",
+			paper: "#0a061f",
 		},
 		text: {
 			primary: "#fff",
@@ -117,8 +126,10 @@ const lightTheme = createTheme({
 			},
 		},
 		MuiButton: {
-			defaultProps: {
-				color: "inherit",
+			styleOverrides: {
+				root: {
+					color: "inherit",
+				}
 			},
 		},
 		MuiFormLabel: {

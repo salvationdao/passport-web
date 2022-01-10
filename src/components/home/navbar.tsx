@@ -1,7 +1,7 @@
 import { LoadingButton } from '@mui/lab';
-import { Box, BoxProps, Link, Menu, MenuItem, MenuItemProps, MenuList, useTheme } from '@mui/material';
+import { Box, BoxProps, Menu, MenuItem, MenuItemProps, MenuList, useTheme } from '@mui/material';
 import React, { useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 import SupremacyLogo from "../../assets/images/supremacy-logo.svg";
 import XSYNLogoImage from "../../assets/images/XSYN Stack White.svg";
 
@@ -23,7 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
             paddingTop: "3rem",
             ...sx
         }} {...props}>
-            <Link href="/">
+            <Link to="/">
                 <Box component="img" src={XSYNLogoImage} alt="XSYN Logo" />
             </Link>
             <MenuButton />
@@ -69,9 +69,9 @@ const MenuButton: React.FC = () => {
                     fontSize: "1rem",
                     color: "#807f82"
                 }}>My Games</Box>
-                <Link href="https://supremacy.game"><Box component="img" sx={{
+                <a href="https://supremacy.game"><Box component="img" sx={{
                     width: "100%",
-                }} src={SupremacyLogo} alt="Supremacy Logo" /></Link>
+                }} src={SupremacyLogo} alt="Supremacy Logo" /></a>
             </Menu>
             <LoadingButton sx={{
                 position: "relative",

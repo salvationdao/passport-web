@@ -28,7 +28,7 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ sx, ..
                 right: 0,
                 bottom: 0,
                 backgroundColor: theme.palette.background.default,
-                opacity: .6
+                opacity: .8
             })} />
             <Box sx={{
                 position: "absolute",
