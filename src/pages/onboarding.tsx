@@ -2,7 +2,7 @@ import { Alert, Box, Button, Typography } from "@mui/material"
 import { useCallback, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link, Redirect, useHistory } from "react-router-dom"
+import { Link, Redirect } from "react-router-dom"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
@@ -23,25 +23,23 @@ interface SignUpInput {
 	password?: string
 }
 
-type LoginType = "email" | "metamask" | "google" | "facebook"
+type SignUpType = "email" | "metamask" | "google" | "facebook"
 
 /**
  * Onboarding Page to Sign up New Users
  */
 export const Onboarding = () => {
-	const { push } = useHistory()
 	const { send } = useWebsocket()
 	const { user } = useAuth()
 	const { loginFacebook, loginGoogle, loginMetamask, setUser } = useAuth()
 
-	const [emailSignup, setEmailSignup] = useState<boolean>(false)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
 
 	const { control, handleSubmit, watch, trigger, setError } = useForm<SignUpInput>()
 	const username = watch("username")
 
-	const [loginType, setLoginType] = useState<LoginType | null>(null)
+	const [signUpType, setSignUpType] = useState<SignUpType | null>(null)
 	const [currentStep, setCurrentStep] = useState(0)
 
 	const validUsername = useCallback(async (): Promise<boolean> => {
@@ -97,7 +95,7 @@ export const Onboarding = () => {
 	}
 
 	const renderStep1 = () => {
-		switch (loginType) {
+		switch (signUpType) {
 			case "email":
 				return (
 					<Box component="form" onSubmit={handleSubmit(async (input) => {
@@ -305,7 +303,7 @@ export const Onboarding = () => {
 		}
 	}}>
 		<Button type="button" variant="contained" onClick={() => {
-			setLoginType("metamask")
+			setSignUpType("metamask")
 			setCurrentStep(1)
 		}}
 			startIcon={<MetaMaskIcon />}
@@ -315,7 +313,7 @@ export const Onboarding = () => {
 			Sign up with MetaMask
 		</Button>
 		<Button type="button" variant="contained" onClick={() => {
-			setLoginType("google")
+			setSignUpType("google")
 			setCurrentStep(1)
 		}}
 			startIcon={<GoogleIcon />}
@@ -325,7 +323,7 @@ export const Onboarding = () => {
 			Sign up with Google
 		</Button>
 		<Button type="button" variant="contained" onClick={() => {
-			setLoginType("facebook")
+			setSignUpType("facebook")
 			setCurrentStep(1)
 		}}
 			startIcon={<FacebookIcon />}
@@ -334,8 +332,6 @@ export const Onboarding = () => {
 			})}>
 			Sign up with Facebook
 		</Button>
-
-
 		<Box sx={{
 			display: "flex",
 			alignItems: "center",
@@ -356,7 +352,7 @@ export const Onboarding = () => {
 		</Box>
 		<Button variant="contained" onClick={() => {
 			setCurrentStep(1)
-			setLoginType("email")
+			setSignUpType("email")
 		}} sx={(theme) => ({
 			backgroundColor: theme.palette.neutral.main
 		})}>
@@ -366,7 +362,6 @@ export const Onboarding = () => {
 
 	if (user) return <Redirect push to="/" />
 
-	// Render
 	return (
 		<Box
 			sx={{
