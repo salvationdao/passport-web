@@ -1,13 +1,14 @@
 import { Alert, Box, Button, Typography } from "@mui/material"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link, Redirect } from "react-router-dom"
+import { Link, useHistory } from "react-router-dom"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { InputField } from "../components/form/inputField"
+import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
 import { AuthContainer, useAuth } from "../containers/auth"
 import { useWebsocket } from "../containers/socket"
@@ -22,6 +23,7 @@ interface LogInInput {
 export const LoginPage: React.FC = () => {
     const { send } = useWebsocket()
     const { user, setUser } = useAuth()
+    const history = useHistory()
 
     const { loginGoogle, loginFacebook } = AuthContainer.useContainer()
 
@@ -69,7 +71,16 @@ export const LoginPage: React.FC = () => {
         setErrorMessage(error.status || "Failed to login with Facebook.")
     }
 
-    if (user) return <Redirect push to="/" />
+    useEffect(() => {
+        if (!user) return
+        setTimeout(() => {
+            history.push("/")
+        }, 2000)
+    }, [user])
+
+    if (user) {
+        return <Loading text="You are already logged in, redirecting to home page..." />
+    }
 
     return (
         <Box

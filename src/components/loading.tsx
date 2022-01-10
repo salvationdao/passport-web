@@ -1,7 +1,10 @@
-import { Typography, CircularProgress } from "@mui/material"
-import { Box } from "@mui/material"
+import { Box, CircularProgress, Typography } from "@mui/material"
 
-export const Loading = () => {
+interface LoadingProps {
+	text?: string
+}
+
+export const Loading: React.FC<LoadingProps> = ({ text }) => {
 	return (
 		<Box
 			sx={{
@@ -21,7 +24,7 @@ export const Loading = () => {
 			>
 				<CircularProgress />
 				<Typography variant="h6" sx={{ marginTop: "10px" }}>
-					Loading...
+					{text || "Loading..."}
 				</Typography>
 			</Box>
 		</Box>

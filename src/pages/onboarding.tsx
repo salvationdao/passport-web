@@ -1,14 +1,15 @@
 import { Alert, Box, Button, Typography } from "@mui/material"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link, Redirect } from "react-router-dom"
+import { Link, useHistory } from "react-router-dom"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { InputField } from "../components/form/inputField"
+import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
 import { useAuth } from "../containers/auth"
 import { useWebsocket } from "../containers/socket"
@@ -29,6 +30,7 @@ type SignUpType = "email" | "metamask" | "google" | "facebook"
  * Onboarding Page to Sign up New Users
  */
 export const Onboarding = () => {
+	const history = useHistory()
 	const { send } = useWebsocket()
 	const { user } = useAuth()
 	const { loginFacebook, loginGoogle, loginMetamask, setUser } = useAuth()
@@ -360,7 +362,16 @@ export const Onboarding = () => {
 		</Button>
 	</Box>)
 
-	if (user) return <Redirect push to="/" />
+	useEffect(() => {
+		if (!user) return
+		setTimeout(() => {
+			history.push("/")
+		}, 2000)
+	}, [user])
+
+	if (user) {
+		return <Loading text="You are already logged in, redirecting to home page..." />
+	}
 
 	return (
 		<Box
