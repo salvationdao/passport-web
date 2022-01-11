@@ -19,7 +19,6 @@ export const Home = () => {
 				sx={(theme) => ({
 					position: "relative",
 					minHeight: "100vh",
-					borderBottom: `1px solid ${theme.palette.secondary.main}`
 				})}
 			>
 				<GradientCircleThing sx={{
@@ -49,16 +48,16 @@ export const Home = () => {
 					</Typography>
 					<FancyButton onClick={() => history.push(!!user ? "/profile" : "/login")} fancy>{!!user ? "View Profile" : "Login"}</FancyButton>
 				</Box>
-			</Box >
-			{/* <Typography variant="h1" component="p" sx={(theme) => ({
-				marginTop: "16rem",
+			</Box>
+			<Typography variant="h1" component="p" sx={(theme) => ({
+				marginTop: "10vw",
 				padding: "4rem 3rem",
 				fontSize: "3rem",
 				textAlign: "center",
 				borderBottom: `1px solid ${theme.palette.secondary.main}`
 			})}>
 				Start exploring blockchain apps in seconds
-			</Typography> */}
+			</Typography>
 			<Box sx={(theme) => ({
 				display: "flex",
 				flexDirection: "column",
