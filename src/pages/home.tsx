@@ -7,9 +7,11 @@ import XSYNWordmarkImage from "../assets/images/XSYN Wordmark White.png"
 import { FancyButton } from "../components/fancyButton"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
 import { Navbar } from "../components/home/navbar"
+import { AuthContainer } from "../containers"
 
 export const Home = () => {
 	const history = useHistory()
+	const { user } = AuthContainer.useContainer()
 
 	return (
 		<>
@@ -45,7 +47,7 @@ export const Home = () => {
 					}}>
 						A Crypto Wallet & Gateway To Blockchain Apps
 					</Typography>
-					<FancyButton onClick={() => history.push("/login")} fancy>Login</FancyButton>
+					<FancyButton onClick={() => history.push(!!user ? "/profile" : "/login")} fancy>{!!user ? "View Profile" : "Login"}</FancyButton>
 				</Box>
 			</Box >
 			{/* <Typography variant="h1" component="p" sx={(theme) => ({

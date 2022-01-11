@@ -362,9 +362,11 @@ export const Onboarding = () => {
 
 	useEffect(() => {
 		if (!user) return
-		setTimeout(() => {
+
+		const userTimeout = setTimeout(() => {
 			history.push("/")
 		}, 2000)
+		return () => clearTimeout(userTimeout)
 	}, [user])
 
 	if (user) {

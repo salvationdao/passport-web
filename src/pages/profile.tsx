@@ -23,6 +23,23 @@ import HubKey from '../keys';
 import { Organisation, Role } from '../types/types';
 
 export const ProfilePage: React.FC = () => {
+    const history = useHistory()
+    const { user } = AuthContainer.useContainer()
+
+    useEffect(() => {
+        if (user) return
+
+        const userTimeout = setTimeout(() => {
+            history.push("/login")
+        }, 2000)
+        return () => clearTimeout(userTimeout)
+    }, [user])
+
+    if (!user) {
+        return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+    }
+
+
     return (
         <Box sx={{
             display: "flex",
@@ -139,7 +156,7 @@ interface UserInput {
     firstName?: string
     lastName?: string
     newPassword?: string
-    /** Required if changing own password or email */
+    /** Required if changing own password */
     currentPassword?: string
     avatarID?: string
     roleID?: string
@@ -160,7 +177,6 @@ const ProfileEdit: React.FC = () => {
 
     // Setup form
     const { control, handleSubmit, reset, watch } = useForm<UserInput>()
-    const email = watch("email")
     const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
     const [submitting, setSubmitting] = useState(false)
     const [successMessage, setSuccessMessage] = useState<string>()
@@ -172,7 +188,6 @@ const ProfileEdit: React.FC = () => {
 
     const onSaveForm = handleSubmit(async (data) => {
         if (!user) return
-
         setSubmitting(true)
 
         try {
@@ -193,19 +208,18 @@ const ProfileEdit: React.FC = () => {
                 }
             }
 
-            const { role, organisation, newPassword, ...input } = data
 
+            const { newPassword, ...input } = data
             const payload = {
                 ...input,
                 newPassword: changePassword ? newPassword : undefined,
-                roleID: !!role ? role.id : undefined,
-                organisationID: !!organisation ? organisation.id : undefined,
                 avatarID,
             }
 
             const resp = await send<User>(HubKey.UserUpdate, {
                 id: user.id, ...payload
             })
+
             if (resp) {
                 setSuccessMessage("Profile successfully updated.")
                 history.replace(`/profile`)
@@ -277,17 +291,8 @@ const ProfileEdit: React.FC = () => {
             )
     }, [user, reset, token])
 
-    useEffect(() => {
-        if (user) return
-
-        const userTimeout = setTimeout(() => {
-            history.push("/login")
-        }, 2000)
-        return () => clearTimeout(userTimeout)
-    }, [user])
-
     if (!user) {
-        return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+        return <Loading />
     }
 
     return (
@@ -306,7 +311,7 @@ const ProfileEdit: React.FC = () => {
                 },
             }}
         >
-            <Typography variant="h2" color="primary" gutterBottom>
+            <Typography variant="h1" gutterBottom>
                 Edit Profile
             </Typography>
 
@@ -335,8 +340,8 @@ const ProfileEdit: React.FC = () => {
                         marginRight: "1rem"
                     }
                 }}>
-                    <InputField label="First Name" name="firstName" control={control} rules={{ required: "First name is required." }} disabled={submitting} fullWidth />
-                    <InputField label="Last Name" name="lastName" control={control} rules={{ required: "Last name is required." }} disabled={submitting} fullWidth />
+                    <InputField label="First Name" name="firstName" control={control} disabled={submitting} fullWidth />
+                    <InputField label="Last Name" name="lastName" control={control} disabled={submitting} fullWidth />
                 </Box>
                 <InputField
                     name="email"
@@ -344,7 +349,6 @@ const ProfileEdit: React.FC = () => {
                     type="email"
                     control={control}
                     rules={{
-                        required: "Email is required.",
                         pattern: {
                             value: /.+@.+\..+/,
                             message: "Invalid email address",
@@ -354,10 +358,9 @@ const ProfileEdit: React.FC = () => {
                 />
             </Section>
 
-
             <Section>
                 <Typography variant="subtitle1">Password</Typography>
-                {(changePassword || email !== user.email) && (
+                {changePassword && (
                     <InputField
                         disabled={submitting}
                         control={control}
@@ -460,11 +463,9 @@ const ProfileEdit: React.FC = () => {
                 <Button variant="contained" onClick={() => history.push("/profile")} disabled={submitting}>
                     Cancel
                 </Button>
-                <div>
-                    {!!successMessage && <Alert severity="success">{successMessage}</Alert>}
-                    {!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-                </div>
             </Spaced>
+            {!!successMessage && <Alert severity="success">{successMessage}</Alert>}
+            {!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
         </Box>
     )
 }
