@@ -1,10 +1,13 @@
-import { Box, BoxProps, Button, Paper, styled, Tab, TabProps, Tabs, Typography } from "@mui/material"
+import { Box, BoxProps, ButtonProps, Paper, styled, Tab, TabProps, Tabs, Typography, useTheme } from "@mui/material"
 import { useState } from "react"
 import SupsLogo from "../assets/images/sup-token.svg"
+import { FancyButton } from "../components/fancyButton"
 import { Navbar } from "../components/home/navbar"
+import { colors } from "../theme"
 
 export const WalletPage: React.FC = () => {
     const [currentTab, setCurrentTab] = useState(0)
+    const theme = useTheme()
 
     return (
         <Box sx={{
@@ -57,47 +60,7 @@ export const WalletPage: React.FC = () => {
                             </Typography>
                         </Box>
                     </Box>
-                    <Button sx={(theme) => ({
-                        boxSizing: "content-box",
-                        position: "relative",
-                        padding: ".5rem 3rem",
-                        borderRadius: 0,
-                        border: `2px solid ${theme.palette.primary.main}`,
-                        textTransform: "uppercase",
-                        "&:hover": {
-                            "&::before": {
-                                opacity: .4,
-                            },
-                            "&::after": {
-                                opacity: .2,
-                                transitionDelay: ".1s",
-                            },
-                        },
-                        "&::before": {
-                            content: "''",
-                            position: "absolute",
-                            top: "4px",
-                            left: "4px",
-                            width: "100%",
-                            height: "100%",
-                            border: `2px solid ${theme.palette.primary.main}`,
-                            opacity: 0,
-                            transition: "opacity .3s ease-in",
-                            pointerEvents: "none",
-                        },
-                        "&::after": {
-                            content: "''",
-                            position: "absolute",
-                            top: "10px",
-                            left: "10px",
-                            width: "100%",
-                            height: "100%",
-                            border: `2px solid ${theme.palette.primary.main}`,
-                            opacity: 0,
-                            transition: "opacity .3s ease-in",
-                            pointerEvents: "none",
-                        },
-                    })}>Redeem your SUPS</Button>
+                    <FancyButton fancy>Redeem Your SUPS</FancyButton>
                 </Box>
             </Paper>
             <Paper sx={{
@@ -125,10 +88,10 @@ export const WalletPage: React.FC = () => {
                             alignItems: "center",
                             marginLeft: "auto",
                         }}>
-                            <Button sx={{
-                                marginRight: "1rem"
-                            }}>Buy</Button>
-                            <Button>Send</Button>
+                            <BlueFancyButton sx={{
+                                marginRight: "1rem",
+                            }}>Buy</BlueFancyButton>
+                            <BlueFancyButton>Send</BlueFancyButton>
                         </Box>
                     </Box>
                     <Box sx={{
@@ -142,10 +105,10 @@ export const WalletPage: React.FC = () => {
                             alignItems: "center",
                             marginLeft: "auto",
                         }}>
-                            <Button sx={{
-                                marginRight: "1rem"
-                            }}>Buy</Button>
-                            <Button>Send</Button>
+                            <BlueFancyButton sx={{
+                                marginRight: "1rem",
+                            }}>Buy</BlueFancyButton>
+                            <BlueFancyButton>Send</BlueFancyButton>
                         </Box>
                     </Box>
                     <Box sx={{
@@ -159,10 +122,10 @@ export const WalletPage: React.FC = () => {
                             alignItems: "center",
                             marginLeft: "auto",
                         }}>
-                            <Button sx={{
-                                marginRight: "1rem"
-                            }}>Buy</Button>
-                            <Button>Send</Button>
+                            <BlueFancyButton sx={{
+                                marginRight: "1rem",
+                            }}>Buy</BlueFancyButton>
+                            <BlueFancyButton>Send</BlueFancyButton>
                         </Box>
                     </Box>
                     <Box sx={{
@@ -176,10 +139,10 @@ export const WalletPage: React.FC = () => {
                             alignItems: "center",
                             marginLeft: "auto",
                         }}>
-                            <Button sx={{
-                                marginRight: "1rem"
-                            }}>Buy</Button>
-                            <Button>Send</Button>
+                            <BlueFancyButton sx={{
+                                marginRight: "1rem",
+                            }}>Buy</BlueFancyButton>
+                            <BlueFancyButton>Send</BlueFancyButton>
                         </Box>
                     </Box>
                 </StyledTabPanel>
@@ -190,6 +153,12 @@ export const WalletPage: React.FC = () => {
         </Box>
     )
 }
+
+const BlueFancyButton = styled((props: ButtonProps) => <FancyButton borderColor={colors.skyBlue}
+    {...props}
+/>)({
+    padding: ".2rem .5rem"
+})
 
 const StyledTab = styled((props: TabProps) => <Tab {...props} />)(({ theme }) => ({
     textTransform: "uppercase",
@@ -229,7 +198,6 @@ const TabPanel: React.FC<TabPanelProps> = ({ value, index, children, ...props })
                 {value === index && (
                     children
                 )}
-
             </Box>
         </div>
     )
