@@ -199,7 +199,6 @@ export const UserEdit = (props: UserEditProps) => {
 				type="email"
 				control={control}
 				rules={{
-					required: "Email is required.",
 					pattern: {
 						value: /.+@.+\..+/,
 						message: "Invalid email address",
@@ -208,9 +207,9 @@ export const UserEdit = (props: UserEditProps) => {
 				disabled={submitting}
 			/>
 
-			<InputField label="First Name" name="firstName" control={control} rules={{ required: "First name is required." }} disabled={submitting} />
+			<InputField label="First Name" name="firstName" control={control} disabled={submitting} />
 
-			<InputField label="Last Name" name="lastName" control={control} rules={{ required: "Last name is required." }} disabled={submitting} />
+			<InputField label="Last Name" name="lastName" control={control} disabled={submitting} />
 
 			<InputField label="Wallet Public Address" name="publicAddress" control={control} disabled={true} />
 			<Box
@@ -280,16 +279,7 @@ export const UserEdit = (props: UserEditProps) => {
 				/>
 			</div>
 
-			{!isSelf && (
-				<ItemInputSelect
-					label="Role"
-					name="role"
-					control={control}
-					required="Role is required."
-					disabled={submitting}
-					renderItem={(value) => value.name}
-				/>
-			)}
+			{!isSelf && <ItemInputSelect label="Role" name="role" control={control} disabled={submitting} renderItem={(value) => value.name} />}
 
 			<ItemInputSelect label="Organisation" name="organisation" control={control} disabled={isSelf || submitting} renderItem={(value) => value.name} />
 
@@ -325,7 +315,7 @@ export const UserEdit = (props: UserEditProps) => {
 					disabled={submitting}
 					control={control}
 					name="currentPassword"
-					rules={{ required: "Please enter current password." }}
+					// rules={{ required: "Please enter current password." }}
 					type="password"
 					placeholder="Enter current password"
 					hiddenLabel

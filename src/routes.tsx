@@ -5,6 +5,7 @@ import { LoginPage } from "./pages/login"
 import { Onboarding } from "./pages/onboarding"
 import { ProfilePage } from "./pages/profile"
 import { WalletPage } from "./pages/wallet"
+import { Settings } from "./pages/settings"
 
 export const Routes = () => {
 	return (
@@ -19,6 +20,7 @@ export const Routes = () => {
 					<Route path="/wallet" component={WalletPage} />
 					<Route path="/privacy-policy" component={Home} />
 					<Route path="/terms-and-conditions" component={Home} />
+					<Route path="/settings" component={Settings} />
 				</Switch>
 			</Router>
 			<ConnectionLostSnackbar app="admin" />
