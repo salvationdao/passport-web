@@ -14,12 +14,14 @@ export const colors = {
 	darkNavyBlue: "#030208",
 	white: "#fff",
 	lightGrey: "#f7f7f7",
+	darkGrey: "#c3c3c3",
 }
 
 const lightTheme = createTheme({
 	palette: {
 		primary: {
 			main: colors.neonPink,
+			contrastText: colors.white,
 		},
 		secondary: {
 			main: colors.skyBlue,
@@ -33,7 +35,8 @@ const lightTheme = createTheme({
 		},
 		text: {
 			primary: colors.white,
-			secondary: colors.white
+			secondary: colors.white,
+			disabled: colors.darkGrey,
 		},
 	},
 	breakpoints: {
