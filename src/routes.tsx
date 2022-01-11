@@ -5,7 +5,6 @@ import { Onboarding } from "./pages/onboarding"
 import { ProfilePage } from "./pages/profile"
 import { Settings } from "./pages/settings"
 import { WalletPage } from "./pages/wallet"
-import { Settings } from "./pages/settings"
 
 export const Routes = () => {
 	return (
