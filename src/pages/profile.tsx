@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import MetaMaskOnboarding from "@metamask/onboarding";
 import EditIcon from '@mui/icons-material/Edit';
 import YouTubeIcon from '@mui/icons-material/YouTube';
-import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, Typography } from "@mui/material";
+import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, styled, Typography } from "@mui/material";
 import { User } from '@sentry/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-fetching-library';
@@ -279,9 +279,11 @@ const ProfileEdit: React.FC = () => {
 
     useEffect(() => {
         if (user) return
-        setTimeout(() => {
+
+        const userTimeout = setTimeout(() => {
             history.push("/login")
         }, 2000)
+        return () => clearTimeout(userTimeout)
     }, [user])
 
     if (!user) {
@@ -300,7 +302,7 @@ const ProfileEdit: React.FC = () => {
                 margin: "0 auto",
                 padding: "3rem",
                 "& > *:not(:last-child)": {
-                    marginBottom: ".5rem"
+                    marginBottom: "1rem"
                 },
             }}
         >
@@ -308,139 +310,148 @@ const ProfileEdit: React.FC = () => {
                 Edit Profile
             </Typography>
 
-            <Typography variant="subtitle1">Avatar</Typography>
-            <ImageUpload
-                label="Upload Avatar"
-                file={avatar}
-                onChange={onAvatarChange}
-                avatarPreview
-                sx={{
-                    alignSelf: "center",
-                    "& .MuiAvatar-root": {
-                        width: "180px",
-                        height: "180px",
-                    },
-                }}
-            />
-
-            <Typography variant="subtitle1">User Details</Typography>
-            <Box sx={{
-                display: "flex",
-                "& > *:not(:last-child)": {
-                    marginRight: "1rem"
-                }
-            }}>
-                <InputField label="First Name" name="firstName" control={control} rules={{ required: "First name is required." }} disabled={submitting} fullWidth />
-                <InputField label="Last Name" name="lastName" control={control} rules={{ required: "Last name is required." }} disabled={submitting} fullWidth />
-            </Box>
-
-            <InputField
-                name="email"
-                label="Email"
-                type="email"
-                control={control}
-                rules={{
-                    required: "Email is required.",
-                    pattern: {
-                        value: /.+@.+\..+/,
-                        message: "Invalid email address",
-                    },
-                }}
-                disabled={submitting}
-            />
-
-            <Typography variant="subtitle1">Password</Typography>
-            {(changePassword || email !== user.email) && (
-                <InputField
-                    disabled={submitting}
-                    control={control}
-                    name="currentPassword"
-                    rules={{ required: "Please enter current password." }}
-                    type="password"
-                    placeholder="Enter current password"
-                    hiddenLabel
+            <Section>
+                <Typography variant="subtitle1">Avatar</Typography>
+                <ImageUpload
+                    label="Upload Avatar"
+                    file={avatar}
+                    onChange={onAvatarChange}
+                    avatarPreview
+                    sx={{
+                        alignSelf: "center",
+                        "& .MuiAvatar-root": {
+                            width: "180px",
+                            height: "180px",
+                        },
+                    }}
                 />
-            )}
+            </Section>
 
-            {!changePassword && (
-                <Button type="button" variant="contained" onClick={() => setChangePassword(true)}>
-                    Change Password
-                </Button>
-            )}
-            {changePassword && (
-                <>
+            <Section>
+                <Typography variant="subtitle1">User Details</Typography>
+                <Box sx={{
+                    display: "flex",
+                    "& > *:not(:last-child)": {
+                        marginRight: "1rem"
+                    }
+                }}>
+                    <InputField label="First Name" name="firstName" control={control} rules={{ required: "First name is required." }} disabled={submitting} fullWidth />
+                    <InputField label="Last Name" name="lastName" control={control} rules={{ required: "Last name is required." }} disabled={submitting} fullWidth />
+                </Box>
+                <InputField
+                    name="email"
+                    label="Email"
+                    type="email"
+                    control={control}
+                    rules={{
+                        required: "Email is required.",
+                        pattern: {
+                            value: /.+@.+\..+/,
+                            message: "Invalid email address",
+                        },
+                    }}
+                    disabled={submitting}
+                />
+            </Section>
+
+
+            <Section>
+                <Typography variant="subtitle1">Password</Typography>
+                {(changePassword || email !== user.email) && (
                     <InputField
                         disabled={submitting}
                         control={control}
-                        name="newPassword"
-                        rules={{ required: "Please enter a new password." }}
+                        name="currentPassword"
+                        rules={{ required: "Please enter current password." }}
                         type="password"
-                        placeholder="Enter a new password"
-                        InputProps={{
-                            endAdornment:
-                                <Button type="button" onClick={() => setChangePassword(false)}>
-                                    Cancel
-                                </Button>,
-                        }}
+                        placeholder="Enter current password"
                         hiddenLabel
                     />
-                    <Button type="button" variant="contained" onClick={() => setChangePassword(false)}>
-                        Cancel Password Change
-                    </Button>
-                </>
-            )}
+                )}
 
-            <Typography variant="subtitle1">Connections</Typography>
-            <InputField label="Wallet Public Address" name="publicAddress" control={control} disabled={true} />
-            <Box
-                sx={{
-                    margin: "0 auto",
-                    display: "flex",
-                }}
-            >
-                <Button
-                    onClick={async () => {
-                        // if wallet exists, remove it
-                        if (user.publicAddress && user.publicAddress !== "") {
-                            await removeWalletAddress()
-                            return
-                        }
-                        // if metamask not logged in do nothing
-                        if (metaMaskState === MetaMaskState.NotLoggedIn) {
-                            await connect()
-                            return
-                        }
-                        // if metamask not installed tell take to install page
-                        if (metaMaskState === MetaMaskState.NotInstalled) {
-                            const onboarding = new MetaMaskOnboarding()
-                            onboarding.startOnboarding()
-                            return
-                        }
-                        // if metamask logged in add wallet
-                        if (metaMaskState === MetaMaskState.Active) {
-                            await addNewWallet()
-                            return
-                        }
+                {!changePassword && (
+                    <Button type="button" variant="contained" onClick={() => setChangePassword(true)}>
+                        Change Password
+                    </Button>
+                )}
+                {changePassword && (
+                    <>
+                        <InputField
+                            disabled={submitting}
+                            control={control}
+                            name="newPassword"
+                            rules={{ required: "Please enter a new password." }}
+                            type="password"
+                            placeholder="Enter a new password"
+                            InputProps={{
+                                endAdornment:
+                                    <Button type="button" onClick={() => setChangePassword(false)}>
+                                        Cancel
+                                    </Button>,
+                            }}
+                            hiddenLabel
+                        />
+                        <Button type="button" variant="contained" onClick={() => setChangePassword(false)}>
+                            Cancel Password Change
+                        </Button>
+                    </>
+                )}
+
+            </Section>
+
+            <Section>
+                <Typography variant="subtitle1">Connections</Typography>
+                <InputField label="Wallet Public Address" name="publicAddress" control={control} disabled={true} />
+                <Box
+                    sx={{
+                        margin: "0 auto",
+                        display: "flex",
                     }}
-                    title={
-                        metaMaskState === MetaMaskState.Active
-                            ? "Connect Wallet to account"
+                >
+                    <Button
+                        onClick={async () => {
+                            // if wallet exists, remove it
+                            if (user.publicAddress && user.publicAddress !== "") {
+                                await removeWalletAddress()
+                                return
+                            }
+                            // if metamask not logged in do nothing
+                            if (metaMaskState === MetaMaskState.NotLoggedIn) {
+                                await connect()
+                                return
+                            }
+                            // if metamask not installed tell take to install page
+                            if (metaMaskState === MetaMaskState.NotInstalled) {
+                                const onboarding = new MetaMaskOnboarding()
+                                onboarding.startOnboarding()
+                                return
+                            }
+                            // if metamask logged in add wallet
+                            if (metaMaskState === MetaMaskState.Active) {
+                                await addNewWallet()
+                                return
+                            }
+                        }}
+                        title={
+                            metaMaskState === MetaMaskState.Active
+                                ? "Connect Wallet to account"
+                                : metaMaskState === MetaMaskState.NotLoggedIn
+                                    ? "Connect and sign in to MetaMask to continue"
+                                    : "Install MetaMask"
+                        }
+                        startIcon={<MetaMaskIcon />}
+                        variant="contained"
+                    >
+                        {user?.publicAddress && user?.publicAddress !== ""
+                            ? "Remove Wallet"
                             : metaMaskState === MetaMaskState.NotLoggedIn
                                 ? "Connect and sign in to MetaMask to continue"
-                                : "Install MetaMask"
-                    }
-                    startIcon={<MetaMaskIcon />}
-                    variant="contained"
-                >
-                    {user?.publicAddress && user?.publicAddress !== ""
-                        ? "Remove Wallet"
-                        : metaMaskState === MetaMaskState.NotLoggedIn
-                            ? "Connect and sign in to MetaMask to continue"
-                            : metaMaskState === MetaMaskState.NotInstalled
-                                ? "Install MetaMask"
-                                : "Connect Wallet to account"}
-                </Button>
-            </Box>
+                                : metaMaskState === MetaMaskState.NotInstalled
+                                    ? "Install MetaMask"
+                                    : "Connect Wallet to account"}
+                    </Button>
+                </Box>
+            </Section>
 
             <Spaced alignRight height="60px">
                 <Button variant="contained" color="primary" onClick={onSaveForm} disabled={submitting} startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
@@ -457,6 +468,14 @@ const ProfileEdit: React.FC = () => {
         </Box>
     )
 }
+
+const Section = styled("div")({
+    display: "flex",
+    flexDirection: "column",
+    "& > *:not(:last-child)": {
+        marginBottom: ".5rem"
+    }
+})
 
 interface EditableAvatarProps extends Omit<IconButtonProps, "children"> {
 

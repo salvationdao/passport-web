@@ -112,7 +112,7 @@ const lightTheme = createTheme({
 					}
 				},
 				body: {
-					backgroundColor: "#030208",
+					backgroundColor: colors.darkNavyBlue,
 				},
 			}
 		},
@@ -132,6 +132,18 @@ const lightTheme = createTheme({
 					color: "inherit",
 				}
 			},
+		},
+		MuiInputBase: {
+			styleOverrides: {
+				root: {
+					"& .MuiOutlinedInput-notchedOutline": {
+						borderColor: colors.darkGrey
+					},
+					"&&::before": {
+						borderColor: colors.darkGrey
+					}
+				}
+			}
 		},
 		MuiFormLabel: {
 			styleOverrides: {
