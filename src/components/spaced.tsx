@@ -16,7 +16,7 @@ const SpacedElement = styled("div")({
 })
 
 // Applies a right margin to child components. eg. Use to place a space between multiple button components.
-export const Spaced = (props: IProps) => {
+export const Spaced: React.FC<IProps> = (props) => {
 	const children = props.children.filter((c) => c !== undefined && c !== false) as JSX.Element[]
 
 	return (
@@ -34,9 +34,9 @@ export const Spaced = (props: IProps) => {
 					sx={
 						index !== children.length - 1
 							? {
-									marginRight: !props.alignRight ? "0.5rem" : "unset",
-									marginLeft: props.alignRight ? "0.5rem" : "unset",
-							  }
+								marginRight: !props.alignRight ? "0.5rem" : "unset",
+								marginLeft: props.alignRight ? "0.5rem" : "unset",
+							}
 							: undefined
 					}
 				>

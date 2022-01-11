@@ -158,7 +158,7 @@ export const Onboarding = () => {
 						}}>
 							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								marginLeft: "auto",
-								backgroundColor: theme.palette.neutral.main
+								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
 							</Button>
@@ -185,7 +185,7 @@ export const Onboarding = () => {
 						}}>
 							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								marginLeft: "auto",
-								backgroundColor: theme.palette.neutral.main
+								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
 							</Button>
@@ -220,7 +220,7 @@ export const Onboarding = () => {
 						}}>
 							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								marginLeft: "auto",
-								backgroundColor: theme.palette.neutral.main
+								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
 							</Button>
@@ -248,7 +248,6 @@ export const Onboarding = () => {
 							/>
 						</Box>
 					</Box>
-
 				)
 			case "facebook":
 				return (
@@ -266,7 +265,7 @@ export const Onboarding = () => {
 						}}>
 							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								marginLeft: "auto",
-								backgroundColor: theme.palette.neutral.main
+								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
 							</Button>
@@ -292,7 +291,6 @@ export const Onboarding = () => {
 							/>
 						</Box>
 					</Box>
-
 				)
 		}
 	}
@@ -310,7 +308,7 @@ export const Onboarding = () => {
 		}}
 			startIcon={<MetaMaskIcon />}
 			sx={(theme) => ({
-				backgroundColor: theme.palette.neutral.main
+				backgroundColor: theme.palette.background.paper
 			})}>
 			Sign up with MetaMask
 		</Button>
@@ -320,7 +318,7 @@ export const Onboarding = () => {
 		}}
 			startIcon={<GoogleIcon />}
 			sx={(theme) => ({
-				backgroundColor: theme.palette.neutral.main
+				backgroundColor: theme.palette.background.paper
 			})}>
 			Sign up with Google
 		</Button>
@@ -330,7 +328,7 @@ export const Onboarding = () => {
 		}}
 			startIcon={<FacebookIcon />}
 			sx={(theme) => ({
-				backgroundColor: theme.palette.neutral.main
+				backgroundColor: theme.palette.background.paper
 			})}>
 			Sign up with Facebook
 		</Button>
@@ -356,7 +354,7 @@ export const Onboarding = () => {
 			setCurrentStep(1)
 			setSignUpType("email")
 		}} sx={(theme) => ({
-			backgroundColor: theme.palette.neutral.main
+			backgroundColor: theme.palette.background.paper
 		})}>
 			Email Signup
 		</Button>
@@ -383,6 +381,7 @@ export const Onboarding = () => {
 				justifyContent: "center",
 				alignItems: "center",
 				flexDirection: "column",
+				padding: "3rem"
 			}}
 		>
 			<Link to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{

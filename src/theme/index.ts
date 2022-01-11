@@ -2,41 +2,42 @@ import { createTheme } from "@mui/material/styles"
 import AvatarDefault from "../assets/images/NinjaSoftwareLogo.svg"
 
 declare module "@mui/material/styles" {
-	interface Palette {
-		neutral: Palette['primary']
-	}
 
 	interface PaletteOptions {
-		lightgrey: string
-		darkPurple: string
-		neutral: PaletteOptions['primary']
 	}
+}
+
+export const colors = {
+	neonPink: "#f72485",
+	skyBlue: "#4CC9F0",
+	navyBlue: "#0a061f",
+	darkNavyBlue: "#030208",
+	white: "#fff",
+	lightGrey: "#f7f7f7",
+	darkGrey: "#c3c3c3",
 }
 
 const lightTheme = createTheme({
 	palette: {
 		primary: {
-			main: "#f72485",
+			main: colors.neonPink,
+			contrastText: colors.white,
 		},
 		secondary: {
-			main: "#4CC9F0",
+			main: colors.skyBlue,
 		},
 		success: {
 			main: "#44b700",
 		},
-		neutral: {
-			main: "#0a061f"
-		},
 		background: {
-			default: "#030208",
-			paper: "#0a061f",
+			default: colors.darkNavyBlue,
+			paper: colors.navyBlue,
 		},
 		text: {
-			primary: "#fff",
-			secondary: "#fff"
+			primary: colors.white,
+			secondary: colors.white,
+			disabled: colors.darkGrey,
 		},
-		lightgrey: "#f7f7f7",
-		darkPurple: "#0a061f"
 	},
 	breakpoints: {
 		values: {
@@ -111,7 +112,7 @@ const lightTheme = createTheme({
 					}
 				},
 				body: {
-					backgroundColor: "#030208",
+					backgroundColor: colors.darkNavyBlue,
 				},
 			}
 		},
@@ -131,6 +132,18 @@ const lightTheme = createTheme({
 					color: "inherit",
 				}
 			},
+		},
+		MuiInputBase: {
+			styleOverrides: {
+				root: {
+					"& .MuiOutlinedInput-notchedOutline": {
+						borderColor: colors.darkGrey
+					},
+					"&&::before": {
+						borderColor: colors.darkGrey
+					}
+				}
+			}
 		},
 		MuiFormLabel: {
 			styleOverrides: {

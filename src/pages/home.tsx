@@ -1,12 +1,16 @@
-import { Box, Button, Link, Typography } from "@mui/material"
+import { Box, Link, Typography } from "@mui/material"
 import { styled } from "@mui/system"
+import { useHistory } from "react-router-dom"
 import BinanceCoinBnbLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import AxieInfinityLogo from "../assets/images/games/axie infinity.png"
 import XSYNWordmarkImage from "../assets/images/XSYN Wordmark White.png"
+import { FancyButton } from "../components/fancyButton"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
 import { Navbar } from "../components/home/navbar"
 
 export const Home = () => {
+	const history = useHistory()
+
 	return (
 		<>
 			<Box
@@ -41,47 +45,7 @@ export const Home = () => {
 					}}>
 						A Crypto Wallet & Gateway To Blockchain Apps
 					</Typography>
-					<Button sx={(theme) => ({
-						boxSizing: "content-box",
-						position: "relative",
-						padding: ".5rem 3rem",
-						borderRadius: 0,
-						border: `2px solid ${theme.palette.primary.main}`,
-						textTransform: "uppercase",
-						"&:hover": {
-							"&::before": {
-								opacity: .4,
-							},
-							"&::after": {
-								opacity: .2,
-								transitionDelay: ".1s",
-							},
-						},
-						"&::before": {
-							content: "''",
-							position: "absolute",
-							top: "4px",
-							left: "4px",
-							width: "100%",
-							height: "100%",
-							border: `2px solid ${theme.palette.primary.main}`,
-							opacity: 0,
-							transition: "opacity .3s ease-in",
-							pointerEvents: "none",
-						},
-						"&::after": {
-							content: "''",
-							position: "absolute",
-							top: "10px",
-							left: "10px",
-							width: "100%",
-							height: "100%",
-							border: `2px solid ${theme.palette.primary.main}`,
-							opacity: 0,
-							transition: "opacity .3s ease-in",
-							pointerEvents: "none",
-						},
-					})}>Connect Wallet</Button>
+					<FancyButton onClick={() => history.push("/login")} fancy>Login</FancyButton>
 				</Box>
 			</Box >
 			{/* <Typography variant="h1" component="p" sx={(theme) => ({

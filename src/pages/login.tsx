@@ -92,6 +92,7 @@ export const LoginPage: React.FC = () => {
                 justifyContent: "center",
                 alignItems: "center",
                 flexDirection: "column",
+                padding: "3rem"
             }}
         >
             <Link to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
@@ -162,7 +163,7 @@ export const LoginPage: React.FC = () => {
                     }}>
                         <Button type="button" variant="contained" onClick={() => setShowEmailLogin(false)} sx={(theme) => ({
                             marginLeft: "auto",
-                            backgroundColor: theme.palette.neutral.main
+                            backgroundColor: theme.palette.background.paper
                         })}>
                             Back
                         </Button>
@@ -228,7 +229,7 @@ export const LoginPage: React.FC = () => {
                         })} />
                     </Box>
                     <Button onClick={() => setShowEmailLogin(true)} variant="contained" sx={(theme) => ({
-                        backgroundColor: theme.palette.neutral.main
+                        backgroundColor: theme.palette.background.paper
                     })}>
                         Email Login
                     </Button>

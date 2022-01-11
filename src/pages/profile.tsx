@@ -1,8 +1,26 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import MetaMaskOnboarding from "@metamask/onboarding";
+import EditIcon from '@mui/icons-material/Edit';
 import YouTubeIcon from '@mui/icons-material/YouTube';
-import { Avatar, Box, BoxProps, Button, IconButton, Link, Typography } from "@mui/material";
-import { useState } from 'react';
+import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, styled, Typography } from "@mui/material";
+import { User } from '@sentry/react';
+import { useCallback, useEffect, useState } from 'react';
+import { useMutation } from 'react-fetching-library';
+import { useForm } from 'react-hook-form';
+import { Route, Switch, useHistory } from 'react-router-dom';
 import FacebookLogo from "../assets/images/icons/facebook.svg";
+import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg";
+import { ImageUpload } from '../components/form/imageUpload';
+import { InputField } from '../components/form/inputField';
 import { Navbar } from "../components/home/navbar";
+import { Loading } from '../components/loading';
+import { Spaced } from '../components/spaced';
+import { AuthContainer } from '../containers';
+import { useWebsocket } from '../containers/socket';
+import { MetaMaskState, useWeb3 } from '../containers/web3';
+import { fetching } from '../fetching';
+import HubKey from '../keys';
+import { Organisation, Role } from '../types/types';
 
 export const ProfilePage: React.FC = () => {
     return (
@@ -12,62 +30,85 @@ export const ProfilePage: React.FC = () => {
             minHeight: "100vh",
         }}>
             <Navbar />
+            <Switch>
+                <Route exact path="/profile" component={ProfileDetails} />
+                <Route path="/profile/edit" component={ProfileEdit} />
+            </Switch>
             <Box sx={{
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                maxWidth: "600px",
+                margin: "0 auto",
+                marginTop: "auto",
                 padding: "0 3rem",
-                height: "100%",
+                paddingBottom: "1rem",
             }}>
-                <Box sx={{
-                    position: "relative",
-                    width: "fit-content",
-                    marginBottom: "3rem",
-                }}>
-                    <Box sx={(theme) => ({
-                        zIndex: -1,
-                        position: "absolute",
-                        top: "1rem",
-                        left: "1rem",
-                        display: "block",
-                        width: "100%",
-                        height: '100%',
-                        borderRadius: "50%",
-                        border: `2px solid ${theme.palette.secondary.main}`,
-                    })} />
-                    <Avatar sx={{
-                        width: "8rem",
-                        height: "8rem",
-                    }} alt="Avatar Image" /></Box>
-                <Typography variant="h2" component="h1" sx={{
-                    marginBottom: "2rem"
-                }}>Ash Thomas</Typography>
-                <Typography variant="h2" sx={(theme) => ({
-                    marginBottom: "2rem",
-                    color: theme.palette.primary.main,
-                    textTransform: "uppercase"
-                })}>
-                    Connected Apps
-                </Typography>
-                <Box sx={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
-                    gap: "4rem",
-                    width: "100%",
-                    maxWidth: "1000px",
-                    marginBottom: "2rem",
-                    "@media (max-width: 800px)": {
-                        gap: "2rem"
-                    },
-                    "@media (max-width: 600px)": {
-                        gridTemplateColumns: "repeat(2, 1fr)"
-                    },
-                }}>
-                    <ConnectedAppCard />
-                    <ConnectedAppCard />
-                    <ConnectedAppCard />
-                </Box>
+                <Link href="/privacy-policy" underline="none" color="white">Privacy Policy</Link>
+                <Link href="/terms-and-conditions" underline="none" color="white">Terms And Conditions</Link>
             </Box>
+        </Box>
+    )
+}
+
+const ProfileDetails: React.FC = () => {
+    const history = useHistory()
+
+    return (
+        <><Box sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "0 3rem",
+            height: "100%",
+        }}>
+            <Box sx={{
+                position: "relative",
+                width: "fit-content",
+                marginBottom: "3rem",
+            }}>
+                <Box sx={(theme) => ({
+                    zIndex: -1,
+                    position: "absolute",
+                    top: "1rem",
+                    left: "1rem",
+                    display: "block",
+                    width: "100%",
+                    height: '100%',
+                    borderRadius: "50%",
+                    border: `2px solid ${theme.palette.secondary.main}`,
+                })} />
+                <EditableAvatar onClick={() => history.push("/profile/edit")} />
+            </Box>
+            <Typography variant="h2" component="h1" sx={{
+                marginBottom: "2rem"
+            }}>Ash Thomas</Typography>
+            <Typography variant="h2" sx={(theme) => ({
+                marginBottom: "2rem",
+                color: theme.palette.primary.main,
+                textTransform: "uppercase"
+            })}>
+                Connected Apps
+            </Typography>
+            <Box sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "4rem",
+                width: "100%",
+                maxWidth: "1000px",
+                marginBottom: "2rem",
+                "@media (max-width: 800px)": {
+                    gap: "2rem"
+                },
+                "@media (max-width: 600px)": {
+                    gridTemplateColumns: "repeat(2, 1fr)"
+                },
+            }}>
+                <ConnectedAppCard />
+                <ConnectedAppCard />
+                <ConnectedAppCard />
+            </Box>
+        </Box>
             <Box sx={{
                 flex: 1
             }} />
@@ -89,20 +130,412 @@ export const ProfilePage: React.FC = () => {
                 <IconButton color="inherit" >
                     <YouTubeIcon />
                 </IconButton>
-            </Box>
-            <Box sx={{
+            </Box></>
+    )
+}
+
+interface UserInput {
+    email?: string
+    firstName?: string
+    lastName?: string
+    newPassword?: string
+    /** Required if changing own password or email */
+    currentPassword?: string
+    avatarID?: string
+    roleID?: string
+    organisationID?: string
+    publicAddress?: string
+
+    organisation: Organisation
+    role: Role
+    twoFactorAuthenticationActivated: boolean
+}
+
+const ProfileEdit: React.FC = () => {
+    const history = useHistory()
+    const { metaMaskState, sign, account, connect } = useWeb3()
+    const { user } = AuthContainer.useContainer()
+    const token = localStorage.getItem("token")
+    const { send } = useWebsocket()
+
+    // Setup form
+    const { control, handleSubmit, reset, watch } = useForm<UserInput>()
+    const email = watch("email")
+    const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
+    const [submitting, setSubmitting] = useState(false)
+    const [successMessage, setSuccessMessage] = useState<string>()
+    const [errorMessage, setErrorMessage] = useState<string>()
+    const [changePassword, setChangePassword] = useState(false)
+
+    const [avatar, setAvatar] = useState<File>()
+    const [avatarChanged, setAvatarChanged] = useState(false)
+
+    const onSaveForm = handleSubmit(async (data) => {
+        if (!user) return
+
+        setSubmitting(true)
+
+        try {
+            let avatarID: string | undefined = user.avatarID
+            if (avatarChanged) {
+                if (!!avatar) {
+                    // Upload avatar
+                    const r = await upload({ file: avatar, public: true })
+                    if (r.error || !r.payload) {
+                        setErrorMessage("Failed to upload image, please try again.")
+                        setSubmitting(false)
+                        return
+                    }
+                    avatarID = r.payload.id
+                } else {
+                    // Remove avatar
+                    avatarID = undefined
+                }
+            }
+
+            const { role, organisation, newPassword, ...input } = data
+
+            const payload = {
+                ...input,
+                newPassword: changePassword ? newPassword : undefined,
+                roleID: !!role ? role.id : undefined,
+                organisationID: !!organisation ? organisation.id : undefined,
+                avatarID,
+            }
+
+            const resp = await send<User>(HubKey.UserUpdate, {
+                id: user.id, ...payload
+            })
+            if (resp) {
+                setSuccessMessage("Profile successfully updated.")
+                history.replace(`/profile`)
+            }
+            setErrorMessage(undefined)
+        } catch (e) {
+            setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+            setSuccessMessage(undefined)
+        } finally {
+            setSubmitting(false)
+        }
+    })
+
+    const addNewWallet = useCallback(async () => {
+        if (!user || !account) return
+        try {
+            setSubmitting(true)
+            const sig = await sign(user.id)
+            await send(HubKey.UserAddWallet, { id: user.id, signature: sig, publicAddress: account })
+            setErrorMessage(undefined)
+        } catch (e) {
+            setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+        } finally {
+            setSubmitting(false)
+        }
+    }, [account, send, sign, user])
+
+    const removeWalletAddress = useCallback(async () => {
+        if (!user) return
+        try {
+            setSubmitting(true)
+            await send(HubKey.UserRemoveWallet, { id: user.id })
+            setErrorMessage(undefined)
+        } catch (e) {
+            setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+        } finally {
+            setSubmitting(false)
+        }
+    }, [user, send])
+
+    const onAvatarChange = (file?: File) => {
+        if (!avatarChanged) setAvatarChanged(true)
+        if (!file) {
+            setAvatar(undefined)
+        } else {
+            setAvatar(file)
+        }
+    }
+
+    // Load defaults
+    useEffect(() => {
+        if (!user) return
+        reset({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            organisation: user.organisation,
+            roleID: user.roleID,
+            organisationID: user.organisation?.id,
+            publicAddress: user.publicAddress || "",
+            twoFactorAuthenticationActivated: user.twoFactorAuthenticationActivated,
+        })
+
+        // Get avatar as file
+        if (!!user.avatarID)
+            fetch(`/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}`).then((r) =>
+                r.blob().then((b) => setAvatar(new File([b], "avatar.jpg", { type: b.type }))),
+            )
+    }, [user, reset, token])
+
+    useEffect(() => {
+        if (user) return
+
+        const userTimeout = setTimeout(() => {
+            history.push("/login")
+        }, 2000)
+        return () => clearTimeout(userTimeout)
+    }, [user])
+
+    if (!user) {
+        return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+    }
+
+    return (
+        <Box
+            component="form"
+            onSubmit={onSaveForm}
+            sx={{
                 display: "flex",
-                justifyContent: "space-between",
+                flexDirection: "column",
                 width: "100%",
-                maxWidth: "600px",
+                maxWidth: "800px",
                 margin: "0 auto",
-                padding: "0 3rem",
-                paddingBottom: "1rem",
-            }}>
-                <Link href="/privacy-policy" underline="none" color="white">Privacy Policy</Link>
-                <Link href="/terms-and-conditions" underline="none" color="white">Terms And Conditions</Link>
-            </Box>
+                padding: "3rem",
+                "& > *:not(:last-child)": {
+                    marginBottom: "1rem"
+                },
+            }}
+        >
+            <Typography variant="h2" color="primary" gutterBottom>
+                Edit Profile
+            </Typography>
+
+            <Section>
+                <Typography variant="subtitle1">Avatar</Typography>
+                <ImageUpload
+                    label="Upload Avatar"
+                    file={avatar}
+                    onChange={onAvatarChange}
+                    avatarPreview
+                    sx={{
+                        alignSelf: "center",
+                        "& .MuiAvatar-root": {
+                            width: "180px",
+                            height: "180px",
+                        },
+                    }}
+                />
+            </Section>
+
+            <Section>
+                <Typography variant="subtitle1">User Details</Typography>
+                <Box sx={{
+                    display: "flex",
+                    "& > *:not(:last-child)": {
+                        marginRight: "1rem"
+                    }
+                }}>
+                    <InputField label="First Name" name="firstName" control={control} rules={{ required: "First name is required." }} disabled={submitting} fullWidth />
+                    <InputField label="Last Name" name="lastName" control={control} rules={{ required: "Last name is required." }} disabled={submitting} fullWidth />
+                </Box>
+                <InputField
+                    name="email"
+                    label="Email"
+                    type="email"
+                    control={control}
+                    rules={{
+                        required: "Email is required.",
+                        pattern: {
+                            value: /.+@.+\..+/,
+                            message: "Invalid email address",
+                        },
+                    }}
+                    disabled={submitting}
+                />
+            </Section>
+
+
+            <Section>
+                <Typography variant="subtitle1">Password</Typography>
+                {(changePassword || email !== user.email) && (
+                    <InputField
+                        disabled={submitting}
+                        control={control}
+                        name="currentPassword"
+                        rules={{ required: "Please enter current password." }}
+                        type="password"
+                        placeholder="Enter current password"
+                        hiddenLabel
+                    />
+                )}
+
+                {!changePassword && (
+                    <Button type="button" variant="contained" onClick={() => setChangePassword(true)}>
+                        Change Password
+                    </Button>
+                )}
+                {changePassword && (
+                    <>
+                        <InputField
+                            disabled={submitting}
+                            control={control}
+                            name="newPassword"
+                            rules={{ required: "Please enter a new password." }}
+                            type="password"
+                            placeholder="Enter a new password"
+                            InputProps={{
+                                endAdornment:
+                                    <Button type="button" onClick={() => setChangePassword(false)}>
+                                        Cancel
+                                    </Button>,
+                            }}
+                            hiddenLabel
+                        />
+                        <Button type="button" variant="contained" onClick={() => setChangePassword(false)}>
+                            Cancel Password Change
+                        </Button>
+                    </>
+                )}
+
+            </Section>
+
+            <Section>
+                <Typography variant="subtitle1">Connections</Typography>
+                <InputField label="Wallet Public Address" name="publicAddress" control={control} disabled={true} />
+                <Box
+                    sx={{
+                        margin: "0 auto",
+                        display: "flex",
+                    }}
+                >
+                    <Button
+                        onClick={async () => {
+                            // if wallet exists, remove it
+                            if (user.publicAddress && user.publicAddress !== "") {
+                                await removeWalletAddress()
+                                return
+                            }
+                            // if metamask not logged in do nothing
+                            if (metaMaskState === MetaMaskState.NotLoggedIn) {
+                                await connect()
+                                return
+                            }
+                            // if metamask not installed tell take to install page
+                            if (metaMaskState === MetaMaskState.NotInstalled) {
+                                const onboarding = new MetaMaskOnboarding()
+                                onboarding.startOnboarding()
+                                return
+                            }
+                            // if metamask logged in add wallet
+                            if (metaMaskState === MetaMaskState.Active) {
+                                await addNewWallet()
+                                return
+                            }
+                        }}
+                        title={
+                            metaMaskState === MetaMaskState.Active
+                                ? "Connect Wallet to account"
+                                : metaMaskState === MetaMaskState.NotLoggedIn
+                                    ? "Connect and sign in to MetaMask to continue"
+                                    : "Install MetaMask"
+                        }
+                        startIcon={<MetaMaskIcon />}
+                        variant="contained"
+                    >
+                        {user?.publicAddress && user?.publicAddress !== ""
+                            ? "Remove Wallet"
+                            : metaMaskState === MetaMaskState.NotLoggedIn
+                                ? "Connect and sign in to MetaMask to continue"
+                                : metaMaskState === MetaMaskState.NotInstalled
+                                    ? "Install MetaMask"
+                                    : "Connect Wallet to account"}
+                    </Button>
+                </Box>
+            </Section>
+
+            <Spaced alignRight height="60px">
+                <Button variant="contained" color="primary" onClick={onSaveForm} disabled={submitting} startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
+                    Save
+                </Button>
+                <Button variant="contained" onClick={() => history.push("/profile")} disabled={submitting}>
+                    Cancel
+                </Button>
+                <div>
+                    {!!successMessage && <Alert severity="success">{successMessage}</Alert>}
+                    {!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+                </div>
+            </Spaced>
         </Box>
+    )
+}
+
+const Section = styled("div")({
+    display: "flex",
+    flexDirection: "column",
+    "& > *:not(:last-child)": {
+        marginBottom: ".5rem"
+    }
+})
+
+interface EditableAvatarProps extends Omit<IconButtonProps, "children"> {
+
+}
+
+const EditableAvatar: React.FC<EditableAvatarProps> = ({ sx, onClick, onMouseLeave, onFocus, onBlur, ...props }) => {
+    const [isFocused, setIsFocused] = useState(false)
+
+    return (
+        <IconButton
+            onClick={(e) => {
+                if (onClick) onClick(e)
+                setIsFocused((prevIsFocused) => !prevIsFocused)
+            }}
+            onMouseLeave={(e) => {
+                if (onMouseLeave) onMouseLeave(e)
+                setIsFocused(false)
+            }}
+            onFocus={(e) => {
+                if (onFocus) onFocus(e)
+                setIsFocused(true)
+            }}
+            onBlur={(e) => {
+                if (onBlur) onBlur(e)
+                setIsFocused(false)
+            }}
+            sx={{
+                overflow: "hidden",
+                position: "relative",
+                width: "8rem",
+                height: "8rem",
+                padding: 0,
+                borderRadius: "50%",
+                ...sx,
+            }} {...props}>
+            <Avatar sx={{
+                width: "100%",
+                height: "100%",
+            }} alt="Avatar Image" />
+            <Box sx={(theme) => ({
+                zIndex: 1,
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: "rgba(0, 0, 0, .6)",
+                color: theme.palette.text.primary,
+                opacity: isFocused ? 1 : 0,
+                transition: "opacity .3s ease-in",
+                "&:hover": {
+                    opacity: 1
+                },
+            })}>
+                <EditIcon />
+            </Box>
+        </IconButton>
     )
 }
 
@@ -124,7 +557,7 @@ const ConnectedAppCard: React.FC = () => {
             cursor: "pointer"
         })}>
             <Box
-                onClick={() => setIsFocused(!isFocused)}
+                onClick={() => setIsFocused((prevIsFocused) => !prevIsFocused)}
                 onMouseLeave={() => setIsFocused(false)}
                 sx={{
                     position: "absolute",
