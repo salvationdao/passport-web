@@ -149,17 +149,17 @@ const MenuButton: React.FC = () => {
             >
                 <MenuList>
                     {!!user ? [
-                        <MenuItemRoute route="/wallet" label="Wallet" handleClose={handleClose} />,
-                        <MenuItemRoute route="/badges" label="Badges" handleClose={handleClose} />
+                        <MenuItemRoute key={0} route="/wallet" label="Wallet" handleClose={handleClose} />,
+                        <MenuItemRoute key={1} route="/badges" label="Badges" handleClose={handleClose} />
                     ] : <MenuItemRoute route="/login" label="Login" handleClose={handleClose} />}
                 </MenuList>
                 {!!user && [
-                    <Box sx={{
+                    <Box key={0} sx={{
                         marginBottom: ".5rem",
                         fontSize: "1rem",
                         color: "#807f82"
                     }}>My Games</Box>,
-                    <a href="https://supremacy.game"><Box component="img" sx={{
+                    <a key={1} href="https://supremacy.game"><Box component="img" sx={{
                         width: "100%",
                     }} src={SupremacyLogo} alt="Supremacy Logo" /></a>
                 ]}

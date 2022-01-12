@@ -187,6 +187,10 @@ const ProfileEdit: React.FC = () => {
     const [avatar, setAvatar] = useState<File>()
     const [avatarChanged, setAvatarChanged] = useState(false)
 
+    useEffect(() => {
+        console.log(isDirty)
+    }, [isDirty])
+
     const onSaveForm = handleSubmit(async (data) => {
         if (!user) return
         setSubmitting(true)
@@ -208,7 +212,6 @@ const ProfileEdit: React.FC = () => {
                     avatarID = undefined
                 }
             }
-
 
             const { newPassword, ...input } = data
             const payload = {
@@ -269,10 +272,6 @@ const ProfileEdit: React.FC = () => {
             setAvatar(file)
         }
     }
-
-    useEffect(() => {
-        console.log(isDirty)
-    }, [isDirty])
 
     // Load defaults
     useEffect(() => {
@@ -399,7 +398,6 @@ const ProfileEdit: React.FC = () => {
                         </Button>
                     </>
                 )}
-
             </Section>
 
             <Section>
@@ -457,7 +455,7 @@ const ProfileEdit: React.FC = () => {
             </Section>
 
             <Spaced alignRight height="60px">
-                <Button variant="contained" color="primary" onClick={onSaveForm} disabled={!isDirty || submitting} startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
+                <Button variant="contained" color="primary" onClick={onSaveForm} disabled={(!isDirty && !avatarChanged) || submitting} startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
                     Save
                 </Button>
                 <Button variant="contained" onClick={() => history.push("/profile")} disabled={submitting}>
