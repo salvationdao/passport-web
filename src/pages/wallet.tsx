@@ -1,4 +1,4 @@
-import { Box, BoxProps, ButtonProps, Paper, styled, Tab, TabProps, Tabs, Typography, useTheme } from "@mui/material"
+import { Box, BoxProps, ButtonProps, Paper, styled, Tab, TabProps, Tabs, Typography } from "@mui/material"
 import { useState } from "react"
 import SupsLogo from "../assets/images/sup-token.svg"
 import { FancyButton } from "../components/fancyButton"
@@ -7,7 +7,6 @@ import { colors } from "../theme"
 
 export const WalletPage: React.FC = () => {
     const [currentTab, setCurrentTab] = useState(0)
-    const theme = useTheme()
 
     return (
         <Box sx={{

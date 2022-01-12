@@ -27,7 +27,7 @@ export const LoginPage: React.FC = () => {
 
     const { loginGoogle, loginFacebook } = AuthContainer.useContainer()
 
-    const { control, handleSubmit, watch, trigger, setError } = useForm<LogInInput>()
+    const { control, handleSubmit } = useForm<LogInInput>()
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const [showEmailLogin, setShowEmailLogin] = useState(false)
@@ -78,7 +78,7 @@ export const LoginPage: React.FC = () => {
             history.push("/")
         }, 2000)
         return () => clearTimeout(userTimeout)
-    }, [user])
+    }, [user, history])
 
     if (user) {
         return <Loading text="You are already logged in, redirecting to home page..." />

@@ -33,7 +33,7 @@ export const ProfilePage: React.FC = () => {
             history.push("/login")
         }, 2000)
         return () => clearTimeout(userTimeout)
-    }, [user])
+    }, [user, history])
 
     if (!user) {
         return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
@@ -176,7 +176,7 @@ const ProfileEdit: React.FC = () => {
     const { send } = useWebsocket()
 
     // Setup form
-    const { control, handleSubmit, reset, watch } = useForm<UserInput>()
+    const { control, handleSubmit, reset } = useForm<UserInput>()
     const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
     const [submitting, setSubmitting] = useState(false)
     const [successMessage, setSuccessMessage] = useState<string>()
@@ -544,7 +544,7 @@ interface ConnectedAppCardProps extends BoxProps {
 
 }
 
-const ConnectedAppCard: React.FC = () => {
+const ConnectedAppCard: React.FC<ConnectedAppCardProps> = () => {
     const [isFocused, setIsFocused] = useState(false)
 
     return (

@@ -1,9 +1,8 @@
-import * as React from "react"
-import { Controller, Control } from "react-hook-form"
-import { ListPage } from "../../pages/listPages"
-import { Dialog, DialogContent, DialogTitle, Paper, InputBase, IconButton, Divider, Typography } from "@mui/material"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { Box } from "@mui/material"
+import { Box, Dialog, DialogContent, DialogTitle, Divider, IconButton, InputBase, Paper, Typography } from "@mui/material"
+import * as React from "react"
+import { Control, Controller } from "react-hook-form"
+import { ListPage } from "../../pages/listPages"
 
 interface ItemInputSelectProps {
 	label: string
@@ -17,7 +16,7 @@ interface ItemInputSelectProps {
 
 /** Form input for setting related items (uses a Dialog with a ItemTablePage) */
 export const ItemInputSelect = (props: ItemInputSelectProps) => {
-	const { label, name, control, required, helperText, disabled } = props
+	const { label, name, control, required, disabled } = props
 	const renderItem = !!props.renderItem ? props.renderItem : (value: any) => `${value}`
 
 	const [showDialog, setShowDialog] = React.useState(false)

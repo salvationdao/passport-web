@@ -33,12 +33,12 @@ export const Onboarding = () => {
 	const history = useHistory()
 	const { send } = useWebsocket()
 	const { user } = useAuth()
-	const { loginFacebook, loginGoogle, loginMetamask, setUser } = useAuth()
+	const { loginFacebook, loginGoogle, setUser } = useAuth()
 
 	const [loading, setLoading] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
 
-	const { control, handleSubmit, watch, trigger, setError } = useForm<SignUpInput>()
+	const { control, handleSubmit, watch, trigger } = useForm<SignUpInput>()
 	const username = watch("username")
 
 	const [signUpType, setSignUpType] = useState<SignUpType | null>(null)
@@ -367,7 +367,7 @@ export const Onboarding = () => {
 			history.push("/")
 		}, 2000)
 		return () => clearTimeout(userTimeout)
-	}, [user])
+	}, [user, history])
 
 	if (user) {
 		return <Loading text="You are already logged in, redirecting to home page..." />

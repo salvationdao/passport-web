@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
-import { User } from "../types/types"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
+import HubKey from "../keys"
 import {
 	PasswordLoginRequest,
 	PasswordLoginResponse,
@@ -9,10 +8,11 @@ import {
 	TokenLoginResponse,
 	VerifyAccountResponse,
 	WalletLoginRequest,
-	WalletLoginResponse,
+	WalletLoginResponse
 } from "../types/auth"
-import HubKey from "../keys"
 import { Perm } from "../types/enums"
+import { User } from "../types/types"
+import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
 
 export enum VerificationType {
@@ -288,7 +288,7 @@ export const AuthContainer = createContainer(() => {
 			setReconnecting(true)
 			const token = localStorage.getItem("token")
 			if (token && token !== "") {
-				;(async () => {
+				; (async () => {
 					await loginToken(token)
 				})()
 			}

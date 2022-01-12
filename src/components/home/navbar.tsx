@@ -224,13 +224,13 @@ const MenuButton: React.FC = () => {
     )
 }
 
-interface MenuItemRoute extends Omit<MenuItemProps, "children"> {
+interface MenuItemRouteProps extends Omit<MenuItemProps, "children"> {
     route: string
     label: string
     handleClose: () => void
 }
 
-const MenuItemRoute: React.FC<MenuItemRoute> = ({ route, label, handleClose, sx, ...props }) => {
+const MenuItemRoute: React.FC<MenuItemRouteProps> = ({ route, label, handleClose, sx, ...props }) => {
     const location = useLocation()
     const history = useHistory()
     const theme = useTheme()
