@@ -153,16 +153,16 @@ const MenuButton: React.FC = () => {
                         <MenuItemRoute route="/badges" label="Badges" handleClose={handleClose} />
                     ] : <MenuItemRoute route="/login" label="Login" handleClose={handleClose} />}
                 </MenuList>
-                {!!user && <>
+                {!!user && [
                     <Box sx={{
                         marginBottom: ".5rem",
                         fontSize: "1rem",
                         color: "#807f82"
-                    }}>My Games</Box>
+                    }}>My Games</Box>,
                     <a href="https://supremacy.game"><Box component="img" sx={{
                         width: "100%",
                     }} src={SupremacyLogo} alt="Supremacy Logo" /></a>
-                </>}
+                ]}
             </Menu>
             <LoadingButton
                 onClick={handleClick}
