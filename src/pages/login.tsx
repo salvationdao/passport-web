@@ -235,6 +235,7 @@ export const LoginPage: React.FC = () => {
                     })}>
                         Email Login
                     </Button>
+                    <Typography variant="subtitle1" >Don't have an account? <Link to="/onboarding">Sign in here</Link></Typography>
                     {errorMessage && (
                         <Alert severity="error">
                             {errorMessage}

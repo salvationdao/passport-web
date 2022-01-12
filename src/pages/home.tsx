@@ -1,13 +1,16 @@
 import { Box, Link, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import { useHistory } from "react-router-dom"
+import BottomRightMatrix from "../assets/images/Bottom right corner matrix accent.png"
 import BinanceCoinBnbLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import AxieInfinityLogo from "../assets/images/games/axie infinity.png"
+import BottomLeftMatrix from "../assets/images/Left Corner Matrix.png"
 import XSYNWordmarkImage from "../assets/images/XSYN Wordmark White.png"
 import { FancyButton } from "../components/fancyButton"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
 import { Navbar } from "../components/home/navbar"
 import { AuthContainer } from "../containers"
+import { colors } from "../theme"
 
 export const Home = () => {
 	const history = useHistory()
@@ -59,75 +62,93 @@ export const Home = () => {
 				Start exploring blockchain apps in seconds
 			</Typography>
 			<Box sx={(theme) => ({
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
+				position: "relative",
 				padding: "4rem 3rem",
-				backgroundColor: "#0a061f",
+				backgroundColor: colors.navyBlue,
 				borderBottom: `1px solid ${theme.palette.secondary.main}`
 			})}>
-				<Typography variant="h1" component="h2" sx={(theme) => ({
-					marginBottom: "3rem",
-					fontSize: "3rem",
-					color: theme.palette.secondary.main
-				})}>Sync Your Currency</Typography>
+				<Box component="img" src={BottomLeftMatrix} alt="Background matrix image" sx={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					objectFit: "cover",
+				}} />
+				<Box component="img" src={BottomRightMatrix} alt="Background matrix image" sx={{
+					position: "absolute",
+					right: 0,
+					bottom: 0,
+					objectFit: "cover",
+				}} />
 				<Box sx={{
-					display: "grid",
-					gridTemplateColumns: "repeat(4, 100px)",
-					columnGap: "8rem",
-					rowGap: "4rem",
-					justifyItems: "center",
-					marginBottom: "4rem",
-					"@media (max-width: 800px)": {
-						gridTemplateColumns: "repeat(3, 100px)",
-						columnGap: "4rem",
-						rowGap: "2rem",
-					},
-					"@media (max-width: 500px)": {
-						gridTemplateColumns: "repeat(2, 100px)",
-					}
+					zIndex: 1,
+					position: "relative",
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
 				}}>
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-					<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-				</Box>
-				<Typography variant="h1" component="h2" sx={(theme) => ({
-					marginBottom: "3rem",
-					fontSize: "3rem",
-					color: theme.palette.primary.main
-				})}>Compatible Games</Typography>
-				<Box sx={{
-					display: "grid",
-					gridTemplateColumns: "repeat(4, 100px)",
-					columnGap: "8rem",
-					rowGap: "4rem",
+					<Typography variant="h1" component="h2" sx={(theme) => ({
+						marginBottom: "3rem",
+						fontSize: "3rem",
+						color: theme.palette.secondary.main
+					})}>Sync Your Currency</Typography>
+					<Box sx={{
+						display: "grid",
+						gridTemplateColumns: "repeat(4, 100px)",
+						columnGap: "8rem",
+						rowGap: "4rem",
+						justifyItems: "center",
+						marginBottom: "4rem",
+						"@media (max-width: 800px)": {
+							gridTemplateColumns: "repeat(3, 100px)",
+							columnGap: "4rem",
+							rowGap: "2rem",
+						},
+						"@media (max-width: 500px)": {
+							gridTemplateColumns: "repeat(2, 100px)",
+						}
+					}}>
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+					</Box>
+					<Typography variant="h1" component="h2" sx={(theme) => ({
+						marginBottom: "3rem",
+						fontSize: "3rem",
+						color: theme.palette.primary.main
+					})}>Compatible Games</Typography>
+					<Box sx={{
+						display: "grid",
+						gridTemplateColumns: "repeat(4, 100px)",
+						columnGap: "8rem",
+						rowGap: "4rem",
+						justifyItems: "center",
+						"@media (max-width: 800px)": {
+							gridTemplateColumns: "repeat(3, 100px)",
+							columnGap: "4rem",
+							rowGap: "2rem",
+						},
+						"@media (max-width: 500px)": {
+							gridTemplateColumns: "repeat(2, 100px)",
+						}
+					}}>
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+					</Box>
 
-					justifyItems: "center",
-					"@media (max-width: 800px)": {
-						gridTemplateColumns: "repeat(3, 100px)",
-						columnGap: "4rem",
-						rowGap: "2rem",
-					},
-					"@media (max-width: 500px)": {
-						gridTemplateColumns: "repeat(2, 100px)",
-					}
-				}}>
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-					<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
 				</Box>
 			</Box>
 			<Box sx={{

@@ -129,7 +129,7 @@ const lightTheme = createTheme({
 				src: AvatarDefault,
 			},
 		},
-		MuiButtonBase: {
+		MuiButton: {
 			styleOverrides: {
 				root: {
 					color: "inherit",

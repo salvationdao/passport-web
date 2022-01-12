@@ -151,7 +151,7 @@ const MenuButton: React.FC = () => {
                     {!!user ? [
                         <MenuItemRoute route="/wallet" label="Wallet" handleClose={handleClose} />,
                         <MenuItemRoute route="/badges" label="Badges" handleClose={handleClose} />
-                    ] : <MenuItemRoute route="/login" label="Sign In" handleClose={handleClose} />}
+                    ] : <MenuItemRoute route="/login" label="Login" handleClose={handleClose} />}
                 </MenuList>
                 {!!user && <>
                     <Box sx={{
