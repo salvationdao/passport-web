@@ -38,6 +38,9 @@ const lightTheme = createTheme({
 			secondary: colors.white,
 			disabled: colors.darkGrey,
 		},
+		action: {
+			disabledBackground: colors.darkGrey
+		}
 	},
 	breakpoints: {
 		values: {
@@ -126,11 +129,11 @@ const lightTheme = createTheme({
 				src: AvatarDefault,
 			},
 		},
-		MuiButton: {
+		MuiButtonBase: {
 			styleOverrides: {
 				root: {
 					color: "inherit",
-				}
+				},
 			},
 		},
 		MuiInputBase: {

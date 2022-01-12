@@ -26,8 +26,10 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
             <Link to="/">
                 <Box component="img" src={XSYNLogoImage} alt="XSYN Logo" />
             </Link>
+            <Box sx={{
+                width: "100%",
+            }} />
             <ProfileButton sx={{
-                marginLeft: "auto",
                 marginRight: "2rem",
             }} />
             <MenuButton />
@@ -35,19 +37,24 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
     );
 }
 
-const ProfileButton: React.FC<IconButtonProps> = ({ sx, ...props }) => {
+const ProfileButton: React.FC<IconButtonProps> = ({ sx, onClick, ...props }) => {
+    const history = useHistory()
     const { user } = AuthContainer.useContainer()
     const token = localStorage.getItem("token")
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const open = Boolean(anchorEl);
 
     const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-        setAnchorEl(event.currentTarget);
+        if (onClick) onClick(event)
+        history.push("/profile")
+        // setAnchorEl(event.currentTarget);
     };
 
     const handleClose = () => {
         setAnchorEl(null);
     };
+
+    if (!user) return null
 
     return (
         <>
@@ -112,6 +119,7 @@ const ProfileButton: React.FC<IconButtonProps> = ({ sx, ...props }) => {
 }
 
 const MenuButton: React.FC = () => {
+    const { user } = AuthContainer.useContainer()
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const open = Boolean(anchorEl);
 
@@ -140,18 +148,21 @@ const MenuButton: React.FC = () => {
                 }}
             >
                 <MenuList>
-                    <MenuItemRoute route="/profile" label="Profile" handleClose={handleClose} />
-                    <MenuItemRoute route="/wallet" label="Wallet" handleClose={handleClose} />
-                    <MenuItemRoute route="/badges" label="Badges" handleClose={handleClose} />
+                    {!!user ? [
+                        <MenuItemRoute route="/wallet" label="Wallet" handleClose={handleClose} />,
+                        <MenuItemRoute route="/badges" label="Badges" handleClose={handleClose} />
+                    ] : <MenuItemRoute route="/login" label="Sign In" handleClose={handleClose} />}
                 </MenuList>
-                <Box sx={{
-                    marginBottom: ".5rem",
-                    fontSize: "1rem",
-                    color: "#807f82"
-                }}>My Games</Box>
-                <a href="https://supremacy.game"><Box component="img" sx={{
-                    width: "100%",
-                }} src={SupremacyLogo} alt="Supremacy Logo" /></a>
+                {!!user && <>
+                    <Box sx={{
+                        marginBottom: ".5rem",
+                        fontSize: "1rem",
+                        color: "#807f82"
+                    }}>My Games</Box>
+                    <a href="https://supremacy.game"><Box component="img" sx={{
+                        width: "100%",
+                    }} src={SupremacyLogo} alt="Supremacy Logo" /></a>
+                </>}
             </Menu>
             <LoadingButton
                 onClick={handleClick}

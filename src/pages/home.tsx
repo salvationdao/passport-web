@@ -16,10 +16,10 @@ export const Home = () => {
 	return (
 		<>
 			<Box
-				sx={(theme) => ({
+				sx={{
 					position: "relative",
 					minHeight: "100vh",
-				})}
+				}}
 			>
 				<GradientCircleThing sx={{
 					zIndex: -1,
