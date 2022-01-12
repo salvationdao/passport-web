@@ -6,7 +6,7 @@ import { User } from '@sentry/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-fetching-library';
 import { useForm } from 'react-hook-form';
-import { Route, Switch, useHistory } from 'react-router-dom';
+import { Link as RouterLink, Route, Switch, useHistory } from 'react-router-dom';
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg";
 import { ImageUpload } from '../components/form/imageUpload';
 import { InputField } from '../components/form/inputField';
@@ -57,8 +57,8 @@ export const ProfilePage: React.FC = () => {
                 padding: "0 3rem",
                 paddingBottom: "1rem",
             }}>
-                <Link href="/privacy-policy" underline="none" color="white">Privacy Policy</Link>
-                <Link href="/terms-and-conditions" underline="none" color="white">Terms And Conditions</Link>
+                <Link component={RouterLink} to="/privacy-policy">Privacy Policy</Link>
+                <Link component={RouterLink} to="/terms-and-conditions">Terms And Conditions</Link>
             </Box>
         </Box>
     )
@@ -320,6 +320,14 @@ const ProfileEdit: React.FC = () => {
                     },
                 }}
             >
+                <Box sx={{
+                    marginBottom: "1rem"
+                }}>
+                    <Link
+                        component={RouterLink} to="/profile">
+                        Back to Profile
+                    </Link>
+                </Box>
                 <Typography id="profile" variant="h1" component="h2">
                     Edit Profile
                 </Typography>
@@ -411,9 +419,6 @@ const ProfileEdit: React.FC = () => {
                         marginRight: ".5rem"
                     }
                 }}>
-                    <Button variant="contained" onClick={() => history.push("/profile")} disabled={submitting}>
-                        Cancel
-                    </Button>
                     <Button type="submit" disabled={(!isDirty && !avatarChanged) || submitting} variant="contained" color="primary" startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
                         Save
                     </Button>
