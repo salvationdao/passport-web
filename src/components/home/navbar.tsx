@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
                 <Box component="img" src={XSYNLogoImage} alt="XSYN Logo" />
             </Link>
             <Box sx={{
-                width: "100%",
+                flex: 1
             }} />
             <ProfileButton sx={{
                 marginRight: "2rem",

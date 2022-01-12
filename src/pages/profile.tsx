@@ -176,7 +176,8 @@ const ProfileEdit: React.FC = () => {
     const { send } = useWebsocket()
 
     // Setup form
-    const { control, handleSubmit, reset } = useForm<UserInput>()
+    const { control, handleSubmit, reset, formState } = useForm<UserInput>()
+    const { isDirty } = formState
     const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
     const [submitting, setSubmitting] = useState(false)
     const [successMessage, setSuccessMessage] = useState<string>()
@@ -269,11 +270,16 @@ const ProfileEdit: React.FC = () => {
         }
     }
 
+    useEffect(() => {
+        console.log(isDirty)
+    }, [isDirty])
+
     // Load defaults
     useEffect(() => {
         if (!user) return
+
         reset({
-            email: user.email,
+            email: user.email || "",
             firstName: user.firstName,
             lastName: user.lastName,
             role: user.role,
@@ -282,6 +288,8 @@ const ProfileEdit: React.FC = () => {
             organisationID: user.organisation?.id,
             publicAddress: user.publicAddress || "",
             twoFactorAuthenticationActivated: user.twoFactorAuthenticationActivated,
+            currentPassword: "",
+            newPassword: ""
         })
 
         // Get avatar as file
@@ -368,7 +376,6 @@ const ProfileEdit: React.FC = () => {
                         rules={{ required: "Please enter current password." }}
                         type="password"
                         placeholder="Enter current password"
-                        hiddenLabel
                     />
                 )}
 
@@ -386,13 +393,6 @@ const ProfileEdit: React.FC = () => {
                             rules={{ required: "Please enter a new password." }}
                             type="password"
                             placeholder="Enter a new password"
-                            InputProps={{
-                                endAdornment:
-                                    <Button type="button" onClick={() => setChangePassword(false)}>
-                                        Cancel
-                                    </Button>,
-                            }}
-                            hiddenLabel
                         />
                         <Button type="button" variant="contained" onClick={() => setChangePassword(false)}>
                             Cancel Password Change
@@ -457,7 +457,7 @@ const ProfileEdit: React.FC = () => {
             </Section>
 
             <Spaced alignRight height="60px">
-                <Button variant="contained" color="primary" onClick={onSaveForm} disabled={submitting} startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
+                <Button variant="contained" color="primary" onClick={onSaveForm} disabled={!isDirty || submitting} startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
                     Save
                 </Button>
                 <Button variant="contained" onClick={() => history.push("/profile")} disabled={submitting}>
