@@ -1,14 +1,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import MetaMaskOnboarding from "@metamask/onboarding";
 import EditIcon from '@mui/icons-material/Edit';
-import YouTubeIcon from '@mui/icons-material/YouTube';
 import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, styled, Typography } from "@mui/material";
 import { User } from '@sentry/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-fetching-library';
 import { useForm } from 'react-hook-form';
 import { Route, Switch, useHistory } from 'react-router-dom';
-import FacebookLogo from "../assets/images/icons/facebook.svg";
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg";
 import { ImageUpload } from '../components/form/imageUpload';
 import { InputField } from '../components/form/inputField';
@@ -37,7 +35,6 @@ export const ProfilePage: React.FC = () => {
     if (!user) {
         return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
     }
-
 
     return (
         <Box sx={{
@@ -69,66 +66,74 @@ export const ProfilePage: React.FC = () => {
 
 const ProfileDetails: React.FC = () => {
     const history = useHistory()
+    const { user } = AuthContainer.useContainer()
+
+    if (!user) return <Loading />
 
     return (
-        <><Box sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "0 3rem",
-            height: "100%",
-        }}>
+        <>
             <Box sx={{
-                position: "relative",
-                width: "fit-content",
-                marginBottom: "3rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "0 3rem",
+                height: "100%",
             }}>
-                <Box sx={(theme) => ({
-                    zIndex: -1,
-                    position: "absolute",
-                    top: "1rem",
-                    left: "1rem",
-                    display: "block",
+                <Box sx={{
+                    position: "relative",
+                    width: "fit-content",
+                    marginBottom: "3rem",
+                }}>
+                    <Box sx={(theme) => ({
+                        zIndex: -1,
+                        position: "absolute",
+                        top: "1rem",
+                        left: "1rem",
+                        display: "block",
+                        width: "100%",
+                        height: '100%',
+                        borderRadius: "50%",
+                        border: `2px solid ${theme.palette.secondary.main}`,
+                    })} />
+                    <EditableAvatar onClick={() => history.push("/profile/edit#profile")} />
+                </Box>
+                <Button onClick={() => history.push("/profile/edit#profile")} variant="text" sx={{
+                    marginBottom: "2rem"
+                }} endIcon={<EditIcon sx={{
+                    marginBottom: ".3rem"
+                }} />}>
+                    <Typography variant="h2" component="p">{user.username}</Typography>
+                </Button>
+                <Typography variant="h2" sx={(theme) => ({
+                    marginBottom: "2rem",
+                    color: theme.palette.primary.main,
+                    textTransform: "uppercase"
+                })}>
+                    Connected Apps
+                </Typography>
+                <Box sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "4rem",
                     width: "100%",
-                    height: '100%',
-                    borderRadius: "50%",
-                    border: `2px solid ${theme.palette.secondary.main}`,
-                })} />
-                <EditableAvatar onClick={() => history.push("/profile/edit")} />
+                    maxWidth: "1000px",
+                    marginBottom: "2rem",
+                    "@media (max-width: 800px)": {
+                        gap: "2rem"
+                    },
+                    "@media (max-width: 600px)": {
+                        gridTemplateColumns: "repeat(2, 1fr)"
+                    },
+                }}>
+                    <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={!!user.publicAddress} />
+                    <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={false} />
+                    <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={false} />
+                </Box>
             </Box>
-            <Typography variant="h2" component="h1" sx={{
-                marginBottom: "2rem"
-            }}>Ash Thomas</Typography>
-            <Typography variant="h2" sx={(theme) => ({
-                marginBottom: "2rem",
-                color: theme.palette.primary.main,
-                textTransform: "uppercase"
-            })}>
-                Connected Apps
-            </Typography>
-            <Box sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "4rem",
-                width: "100%",
-                maxWidth: "1000px",
-                marginBottom: "2rem",
-                "@media (max-width: 800px)": {
-                    gap: "2rem"
-                },
-                "@media (max-width: 600px)": {
-                    gridTemplateColumns: "repeat(2, 1fr)"
-                },
-            }}>
-                <ConnectedAppCard />
-                <ConnectedAppCard />
-                <ConnectedAppCard />
-            </Box>
-        </Box>
             <Box sx={{
                 flex: 1
             }} />
-            <Box sx={{
+            {/* <Box sx={{
                 display: "flex",
                 alignItems: "center",
                 margin: "0 auto",
@@ -136,7 +141,8 @@ const ProfileDetails: React.FC = () => {
                 "& > *:not(:last-child)": {
                     marginRight: "1rem",
                 }
-            }}><Typography>Connect these apps</Typography>
+            }}>
+                <Typography>Connect these apps</Typography>
                 <IconButton color="inherit" >
                     <YouTubeIcon />
                 </IconButton>
@@ -146,7 +152,8 @@ const ProfileDetails: React.FC = () => {
                 <IconButton color="inherit" >
                     <YouTubeIcon />
                 </IconButton>
-            </Box></>
+            </Box> */}
+        </>
     )
 }
 
@@ -307,14 +314,13 @@ const ProfileEdit: React.FC = () => {
                     width: "100%",
                     maxWidth: "800px",
                     margin: "0 auto",
-                    marginBottom: "2rem",
                     padding: "3rem",
                     "& > *:not(:last-child)": {
                         marginBottom: "1rem"
                     },
                 }}
             >
-                <Typography id="profile" variant="h1" component="p">
+                <Typography id="profile" variant="h1" component="h2">
                     Edit Profile
                 </Typography>
 
@@ -426,8 +432,8 @@ const ProfileEdit: React.FC = () => {
                     marginBottom: "1rem"
                 },
             }}>
-                <Typography id="connections" variant="h1" component="p">
-                    Edit Connections
+                <Typography id="connections" variant="h1" component="h2">
+                    Manage Connections
                 </Typography>
 
                 <Section>
@@ -476,6 +482,21 @@ const ProfileEdit: React.FC = () => {
                                     ? "Install MetaMask"
                                     : "Connect Wallet to account"}
                     </Button>
+                </Section>
+
+                <Section>
+                    <Typography variant="subtitle1">Facebook</Typography>
+                    <Button variant="contained">Connect</Button>
+                </Section>
+
+                <Section>
+                    <Typography variant="subtitle1">Google</Typography>
+                    <Button variant="contained">Connect</Button>
+                </Section>
+
+                <Section>
+                    <Typography variant="subtitle1">Twitch</Typography>
+                    <Button variant="contained">Connect</Button>
                 </Section>
             </Box>
         </>
@@ -552,12 +573,30 @@ const EditableAvatar: React.FC<EditableAvatarProps> = ({ sx, onClick, onMouseLea
     )
 }
 
-interface ConnectedAppCardProps extends BoxProps {
+type ConnectionTypes = "metamask" | "facebook" | "google" | "twitch"
 
+interface ConnectedAppCardProps extends BoxProps {
+    type: ConnectionTypes
+    label: string
+    isConnected?: boolean
 }
 
-const ConnectedAppCard: React.FC<ConnectedAppCardProps> = () => {
+const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConnected }) => {
+    const history = useHistory()
     const [isFocused, setIsFocused] = useState(false)
+    let connectionIcon: React.ReactNode = null
+
+    switch (type) {
+        case "metamask":
+            connectionIcon = <MetaMaskIcon />
+            break
+        case "facebook":
+            break
+        case "google":
+            break
+        case "twitch":
+            break
+    }
 
     return (
         <Box sx={(theme) => ({
@@ -569,35 +608,57 @@ const ConnectedAppCard: React.FC<ConnectedAppCardProps> = () => {
             border: `2px solid ${theme.palette.secondary.main}`,
             cursor: "pointer"
         })}>
-            <Box
-                onClick={() => setIsFocused((prevIsFocused) => !prevIsFocused)}
-                onMouseLeave={() => setIsFocused(false)}
-                sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    opacity: isFocused ? 1 : 0,
-                    backgroundColor: "rgba(0, 0, 0, .8)",
-                    transition: "opacity .3s ease-in",
-                    "&:hover": {
-                        opacity: 1
-                    },
-                }}>
-                <Button onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}>
-                    Manage
+            <Box sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: isFocused ? 1 : 0,
+                backgroundColor: "rgba(0, 0, 0, .8)",
+                transition: "opacity .3s ease-in",
+                "&:hover": {
+                    opacity: 1
+                },
+            }}>
+                <Button
+                    variant="text"
+                    onClick={() => {
+                        setIsFocused((prevIsFocused) => !prevIsFocused)
+                        history.push("/profile/edit#connections")
+                    }}
+                    onMouseLeave={() => setIsFocused(false)}
+                    onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}
+                    sx={{
+                        height: "100%",
+                        width: "100%",
+                        borderRadius: 0,
+                    }}>
+                    {isConnected ? "Manage" : "Connect"}
                 </Button>
             </Box>
-            <Box component="img" src={FacebookLogo} alt="Facebook Logo" sx={{
+            <Box sx={{
                 width: "5rem",
                 marginBottom: "1rem",
-            }} />
-            Ash Aaron Thomas
+                "& svg": {
+                    width: "100%",
+                    height: "auto"
+                }
+            }}>
+                {connectionIcon}
+            </Box>
+            <Typography variant="subtitle1" sx={{
+                maxWidth: "180px",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis"
+            }}>
+                {label}
+            </Typography>
         </Box>
     )
 }
