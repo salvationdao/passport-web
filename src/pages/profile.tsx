@@ -14,7 +14,6 @@ import { ImageUpload } from '../components/form/imageUpload';
 import { InputField } from '../components/form/inputField';
 import { Navbar } from "../components/home/navbar";
 import { Loading } from '../components/loading';
-import { Spaced } from '../components/spaced';
 import { AuthContainer } from '../containers';
 import { useWebsocket } from '../containers/socket';
 import { MetaMaskState, useWeb3 } from '../containers/web3';
@@ -187,10 +186,6 @@ const ProfileEdit: React.FC = () => {
     const [avatar, setAvatar] = useState<File>()
     const [avatarChanged, setAvatarChanged] = useState(false)
 
-    useEffect(() => {
-        console.log(isDirty)
-    }, [isDirty])
-
     const onSaveForm = handleSubmit(async (data) => {
         if (!user) return
         setSubmitting(true)
@@ -226,7 +221,6 @@ const ProfileEdit: React.FC = () => {
 
             if (resp) {
                 setSuccessMessage("Profile successfully updated.")
-                history.replace(`/profile`)
             }
             setErrorMessage(undefined)
         } catch (e) {
@@ -303,10 +297,125 @@ const ProfileEdit: React.FC = () => {
     }
 
     return (
-        <Box
-            component="form"
-            onSubmit={onSaveForm}
-            sx={{
+        <>
+            <Box
+                component="form"
+                onSubmit={onSaveForm}
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    width: "100%",
+                    maxWidth: "800px",
+                    margin: "0 auto",
+                    marginBottom: "2rem",
+                    padding: "3rem",
+                    "& > *:not(:last-child)": {
+                        marginBottom: "1rem"
+                    },
+                }}
+            >
+                <Typography id="profile" variant="h1" component="p">
+                    Edit Profile
+                </Typography>
+
+                <Section>
+                    <Typography variant="subtitle1">Avatar</Typography>
+                    <ImageUpload
+                        label="Upload Avatar"
+                        file={avatar}
+                        onChange={onAvatarChange}
+                        avatarPreview
+                        sx={{
+                            alignSelf: "center",
+                            "& .MuiAvatar-root": {
+                                width: "180px",
+                                height: "180px",
+                            },
+                        }}
+                    />
+                </Section>
+
+                <Section>
+                    <Typography variant="subtitle1">User Details</Typography>
+                    <Box sx={{
+                        display: "flex",
+                        "& > *:not(:last-child)": {
+                            marginRight: "1rem"
+                        }
+                    }}>
+                        <InputField label="First Name" name="firstName" control={control} disabled={submitting} fullWidth />
+                        <InputField label="Last Name" name="lastName" control={control} disabled={submitting} fullWidth />
+                    </Box>
+                    <InputField
+                        name="email"
+                        label="Email"
+                        type="email"
+                        control={control}
+                        rules={{
+                            pattern: {
+                                value: /.+@.+\..+/,
+                                message: "Invalid email address",
+                            },
+                        }}
+                        disabled={submitting}
+                    />
+                </Section>
+
+                <Section>
+                    <Typography variant="subtitle1">Password</Typography>
+                    {changePassword && (
+                        <InputField
+                            disabled={submitting}
+                            control={control}
+                            name="currentPassword"
+                            rules={{ required: "Please enter current password." }}
+                            type="password"
+                            placeholder="Enter current password"
+                            label="Current password"
+                        />
+                    )}
+
+                    {!changePassword && (
+                        <Button type="button" variant="contained" onClick={() => setChangePassword(true)}>
+                            Change Password
+                        </Button>
+                    )}
+                    {changePassword && (
+                        <>
+                            <InputField
+                                disabled={submitting}
+                                control={control}
+                                name="newPassword"
+                                rules={{ required: "Please enter a new password." }}
+                                type="password"
+                                placeholder="Enter a new password"
+                                label="New password"
+                            />
+                            <Button type="button" variant="contained" onClick={() => setChangePassword(false)}>
+                                Cancel Password Change
+                            </Button>
+                        </>
+                    )}
+                </Section>
+
+                <Box sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    "& > *:not(:last-child)": {
+                        marginRight: ".5rem"
+                    }
+                }}>
+                    <Button variant="contained" onClick={() => history.push("/profile")} disabled={submitting}>
+                        Cancel
+                    </Button>
+                    <Button type="submit" disabled={(!isDirty && !avatarChanged) || submitting} variant="contained" color="primary" startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
+                        Save
+                    </Button>
+                </Box>
+                {!!successMessage && <Alert severity="success">{successMessage}</Alert>}
+                {!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+            </Box>
+            <Box sx={{
                 display: "flex",
                 flexDirection: "column",
                 width: "100%",
@@ -316,99 +425,14 @@ const ProfileEdit: React.FC = () => {
                 "& > *:not(:last-child)": {
                     marginBottom: "1rem"
                 },
-            }}
-        >
-            <Typography variant="h1" gutterBottom>
-                Edit Profile
-            </Typography>
+            }}>
+                <Typography id="connections" variant="h1" component="p">
+                    Edit Connections
+                </Typography>
 
-            <Section>
-                <Typography variant="subtitle1">Avatar</Typography>
-                <ImageUpload
-                    label="Upload Avatar"
-                    file={avatar}
-                    onChange={onAvatarChange}
-                    avatarPreview
-                    sx={{
-                        alignSelf: "center",
-                        "& .MuiAvatar-root": {
-                            width: "180px",
-                            height: "180px",
-                        },
-                    }}
-                />
-            </Section>
-
-            <Section>
-                <Typography variant="subtitle1">User Details</Typography>
-                <Box sx={{
-                    display: "flex",
-                    "& > *:not(:last-child)": {
-                        marginRight: "1rem"
-                    }
-                }}>
-                    <InputField label="First Name" name="firstName" control={control} disabled={submitting} fullWidth />
-                    <InputField label="Last Name" name="lastName" control={control} disabled={submitting} fullWidth />
-                </Box>
-                <InputField
-                    name="email"
-                    label="Email"
-                    type="email"
-                    control={control}
-                    rules={{
-                        pattern: {
-                            value: /.+@.+\..+/,
-                            message: "Invalid email address",
-                        },
-                    }}
-                    disabled={submitting}
-                />
-            </Section>
-
-            <Section>
-                <Typography variant="subtitle1">Password</Typography>
-                {changePassword && (
-                    <InputField
-                        disabled={submitting}
-                        control={control}
-                        name="currentPassword"
-                        rules={{ required: "Please enter current password." }}
-                        type="password"
-                        placeholder="Enter current password"
-                    />
-                )}
-
-                {!changePassword && (
-                    <Button type="button" variant="contained" onClick={() => setChangePassword(true)}>
-                        Change Password
-                    </Button>
-                )}
-                {changePassword && (
-                    <>
-                        <InputField
-                            disabled={submitting}
-                            control={control}
-                            name="newPassword"
-                            rules={{ required: "Please enter a new password." }}
-                            type="password"
-                            placeholder="Enter a new password"
-                        />
-                        <Button type="button" variant="contained" onClick={() => setChangePassword(false)}>
-                            Cancel Password Change
-                        </Button>
-                    </>
-                )}
-            </Section>
-
-            <Section>
-                <Typography variant="subtitle1">Connections</Typography>
-                <InputField label="Wallet Public Address" name="publicAddress" control={control} disabled={true} />
-                <Box
-                    sx={{
-                        margin: "0 auto",
-                        display: "flex",
-                    }}
-                >
+                <Section>
+                    <Typography variant="subtitle1">Metamask</Typography>
+                    <InputField label="Wallet Public Address" name="publicAddress" control={control} disabled multiline />
                     <Button
                         onClick={async () => {
                             // if wallet exists, remove it
@@ -442,6 +466,7 @@ const ProfileEdit: React.FC = () => {
                         }
                         startIcon={<MetaMaskIcon />}
                         variant="contained"
+                        fullWidth
                     >
                         {user?.publicAddress && user?.publicAddress !== ""
                             ? "Remove Wallet"
@@ -451,20 +476,9 @@ const ProfileEdit: React.FC = () => {
                                     ? "Install MetaMask"
                                     : "Connect Wallet to account"}
                     </Button>
-                </Box>
-            </Section>
-
-            <Spaced alignRight height="60px">
-                <Button variant="contained" color="primary" onClick={onSaveForm} disabled={(!isDirty && !avatarChanged) || submitting} startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}>
-                    Save
-                </Button>
-                <Button variant="contained" onClick={() => history.push("/profile")} disabled={submitting}>
-                    Cancel
-                </Button>
-            </Spaced>
-            {!!successMessage && <Alert severity="success">{successMessage}</Alert>}
-            {!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-        </Box>
+                </Section>
+            </Box>
+        </>
     )
 }
 
