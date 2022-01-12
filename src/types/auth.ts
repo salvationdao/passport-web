@@ -1,4 +1,4 @@
-import { User } from "./types"
+import { User } from "./types";
 
 export interface RegisterResponse {
 	user: User
@@ -40,6 +40,14 @@ export interface WalletLoginRequest {
 export interface WalletLoginResponse {
 	user: User
 	token: string
+}
+
+export interface ConnectAccountRequest {
+	token: string
+}
+
+export interface ConnectAccountResponse {
+	user: User
 }
 
 export interface SendVerifyEmailRequest {

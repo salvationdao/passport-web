@@ -1,4 +1,4 @@
-import { ObjectType, Perm } from "./enums"
+import { ObjectType, Perm } from "./enums";
 
 export interface User {
 	id: string
@@ -20,6 +20,9 @@ export interface User {
 	hasRecoveryCode: boolean
 	pass2FA: boolean
 	publicAddress?: string
+	facebookID?: string
+	googleID?: string
+	twitchID?: string
 }
 
 export interface UserActivity {

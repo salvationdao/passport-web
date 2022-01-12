@@ -1,13 +1,16 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import MetaMaskOnboarding from "@metamask/onboarding";
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, styled, Typography } from "@mui/material";
+import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, styled, TextField, Typography } from "@mui/material";
 import { User } from '@sentry/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-fetching-library';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink, Route, Switch, useHistory } from 'react-router-dom';
+import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg";
+import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg";
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg";
+import { FacebookLogin } from '../components/facebookLogin';
 import { ImageUpload } from '../components/form/imageUpload';
 import { InputField } from '../components/form/inputField';
 import { Navbar } from "../components/home/navbar";
@@ -68,6 +71,11 @@ const ProfileDetails: React.FC = () => {
     const history = useHistory()
     const { user } = AuthContainer.useContainer()
 
+    useEffect(() => {
+        if (!user) return
+        console.log(user)
+    }, [user])
+
     if (!user) return <Loading />
 
     return (
@@ -126,8 +134,9 @@ const ProfileDetails: React.FC = () => {
                     },
                 }}>
                     <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={!!user.publicAddress} />
-                    <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={false} />
-                    <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={false} />
+                    <ConnectedAppCard type="facebook" label={user.facebookID || "Not Connected"} isConnected={!!user.facebookID} />
+                    <ConnectedAppCard type="google" label={user.googleID || "Not Connected"} isConnected={!!user.googleID} />
+                    {/* <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={false} /> */}
                 </Box>
             </Box>
             <Box sx={{
@@ -175,9 +184,8 @@ interface UserInput {
 }
 
 const ProfileEdit: React.FC = () => {
-    const history = useHistory()
     const { metaMaskState, sign, account, connect } = useWeb3()
-    const { user } = AuthContainer.useContainer()
+    const { user, connectFacebook } = AuthContainer.useContainer()
     const token = localStorage.getItem("token")
     const { send } = useWebsocket()
 
@@ -443,7 +451,7 @@ const ProfileEdit: React.FC = () => {
 
                 <Section>
                     <Typography variant="subtitle1">Metamask</Typography>
-                    <InputField label="Wallet Public Address" name="publicAddress" control={control} disabled multiline />
+                    {!!user.publicAddress && <TextField label="Wallet Public Address" value={user.publicAddress} disabled multiline />}
                     <Button
                         onClick={async () => {
                             // if wallet exists, remove it
@@ -491,7 +499,44 @@ const ProfileEdit: React.FC = () => {
 
                 <Section>
                     <Typography variant="subtitle1">Facebook</Typography>
-                    <Button variant="contained">Connect</Button>
+                    {!!user.facebookID ? <>
+                        <TextField label="Facebook ID" value={user.facebookID} disabled multiline />
+                        <Button variant="contained">
+                            Remove Facebook
+                        </Button>
+                    </> : <FacebookLogin
+                        appId="577913423867745"
+                        fields="email"
+                        callback={async (response: any) => {
+                            try {
+                                setErrorMessage(undefined)
+
+                                if (!!response && !!response.status) {
+                                    setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
+                                    return
+                                }
+                                const r = response
+                                await connectFacebook(r.accessToken)
+                            } catch (e) {
+                                setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+                            }
+                        }}
+                        onFailure={(error) => {
+                            setErrorMessage(error.status || "Failed to connect account to Facebook.")
+                        }}
+                        render={(props) => (
+                            <Button
+                                onClick={async (event) => {
+                                    props.onClick(event)
+                                }}
+                                disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
+                                startIcon={<FacebookIcon />}
+                                variant="contained"
+                            >
+                                Connect Facebook to account
+                            </Button>
+                        )}
+                    />}
                 </Section>
 
                 <Section>
@@ -596,8 +641,10 @@ const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConn
             connectionIcon = <MetaMaskIcon />
             break
         case "facebook":
+            connectionIcon = <FacebookIcon />
             break
         case "google":
+            connectionIcon = <GoogleIcon />
             break
         case "twitch":
             break
@@ -614,6 +661,7 @@ const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConn
             cursor: "pointer"
         })}>
             <Box sx={{
+                zIndex: 1,
                 position: "absolute",
                 top: 0,
                 left: 0,
@@ -649,6 +697,7 @@ const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConn
             <Box sx={{
                 width: "5rem",
                 marginBottom: "1rem",
+                filter: isConnected ? "none" : "grayscale(1)",
                 "& svg": {
                     width: "100%",
                     height: "auto"

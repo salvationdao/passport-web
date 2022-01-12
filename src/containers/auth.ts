@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import HubKey from "../keys"
 import {
+	ConnectAccountRequest,
+	ConnectAccountResponse,
 	PasswordLoginRequest,
 	PasswordLoginResponse,
 	TokenLoginRequest,
@@ -171,6 +173,11 @@ export const AuthContainer = createContainer(() => {
 		[send, state, admin],
 	)
 
+	/**
+	 * Logs a User in using a Metamask public address
+	 *
+	 * @param token Metamask public address
+	 */
 	const loginMetamask = useCallback(
 		async (username?: string): Promise<string | null> => {
 			if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
@@ -203,6 +210,32 @@ export const AuthContainer = createContainer(() => {
 			return null
 		},
 		[send, state, admin, account, metaMaskState, sign],
+	)
+
+	/**
+	 * Connects a User's account to Facebook
+	 *
+	 * @param token Facebook token id
+	 */
+	const connectFacebook = useCallback(
+		async (token: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthLoginFacebook, {
+					token,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
 	)
 
 	/**
@@ -331,6 +364,7 @@ export const AuthContainer = createContainer(() => {
 		loginGoogle,
 		loginFacebook,
 		loginMetamask,
+		connectFacebook,
 		logout,
 		verify,
 		hideVerifyComplete: () => setVerifyCompleteType(undefined),
