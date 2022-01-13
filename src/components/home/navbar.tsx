@@ -73,7 +73,7 @@ const ProfileButton: React.FC<IconButtonProps> = ({ sx, onClick, ...props }) => 
                     })
                 }}
             >
-                <MenuItemRoute route="/profile" label="Profile" handleClose={handleClose} />
+                <StyledMenuItem route="/profile" label="Profile" handleClose={handleClose} />
             </Menu>
             <IconButton
                 onClick={handleClick}
@@ -119,7 +119,7 @@ const ProfileButton: React.FC<IconButtonProps> = ({ sx, onClick, ...props }) => 
 }
 
 const MenuButton: React.FC = () => {
-    const { user } = AuthContainer.useContainer()
+    const { user, logout } = AuthContainer.useContainer()
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const open = Boolean(anchorEl);
 
@@ -149,9 +149,10 @@ const MenuButton: React.FC = () => {
             >
                 <MenuList>
                     {!!user ? [
-                        <MenuItemRoute key={0} route="/wallet" label="Wallet" handleClose={handleClose} />,
-                        <MenuItemRoute key={1} route="/badges" label="Badges" handleClose={handleClose} />
-                    ] : <MenuItemRoute route="/login" label="Login" handleClose={handleClose} />}
+                        <StyledMenuItem key={0} route="/wallet" label="Wallet" handleClose={handleClose} />,
+                        <StyledMenuItem key={1} route="/badges" label="Badges" handleClose={handleClose} />,
+                        <StyledMenuItem key={2} onClick={() => logout()} label="Logout" handleClose={handleClose} />
+                    ] : <StyledMenuItem route="/login" label="Login" handleClose={handleClose} />}
                 </MenuList>
                 {!!user && [
                     <Box key={0} sx={{
@@ -235,21 +236,22 @@ const MenuButton: React.FC = () => {
     )
 }
 
-interface MenuItemRouteProps extends Omit<MenuItemProps, "children"> {
-    route: string
+interface StyledMenuItemProps extends Omit<MenuItemProps, "children"> {
+    route?: string
     label: string
     handleClose: () => void
 }
 
-const MenuItemRoute: React.FC<MenuItemRouteProps> = ({ route, label, handleClose, sx, ...props }) => {
+const StyledMenuItem: React.FC<StyledMenuItemProps> = ({ onClick, route, label, handleClose, sx, ...props }) => {
     const location = useLocation()
     const history = useHistory()
     const theme = useTheme()
 
     return (
-        <MenuItem onClick={() => {
+        <MenuItem onClick={(e) => {
+            if (onClick) onClick(e)
+            if (route) history.push(route)
             handleClose()
-            history.push(route)
         }} sx={{
             padding: ".5rem 0",
             fontSize: "1.6rem",
