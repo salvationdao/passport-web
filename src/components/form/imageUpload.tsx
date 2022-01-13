@@ -1,10 +1,10 @@
-import { useState, useCallback } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { Alert, Avatar, Backdrop, Box, Button, Typography } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import { SxProps, Theme } from "@mui/system"
-import { formatBytes } from "../../helpers"
+import { useCallback, useState } from "react"
 import { useDropzone } from "react-dropzone"
+import { formatBytes } from "../../helpers"
 import { ImageSelectDialog } from "./imageSelectDialog"
 
 interface ImageUploadProps {
@@ -64,6 +64,7 @@ export const ImageUpload = (props: ImageUploadProps) => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
+				alignItems: "center",
 				...sx,
 			}}
 		>

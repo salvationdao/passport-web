@@ -17,6 +17,7 @@ import { ImageUpload } from '../components/form/imageUpload';
 import { InputField } from '../components/form/inputField';
 import { Navbar } from "../components/home/navbar";
 import { Loading } from '../components/loading';
+import { TwitchLogin } from '../components/twitchLogin';
 import { AuthContainer } from '../containers';
 import { useWebsocket } from '../containers/socket';
 import { MetaMaskState, useWeb3 } from '../containers/web3';
@@ -72,6 +73,7 @@ export const ProfilePage: React.FC = () => {
 const ProfileDetails: React.FC = () => {
     const history = useHistory()
     const { user } = AuthContainer.useContainer()
+    const token = localStorage.getItem("token")
 
     useEffect(() => {
         if (!user) return
@@ -105,7 +107,7 @@ const ProfileDetails: React.FC = () => {
                         borderRadius: "50%",
                         border: `2px solid ${theme.palette.secondary.main}`,
                     })} />
-                    <EditableAvatar onClick={() => history.push("/profile/edit#profile")} />
+                    <EditableAvatar avatar={user.avatarID ? `/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}` : undefined} onClick={() => history.push("/profile/edit#profile")} />
                 </Box>
                 <Button onClick={() => history.push("/profile/edit#profile")} variant="text" sx={{
                     marginBottom: "2rem"
@@ -282,15 +284,6 @@ const ProfileEdit: React.FC = () => {
         } else {
             setAvatar(file)
         }
-    }
-
-    const handleSnackbarClose = (_: React.SyntheticEvent | Event, reason?: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-
-        setSuccessMessage(undefined);
-        setErrorMessage(undefined);
     }
 
     // Load defaults
@@ -617,7 +610,30 @@ const ProfileEdit: React.FC = () => {
 
                 <Section>
                     <Typography variant="subtitle1">Twitch</Typography>
-                    <Button variant="contained" startIcon={<TwitchIcon />}>Connect Twitch to account</Button>
+                    {!!user.twitchID ? <>
+                    </> : <TwitchLogin clientId="1l3xc5yczselm.bc4yiwdieaw0hr1oap" callback={async (response: any) => {
+                        try {
+
+                        } catch (e) {
+                            setErrorMessage(e === "string" ? e : "Something went wrong, please try again")
+                        }
+                    }}
+                        onFailure={(error) => {
+                            setErrorMessage(error.status || "Failed to connect account to Twitch.")
+                        }}
+                        render={(props) => (
+                            <Button
+                                onClick={async (event) => {
+                                    props.onClick(event)
+                                }}
+                                disabled={props.isDisabled || props.isProcessing}
+                                startIcon={<TwitchIcon />}
+                                variant="contained"
+                            >
+                                Connect Twitch to account
+                            </Button>
+                        )}
+                    />}
                 </Section>
             </Box>
         </>
@@ -637,10 +653,10 @@ const Section = styled("div")({
 })
 
 interface EditableAvatarProps extends Omit<IconButtonProps, "children"> {
-
+    avatar?: string
 }
 
-const EditableAvatar: React.FC<EditableAvatarProps> = ({ sx, onClick, onMouseLeave, onFocus, onBlur, ...props }) => {
+const EditableAvatar: React.FC<EditableAvatarProps> = ({ avatar, sx, onClick, onMouseLeave, onFocus, onBlur, ...props }) => {
     const [isFocused, setIsFocused] = useState(false)
 
     return (
@@ -673,7 +689,7 @@ const EditableAvatar: React.FC<EditableAvatarProps> = ({ sx, onClick, onMouseLea
             <Avatar sx={{
                 width: "100%",
                 height: "100%",
-            }} alt="Avatar Image" />
+            }} src={avatar} alt="Avatar Image" />
             <Box sx={(theme) => ({
                 zIndex: 1,
                 position: "absolute",
