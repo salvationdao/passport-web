@@ -223,7 +223,7 @@ export const AuthContainer = createContainer(() => {
 				return
 			}
 			try {
-				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthLoginFacebook, {
+				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthConnectFacebook, {
 					token,
 				})
 				if (!resp || !resp.user) {
