@@ -5,11 +5,13 @@ import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link
 import { User } from '@sentry/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-fetching-library';
+import GoogleLogin, { GoogleLoginResponse } from "react-google-login";
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink, Route, Switch, useHistory } from 'react-router-dom';
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg";
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg";
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg";
+import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg";
 import { FacebookLogin } from '../components/facebookLogin';
 import { ImageUpload } from '../components/form/imageUpload';
 import { InputField } from '../components/form/inputField';
@@ -185,7 +187,7 @@ interface UserInput {
 
 const ProfileEdit: React.FC = () => {
     const { metaMaskState, sign, account, connect } = useWeb3()
-    const { user, connectFacebook } = AuthContainer.useContainer()
+    const { user, connectFacebook, connectGoogle, connectTwitch } = AuthContainer.useContainer()
     const token = localStorage.getItem("token")
     const { send } = useWebsocket()
 
@@ -485,57 +487,59 @@ const ProfileEdit: React.FC = () => {
 
                 <Section>
                     <Typography variant="subtitle1">Metamask</Typography>
-                    {!!user.publicAddress && <TextField label="Wallet Public Address" value={user.publicAddress} disabled multiline />}
-                    <Button
-                        onClick={async () => {
-                            // if wallet exists, remove it
-                            if (user.publicAddress && user.publicAddress !== "") {
+                    {!!user.publicAddress ?
+                        <>
+                            <TextField label="Wallet Public Address" value={user.publicAddress} disabled multiline />
+                            <Button onClick={async () => {
+                                // if wallet exists, remove it
                                 await removeWalletAddress()
-                                return
+                            }} variant="contained" color="error">Remove Wallet</Button>
+                        </>
+                        :
+                        <Button
+                            onClick={async () => {
+                                // if metamask not logged in do nothing
+                                if (metaMaskState === MetaMaskState.NotLoggedIn) {
+                                    await connect()
+                                    return
+                                }
+                                // if metamask not installed tell take to install page
+                                if (metaMaskState === MetaMaskState.NotInstalled) {
+                                    const onboarding = new MetaMaskOnboarding()
+                                    onboarding.startOnboarding()
+                                    return
+                                }
+                                // if metamask logged in add wallet
+                                if (metaMaskState === MetaMaskState.Active) {
+                                    await addNewWallet()
+                                    return
+                                }
+                            }}
+                            title={
+                                metaMaskState === MetaMaskState.Active
+                                    ? "Connect Wallet to account"
+                                    : metaMaskState === MetaMaskState.NotLoggedIn
+                                        ? "Connect and sign in to MetaMask to continue"
+                                        : "Install MetaMask"
                             }
-                            // if metamask not logged in do nothing
-                            if (metaMaskState === MetaMaskState.NotLoggedIn) {
-                                await connect()
-                                return
-                            }
-                            // if metamask not installed tell take to install page
-                            if (metaMaskState === MetaMaskState.NotInstalled) {
-                                const onboarding = new MetaMaskOnboarding()
-                                onboarding.startOnboarding()
-                                return
-                            }
-                            // if metamask logged in add wallet
-                            if (metaMaskState === MetaMaskState.Active) {
-                                await addNewWallet()
-                                return
-                            }
-                        }}
-                        title={
-                            metaMaskState === MetaMaskState.Active
-                                ? "Connect Wallet to account"
-                                : metaMaskState === MetaMaskState.NotLoggedIn
-                                    ? "Connect and sign in to MetaMask to continue"
-                                    : "Install MetaMask"
-                        }
-                        startIcon={<MetaMaskIcon />}
-                        variant="contained"
-                        fullWidth
-                    >
-                        {user?.publicAddress && user?.publicAddress !== ""
-                            ? "Remove Wallet"
-                            : metaMaskState === MetaMaskState.NotLoggedIn
+                            startIcon={<MetaMaskIcon />}
+                            variant="contained"
+                            fullWidth
+                        >
+                            {metaMaskState === MetaMaskState.NotLoggedIn
                                 ? "Connect and sign in to MetaMask to continue"
                                 : metaMaskState === MetaMaskState.NotInstalled
                                     ? "Install MetaMask"
                                     : "Connect Wallet to account"}
-                    </Button>
+                        </Button>
+                    }
                 </Section>
 
                 <Section>
                     <Typography variant="subtitle1">Facebook</Typography>
                     {!!user.facebookID ? <>
                         <TextField label="Facebook ID" value={user.facebookID} disabled multiline />
-                        <Button variant="contained">
+                        <Button variant="contained" color="error">
                             Remove Facebook
                         </Button>
                     </> : <FacebookLogin
@@ -549,8 +553,7 @@ const ProfileEdit: React.FC = () => {
                                     setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
                                     return
                                 }
-                                const r = response
-                                await connectFacebook(r.accessToken)
+                                await connectFacebook(response.accessToken)
                             } catch (e) {
                                 setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
                             }
@@ -575,17 +578,55 @@ const ProfileEdit: React.FC = () => {
 
                 <Section>
                     <Typography variant="subtitle1">Google</Typography>
-                    <Button variant="contained">Connect</Button>
+                    {!!user.googleID ?
+                        <>
+                            <TextField label="Google ID" value={user.googleID} disabled multiline />
+                            <Button variant="contained" color="error">
+                                Remove Google
+                            </Button>
+                        </>
+                        :
+                        <GoogleLogin
+                            clientId="593683501366-gk7ab1nnskc1tft14bk8ebsja1bce24v.apps.googleusercontent.com"
+                            buttonText="Login"
+                            onSuccess={async (response) => {
+                                try {
+                                    if (!!response.code) {
+                                        setErrorMessage(`Couldn't connect to Google: ${response.code}`)
+                                        return
+                                    }
+                                    setErrorMessage(undefined)
+                                    const r = response as GoogleLoginResponse
+                                    await connectGoogle(r.tokenId)
+                                } catch (e) {
+                                    setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+                                }
+                            }}
+                            onFailure={(error) => {
+                                setErrorMessage(error.message)
+                            }}
+                            cookiePolicy={"single_host_origin"}
+                            render={(props) => (
+                                <Button onClick={props.onClick} disabled={props.disabled} startIcon={<GoogleIcon />} variant="contained">
+                                    Connect Google to account
+                                </Button>
+                            )}
+                        />
+                    }
                 </Section>
 
                 <Section>
                     <Typography variant="subtitle1">Twitch</Typography>
-                    <Button variant="contained">Connect</Button>
+                    <Button variant="contained" startIcon={<TwitchIcon />}>Connect Twitch to account</Button>
                 </Section>
             </Box>
         </>
     )
 }
+
+// const RemoveButton = styled(Button)(({theme}) => ({
+//     backgroundColor: theme.palette.
+// }))
 
 const Section = styled("div")({
     display: "flex",

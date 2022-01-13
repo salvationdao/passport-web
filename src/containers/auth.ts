@@ -213,9 +213,9 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Connects a User's account to Facebook
+	 * Connects a User's existing account to Facebook
 	 *
-	 * @param token Facebook token id
+	 * @param token Facebook token
 	 */
 	const connectFacebook = useCallback(
 		async (token: string) => {
@@ -224,6 +224,58 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthConnectFacebook, {
+					token,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Connects a User's existing account to Google
+	 *
+	 * @param token Google token
+	 */
+	const connectGoogle = useCallback(
+		async (token: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthConnectGoogle, {
+					token,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Connects a User's existing account to Google
+	 *
+	 * @param token Google token
+	 */
+	const connectTwitch = useCallback(
+		async (token: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthConnectTwitch, {
 					token,
 				})
 				if (!resp || !resp.user) {
@@ -365,6 +417,8 @@ export const AuthContainer = createContainer(() => {
 		loginFacebook,
 		loginMetamask,
 		connectFacebook,
+		connectGoogle,
+		connectTwitch,
 		logout,
 		verify,
 		hideVerifyComplete: () => setVerifyCompleteType(undefined),

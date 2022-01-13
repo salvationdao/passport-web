@@ -7,6 +7,8 @@ enum HubKey {
 	AuthLoginFacebook = "AUTH:FACEBOOK",
 	AuthLoginWallet = "AUTH:WALLET",
 	AuthConnectFacebook = "AUTH:FACEBOOK:CONNECT",
+	AuthConnectGoogle = "AUTH:GOOGLE:CONNECT",
+	AuthConnectTwitch = "AUTH:TWITCH:CONNECT",
 	AuthLogout = "AUTH:LOGOUT",
 	AuthSuccess = "AUTH:SUCCESS",
 	AuthRegister = "AUTH:REGISTER",

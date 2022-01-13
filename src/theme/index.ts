@@ -2,10 +2,21 @@ import { createTheme } from "@mui/material/styles"
 import AvatarDefault from "../assets/images/NinjaSoftwareLogo.svg"
 
 declare module "@mui/material/styles" {
+	interface Palette {
+		neutral: Palette["primary"]
+	}
 
 	interface PaletteOptions {
+		neutral: PaletteOptions["primary"]
 	}
 }
+
+declare module "@mui/material/Button" {
+	interface ButtonPropsColorOverrides {
+		neutral: true
+	}
+}
+
 
 export const colors = {
 	neonPink: "#f72485",
@@ -25,9 +36,19 @@ const lightTheme = createTheme({
 		},
 		secondary: {
 			main: colors.skyBlue,
+			contrastText: colors.white,
+		},
+		neutral: {
+			main: colors.navyBlue,
+			contrastText: colors.white,
 		},
 		success: {
 			main: "#44b700",
+		},
+		error: {
+			main: "#d32f2f",
+			light: "#ef5350",
+			dark: "#c62828"
 		},
 		background: {
 			default: colors.darkNavyBlue,
