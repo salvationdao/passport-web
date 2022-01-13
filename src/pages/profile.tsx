@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import MetaMaskOnboarding from "@metamask/onboarding";
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, styled, TextField, Typography } from "@mui/material";
+import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, Snackbar, styled, TextField, Typography } from "@mui/material";
 import { User } from '@sentry/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-fetching-library';
@@ -282,6 +282,15 @@ const ProfileEdit: React.FC = () => {
         }
     }
 
+    const handleSnackbarClose = (_: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setSuccessMessage(undefined);
+        setErrorMessage(undefined);
+    }
+
     // Load defaults
     useEffect(() => {
         if (!user) return
@@ -313,6 +322,33 @@ const ProfileEdit: React.FC = () => {
 
     return (
         <>
+            <Snackbar
+                open={!!successMessage}
+                autoHideDuration={6000}
+                onClose={(_, reason) => {
+                    if (reason === 'clickaway') {
+                        return
+                    }
+
+                    setSuccessMessage(undefined)
+                }}
+            >
+                <Alert severity="success">{successMessage}</Alert>
+            </Snackbar>
+            <Snackbar
+                open={!!errorMessage}
+                autoHideDuration={6000}
+                onClose={(_, reason) => {
+                    if (reason === 'clickaway') {
+                        return
+                    }
+
+                    setErrorMessage(undefined)
+                }}
+                message={errorMessage}
+            >
+                <Alert severity="error">{errorMessage}</Alert>
+            </Snackbar>
             <Box
                 component="form"
                 onSubmit={onSaveForm}
@@ -431,8 +467,6 @@ const ProfileEdit: React.FC = () => {
                         Save
                     </Button>
                 </Box>
-                {!!successMessage && <Alert severity="success">{successMessage}</Alert>}
-                {!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
             </Box>
             <Box sx={{
                 display: "flex",
