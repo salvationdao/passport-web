@@ -75,11 +75,6 @@ const ProfileDetails: React.FC = () => {
     const { user } = AuthContainer.useContainer()
     const token = localStorage.getItem("token")
 
-    useEffect(() => {
-        if (!user) return
-        console.log(user)
-    }, [user])
-
     if (!user) return <Loading />
 
     return (
@@ -189,7 +184,7 @@ interface UserInput {
 
 const ProfileEdit: React.FC = () => {
     const { metaMaskState, sign, account, connect } = useWeb3()
-    const { user, connectFacebook, connectGoogle, connectTwitch } = AuthContainer.useContainer()
+    const { user, addFacebook, addGoogle, addTwitch, removeFacebook, removeGoogle, removeTwitch } = AuthContainer.useContainer()
     const token = localStorage.getItem("token")
     const { send } = useWebsocket()
 
@@ -285,6 +280,12 @@ const ProfileEdit: React.FC = () => {
             setAvatar(file)
         }
     }
+
+    // useEffect(() => {
+    //     if (!user) return
+    //     console.log(user)
+    // }, [user])
+
 
     // Load defaults
     useEffect(() => {
@@ -532,7 +533,13 @@ const ProfileEdit: React.FC = () => {
                     <Typography variant="subtitle1">Facebook</Typography>
                     {!!user.facebookID ? <>
                         <TextField label="Facebook ID" value={user.facebookID} disabled multiline />
-                        <Button variant="contained" color="error">
+                        <Button onClick={async () => {
+                            try {
+                                await removeFacebook(user.id, user.username)
+                            } catch (e) {
+                                setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+                            }
+                        }} variant="contained" color="error">
                             Remove Facebook
                         </Button>
                     </> : <FacebookLogin
@@ -546,9 +553,9 @@ const ProfileEdit: React.FC = () => {
                                     setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
                                     return
                                 }
-                                await connectFacebook(response.accessToken)
+                                await addFacebook(response.accessToken)
                             } catch (e) {
-                                setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+                                setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
                             }
                         }}
                         onFailure={(error) => {
@@ -574,7 +581,13 @@ const ProfileEdit: React.FC = () => {
                     {!!user.googleID ?
                         <>
                             <TextField label="Google ID" value={user.googleID} disabled multiline />
-                            <Button variant="contained" color="error">
+                            <Button onClick={async () => {
+                                try {
+                                    await removeGoogle(user.id, user.username)
+                                } catch (e) {
+                                    setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+                                }
+                            }} variant="contained" color="error">
                                 Remove Google
                             </Button>
                         </>
@@ -590,9 +603,9 @@ const ProfileEdit: React.FC = () => {
                                     }
                                     setErrorMessage(undefined)
                                     const r = response as GoogleLoginResponse
-                                    await connectGoogle(r.tokenId)
+                                    await addGoogle(r.tokenId)
                                 } catch (e) {
-                                    setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+                                    setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
                                 }
                             }}
                             onFailure={(error) => {
@@ -611,11 +624,27 @@ const ProfileEdit: React.FC = () => {
                 <Section>
                     <Typography variant="subtitle1">Twitch</Typography>
                     {!!user.twitchID ? <>
-                    </> : <TwitchLogin clientId="1l3xc5yczselm.bc4yiwdieaw0hr1oap" callback={async (response: any) => {
+                        <TextField label="Twitch ID" value={user.twitchID} disabled multiline />
+                        <Button onClick={async () => {
+                            try {
+                                await removeTwitch(user.id, user.username)
+                            } catch (e) {
+                                setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+                            }
+                        }} variant="contained" color="error">
+                            Remove Twitch
+                        </Button>
+                    </> : <TwitchLogin clientId="1l3xc5yczselbc4yiwdieaw0hr1oap" redirectUri="http://localhost:5003" callback={async (response: any) => {
                         try {
+                            setErrorMessage(undefined)
 
+                            if (!!response && !!response.status) {
+                                setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
+                                return
+                            }
+                            await addTwitch(response.code, "http://localhost:5003")
                         } catch (e) {
-                            setErrorMessage(e === "string" ? e : "Something went wrong, please try again")
+                            setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
                         }
                     }}
                         onFailure={(error) => {
