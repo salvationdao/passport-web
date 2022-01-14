@@ -120,47 +120,29 @@ const ProfileDetails: React.FC = () => {
                 </Typography>
                 <Box sx={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gridTemplateColumns: "repeat(4, 250px)",
                     gap: "4rem",
-                    width: "100%",
-                    maxWidth: "1000px",
                     marginBottom: "2rem",
+                    "@media (max-width: 1300px)": {
+                        gridTemplateColumns: "repeat(4, 200px)"
+                    },
+                    "@media (max-width: 1100px)": {
+                        gridTemplateColumns: "repeat(2, 200px)"
+                    },
                     "@media (max-width: 800px)": {
                         gap: "2rem"
                     },
                     "@media (max-width: 600px)": {
-                        gridTemplateColumns: "repeat(2, 1fr)"
+                        width: "100%",
+                        gridTemplateColumns: "repeat(1, 1fr)",
                     },
                 }}>
                     <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={!!user.publicAddress} />
                     <ConnectedAppCard type="facebook" label={user.facebookID || "Not Connected"} isConnected={!!user.facebookID} />
                     <ConnectedAppCard type="google" label={user.googleID || "Not Connected"} isConnected={!!user.googleID} />
-                    {/* <ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={false} /> */}
+                    <ConnectedAppCard type="twitch" label={user.twitchID || "Not Connected"} isConnected={!!user.twitchID} />
                 </Box>
             </Box>
-            <Box sx={{
-                flex: 1
-            }} />
-            {/* <Box sx={{
-                display: "flex",
-                alignItems: "center",
-                margin: "0 auto",
-                marginBottom: "1rem",
-                "& > *:not(:last-child)": {
-                    marginRight: "1rem",
-                }
-            }}>
-                <Typography>Connect these apps</Typography>
-                <IconButton color="inherit" >
-                    <YouTubeIcon />
-                </IconButton>
-                <IconButton color="inherit" >
-                    <YouTubeIcon />
-                </IconButton>
-                <IconButton color="inherit" >
-                    <YouTubeIcon />
-                </IconButton>
-            </Box> */}
         </>
     )
 }
@@ -669,10 +651,6 @@ const ProfileEdit: React.FC = () => {
     )
 }
 
-// const RemoveButton = styled(Button)(({theme}) => ({
-//     backgroundColor: theme.palette.
-// }))
-
 const Section = styled("div")({
     display: "flex",
     flexDirection: "column",
@@ -767,6 +745,7 @@ const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConn
             connectionIcon = <GoogleIcon />
             break
         case "twitch":
+            connectionIcon = <TwitchIcon />
             break
     }
 
@@ -826,10 +805,12 @@ const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConn
                 {connectionIcon}
             </Box>
             <Typography variant="subtitle1" sx={{
+                width: "100%",
                 maxWidth: "180px",
                 overflow: "hidden",
                 whiteSpace: "nowrap",
-                textOverflow: "ellipsis"
+                textOverflow: "ellipsis",
+                textAlign: "center"
             }}>
                 {label}
             </Typography>

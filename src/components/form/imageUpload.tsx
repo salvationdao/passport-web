@@ -64,11 +64,14 @@ export const ImageUpload = (props: ImageUploadProps) => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				alignItems: "center",
 				...sx,
 			}}
 		>
-			<div {...getRootProps()} onClick={(e) => e.stopPropagation()}>
+			<Box sx={{
+				display: "flex",
+				flexDirection: "column",
+				alignItems: "center"
+			}} {...getRootProps()} onClick={(e) => e.stopPropagation()}>
 				<input {...getInputProps()} />
 
 				{!!file &&
@@ -140,7 +143,7 @@ export const ImageUpload = (props: ImageUploadProps) => {
 						</Button>
 					)}
 				</Box>
-			</div>
+			</Box>
 			<Backdrop
 				sx={{
 					color: "#fff",
