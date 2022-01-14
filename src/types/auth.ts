@@ -50,6 +50,11 @@ export interface ConnectAccountResponse {
 	user: User
 }
 
+export interface TwitchConnectAccountRequest {
+	code: string
+	redirectURI: string
+}
+
 export interface SendVerifyEmailRequest {
 	email: string
 	forgotPassword?: boolean

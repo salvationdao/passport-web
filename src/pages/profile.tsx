@@ -75,11 +75,6 @@ const ProfileDetails: React.FC = () => {
     const { user } = AuthContainer.useContainer()
     const token = localStorage.getItem("token")
 
-    useEffect(() => {
-        if (!user) return
-        console.log(user)
-    }, [user])
-
     if (!user) return <Loading />
 
     return (
@@ -285,6 +280,12 @@ const ProfileEdit: React.FC = () => {
             setAvatar(file)
         }
     }
+
+    useEffect(() => {
+        if (!user) return
+        console.log(user)
+    }, [user])
+
 
     // Load defaults
     useEffect(() => {
@@ -611,9 +612,19 @@ const ProfileEdit: React.FC = () => {
                 <Section>
                     <Typography variant="subtitle1">Twitch</Typography>
                     {!!user.twitchID ? <>
-                    </> : <TwitchLogin clientId="1l3xc5yczselm.bc4yiwdieaw0hr1oap" callback={async (response: any) => {
+                        <TextField label="Twitch ID" value={user.twitchID} disabled multiline />
+                        <Button variant="contained" color="error">
+                            Remove Twitch
+                        </Button>
+                    </> : <TwitchLogin clientId="1l3xc5yczselbc4yiwdieaw0hr1oap" redirectUri="http://localhost:5003" callback={async (response: any) => {
                         try {
+                            setErrorMessage(undefined)
 
+                            if (!!response && !!response.status) {
+                                setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
+                                return
+                            }
+                            await connectTwitch(response.code, "http://localhost:5003")
                         } catch (e) {
                             setErrorMessage(e === "string" ? e : "Something went wrong, please try again")
                         }

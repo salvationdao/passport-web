@@ -8,6 +8,7 @@ import {
 	PasswordLoginResponse,
 	TokenLoginRequest,
 	TokenLoginResponse,
+	TwitchConnectAccountRequest,
 	VerifyAccountResponse,
 	WalletLoginRequest,
 	WalletLoginResponse
@@ -270,13 +271,14 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Google token
 	 */
 	const connectTwitch = useCallback(
-		async (token: string) => {
+		async (code: string, redirectURI: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthConnectTwitch, {
-					token,
+				const resp = await send<ConnectAccountResponse, TwitchConnectAccountRequest>(HubKey.AuthConnectTwitch, {
+					code,
+					redirectURI
 				})
 				if (!resp || !resp.user) {
 					return
