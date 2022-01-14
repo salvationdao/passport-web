@@ -232,7 +232,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
 		},
@@ -258,7 +258,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
 		},
@@ -285,7 +285,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
 		},

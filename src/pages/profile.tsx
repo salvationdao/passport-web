@@ -549,7 +549,7 @@ const ProfileEdit: React.FC = () => {
                                 }
                                 await connectFacebook(response.accessToken)
                             } catch (e) {
-                                setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+                                setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
                             }
                         }}
                         onFailure={(error) => {
@@ -593,7 +593,7 @@ const ProfileEdit: React.FC = () => {
                                     const r = response as GoogleLoginResponse
                                     await connectGoogle(r.tokenId)
                                 } catch (e) {
-                                    setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+                                    setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
                                 }
                             }}
                             onFailure={(error) => {
@@ -626,7 +626,7 @@ const ProfileEdit: React.FC = () => {
                             }
                             await connectTwitch(response.code, "http://localhost:5003")
                         } catch (e) {
-                            setErrorMessage(e === "string" ? e : "Something went wrong, please try again")
+                            setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
                         }
                     }}
                         onFailure={(error) => {
