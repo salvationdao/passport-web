@@ -362,10 +362,10 @@ const ProfileEdit: React.FC = () => {
                         onChange={onAvatarChange}
                         avatarPreview
                         sx={{
-                            alignSelf: "center",
                             "& .MuiAvatar-root": {
-                                width: "180px",
-                                height: "180px",
+                                width: "10rem",
+                                height: "10rem",
+                                marginBottom: "1rem"
                             },
                         }}
                     />

@@ -5,11 +5,13 @@ import { useForm } from "react-hook-form"
 import { Link, useHistory } from "react-router-dom"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
+import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { InputField } from "../components/form/inputField"
 import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
+import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
 import { AuthContainer, useAuth } from "../containers/auth"
 import { useWebsocket } from "../containers/socket"
 import HubKey from "../keys"
@@ -25,7 +27,7 @@ export const LoginPage: React.FC = () => {
     const { user, setUser } = useAuth()
     const history = useHistory()
 
-    const { loginGoogle, loginFacebook } = AuthContainer.useContainer()
+    const { loginGoogle, loginFacebook, loginTwitch } = AuthContainer.useContainer()
 
     const { control, handleSubmit } = useForm<LogInInput>()
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -69,6 +71,23 @@ export const LoginPage: React.FC = () => {
     }
     const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
         setErrorMessage(error.status || "Failed to login with Facebook.")
+    }
+
+    const onTwitchLogin = async (response: any) => {
+        try {
+            if (!!response && !!response.status) {
+                setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
+                return
+            }
+            setErrorMessage(null)
+            const r = response as ReactTwitchLoginInfo
+            await loginTwitch(r.code)
+        } catch (e) {
+            setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+        }
+    }
+    const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
+        setErrorMessage(error.status || "Failed to login with Twitch.")
     }
 
     useEffect(() => {
@@ -212,6 +231,21 @@ export const LoginPage: React.FC = () => {
                             </Button>
                         )}
                     />
+                    <TwitchLogin
+                        clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
+                        redirectUri="http://localhost:5003"
+                        callback={onTwitchLogin}
+                        onFailure={onTwitchLoginFailure}
+                        render={(props) => (
+                            <Button
+                                onClick={props.onClick}
+                                disabled={props.isDisabled || props.isProcessing}
+                                startIcon={<TwitchIcon />}
+                                variant="contained"
+                            >
+                                Log in with Twitch
+                            </Button>
+                        )} />
                     <Box sx={{
                         display: "flex",
                         alignItems: "center",

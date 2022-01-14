@@ -131,7 +131,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
-				throw e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return null
 		},
@@ -166,7 +166,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
-				throw e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
 		},
@@ -210,6 +210,41 @@ export const AuthContainer = createContainer(() => {
 			return null
 		},
 		[send, state, admin, account, metaMaskState, sign],
+	)
+
+	/**
+	 * Logs a User in using a Twitch oauth code
+	 *
+	 * @param code Twitch oauth code
+	 */
+	const loginTwitch = useCallback(
+		async (code: string, username?: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginTwitch, {
+					token: code,
+					admin,
+					username,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				localStorage.clear()
+				setUser(null)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state, admin],
 	)
 
 	/**
@@ -488,6 +523,7 @@ export const AuthContainer = createContainer(() => {
 		loginToken,
 		loginGoogle,
 		loginFacebook,
+		loginTwitch,
 		loginMetamask,
 		addFacebook,
 		addGoogle,
