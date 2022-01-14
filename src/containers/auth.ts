@@ -2,14 +2,13 @@ import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import HubKey from "../keys"
 import {
-	ConnectAccountRequest,
-	ConnectAccountResponse,
-	PasswordLoginRequest,
+	AddServiceRequest,
+	AddServiceResponse, AddTwitchRequest, PasswordLoginRequest,
 	PasswordLoginResponse,
+	RemoveServiceRequest,
+	RemoveServiceResponse,
 	TokenLoginRequest,
-	TokenLoginResponse,
-	TwitchConnectAccountRequest,
-	VerifyAccountResponse,
+	TokenLoginResponse, VerifyAccountResponse,
 	WalletLoginRequest,
 	WalletLoginResponse
 } from "../types/auth"
@@ -214,18 +213,67 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
+	 * Removes a User's Facebook account
+	*/
+	const removeFacebook = useCallback(
+		async (id: string, username: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveFacebook, {
+					id, username
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+
+	/**
 	 * Connects a User's existing account to Facebook
 	 *
 	 * @param token Facebook token
 	 */
-	const connectFacebook = useCallback(
+	const addFacebook = useCallback(
 		async (token: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthConnectFacebook, {
+				const resp = await send<AddServiceResponse, AddServiceRequest>(HubKey.UserAddFacebook, {
 					token,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Removes a User's Google account
+	 */
+	const removeGoogle = useCallback(
+		async (id: string, username: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveGoogle, {
+					id, username
 				})
 				if (!resp || !resp.user) {
 					return
@@ -244,13 +292,13 @@ export const AuthContainer = createContainer(() => {
 	 *
 	 * @param token Google token
 	 */
-	const connectGoogle = useCallback(
+	const addGoogle = useCallback(
 		async (token: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<ConnectAccountResponse, ConnectAccountRequest>(HubKey.AuthConnectGoogle, {
+				const resp = await send<AddServiceResponse, AddServiceRequest>(HubKey.UserAddGoogle, {
 					token,
 				})
 				if (!resp || !resp.user) {
@@ -266,17 +314,41 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Connects a User's existing account to Google
+	 * Removes a User's Twitch account
+	 */
+	const removeTwitch = useCallback(
+		async (id: string, username: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveTwitch, {
+					id, username
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Connects a User's existing account to Twitch
 	 *
 	 * @param token Google token
 	 */
-	const connectTwitch = useCallback(
+	const addTwitch = useCallback(
 		async (code: string, redirectURI: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<ConnectAccountResponse, TwitchConnectAccountRequest>(HubKey.AuthConnectTwitch, {
+				const resp = await send<AddServiceResponse, AddTwitchRequest>(HubKey.UserAddTwitch, {
 					code,
 					redirectURI
 				})
@@ -411,16 +483,18 @@ export const AuthContainer = createContainer(() => {
 	/////////////////
 	//  Container  //
 	/////////////////
-
 	return {
 		loginPassword,
 		loginToken,
 		loginGoogle,
 		loginFacebook,
 		loginMetamask,
-		connectFacebook,
-		connectGoogle,
-		connectTwitch,
+		addFacebook,
+		addGoogle,
+		addTwitch,
+		removeFacebook,
+		removeGoogle,
+		removeTwitch,
 		logout,
 		verify,
 		hideVerifyComplete: () => setVerifyCompleteType(undefined),

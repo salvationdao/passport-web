@@ -42,15 +42,24 @@ export interface WalletLoginResponse {
 	token: string
 }
 
-export interface ConnectAccountRequest {
+export interface AddServiceRequest {
 	token: string
 }
 
-export interface ConnectAccountResponse {
+export interface AddServiceResponse {
 	user: User
 }
 
-export interface TwitchConnectAccountRequest {
+export interface RemoveServiceRequest {
+	id: string
+	username: string
+}
+
+export interface RemoveServiceResponse {
+	user: User
+}
+
+export interface AddTwitchRequest {
 	code: string
 	redirectURI: string
 }
