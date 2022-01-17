@@ -624,7 +624,7 @@ const ProfileEdit: React.FC = () => {
                                 setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
                                 return
                             }
-                            await addTwitch(response.code, "http://localhost:5003")
+                            await addTwitch(response.token, "http://localhost:5003")
                         } catch (e) {
                             setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
                         }

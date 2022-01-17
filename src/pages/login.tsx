@@ -81,7 +81,7 @@ export const LoginPage: React.FC = () => {
             }
             setErrorMessage(null)
             const r = response as ReactTwitchLoginInfo
-            await loginTwitch(r.code)
+            await loginTwitch(r.token)
         } catch (e) {
             setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
         }

@@ -378,13 +378,13 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Google token
 	 */
 	const addTwitch = useCallback(
-		async (code: string, redirectURI: string) => {
+		async (token: string, redirectURI: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
 				const resp = await send<AddServiceResponse, AddTwitchRequest>(HubKey.UserAddTwitch, {
-					code,
+					token,
 					redirectURI
 				})
 				if (!resp || !resp.user) {

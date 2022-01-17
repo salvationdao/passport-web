@@ -42,6 +42,12 @@ export interface WalletLoginResponse {
 	token: string
 }
 
+export interface TwitchLoginRequest {
+	token: string
+	username?: string
+	website?: boolean
+}
+
 export interface AddServiceRequest {
 	token: string
 }
@@ -60,7 +66,7 @@ export interface RemoveServiceResponse {
 }
 
 export interface AddTwitchRequest {
-	code: string
+	token: string
 	redirectURI: string
 }
 
