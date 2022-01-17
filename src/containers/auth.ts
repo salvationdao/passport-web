@@ -8,7 +8,7 @@ import {
 	RemoveServiceRequest,
 	RemoveServiceResponse,
 	TokenLoginRequest,
-	TokenLoginResponse, VerifyAccountResponse,
+	TokenLoginResponse, TwitchLoginRequest, VerifyAccountResponse,
 	WalletLoginRequest,
 	WalletLoginResponse
 } from "../types/auth"
@@ -218,15 +218,15 @@ export const AuthContainer = createContainer(() => {
 	 * @param code Twitch oauth code
 	 */
 	const loginTwitch = useCallback(
-		async (code: string, username?: string) => {
+		async (token: string, username?: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginTwitch, {
-					token: code,
-					admin,
+				const resp = await send<PasswordLoginResponse, TwitchLoginRequest>(HubKey.AuthLoginTwitch, {
+					token,
 					username,
+					website: true,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {

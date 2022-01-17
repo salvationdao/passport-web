@@ -6,11 +6,13 @@ import { Link, useHistory } from "react-router-dom"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
+import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { InputField } from "../components/form/inputField"
 import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
+import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
 import { useAuth } from "../containers/auth"
 import { useWebsocket } from "../containers/socket"
 import HubKey from "../keys"
@@ -24,7 +26,7 @@ interface SignUpInput {
 	password?: string
 }
 
-type SignUpType = "email" | "metamask" | "google" | "facebook"
+type SignUpType = "email" | "metamask" | "google" | "facebook" | "twitch"
 
 /**
  * Onboarding Page to Sign up New Users
@@ -33,7 +35,7 @@ export const Onboarding = () => {
 	const history = useHistory()
 	const { send } = useWebsocket()
 	const { user } = useAuth()
-	const { loginFacebook, loginGoogle, setUser } = useAuth()
+	const { loginFacebook, loginGoogle, loginTwitch, setUser } = useAuth()
 
 	const [loading, setLoading] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
@@ -94,6 +96,23 @@ export const Onboarding = () => {
 
 	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
 		setErrorMessage(error.status || "Failed to signup with Facebook.")
+	}
+
+	const onTwitchLogin = async (response: any) => {
+		try {
+			if (!!response && !!response.status) {
+				setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
+				return
+			}
+			setErrorMessage(undefined)
+			const r = response as ReactTwitchLoginInfo
+			await loginTwitch(r.token, username)
+		} catch (e) {
+			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+		}
+	}
+	const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
+		setErrorMessage(error.status || "Failed to login with Twitch.")
 	}
 
 	const renderStep1 = () => {
@@ -276,6 +295,7 @@ export const Onboarding = () => {
 								onFailure={onFacebookLoginFailure}
 								render={(props) => (
 									<Button
+										type="submit"
 										title="Sign Up with Facebook"
 										onClick={async (event) => {
 											if (!(await validUsername())) return
@@ -291,6 +311,47 @@ export const Onboarding = () => {
 							/>
 						</Box>
 					</Box>
+				)
+			case "twitch":
+				return (
+					<Box component="form" onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()} sx={{
+						"& > *:not(:last-child)": {
+							marginBottom: "1rem"
+						}
+					}}>
+						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="standard" autoFocus fullWidth />
+						<Box sx={{
+							display: "flex",
+							"& > *:not(:last-child)": {
+								marginRight: ".5rem"
+							}
+						}}>
+							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
+								marginLeft: "auto",
+								backgroundColor: theme.palette.background.paper
+							})}>
+								Back
+							</Button>
+							<TwitchLogin
+								clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
+								redirectUri="http://localhost:5003"
+								callback={onTwitchLogin}
+								onFailure={onTwitchLoginFailure}
+								render={(props) => (
+									<Button
+										type="submit"
+										title="Sign up with Twitch"
+										onClick={props.onClick}
+										disabled={props.isDisabled || props.isProcessing}
+										startIcon={<TwitchIcon />}
+										variant="contained"
+									>
+										Sign up with Twitch
+									</Button>
+								)} />
+						</Box>
+					</Box>
+
 				)
 		}
 	}
@@ -331,6 +392,16 @@ export const Onboarding = () => {
 				backgroundColor: theme.palette.background.paper
 			})}>
 			Sign up with Facebook
+		</Button>
+		<Button type="button" variant="contained" onClick={() => {
+			setSignUpType("twitch")
+			setCurrentStep(1)
+		}}
+			startIcon={<TwitchIcon />}
+			sx={(theme) => ({
+				backgroundColor: theme.palette.background.paper
+			})}>
+			Sign up with Twitch
 		</Button>
 		<Box sx={{
 			display: "flex",
