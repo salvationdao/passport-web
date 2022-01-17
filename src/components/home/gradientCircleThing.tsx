@@ -20,7 +20,7 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ sx, ..
             })}
             {...props}
         >
-            <Box sx={(theme) => ({
+            {/* <Box sx={(theme) => ({
                 zIndex: 1,
                 position: "absolute",
                 top: 0,
@@ -29,7 +29,7 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ sx, ..
                 bottom: 0,
                 backgroundColor: theme.palette.background.default,
                 opacity: .8
-            })} />
+            })} /> */}
             <Box sx={{
                 position: "absolute",
                 top: "50%",
@@ -38,7 +38,7 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ sx, ..
                 width: "60%",
                 transform: "translate(-50%, -50%)",
                 borderRadius: "50%",
-                background: "linear-gradient(300deg,#5072d9,#8020ec,#d957cc,#449deb)",
+                background: "linear-gradient(300deg,#5072d9 20%,#8020ec,#d957cc,#449deb)",
                 backgroundSize: "130% 130%",
                 animation: `${gradientAnimation} 16s ease infinite`
             }} />
