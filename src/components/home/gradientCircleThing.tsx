@@ -38,7 +38,7 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ sx, ..
                 width: "60%",
                 transform: "translate(-50%, -50%)",
                 borderRadius: "50%",
-                background: "linear-gradient(300deg,#5072d9 20%,#8020ec,#d957cc,#449deb)",
+                background: "linear-gradient(300deg,#5072d9 5%,#8020ec,#d957cc,#449deb)",
                 backgroundSize: "130% 130%",
                 animation: `${gradientAnimation} 16s ease infinite`
             }} />
