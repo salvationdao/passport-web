@@ -10,6 +10,7 @@ import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { FancyButton } from "../components/fancyButton"
 import { InputField } from "../components/form/inputField"
+import { GradientCircleThing, PhaseTypes } from "../components/home/gradientCircleThing"
 import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
 import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
@@ -35,6 +36,9 @@ export const LoginPage: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const [showEmailLogin, setShowEmailLogin] = useState(false)
+
+    // Animating background circle
+    const [animationPhase, setAnimationPhase] = useState<PhaseTypes>("default")
 
     const onMetaMaskLoginFailure = (error: string) => {
         setErrorMessage(error)
@@ -133,10 +137,22 @@ export const LoginPage: React.FC = () => {
                     padding: "3rem"
                 }}
             >
-                <Link to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
-                    width: "100px",
-                    marginBottom: "1rem"
-                }} /></Link>
+                <GradientCircleThing
+                    sx={{
+                        zIndex: -1,
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)"
+                    }}
+                    phase={animationPhase}
+                    hideInner />
+                <Link to="/">
+                    <Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
+                        width: "100px",
+                        marginBottom: "1rem"
+                    }} />
+                </Link>
                 <Typography variant="h1" sx={{
                     marginBottom: "1rem",
                     fontFamily: fonts.bizmobold,
@@ -205,6 +221,7 @@ export const LoginPage: React.FC = () => {
                                 reset(undefined, {
                                     keepValues: true
                                 })
+                                setAnimationPhase("default")
                                 setShowEmailLogin(false)
                             }}>
                                 Back
@@ -286,7 +303,10 @@ export const LoginPage: React.FC = () => {
                                 backgroundColor: theme.palette.text.primary,
                             })} />
                         </Box>
-                        <FancyButton borderColor={colors.white} filled onClick={() => setShowEmailLogin(true)}>
+                        <FancyButton borderColor={colors.white} filled onClick={() => {
+                            setAnimationPhase("small")
+                            setShowEmailLogin(true)
+                        }}>
                             Email Login
                         </FancyButton>
                         <Typography variant="subtitle1" >Don't have an account? <Link to="/onboarding">Sign up here</Link></Typography>
