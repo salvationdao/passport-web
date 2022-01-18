@@ -21,6 +21,7 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, username, 
 	return (
 		<>
 			<FancyButton
+				borderColor="#F6851B"
 				onClick={async () => {
 					if (metaMaskState === MetaMaskState.NotLoggedIn) {
 						await connect()

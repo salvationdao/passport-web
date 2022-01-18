@@ -1,4 +1,4 @@
-import { Alert, Box, Typography } from "@mui/material"
+import { Alert, Box, Snackbar, Typography } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
@@ -191,7 +191,6 @@ export const Onboarding = () => {
 								Create Account
 							</FancyButton>
 						</Box>
-						{!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 					</Box>
 				)
 		}
@@ -396,7 +395,10 @@ export const Onboarding = () => {
 									<FancyButton
 										type="submit"
 										title="Sign up with Twitch"
-										onClick={props.onClick}
+										onClick={async (event) => {
+											if (!(await validUsername())) return
+											props.onClick(event)
+										}}
 										disabled={props.isDisabled || props.isProcessing}
 										startIcon={<TwitchIcon />}
 										sx={{
@@ -408,7 +410,6 @@ export const Onboarding = () => {
 								)} />
 						</Box>
 					</Box>
-
 				)
 		}
 	}
@@ -499,43 +500,58 @@ export const Onboarding = () => {
 	}
 
 	return (
-		<Box
-			sx={{
-				overflow: 'hidden',
-				position: "relative",
-				minHeight: "100vh",
-				display: "flex",
-				justifyContent: "center",
-				alignItems: "center",
-				flexDirection: "column",
-				padding: "3rem"
-			}}
-		>
-			<GradientCircleThing sx={{
-				zIndex: -1,
-				position: "absolute",
-				top: "50%",
-				left: "50%",
-				transform: "translate(-50%, -50%)"
-			}} phase={animationPhase} hideInner />
-			<Link to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
-				width: "100px",
-				marginBottom: "1rem"
-			}} /></Link>
-			<Typography variant="h1" sx={{
-				marginBottom: "1rem",
-				fontFamily: fonts.bizmobold,
-				fontSize: "3rem",
-				textTransform: "uppercase"
-			}}>{currentStep === 0 ? "Create Passport" : "Sign Up"}</Typography>
-			<Box sx={{
-				width: "100%",
-				maxWidth: "400px"
-			}}>
-				{currentStep === 0 && renderStep0()}
-				{currentStep === 1 && renderStep1()}
-				{currentStep === 2 && renderStep2()}
-			</Box>
-		</Box>
+		<>
+			<Snackbar
+				open={!!errorMessage}
+				autoHideDuration={6000}
+				onClose={(_, reason) => {
+					if (reason === 'clickaway') {
+						return
+					}
+
+					setErrorMessage(undefined)
+				}}
+				message={errorMessage}
+			>
+				<Alert severity="error">{errorMessage}</Alert>
+			</Snackbar>
+			<Box
+				sx={{
+					overflow: 'hidden',
+					position: "relative",
+					minHeight: "100vh",
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					flexDirection: "column",
+					padding: "3rem"
+				}}
+			>
+				<GradientCircleThing sx={{
+					zIndex: -1,
+					position: "absolute",
+					top: "50%",
+					left: "50%",
+					transform: "translate(-50%, -50%)"
+				}} phase={animationPhase} hideInner />
+				<Link to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
+					width: "100px",
+					marginBottom: "1rem"
+				}} /></Link>
+				<Typography variant="h1" sx={{
+					marginBottom: "1rem",
+					fontFamily: fonts.bizmobold,
+					fontSize: "3rem",
+					textTransform: "uppercase"
+				}}>{currentStep === 0 ? "Create Passport" : "Sign Up"}</Typography>
+				<Box sx={{
+					width: "100%",
+					maxWidth: "400px"
+				}}>
+					{currentStep === 0 && renderStep0()}
+					{currentStep === 1 && renderStep1()}
+					{currentStep === 2 && renderStep2()}
+				</Box>
+			</Box></>
 	)
 }
