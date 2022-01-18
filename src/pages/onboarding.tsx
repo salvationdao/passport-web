@@ -1,8 +1,8 @@
-import { Alert, Box, Snackbar, Typography } from "@mui/material"
+import { Alert, Box, Link, Snackbar, Typography } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link, useHistory } from "react-router-dom"
+import { Link as RouterLink, useHistory } from "react-router-dom"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
@@ -420,7 +420,7 @@ export const Onboarding = () => {
 			marginBottom: "1rem"
 		}
 	}}>
-		<FancyButton type="button" borderColor="#F6851B" onClick={() => {
+		<FancyButton type="button" borderColor={colors.metamaskOrange} onClick={() => {
 			setSignUpType("metamask")
 			setCurrentStep(1)
 		}}
@@ -434,14 +434,14 @@ export const Onboarding = () => {
 			startIcon={<GoogleIcon />}>
 			Sign up with Google
 		</FancyButton>
-		<FancyButton type="button" borderColor="#3F558C" onClick={() => {
+		<FancyButton type="button" borderColor={colors.facebookBlue} onClick={() => {
 			setSignUpType("facebook")
 			setCurrentStep(1)
 		}}
 			startIcon={<FacebookIcon />}>
 			Sign up with Facebook
 		</FancyButton>
-		<FancyButton type="button" borderColor="#8551F6" onClick={() => {
+		<FancyButton type="button" borderColor={colors.twitchPurple} onClick={() => {
 			setSignUpType("twitch")
 			setCurrentStep(1)
 		}}
@@ -534,10 +534,10 @@ export const Onboarding = () => {
 					left: "50%",
 					transform: "translate(-50%, -50%)"
 				}} phase={animationPhase} hideInner />
-				<Link to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
+				<RouterLink to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
 					width: "100px",
 					marginBottom: "1rem"
-				}} /></Link>
+				}} /></RouterLink>
 				<Typography variant="h1" sx={{
 					marginBottom: "1rem",
 					fontFamily: fonts.bizmobold,
@@ -551,6 +551,9 @@ export const Onboarding = () => {
 					{currentStep === 0 && renderStep0()}
 					{currentStep === 1 && renderStep1()}
 					{currentStep === 2 && renderStep2()}
+					<Typography variant="subtitle1" sx={{
+						marginTop: "1rem"
+					}} >Already have an account? <Link component={RouterLink} to="/login">Login here</Link></Typography>
 				</Box>
 			</Box></>
 	)

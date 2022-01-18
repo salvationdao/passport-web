@@ -1,8 +1,8 @@
-import { Alert, Box, Snackbar, Typography } from "@mui/material"
+import { Alert, Box, Link, Snackbar, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link, useHistory } from "react-router-dom"
+import { Link as RouterLink, useHistory } from "react-router-dom"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
@@ -147,12 +147,12 @@ export const LoginPage: React.FC = () => {
                     }}
                     phase={animationPhase}
                     hideInner />
-                <Link to="/">
+                <RouterLink to="/">
                     <Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
                         width: "100px",
                         marginBottom: "1rem"
                     }} />
-                </Link>
+                </RouterLink>
                 <Typography variant="h1" sx={{
                     marginBottom: "1rem",
                     fontFamily: fonts.bizmobold,
@@ -242,7 +242,7 @@ export const LoginPage: React.FC = () => {
                         }}>
                         <LoginMetaMask
                             onFailure={onMetaMaskLoginFailure}
-                            borderColor="#F6851B"
+                            borderColor={colors.metamaskOrange}
                         />
                         <FacebookLogin
                             appId="577913423867745"
@@ -251,7 +251,7 @@ export const LoginPage: React.FC = () => {
                             onFailure={onFacebookLoginFailure}
                             render={(props) => (
                                 <FancyButton
-                                    borderColor="#3F558C"
+                                    borderColor={colors.facebookBlue}
                                     onClick={props.onClick}
                                     disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
                                     startIcon={<FacebookIcon />}
@@ -279,7 +279,7 @@ export const LoginPage: React.FC = () => {
                             onFailure={onTwitchLoginFailure}
                             render={(props) => (
                                 <FancyButton
-                                    borderColor="#8551F6"
+                                    borderColor={colors.twitchPurple}
                                     onClick={props.onClick}
                                     disabled={props.isDisabled || props.isProcessing}
                                     startIcon={<TwitchIcon />}
@@ -293,17 +293,17 @@ export const LoginPage: React.FC = () => {
                             alignItems: "center",
                         }}>
                             <Box component="span" sx={(theme) => ({
-                                minHeight: "1px",
+                                minHeight: "2px",
                                 width: "100%",
                                 marginRight: "1rem",
-                                backgroundColor: theme.palette.text.primary,
+                                backgroundColor: theme.palette.primary.main,
                             })} />
                             Or
                             <Box component="span" sx={(theme) => ({
-                                minHeight: "1px",
+                                minHeight: "2px",
                                 width: "100%",
                                 marginLeft: "1rem",
-                                backgroundColor: theme.palette.text.primary,
+                                backgroundColor: theme.palette.primary.main,
                             })} />
                         </Box>
                         <FancyButton borderColor={colors.white} filled onClick={() => {
@@ -312,7 +312,7 @@ export const LoginPage: React.FC = () => {
                         }}>
                             Email Login
                         </FancyButton>
-                        <Typography variant="subtitle1" >Don't have an account? <Link to="/onboarding">Sign up here</Link></Typography>
+                        <Typography variant="subtitle1" >Don't have an account? <Link component={RouterLink} to="/onboarding">Sign up here</Link></Typography>
                     </Box>}
                 </Box>
             </Box>

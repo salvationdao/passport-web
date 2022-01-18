@@ -27,6 +27,9 @@ export const colors = {
 	white: "#fff",
 	lightGrey: "#f7f7f7",
 	darkGrey: "#c3c3c3",
+	metamaskOrange: "#F6851B",
+	facebookBlue: "#3F558C",
+	twitchPurple: "#8551F6"
 }
 
 const fallbackFonts = [
@@ -137,7 +140,11 @@ const lightTheme = createTheme({
 			lineHeight: 1.2,
 		},
 		body1: {
+			fontFamily: fonts.bizmoregular,
 			fontSize: 14,
+		},
+		subtitle1: {
+			fontFamily: fonts.bizmoregular
 		},
 		button: {
 			textTransform: "none",
