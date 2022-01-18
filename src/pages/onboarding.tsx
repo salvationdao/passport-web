@@ -43,7 +43,7 @@ export const Onboarding = () => {
 	const [loading, setLoading] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
 
-	const { control, handleSubmit, watch, trigger } = useForm<SignUpInput>()
+	const { control, handleSubmit, watch, trigger, reset } = useForm<SignUpInput>()
 	const username = watch("username")
 
 	const [signUpType, setSignUpType] = useState<SignUpType | null>(null)
@@ -117,11 +117,20 @@ export const Onboarding = () => {
 			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
 		}
 	}
+
 	const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Twitch.")
 	}
 
-	const renderStep1 = () => {
+	const onBack = () => {
+		// Reset errors, but persist form values
+		reset(undefined, {
+			keepValues: true
+		})
+		setCurrentStep((prevStep) => Math.max(prevStep - 1, 0))
+	}
+
+	const renderStep2 = () => {
 		switch (signUpType) {
 			case "email":
 				return (
@@ -130,6 +139,7 @@ export const Onboarding = () => {
 							setLoading(true)
 							setErrorMessage(undefined)
 
+							console.log(input)
 							const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
 							setUser(resp.user)
 							localStorage.setItem("token", resp.token)
@@ -139,6 +149,66 @@ export const Onboarding = () => {
 							setLoading(false)
 						}
 					})} sx={{
+						"& > *:not(:last-child)": {
+							marginBottom: "1rem"
+						}
+					}}>
+						<InputField
+							autoFocus
+							name="password"
+							label="Password"
+							type="password"
+							control={control}
+							placeholder="Password"
+							fullWidth
+							variant="filled"
+							disabled={loading}
+							rules={{
+								required: "Password is required",
+							}}
+						/>
+						<Box>
+							Your password must:
+							<ul>
+								<li>be 8 or more characters long</li>
+								<li>contain <strong>upper</strong> &#38; <strong>lower</strong> case letters</li>
+								<li>contain at least <strong>1 number</strong></li>
+								<li>contain at least <strong>1 symbol</strong></li>
+							</ul>
+						</Box>
+						<Box sx={{
+							display: "flex",
+							"& > *:not(:last-child)": {
+								marginRight: ".5rem"
+							}
+						}}>
+							<FancyButton type="button" onClick={onBack}>
+								Back
+							</FancyButton>
+							<FancyButton type="submit" disabled={loading} sx={{
+								flexGrow: 1,
+							}}>
+								Create Account
+							</FancyButton>
+						</Box>
+						{!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+					</Box>
+				)
+		}
+
+		return null
+	}
+
+	const renderStep1 = () => {
+		switch (signUpType) {
+			case "email":
+				return (
+					<Box component="form" onSubmit={async (e: any) => {
+						e.preventDefault()
+						const isStepValid = await trigger()
+						if (!isStepValid) return
+						setCurrentStep(2)
+					}} sx={{
 						"& > *:not(:last-child)": {
 							marginBottom: "1rem"
 						}
@@ -162,37 +232,21 @@ export const Onboarding = () => {
 							variant="filled"
 							disabled={loading}
 						/>
-						<InputField
-							name="password"
-							label="Password"
-							type="password"
-							control={control}
-							placeholder="Password"
-							fullWidth
-							variant="filled"
-							disabled={loading}
-							rules={{
-								required: "Password is required",
-							}}
-						/>
 						<Box sx={{
 							display: "flex",
 							"& > *:not(:last-child)": {
 								marginRight: ".5rem"
 							}
 						}}>
-							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								backgroundColor: theme.palette.background.paper
-							})}>
+							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
 							<FancyButton type="submit" disabled={loading} sx={{
 								flexGrow: 1,
 							}}>
-								Create Account
+								Next
 							</FancyButton>
 						</Box>
-						{!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 					</Box>
 				)
 			case "metamask":
@@ -209,9 +263,7 @@ export const Onboarding = () => {
 								marginRight: ".5rem"
 							}
 						}}>
-							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								backgroundColor: theme.palette.background.paper
-							})}>
+							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
 							<LoginMetaMask
@@ -246,9 +298,7 @@ export const Onboarding = () => {
 								marginRight: ".5rem"
 							}
 						}}>
-							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								backgroundColor: theme.palette.background.paper
-							})}>
+							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
 							<GoogleLogin
@@ -291,9 +341,7 @@ export const Onboarding = () => {
 								marginRight: ".5rem"
 							}
 						}}>
-							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								backgroundColor: theme.palette.background.paper
-							})}>
+							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
 							<FacebookLogin
@@ -336,9 +384,7 @@ export const Onboarding = () => {
 								marginRight: ".5rem"
 							}
 						}}>
-							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								backgroundColor: theme.palette.background.paper
-							})}>
+							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
 							<TwitchLogin
@@ -378,40 +424,28 @@ export const Onboarding = () => {
 			setSignUpType("metamask")
 			setCurrentStep(1)
 		}}
-			startIcon={<MetaMaskIcon />}
-			sx={(theme) => ({
-				backgroundColor: theme.palette.background.paper
-			})}>
+			startIcon={<MetaMaskIcon />}>
 			Sign up with MetaMask
 		</FancyButton>
 		<FancyButton type="button" borderColor={colors.white} onClick={() => {
 			setSignUpType("google")
 			setCurrentStep(1)
 		}}
-			startIcon={<GoogleIcon />}
-			sx={(theme) => ({
-				backgroundColor: theme.palette.background.paper
-			})}>
+			startIcon={<GoogleIcon />}>
 			Sign up with Google
 		</FancyButton>
 		<FancyButton type="button" borderColor="#3F558C" onClick={() => {
 			setSignUpType("facebook")
 			setCurrentStep(1)
 		}}
-			startIcon={<FacebookIcon />}
-			sx={(theme) => ({
-				backgroundColor: theme.palette.background.paper
-			})}>
+			startIcon={<FacebookIcon />}>
 			Sign up with Facebook
 		</FancyButton>
 		<FancyButton type="button" borderColor="#8551F6" onClick={() => {
 			setSignUpType("twitch")
 			setCurrentStep(1)
 		}}
-			startIcon={<TwitchIcon />}
-			sx={(theme) => ({
-				backgroundColor: theme.palette.background.paper
-			})}>
+			startIcon={<TwitchIcon />}>
 			Sign up with Twitch
 		</FancyButton>
 		<Box sx={{
@@ -493,13 +527,14 @@ export const Onboarding = () => {
 				fontFamily: fonts.bizmobold,
 				fontSize: "3rem",
 				textTransform: "uppercase"
-			}}>{currentStep == 0 ? "Create Passport" : "Sign Up"}</Typography>
+			}}>{currentStep === 0 ? "Create Passport" : "Sign Up"}</Typography>
 			<Box sx={{
 				width: "100%",
 				maxWidth: "400px"
 			}}>
 				{currentStep === 0 && renderStep0()}
 				{currentStep === 1 && renderStep1()}
+				{currentStep === 2 && renderStep2()}
 			</Box>
 		</Box>
 	)
