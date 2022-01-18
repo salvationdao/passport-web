@@ -184,6 +184,17 @@ const lightTheme = createTheme({
 				}
 			}
 		},
+		MuiFilledInput: {
+			styleOverrides: {
+				root: {
+					borderRadius: 0,
+					backgroundColor: colors.lightNavyBlue,
+					"&&::before": {
+						borderColor: "transparent"
+					}
+				}
+			}
+		},
 		MuiFormLabel: {
 			styleOverrides: {
 				root: {

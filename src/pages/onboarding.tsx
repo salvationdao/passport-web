@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Typography } from "@mui/material"
+import { Alert, Box, Typography } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
@@ -143,9 +143,9 @@ export const Onboarding = () => {
 							marginBottom: "1rem"
 						}
 					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="standard" autoFocus fullWidth />
-						<InputField name="firstName" label="First Name" control={control} fullWidth variant="standard" disabled={loading} />
-						<InputField name="lastName" label="Last Name" control={control} fullWidth variant="standard" disabled={loading} />
+						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
+						<InputField name="firstName" label="First Name" control={control} fullWidth variant="filled" disabled={loading} />
+						<InputField name="lastName" label="Last Name" control={control} fullWidth variant="filled" disabled={loading} />
 						<InputField
 							name="email"
 							label="Email"
@@ -159,7 +159,7 @@ export const Onboarding = () => {
 								},
 							}}
 							fullWidth
-							variant="standard"
+							variant="filled"
 							disabled={loading}
 						/>
 						<InputField
@@ -169,7 +169,7 @@ export const Onboarding = () => {
 							control={control}
 							placeholder="Password"
 							fullWidth
-							variant="standard"
+							variant="filled"
 							disabled={loading}
 							rules={{
 								required: "Password is required",
@@ -181,15 +181,16 @@ export const Onboarding = () => {
 								marginRight: ".5rem"
 							}
 						}}>
-							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								marginLeft: "auto",
+							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
-							</Button>
-							<Button type="submit" variant="contained" color="primary" disabled={loading}>
+							</FancyButton>
+							<FancyButton type="submit" disabled={loading} sx={{
+								flexGrow: 1,
+							}}>
 								Create Account
-							</Button>
+							</FancyButton>
 						</Box>
 						{!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 					</Box>
@@ -201,19 +202,18 @@ export const Onboarding = () => {
 							marginBottom: "1rem"
 						}
 					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="standard" autoFocus fullWidth />
+						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
 						<Box sx={{
 							display: "flex",
 							"& > *:not(:last-child)": {
 								marginRight: ".5rem"
 							}
 						}}>
-							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								marginLeft: "auto",
+							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
-							</Button>
+							</FancyButton>
 							<LoginMetaMask
 								type="submit"
 								signUp
@@ -225,6 +225,9 @@ export const Onboarding = () => {
 									return true
 								}}
 								onFailure={onMetaMaskLoginFailure}
+								sx={{
+									flexGrow: 1
+								}}
 							/>
 						</Box>
 					</Box>
@@ -236,27 +239,25 @@ export const Onboarding = () => {
 							marginBottom: "1rem"
 						}
 					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="standard" autoFocus fullWidth />
+						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
 						<Box sx={{
 							display: "flex",
 							"& > *:not(:last-child)": {
 								marginRight: ".5rem"
 							}
 						}}>
-							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								marginLeft: "auto",
+							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
-							</Button>
+							</FancyButton>
 							<GoogleLogin
 								clientId="593683501366-gk7ab1nnskc1tft14bk8ebsja1bce24v.apps.googleusercontent.com"
-								buttonText="Login"
 								onSuccess={onGoogleLogin}
 								onFailure={onGoogleLoginFailure}
 								cookiePolicy={"single_host_origin"}
 								render={(props) => (
-									<Button
+									<FancyButton
 										type="submit"
 										onClick={async () => {
 											if (!(await validUsername())) return
@@ -265,10 +266,12 @@ export const Onboarding = () => {
 										disabled={props.disabled}
 										title="Sign up with Google"
 										startIcon={<GoogleIcon />}
-										variant="contained"
+										sx={{
+											flexGrow: 1,
+										}}
 									>
 										Sign up with Google
-									</Button>
+									</FancyButton>
 								)}
 							/>
 						</Box>
@@ -281,26 +284,25 @@ export const Onboarding = () => {
 							marginBottom: "1rem"
 						}
 					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="standard" autoFocus fullWidth />
+						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
 						<Box sx={{
 							display: "flex",
 							"& > *:not(:last-child)": {
 								marginRight: ".5rem"
 							}
 						}}>
-							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								marginLeft: "auto",
+							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
-							</Button>
+							</FancyButton>
 							<FacebookLogin
 								appId="577913423867745"
 								fields="email"
 								callback={onFacebookLogin}
 								onFailure={onFacebookLoginFailure}
 								render={(props) => (
-									<Button
+									<FancyButton
 										type="submit"
 										title="Sign Up with Facebook"
 										onClick={async (event) => {
@@ -309,10 +311,12 @@ export const Onboarding = () => {
 										}}
 										disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
 										startIcon={<FacebookIcon />}
-										variant="contained"
+										sx={{
+											flexGrow: 1
+										}}
 									>
 										Sign Up with Facebook
-									</Button>
+									</FancyButton>
 								)}
 							/>
 						</Box>
@@ -325,35 +329,36 @@ export const Onboarding = () => {
 							marginBottom: "1rem"
 						}
 					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="standard" autoFocus fullWidth />
+						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
 						<Box sx={{
 							display: "flex",
 							"& > *:not(:last-child)": {
 								marginRight: ".5rem"
 							}
 						}}>
-							<Button type="button" variant="contained" onClick={() => setCurrentStep(0)} sx={(theme) => ({
-								marginLeft: "auto",
+							<FancyButton type="button" onClick={() => setCurrentStep(0)} sx={(theme) => ({
 								backgroundColor: theme.palette.background.paper
 							})}>
 								Back
-							</Button>
+							</FancyButton>
 							<TwitchLogin
 								clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
 								redirectUri="http://localhost:5003"
 								callback={onTwitchLogin}
 								onFailure={onTwitchLoginFailure}
 								render={(props) => (
-									<Button
+									<FancyButton
 										type="submit"
 										title="Sign up with Twitch"
 										onClick={props.onClick}
 										disabled={props.isDisabled || props.isProcessing}
 										startIcon={<TwitchIcon />}
-										variant="contained"
+										sx={{
+											flexGrow: 1
+										}}
 									>
 										Sign up with Twitch
-									</Button>
+									</FancyButton>
 								)} />
 						</Box>
 					</Box>

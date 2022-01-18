@@ -13,7 +13,7 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, filled, borderC
         <Button sx={{
             boxSizing: "content-box",
             position: "relative",
-            padding: ".5rem 3rem",
+            padding: ".5rem",
             borderRadius: 0,
             border: `2px solid ${borderColor || theme.palette.primary.main}`,
             textTransform: "uppercase",
