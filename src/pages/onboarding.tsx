@@ -9,13 +9,16 @@ import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.
 import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
+import { FancyButton } from "../components/fancyButton"
 import { InputField } from "../components/form/inputField"
+import { GradientCircleThing, PhaseTypes } from "../components/home/gradientCircleThing"
 import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
 import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
 import { useAuth } from "../containers/auth"
 import { useWebsocket } from "../containers/socket"
 import HubKey from "../keys"
+import { colors, fonts } from "../theme"
 import { RegisterResponse } from "../types/auth"
 
 interface SignUpInput {
@@ -45,6 +48,9 @@ export const Onboarding = () => {
 
 	const [signUpType, setSignUpType] = useState<SignUpType | null>(null)
 	const [currentStep, setCurrentStep] = useState(0)
+
+	// For gradient circle animations
+	const [animationPhase, setAnimationPhase] = useState<PhaseTypes>("default")
 
 	const validUsername = useCallback(async (): Promise<boolean> => {
 		// check username isn't empty
@@ -363,7 +369,7 @@ export const Onboarding = () => {
 			marginBottom: "1rem"
 		}
 	}}>
-		<Button type="button" variant="contained" onClick={() => {
+		<FancyButton type="button" borderColor="#F6851B" onClick={() => {
 			setSignUpType("metamask")
 			setCurrentStep(1)
 		}}
@@ -372,8 +378,8 @@ export const Onboarding = () => {
 				backgroundColor: theme.palette.background.paper
 			})}>
 			Sign up with MetaMask
-		</Button>
-		<Button type="button" variant="contained" onClick={() => {
+		</FancyButton>
+		<FancyButton type="button" borderColor={colors.white} onClick={() => {
 			setSignUpType("google")
 			setCurrentStep(1)
 		}}
@@ -382,8 +388,8 @@ export const Onboarding = () => {
 				backgroundColor: theme.palette.background.paper
 			})}>
 			Sign up with Google
-		</Button>
-		<Button type="button" variant="contained" onClick={() => {
+		</FancyButton>
+		<FancyButton type="button" borderColor="#3F558C" onClick={() => {
 			setSignUpType("facebook")
 			setCurrentStep(1)
 		}}
@@ -392,8 +398,8 @@ export const Onboarding = () => {
 				backgroundColor: theme.palette.background.paper
 			})}>
 			Sign up with Facebook
-		</Button>
-		<Button type="button" variant="contained" onClick={() => {
+		</FancyButton>
+		<FancyButton type="button" borderColor="#8551F6" onClick={() => {
 			setSignUpType("twitch")
 			setCurrentStep(1)
 		}}
@@ -402,34 +408,43 @@ export const Onboarding = () => {
 				backgroundColor: theme.palette.background.paper
 			})}>
 			Sign up with Twitch
-		</Button>
+		</FancyButton>
 		<Box sx={{
 			display: "flex",
 			alignItems: "center",
 		}}>
 			<Box component="span" sx={(theme) => ({
-				minHeight: "1px",
+				minHeight: "2px",
 				width: "100%",
 				marginRight: "1rem",
-				backgroundColor: theme.palette.text.primary,
+				backgroundColor: theme.palette.primary.main,
 			})} />
 			Or
 			<Box component="span" sx={(theme) => ({
-				minHeight: "1px",
+				minHeight: "2px",
 				width: "100%",
 				marginLeft: "1rem",
-				backgroundColor: theme.palette.text.primary,
+				backgroundColor: theme.palette.primary.main,
 			})} />
 		</Box>
-		<Button variant="contained" onClick={() => {
+		<FancyButton borderColor={colors.white} filled onClick={() => {
 			setCurrentStep(1)
 			setSignUpType("email")
-		}} sx={(theme) => ({
-			backgroundColor: theme.palette.background.paper
-		})}>
+		}}>
 			Email Signup
-		</Button>
+		</FancyButton>
 	</Box>)
+
+	useEffect(() => {
+		switch (currentStep) {
+			case 0:
+				setAnimationPhase("default")
+				break
+			case 1:
+				setAnimationPhase("small")
+				break
+		}
+	}, [currentStep])
 
 	useEffect(() => {
 		if (!user) return
@@ -457,18 +472,27 @@ export const Onboarding = () => {
 				padding: "3rem"
 			}}
 		>
+			<GradientCircleThing sx={{
+				zIndex: -1,
+				position: "absolute",
+				top: "50%",
+				left: "50%",
+				transform: "translate(-50%, -50%)"
+			}} phase={animationPhase} hideInner />
 			<Link to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
 				width: "100px",
 				marginBottom: "1rem"
 			}} /></Link>
+			<Typography variant="h1" sx={{
+				marginBottom: "1rem",
+				fontFamily: fonts.bizmobold,
+				fontSize: "3rem",
+				textTransform: "uppercase"
+			}}>{currentStep == 0 ? "Create Passport" : "Sign Up"}</Typography>
 			<Box sx={{
 				width: "100%",
-				maxWidth: "600px"
+				maxWidth: "400px"
 			}}>
-				<Typography variant="h1" sx={{
-					marginBottom: "1rem",
-					fontSize: "2rem"
-				}}>Sign up</Typography>
 				{currentStep === 0 && renderStep0()}
 				{currentStep === 1 && renderStep1()}
 			</Box>

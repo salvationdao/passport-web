@@ -1,26 +1,76 @@
 import { Box, BoxProps, keyframes, useTheme } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+export type PhaseTypes = "small" | "big" | "default" | "disappear"
 
 interface GradientCircleThingProps extends BoxProps {
-
+    innerOpacity?: number
+    hideInner?: boolean
+    // For animation purposes
+    phase?: PhaseTypes
+    playDisappear?: boolean
 }
 
-export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ sx, ...props }) => {
+export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerOpacity, hideInner, phase, playDisappear, sx, ...props }) => {
     const theme = useTheme()
+    const [animationStyles, setAnimationStyles] = useState({
+        height: "70vw",
+        width: "70vw",
+        transform: "scale(1.0)",
+        opacity: 1
+    })
+
+    useEffect(() => {
+        switch (phase) {
+            case "small":
+                setAnimationStyles((prev) => ({
+                    ...prev,
+                    height: "45vw",
+                    width: "45vw",
+                    transform: sx && (sx as any).transform ? `${(sx as any).transform} scale(1.0)` : "scale(1.0)",
+                    opacity: 1
+                }))
+                break
+            case "big":
+                setAnimationStyles((prev) => ({
+                    ...prev,
+                    height: "80vw",
+                    width: "80vw",
+                    transform: sx && (sx as any).transform ? `${(sx as any).transform} scale(1.0)` : "scale(1.0)",
+                    opacity: 1
+                }))
+                break
+            case 'disappear':
+                setAnimationStyles((prev) => ({
+                    ...prev,
+                    transform: sx && (sx as any).transform ? `${(sx as any).transform} scale(1.5)` : "scale(1.5)",
+                    opacity: 0
+                }))
+                break
+            case "default":
+            default:
+                setAnimationStyles({
+                    height: "70vw",
+                    width: "70vw",
+                    transform: "scale(1.0)",
+                    opacity: 1,
+                })
+        }
+    }, [sx, phase])
 
     return (
         <Box
             sx={({
                 overflow: "hidden",
-                height: "70vw",
-                width: "70vw",
                 borderRadius: "50%",
                 border: `2px solid ${theme.palette.secondary.main}`,
+                transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform .2s ease-out, opacity .5s ease-out",
+                ...animationStyles,
                 ...sx
             })}
             {...props}
         >
-            {/* <Box sx={(theme) => ({
+            {!!innerOpacity && <Box sx={(theme) => ({
                 zIndex: 1,
                 position: "absolute",
                 top: 0,
@@ -28,9 +78,9 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ sx, ..
                 right: 0,
                 bottom: 0,
                 backgroundColor: theme.palette.background.default,
-                opacity: .8
-            })} /> */}
-            <Box sx={{
+                opacity: innerOpacity,
+            })} />}
+            {!hideInner && <Box sx={{
                 position: "absolute",
                 top: "50%",
                 left: "50%",
@@ -41,7 +91,7 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ sx, ..
                 background: "linear-gradient(300deg,#5072d9 5%,#8020ec,#d957cc,#449deb)",
                 backgroundSize: "130% 130%",
                 animation: `${gradientAnimation} 16s ease infinite`
-            }} />
+            }} />}
         </Box>
     );
 }

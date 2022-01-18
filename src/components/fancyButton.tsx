@@ -3,9 +3,10 @@ import { Button, ButtonProps, useTheme } from "@mui/material";
 interface FancyButtonProps extends ButtonProps {
     fancy?: boolean
     borderColor?: string
+    filled?: boolean
 }
 
-export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, sx, children, ...props }) => {
+export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, filled, borderColor, sx, children, ...props }) => {
     const theme = useTheme()
 
     return (
@@ -16,7 +17,10 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, sx
             borderRadius: 0,
             border: `2px solid ${borderColor || theme.palette.primary.main}`,
             textTransform: "uppercase",
+            background: filled ? borderColor : "transparent",
+            color: filled ? theme.palette.background.default : "inherit",
             "&:hover": {
+                color: "inherit",
                 "&::before": {
                     opacity: .4,
                 },

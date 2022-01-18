@@ -21,11 +21,37 @@ declare module "@mui/material/Button" {
 export const colors = {
 	neonPink: "#f72485",
 	skyBlue: "#4CC9F0",
+	lightNavyBlue: "#211E33",
 	navyBlue: "#0a061f",
 	darkNavyBlue: "#030208",
 	white: "#fff",
 	lightGrey: "#f7f7f7",
 	darkGrey: "#c3c3c3",
+}
+
+const fallbackFonts = [
+	"-apple-system",
+	"BlinkMacSystemFont",
+	'"Segoe UI"',
+	"Roboto",
+	'"Helvetica Neue"',
+	"Arial",
+	"sans-serif",
+	'"Apple Color Emoji"',
+	'"Segoe UI Emoji"',
+	'"Segoe UI Symbol"',
+]
+
+export const fonts = {
+	bizmoblack: ["bizmoblack", ...fallbackFonts].join(","),
+	bizmobold: ["bizmobold", ...fallbackFonts].join(","),
+	bizmoextra_bold: ["bizmoextra_bold", ...fallbackFonts].join(","),
+	bizmoextra_light: ["bizmoextra_light", ...fallbackFonts].join(","),
+	bizmolight: ["bizmolight", ...fallbackFonts].join(","),
+	bizmomedium: ["bizmomedium", ...fallbackFonts].join(","),
+	bizmosemi_bold: ["bizmosemi_bold", ...fallbackFonts].join(","),
+	bizmothin: ["bizmothin", ...fallbackFonts].join(","),
+	bizmoregular: ["bizmoregular", ...fallbackFonts].join(","),
 }
 
 const lightTheme = createTheme({
@@ -74,19 +100,7 @@ const lightTheme = createTheme({
 		},
 	},
 	typography: {
-		fontFamily: [
-			"bizmomedium",
-			"-apple-system",
-			"BlinkMacSystemFont",
-			'"Segoe UI"',
-			"Roboto",
-			'"Helvetica Neue"',
-			"Arial",
-			"sans-serif",
-			'"Apple Color Emoji"',
-			'"Segoe UI Emoji"',
-			'"Segoe UI Symbol"',
-		].join(","),
+		fontFamily: fonts.bizmomedium,
 		fontSize: 14,
 		fontWeightLight: 300,
 		fontWeightRegular: 400,
