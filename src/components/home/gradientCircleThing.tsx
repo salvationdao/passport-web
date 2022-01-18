@@ -16,7 +16,6 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerO
     const [animationStyles, setAnimationStyles] = useState({
         height: "70vw",
         width: "70vw",
-        transform: "scale(1.0)",
         opacity: 1
     })
 
@@ -27,7 +26,6 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerO
                     ...prev,
                     height: "45vw",
                     width: "45vw",
-                    transform: sx && (sx as any).transform ? `${(sx as any).transform} scale(1.0)` : "scale(1.0)",
                     opacity: 1
                 }))
                 break
@@ -36,14 +34,12 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerO
                     ...prev,
                     height: "80vw",
                     width: "80vw",
-                    transform: sx && (sx as any).transform ? `${(sx as any).transform} scale(1.0)` : "scale(1.0)",
                     opacity: 1
                 }))
                 break
             case 'disappear':
                 setAnimationStyles((prev) => ({
                     ...prev,
-                    transform: sx && (sx as any).transform ? `${(sx as any).transform} scale(1.5)` : "scale(1.5)",
                     opacity: 0
                 }))
                 break
@@ -52,7 +48,6 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerO
                 setAnimationStyles({
                     height: "70vw",
                     width: "70vw",
-                    transform: "scale(1.0)",
                     opacity: 1,
                 })
         }
@@ -64,9 +59,9 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerO
                 overflow: "hidden",
                 borderRadius: "50%",
                 border: `2px solid ${theme.palette.secondary.main}`,
-                transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform .2s ease-out, opacity .5s ease-out",
+                transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
                 ...animationStyles,
-                ...sx
+                ...sx,
             })}
             {...props}
         >

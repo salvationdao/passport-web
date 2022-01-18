@@ -139,7 +139,6 @@ export const Onboarding = () => {
 							setLoading(true)
 							setErrorMessage(undefined)
 
-							console.log(input)
 							const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
 							setUser(resp.user)
 							localStorage.setItem("token", resp.token)
@@ -484,6 +483,7 @@ export const Onboarding = () => {
 				setAnimationPhase("small")
 				break
 		}
+
 	}, [currentStep])
 
 	useEffect(() => {

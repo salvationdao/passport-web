@@ -1,12 +1,12 @@
 import MetaMaskOnboarding from "@metamask/onboarding"
-import { Alert, ButtonProps } from "@mui/material"
+import { Alert } from "@mui/material"
 import { useState } from "react"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
 import { AuthContainer } from "../containers"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
-import { FancyButton } from "./fancyButton"
+import { FancyButton, FancyButtonProps } from "./fancyButton"
 
-interface LoginMetaMaskProps extends ButtonProps {
+interface LoginMetaMaskProps extends FancyButtonProps {
 	signUp?: boolean
 	username?: string
 	onFailure?: (err: string) => void
@@ -21,7 +21,6 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, username, 
 	return (
 		<>
 			<FancyButton
-				borderColor="#F6851B"
 				onClick={async () => {
 					if (metaMaskState === MetaMaskState.NotLoggedIn) {
 						await connect()

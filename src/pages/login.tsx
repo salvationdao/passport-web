@@ -240,7 +240,10 @@ export const LoginPage: React.FC = () => {
                                 marginBottom: "1rem"
                             }
                         }}>
-                        <LoginMetaMask onFailure={onMetaMaskLoginFailure} />
+                        <LoginMetaMask
+                            onFailure={onMetaMaskLoginFailure}
+                            borderColor="#F6851B"
+                        />
                         <FacebookLogin
                             appId="577913423867745"
                             fields="email"

@@ -1,7 +1,7 @@
 import { LoadingButton, LoadingButtonProps } from "@mui/lab";
 import { useTheme } from "@mui/material";
 
-interface FancyButtonProps extends LoadingButtonProps {
+export interface FancyButtonProps extends LoadingButtonProps {
     fancy?: boolean
     borderColor?: string
     filled?: boolean
