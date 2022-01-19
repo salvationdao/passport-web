@@ -528,6 +528,7 @@ export const AuthContainer = createContainer(() => {
 		)
 	}, [id, subscribe, logout, authorised])
 
+	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
 		if (user && sessionID) {
 			window.close()
