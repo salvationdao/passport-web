@@ -5,6 +5,7 @@ import { Onboarding } from "./pages/onboarding"
 import { ProfilePage } from "./pages/profile"
 import { Settings } from "./pages/settings"
 import { WalletPage } from "./pages/wallet"
+import { BadgesPage } from "./pages/badges"
 
 export const Routes = () => {
 	return (
@@ -17,6 +18,8 @@ export const Routes = () => {
 					<Route path="/onboarding" component={Onboarding} />
 					<Route path="/profile" component={ProfilePage} />
 					<Route path="/wallet" component={WalletPage} />
+					<Route path="/badges" component={BadgesPage} />
+
 					<Route path="/privacy-policy" component={Home} />
 					<Route path="/terms-and-conditions" component={Home} />
 					<Route path="/settings" component={Settings} />
