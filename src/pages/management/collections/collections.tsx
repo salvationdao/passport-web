@@ -1,16 +1,36 @@
 import { Box, BoxProps, Button, Paper, styled, Typography } from "@mui/material"
-import BottomLeftMatrix from "../assets/images/games/axie infinity.png"
-import SupremacyLogo from "../assets/images/supremacy-logo.svg"
-import EthLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg" // fix this
-import { Navbar } from "../components/home/navbar"
+import { useEffect } from "react"
+import { useHistory } from "react-router-dom"
+import EthLogo from "../../../assets/images/crypto/binance-coin-bnb-logo.svg" // fix this
+import BottomLeftMatrix from "../../../assets/images/games/axie infinity.png"
+import AnomalyIcon from "../../../assets/images/icons/badges/Anomaly.png"
+import CommonIcon from "../../../assets/images/icons/badges/Common.png"
+import EpicIcon from "../../../assets/images/icons/badges/Epic.png"
+import LegendaryIcon from "../../../assets/images/icons/badges/Legendary.png"
+import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
+import { FancyButton } from "../../../components/fancyButton"
+import { Navbar } from "../../../components/home/navbar"
+import { Loading } from "../../../components/loading"
+import { AuthContainer } from "../../../containers"
+import { colors } from "../../../theme"
 
-// rarity icons
-import EpicIcon from "../assets/images/icons/badges/Epic.png" // fix this
-import LegendaryIcon from "../assets/images/icons/badges/Legendary.png" // fix this
-import CommonIcon from "../assets/images/icons/badges/Common.png" // fix this
-import AnomalyIcon from "../assets/images/icons/badges/Anomaly.png" // fix this
+export const CollectionsPage: React.FC = () => {
+	const history = useHistory()
+	const { user } = AuthContainer.useContainer()
 
-export const BadgesPage: React.FC = () => {
+	useEffect(() => {
+		if (user) return
+
+		const userTimeout = setTimeout(() => {
+			history.push("/login")
+		}, 2000)
+		return () => clearTimeout(userTimeout)
+	}, [user, history])
+
+	if (!user) {
+		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+	}
+
 	return (
 		<Box
 			sx={{
@@ -20,6 +40,8 @@ export const BadgesPage: React.FC = () => {
 			}}
 		>
 			<Navbar />
+
+			{/* Header */}
 			<Paper
 				sx={{
 					width: "100%",
@@ -30,7 +52,6 @@ export const BadgesPage: React.FC = () => {
 					borderRadius: 0,
 				}}
 			>
-				{/* HEADER */}
 				<Box
 					sx={{
 						display: "flex",
@@ -92,7 +113,6 @@ export const BadgesPage: React.FC = () => {
 						Traded
 					</Typography>
 				</Box>
-				{/* END HEADER */}
 			</Paper>
 
 			<Paper
@@ -102,24 +122,29 @@ export const BadgesPage: React.FC = () => {
 					margin: "0 auto",
 					borderRadius: 0,
 					backgroundColor: "transparent",
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "space-between",
 				}}
 			>
-				<CollectionGroup />
-				<CollectionGroup />
-				<CollectionGroup />
+				{/* use collection id */}
+				<CollectionAssets />
+				<CollectionAssets />
+				<CollectionAssets />
 			</Paper>
 		</Box>
 	)
 }
 
-const CollectionGroup: React.FC = () => {
+const CollectionAssets: React.FC = () => {
+	const history = useHistory()
 	return (
 		<Box sx={{ marginBottom: "30px", marginLeft: "15px", marginRight: "15px" }}>
 			<Box sx={{ display: "flex" }}>
 				<Box
 					component="img"
 					src={SupremacyLogo}
-					alt="Background matrix image"
+					alt="Collection Logo"
 					sx={{
 						width: 229,
 						height: 25,
@@ -127,7 +152,7 @@ const CollectionGroup: React.FC = () => {
 					}}
 				/>
 
-				<Button>
+				<ViewCollectionButton onClick={() => history.push("/assets/supremacy")}>
 					<Typography
 						variant="h4"
 						sx={{
@@ -138,25 +163,39 @@ const CollectionGroup: React.FC = () => {
 					>
 						View Entire Collection
 					</Typography>
-				</Button>
+				</ViewCollectionButton>
 			</Box>
 
-			<BadgesSection>
+			<AssetsSection>
 				{/* Place holder cards */}
-				<BadgeCard name="Candice mk ii" price="9999" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} />
-				<BadgeCard name="Maverick" price="999" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} />
-				<BadgeCard name="Big Boi" price="778" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} />
-				<BadgeCard name="Django" price="3000" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} />
-			</BadgesSection>
+				<AssetCard name="Candice mk ii" price="0.9999" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} />
+				<AssetCard name="Maverick" price="999" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} />
+				<AssetCard name="Big Boi" price="778" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} />
+				<AssetCard name="Django" price="3000" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} />
+			</AssetsSection>
 		</Box>
 	)
 }
-const ViewPropertiesButton = styled((props) => <Button {...props} />)(({ theme }) => ({
+
+const ViewPropertiesButton = styled((props) => <FancyButton fancy borderColor={colors.skyBlue} {...props} />)(({ theme }) => ({
 	border: `2px solid ${theme.palette.secondary.main}`,
 	width: "100%",
 }))
+const ViewCollectionButton = styled((props: { onClick: () => void }) => <Button {...props} />)(({ theme }) => ({
+	"&:hover": {
+		color: theme.palette.primary.main,
 
-const BadgesSection = styled((props) => <Box {...props} />)(({ theme }) => ({
+		"&::before": {
+			opacity: 0.4,
+		},
+		"&::after": {
+			opacity: 0.2,
+			transitionDelay: ".1s",
+		},
+	},
+}))
+
+const AssetsSection = styled((props) => <Box {...props} />)(({ theme }) => ({
 	display: "flex",
 	overflowX: "auto",
 	marginBottom: "10px",
@@ -173,7 +212,7 @@ enum Rarity {
 	Common,
 	Anomaly,
 }
-interface BadgeCardProps extends BoxProps {
+interface AssetCardProps extends BoxProps {
 	name: string
 	price: string
 	rarity: Rarity
@@ -181,7 +220,7 @@ interface BadgeCardProps extends BoxProps {
 	currency: Currency
 }
 
-const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type, currency }) => {
+const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, currency }) => {
 	let currencyLogo = EthLogo
 	if (currency === Currency.Ethereum) {
 		currencyLogo = EthLogo
@@ -213,7 +252,7 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type, curren
 				justifyContent: "space-between",
 				alignItems: "center",
 				padding: "2rem",
-				border: `4px solid grey`,
+				border: `4px solid #A8A7A7`,
 				cursor: "pointer",
 				width: "357px",
 				height: "513px",
