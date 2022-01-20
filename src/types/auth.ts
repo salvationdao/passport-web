@@ -1,4 +1,4 @@
-import { User } from "./types";
+import { User } from "./types"
 
 export interface RegisterResponse {
 	user: User
@@ -9,6 +9,7 @@ export interface PasswordLoginRequest {
 	email: string
 	password: string
 	admin?: boolean
+	sessionID?: string
 }
 
 export interface PasswordLoginResponse {
@@ -20,6 +21,7 @@ export interface TokenLoginRequest {
 	token: string
 	admin?: boolean
 	username?: string
+	sessionID?: string
 }
 
 export interface TokenLoginResponse {
@@ -35,6 +37,7 @@ export interface WalletLoginRequest {
 	signature: string
 	admin?: boolean
 	username?: string
+	sessionID?: string
 }
 
 export interface WalletLoginResponse {
@@ -46,6 +49,7 @@ export interface TwitchLoginRequest {
 	token: string
 	username?: string
 	website?: boolean
+	sessionID?: string
 }
 
 export interface AddServiceRequest {

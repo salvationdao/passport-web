@@ -3,14 +3,18 @@ import { createContainer } from "unstated-next"
 import HubKey from "../keys"
 import {
 	AddServiceRequest,
-	AddServiceResponse, AddTwitchRequest, PasswordLoginRequest,
+	AddServiceResponse,
+	AddTwitchRequest,
+	PasswordLoginRequest,
 	PasswordLoginResponse,
 	RemoveServiceRequest,
 	RemoveServiceResponse,
 	TokenLoginRequest,
-	TokenLoginResponse, TwitchLoginRequest, VerifyAccountResponse,
+	TokenLoginResponse,
+	TwitchLoginRequest,
+	VerifyAccountResponse,
 	WalletLoginRequest,
-	WalletLoginResponse
+	WalletLoginResponse,
 } from "../types/auth"
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
@@ -36,6 +40,8 @@ export const AuthContainer = createContainer(() => {
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const { state, send, subscribe } = useWebsocket()
 	const [impersonatedUser, setImpersonatedUser] = useState<User>()
+
+	const [sessionID, setSessionID] = useState("")
 
 	/////////////////
 	//  Functions  //
@@ -64,6 +70,7 @@ export const AuthContainer = createContainer(() => {
 				email,
 				password,
 				admin,
+				sessionID,
 			})
 			if (!resp || !resp.user) {
 				localStorage.clear()
@@ -74,7 +81,7 @@ export const AuthContainer = createContainer(() => {
 			localStorage.setItem("token", resp.token)
 			setAuthorised(true)
 		},
-		[send, state, admin],
+		[send, state, admin, sessionID],
 	)
 
 	/**
@@ -89,7 +96,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			setLoading(true)
 			try {
-				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, { token, admin })
+				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, { token, admin, sessionID })
 				setUser(resp.user)
 				setAuthorised(true)
 			} catch {
@@ -100,7 +107,7 @@ export const AuthContainer = createContainer(() => {
 				setReconnecting(false)
 			}
 		},
-		[send, state, admin],
+		[send, state, admin, sessionID],
 	)
 
 	/**
@@ -118,6 +125,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					admin,
 					username,
+					sessionID,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -135,7 +143,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return null
 		},
-		[send, state, admin],
+		[send, state, admin, sessionID],
 	)
 
 	/**
@@ -153,6 +161,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					admin,
 					username,
+					sessionID,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -170,7 +179,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, admin],
+		[send, state, admin, sessionID],
 	)
 
 	/**
@@ -192,6 +201,7 @@ export const AuthContainer = createContainer(() => {
 					signature,
 					admin,
 					username,
+					sessionID,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -209,7 +219,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return null
 		},
-		[send, state, admin, account, metaMaskState, sign],
+		[send, state, admin, account, metaMaskState, sign, sessionID],
 	)
 
 	/**
@@ -226,6 +236,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<PasswordLoginResponse, TwitchLoginRequest>(HubKey.AuthLoginTwitch, {
 					token,
 					username,
+					sessionID,
 					website: true,
 				})
 				setUser(resp.user)
@@ -244,12 +255,12 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, admin],
+		[send, state, sessionID],
 	)
 
 	/**
 	 * Removes a User's Facebook account
-	*/
+	 */
 	const removeFacebook = useCallback(
 		async (id: string, username: string) => {
 			if (state !== WebSocket.OPEN) {
@@ -257,7 +268,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveFacebook, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -270,7 +282,6 @@ export const AuthContainer = createContainer(() => {
 		},
 		[send, state],
 	)
-
 
 	/**
 	 * Connects a User's existing account to Facebook
@@ -308,7 +319,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveGoogle, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -358,7 +370,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveTwitch, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -385,7 +398,7 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await send<AddServiceResponse, AddTwitchRequest>(HubKey.UserAddTwitch, {
 					token,
-					redirectURI
+					redirectURI,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -482,7 +495,7 @@ export const AuthContainer = createContainer(() => {
 			setReconnecting(true)
 			const token = localStorage.getItem("token")
 			if (token && token !== "") {
-				; (async () => {
+				;(async () => {
 					await loginToken(token)
 				})()
 			}
@@ -515,6 +528,13 @@ export const AuthContainer = createContainer(() => {
 		)
 	}, [id, subscribe, logout, authorised])
 
+	// close web page if it is a iframe login through gamebar
+	useEffect(() => {
+		if (user && sessionID) {
+			window.close()
+		}
+	}, [user, sessionID])
+
 	/////////////////
 	//  Container  //
 	/////////////////
@@ -542,6 +562,7 @@ export const AuthContainer = createContainer(() => {
 		loading,
 		verifying,
 		verifyCompleteType,
+		setSessionID,
 	}
 })
 
