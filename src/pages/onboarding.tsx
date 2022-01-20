@@ -1,8 +1,9 @@
-import { Alert, Box, Link, Snackbar, Typography } from "@mui/material"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Alert, Box, Link, Snackbar, styled, Typography, TypographyProps } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
+import { Transition, TransitionStatus } from "react-transition-group"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
@@ -569,181 +570,132 @@ interface PassportReadyProps {
 
 const PassportReady: React.FC<PassportReadyProps> = () => {
 	const [step, setStep] = useState(0)
-	const uploadLeft = useRef(0)
-	const uploadTop = useRef(0)
-	const topTextHeight = useRef(0)
-	const bottomTextHeight = useRef(0)
-
-	// Animation specific
-	const [revealText, setRevealText] = useState(false)
-	const [shrink, setShrink] = useState(false)
 
 	useEffect(() => {
 		let timeout2: NodeJS.Timeout
-		let timeout3: NodeJS.Timeout
-		let timeout4: NodeJS.Timeout
 		const timeout = setTimeout(() => {
 			setStep(1)
 			timeout2 = setTimeout(() => {
 				setStep(2)
-				timeout3 = setTimeout(() => {
-					setShrink(true)
-					setRevealText(true)
-				}, 500)
 			}, 2000)
 		}, 2000)
 
 		return () => {
-			if (timeout4) clearTimeout(timeout4)
-			if (timeout3) clearTimeout(timeout3)
 			if (timeout2) clearTimeout(timeout2)
 			clearTimeout(timeout)
 		}
 	}, [])
 
-	const renderStep0 = () => {
-		return (
+	return (
+		<Box sx={{
+			overflow: "hidden",
+			position: "relative",
+			minHeight: "100vh",
+		}}>
 			<Box sx={{
-				overflow: "hidden",
-				position: "relative",
-				minHeight: "100vh",
-				display: "flex",
+				position: "absolute",
+				top: "50%",
+				left: "50%",
+				transform: "translate(-50%, -50%)",
+				display: 'flex',
+				flexDirection: "column",
 				alignItems: "center",
-				justifyContent: "center",
+				width: "100%"
 			}}>
-				<Box
-					sx={(theme) => ({
-						zIndex: -1,
-						position: "absolute",
-						height: "30rem",
-						width: "30rem",
-						top: "50%",
-						left: "50%",
-						transform: "translate(-50%, -50%)",
-						overflow: "hidden",
-						borderRadius: "50%",
-						border: `2px solid ${theme.palette.secondary.main}`,
-						transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
-					})}
-				/>
-				<Typography variant="h1" component="p" sx={{
-					fontSize: "3rem",
-					textTransform: "uppercase",
-				}}>
-					Your passport is ready
-				</Typography>
-			</Box>
-		)
-	}
-
-	const renderStep1 = () => {
-		return (
-			<Box
-				sx={{
-					overflow: "hidden",
-					position: "relative",
-					minHeight: "100vh",
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-				}}>
-				<Box
-					ref={(r: HTMLDivElement) => {
-						if (!r) return
-						if (r.offsetLeft === 0 || r.offsetTop === 0) return
-						uploadTop.current = r.offsetTop
-						uploadLeft.current = r.offsetLeft
-					}}
-					sx={(theme) => ({
-						zIndex: -1,
-						position: "absolute",
-						height: "30rem",
-						width: "30rem",
-						top: "50%",
-						left: "50%",
-						transform: "translate(-50%, -50%)",
-						overflow: "hidden",
-						borderRadius: "50%",
-						border: `2px solid ${theme.palette.secondary.main}`,
-						transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
-					})}
-				/>
-				<Typography variant="h1" component="p" sx={{
-					fontSize: "3rem",
-					textTransform: "uppercase",
-				}}>
-					Let's set up your profile
-				</Typography>
-			</Box>
-		)
-	}
-
-	const renderUploadStep = () => {
-		return (
-			<Box sx={{
-				overflow: "hidden",
-				position: "relative",
-				minHeight: "100vh",
-			}}>
-				<Box sx={{
-					position: "absolute",
-					top: `calc(50% - ${topTextHeight.current}px - ${bottomTextHeight.current}px - 1rem)`,
-					left: "50%",
-					transform: "translate(-50%, -50%)",
-					display: 'flex',
-					flexDirection: "column",
-					alignItems: "center",
-					width: "100%"
-				}}>
-					<Typography ref={(r: HTMLDivElement) => {
-						if (!r) return
-						if (r.clientHeight === 0) return
-						topTextHeight.current = r.clientHeight
-					}}
-						variant="h1" component="p" sx={{
-							marginBottom: "1rem",
-							opacity: revealText ? 1 : 0,
-							transition: "opacity .2s ease-in",
-							lineHeight: 1,
-							fontSize: "3rem",
-							textTransform: "uppercase",
-						}}>
-						Upload a profile image
-					</Typography>
-					<Box
-						sx={(theme) => ({
-							height: shrink ? "8rem" : "30rem",
-							width: shrink ? "8rem" : "30rem",
-							overflow: "hidden",
-							borderRadius: "50%",
-							border: `2px solid ${theme.palette.secondary.main}`,
-							transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
-						})}
-					/>
-					<Typography ref={(r: HTMLDivElement) => {
-						if (!r) return
-						if (r.clientHeight === 0) return
-						bottomTextHeight.current = r.clientHeight
-					}} variant="body1" sx={{
-						marginTop: "1rem",
-						opacity: revealText ? 1 : 0,
+				<Typography
+					variant="h1" component="p" sx={{
+						marginBottom: "1rem",
+						opacity: step === 2 ? 1 : 0,
 						transition: "opacity .2s ease-in",
 						lineHeight: 1,
-						fontSize: "1rem",
+						fontSize: "3rem",
 						textTransform: "uppercase",
 					}}>
-						Drag an image here for your profile picture
-					</Typography>
+					Upload a profile image
+				</Typography>
+				<Box
+					sx={(theme) => ({
+						position: "relative",
+						height: step === 2 ? "8rem" : "30rem",
+						width: step === 2 ? "8rem" : "30rem",
+						borderRadius: "50%",
+						border: `2px solid ${theme.palette.secondary.main}`,
+						transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
+					})}
+				>
+					<MiddleText sx={{
+						position: "absolute",
+						top: "50%",
+						left: "50%",
+						transform: "translate(-50%, -50%)",
+						transition: `opacity 200ms ease-in`,
+						opacity: step !== 0 ? 0 : 1,
+						textAlign: "center",
+						whiteSpace: "nowrap",
+					}}>
+						Your passport is ready
+					</MiddleText>
+					<MiddleText sx={{
+						position: "absolute",
+						top: "50%",
+						left: "50%",
+						transform: "translate(-50%, -50%)",
+						transition: `opacity 200ms ease-in`,
+						opacity: step !== 1 ? 0 : 1,
+						textAlign: "center",
+						whiteSpace: "nowrap",
+					}}>
+						Let's set up your profile
+					</MiddleText>
 				</Box>
+				<Typography variant="body1" sx={{
+					marginTop: "1rem",
+					opacity: step === 2 ? 1 : 0,
+					transition: "opacity .2s ease-in",
+					lineHeight: 1,
+					fontSize: "1rem",
+					textTransform: "uppercase",
+				}}>
+					Drag an image here for your profile picture
+				</Typography>
 			</Box>
-		)
+		</Box>
+	)
+}
+
+interface TransitionableTextProps extends TypographyProps {
+	inProp: boolean
+}
+
+const TransitionableText: React.FC<TransitionableTextProps> = ({ inProp, sx, ...props }) => {
+	const duration = 200
+
+	const transitionStyles: { [key in TransitionStatus]: any } = {
+		entering: { opacity: 1 },
+		entered: { opacity: 1 },
+		exiting: { opacity: 0 },
+		exited: { opacity: 0 },
+		unmounted: { opacity: 0 },
 	}
 
 	return (
-		<>
-			{step === 0 && renderStep0()}
-			{step === 1 && renderStep1()}
-			{step === 2 && renderUploadStep()}
-		</>
+		<Transition inProp={inProp} timeout={duration}>
+			{state => {
+				console.log(inProp, state)
+				return (
+					<Typography sx={{
+						...sx,
+						...transitionStyles[state],
+						transition: `opacity ${duration}ms ease-in`,
+					}} {...props} />
+				)
+			}
+			}
+		</Transition>
 	)
 }
+
+const MiddleText = styled(Typography)({
+	fontSize: "3rem",
+	textTransform: "uppercase",
+})
