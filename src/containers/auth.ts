@@ -66,6 +66,7 @@ export const AuthContainer = createContainer(() => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
+
 			const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
 				email,
 				password,
@@ -563,6 +564,7 @@ export const AuthContainer = createContainer(() => {
 		verifying,
 		verifyCompleteType,
 		setSessionID,
+		sessionID,
 	}
 })
 
