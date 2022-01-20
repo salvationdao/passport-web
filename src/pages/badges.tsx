@@ -1,7 +1,14 @@
 import { Box, BoxProps, Button, Paper, styled, Typography } from "@mui/material"
 import BottomLeftMatrix from "../assets/images/games/axie infinity.png"
 import SupremacyLogo from "../assets/images/supremacy-logo.svg"
+import EthLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg" // fix this
 import { Navbar } from "../components/home/navbar"
+
+// rarity icons
+import EpicIcon from "../assets/images/icons/badges/Epic.png" // fix this
+import LegendaryIcon from "../assets/images/icons/badges/Legendary.png" // fix this
+import CommonIcon from "../assets/images/icons/badges/Common.png" // fix this
+import AnomalyIcon from "../assets/images/icons/badges/Anomaly.png" // fix this
 
 export const BadgesPage: React.FC = () => {
 	return (
@@ -91,7 +98,7 @@ export const BadgesPage: React.FC = () => {
 			<Paper
 				sx={{
 					width: "100%",
-					maxWidth: "1100px",
+					maxWidth: "1768px",
 					margin: "0 auto",
 					borderRadius: 0,
 					backgroundColor: "transparent",
@@ -107,7 +114,7 @@ export const BadgesPage: React.FC = () => {
 
 const CollectionGroup: React.FC = () => {
 	return (
-		<Box sx={{ marginBottom: "30px" }}>
+		<Box sx={{ marginBottom: "30px", marginLeft: "15px", marginRight: "15px" }}>
 			<Box sx={{ display: "flex" }}>
 				<Box
 					component="img"
@@ -135,10 +142,11 @@ const CollectionGroup: React.FC = () => {
 			</Box>
 
 			<BadgesSection>
-				<BadgeCard name="Candice mk ii" price="9999" type="War Machine" rarity="LEGENDARY" />
-				<BadgeCard name="Maverick" price="999" type="War Machine" rarity="EPIC" />
-				<BadgeCard name="Big Boi" price="778" type="War Machine" rarity="EPIC" />
-				<BadgeCard name="Django" price="3000" type="War Machine" rarity="LEGENDARY" />
+				{/* Place holder cards */}
+				<BadgeCard name="Candice mk ii" price="9999" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} />
+				<BadgeCard name="Maverick" price="999" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} />
+				<BadgeCard name="Big Boi" price="778" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} />
+				<BadgeCard name="Django" price="3000" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} />
 			</BadgesSection>
 		</Box>
 	)
@@ -155,14 +163,44 @@ const BadgesSection = styled((props) => <Box {...props} />)(({ theme }) => ({
 	backgroundColor: theme.palette.background.paper,
 }))
 
+enum Currency {
+	Ethereum,
+}
+
+enum Rarity {
+	Epic,
+	Legendary,
+	Common,
+	Anomaly,
+}
 interface BadgeCardProps extends BoxProps {
 	name: string
 	price: string
-	rarity: string
+	rarity: Rarity
 	type: string
+	currency: Currency
 }
 
-const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type }) => {
+const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type, currency }) => {
+	let currencyLogo = EthLogo
+	if (currency === Currency.Ethereum) {
+		currencyLogo = EthLogo
+	}
+
+	let rarityIcon = EpicIcon
+	if (rarity === Rarity.Epic) {
+		rarityIcon = EpicIcon
+	}
+	if (rarity === Rarity.Common) {
+		rarityIcon = CommonIcon
+	}
+	if (rarity === Rarity.Legendary) {
+		rarityIcon = LegendaryIcon
+	}
+	if (rarity === Rarity.Anomaly) {
+		rarityIcon = AnomalyIcon
+	}
+
 	return (
 		<Box
 			sx={{
@@ -172,6 +210,7 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type }) => {
 				marginTop: "50px",
 				marginBottom: "50px",
 				flexDirection: "column",
+				justifyContent: "space-between",
 				alignItems: "center",
 				padding: "2rem",
 				border: `4px solid grey`,
@@ -180,11 +219,10 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type }) => {
 				height: "513px",
 			}}
 		>
-			{/* name of badge */}
+			{/* Name */}
 			<Typography
 				variant="h3"
 				sx={{
-					marginBottom: "1rem",
 					textAlign: "center",
 					textTransform: "uppercase",
 				}}
@@ -192,65 +230,36 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type }) => {
 				{name}
 			</Typography>
 
-			{/* image */}
-			<Box
-				component="img"
-				src={BottomLeftMatrix}
-				alt="Background matrix image"
-				sx={{
-					width: 300,
-					height: 300,
-				}}
-			/>
 			<Box
 				sx={{
-					display: "flex",
-					justifyContent: "space-between",
 					width: "100%",
-					backgroundColor: "black",
-					padding: "10px",
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					justifyContent: "space-between",
 				}}
 			>
-				<Typography
-					variant="h4"
-					sx={{
-						width: "100%",
-						overflow: "hidden",
-						whiteSpace: "nowrap",
-						textOverflow: "ellipsis",
-					}}
-				>
-					{type}
-				</Typography>
+				{/* image */}
 				<Box
 					component="img"
 					src={BottomLeftMatrix}
 					alt="Background matrix image"
 					sx={{
-						width: 30,
-						height: 30,
+						width: 230,
+						height: 230,
 					}}
 				/>
-			</Box>
-
-			<Box
-				sx={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-					width: "100%",
-					paddingRight: "10px",
-				}}
-			>
 				<Box
 					sx={{
 						display: "flex",
-						alignItems: "center",
 						justifyContent: "space-between",
-						width: "100px",
+						alignItems: "center",
+						width: "100%",
+						backgroundColor: "black",
 						padding: "10px",
 					}}
 				>
+					<Typography variant="h5">{type}</Typography>
 					<Box
 						component="img"
 						src={BottomLeftMatrix}
@@ -258,6 +267,36 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type }) => {
 						sx={{
 							width: 30,
 							height: 30,
+						}}
+					/>
+				</Box>
+			</Box>
+
+			{/* Price */}
+			<Box
+				sx={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "space-between",
+					width: "100%",
+				}}
+			>
+				<Box
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+					}}
+				>
+					<Box
+						component="img"
+						src={currencyLogo}
+						alt="Currency Logo"
+						sx={{
+							width: 30,
+							height: 30,
+							marginBottom: 1,
+							marginRight: 1,
 						}}
 					/>
 					<Box
@@ -279,22 +318,8 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ name, price, rarity, type }) => {
 					</Box>
 				</Box>
 
-				<Box
-					sx={{
-						width: 30,
-						height: 30,
-					}}
-				>
-					<Typography
-						variant="subtitle1"
-						sx={{
-							width: "100%",
-							whiteSpace: "nowrap",
-							textOverflow: "ellipsis",
-						}}
-					>
-						{rarity}
-					</Typography>
+				<Box>
+					<Box component="img" src={rarityIcon} alt="Rarity Icon" />
 				</Box>
 			</Box>
 			<ViewPropertiesButton>
