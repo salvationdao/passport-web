@@ -12,6 +12,8 @@ import { FancyButton } from "../../../components/fancyButton"
 import { Navbar } from "../../../components/home/navbar"
 import { Loading } from "../../../components/loading"
 import { AuthContainer } from "../../../containers"
+import { useQuery } from "../../../hooks/useSend"
+import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 
 export const CollectionsPage: React.FC = () => {
@@ -128,16 +130,31 @@ export const CollectionsPage: React.FC = () => {
 				}}
 			>
 				{/* use collection id */}
-				<CollectionAssets />
-				<CollectionAssets />
-				<CollectionAssets />
+				<CollectionAssets collection="SUPREMACY" />
+				<CollectionAssets collection="SUPREMACY" />
+				<CollectionAssets collection="SUPREMACY" />
 			</Paper>
 		</Box>
 	)
 }
 
-const CollectionAssets: React.FC = () => {
+const CollectionAssets: React.FC<{ collection: string }> = ({ collection }) => {
 	const history = useHistory()
+	// query assets based on assets collection, limit to 4
+	const { query, loading, payload } = useQuery(HubKey.AssetList, !!collection, {
+		filter: {
+			linkOperator: "and",
+			items: [
+				{
+					columnField: "collection",
+					operatorValue: "=",
+					value: collection,
+				},
+			],
+		},
+	})
+	console.log("this is q", payload)
+
 	return (
 		<Box sx={{ marginBottom: "30px", marginLeft: "15px", marginRight: "15px" }}>
 			<Box sx={{ display: "flex" }}>

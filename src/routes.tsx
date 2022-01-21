@@ -1,14 +1,11 @@
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
 import { Home } from "./pages/home"
 import { LoginPage } from "./pages/login"
+import { CollectionsPage } from "./pages/management/collections/collections"
 import { Onboarding } from "./pages/onboarding"
 import { ProfilePage } from "./pages/profile"
 import { Settings } from "./pages/settings"
 import { WalletPage } from "./pages/wallet"
-import { CollectionsPage } from "./pages/management/collections/collections"
-import { UserPage } from "./pages/management/users/view"
-import { UserList } from "./pages/management/users/list"
-import { ListPage } from "./pages/listPages"
 
 export const Routes = () => {
 	return (
@@ -27,7 +24,6 @@ export const Routes = () => {
 
 					<Route path="/privacy-policy" component={Home} />
 					<Route path="/terms-and-conditions" component={Home} />
-					<Route path="/users" component={ListPage.Users} />
 
 					<Route path="/settings" component={Settings} />
 				</Switch>
