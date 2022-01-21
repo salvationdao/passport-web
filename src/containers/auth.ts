@@ -3,17 +3,21 @@ import { createContainer } from "unstated-next"
 import HubKey from "../keys"
 import {
 	AddServiceRequest,
-	AddServiceResponse, AddTwitchRequest, PasswordLoginRequest,
+	AddServiceResponse,
+	AddTwitchRequest,
+	PasswordLoginRequest,
 	PasswordLoginResponse,
 	RemoveServiceRequest,
 	RemoveServiceResponse,
 	TokenLoginRequest,
-	TokenLoginResponse, TwitchLoginRequest, VerifyAccountResponse,
+	TokenLoginResponse,
+	TwitchLoginRequest,
+	VerifyAccountResponse,
 	WalletLoginRequest,
-	WalletLoginResponse
+	WalletLoginResponse,
 } from "../types/auth"
 import { Perm } from "../types/enums"
-import { User } from "../types/types"
+import { Asset, User } from "../types/types"
 import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
 
@@ -249,7 +253,7 @@ export const AuthContainer = createContainer(() => {
 
 	/**
 	 * Removes a User's Facebook account
-	*/
+	 */
 	const removeFacebook = useCallback(
 		async (id: string, username: string) => {
 			if (state !== WebSocket.OPEN) {
@@ -257,7 +261,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveFacebook, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -270,7 +275,6 @@ export const AuthContainer = createContainer(() => {
 		},
 		[send, state],
 	)
-
 
 	/**
 	 * Connects a User's existing account to Facebook
@@ -308,7 +312,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveGoogle, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -358,7 +363,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveTwitch, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -385,7 +391,7 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await send<AddServiceResponse, AddTwitchRequest>(HubKey.UserAddTwitch, {
 					token,
-					redirectURI
+					redirectURI,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -482,7 +488,7 @@ export const AuthContainer = createContainer(() => {
 			setReconnecting(true)
 			const token = localStorage.getItem("token")
 			if (token && token !== "") {
-				; (async () => {
+				;(async () => {
 					await loginToken(token)
 				})()
 			}
@@ -514,6 +520,19 @@ export const AuthContainer = createContainer(() => {
 			{ id },
 		)
 	}, [id, subscribe, logout, authorised])
+
+	// Effect:
+	useEffect(() => {
+		if (!id || !subscribe || !authorised) return
+		return subscribe<{ records: Asset[]; total: number }>(
+			HubKey.AssetListUpdated,
+			(u) => {
+				// if (u.id !== id) return
+				// setUser(u)
+			},
+			{ id },
+		)
+	}, [id, subscribe, authorised])
 
 	/////////////////
 	//  Container  //

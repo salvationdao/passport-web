@@ -1,5 +1,5 @@
 import { Box, BoxProps, Button, Paper, styled, Typography } from "@mui/material"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import EthLogo from "../../../assets/images/crypto/binance-coin-bnb-logo.svg" // fix this
 import BottomLeftMatrix from "../../../assets/images/games/axie infinity.png"
@@ -12,9 +12,11 @@ import { FancyButton } from "../../../components/fancyButton"
 import { Navbar } from "../../../components/home/navbar"
 import { Loading } from "../../../components/loading"
 import { AuthContainer } from "../../../containers"
+import { useWebsocket } from "../../../containers/socket"
 import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
+import { Asset } from "../../../types/types"
 
 export const CollectionsPage: React.FC = () => {
 	const history = useHistory()
@@ -130,30 +132,49 @@ export const CollectionsPage: React.FC = () => {
 				}}
 			>
 				{/* use collection id */}
-				<CollectionAssets collection="SUPREMACY" />
-				<CollectionAssets collection="SUPREMACY" />
-				<CollectionAssets collection="SUPREMACY" />
+				<CollectionAssets collection="SUPREMACY" userID={user.id} />
+				{/* <CollectionAssets collection="SUPREMACY" userID={user.id} /> */}
+				{/* <CollectionAssets collection="SUPREMACY" userID={user.id} /> */}
 			</Paper>
 		</Box>
 	)
 }
 
-const CollectionAssets: React.FC<{ collection: string }> = ({ collection }) => {
+const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ collection, userID }) => {
 	const history = useHistory()
-	// query assets based on assets collection, limit to 4
-	const { query, loading, payload } = useQuery(HubKey.AssetList, !!collection, {
-		filter: {
-			linkOperator: "and",
-			items: [
-				{
-					columnField: "collection",
-					operatorValue: "=",
-					value: collection,
+	const { subscribe } = useWebsocket()
+	const [assets, setAssets] = useState<Asset[]>([])
+
+	// Effect:
+	useEffect(() => {
+		if (!userID) return
+		return subscribe<{ records: Asset[]; total: number }>(
+			HubKey.AssetListUpdated,
+			(payload) => {
+				if (!payload) return
+				setAssets(payload.records)
+			},
+			{
+				userID: userID,
+				filter: {
+					linkOperator: "and",
+					pageSize: 4,
+					items: [
+						{
+							columnField: "collection",
+							operatorValue: "=",
+							value: collection,
+						},
+						{
+							columnField: "user_id",
+							operatorValue: "=",
+							value: userID,
+						},
+					],
 				},
-			],
-		},
-	})
-	console.log("this is q", payload)
+			},
+		)
+	}, [userID, subscribe])
 
 	return (
 		<Box sx={{ marginBottom: "30px", marginLeft: "15px", marginRight: "15px" }}>
@@ -185,10 +206,25 @@ const CollectionAssets: React.FC<{ collection: string }> = ({ collection }) => {
 
 			<AssetsSection>
 				{/* Place holder cards */}
-				<AssetCard name="Candice mk ii" price="0.9999" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} />
-				<AssetCard name="Maverick" price="999" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} />
-				<AssetCard name="Big Boi" price="778" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} />
-				<AssetCard name="Django" price="3000" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} />
+				{assets.map((a) => {
+					const attrObj = JSON.parse(a.attributes)
+					console.log("attributes ", attrObj)
+
+					return (
+						<AssetCard
+							key={a.token_id}
+							name="Candice mk ii"
+							price="0.9999"
+							type="War Machine"
+							rarity={Rarity.Legendary}
+							currency={Currency.Ethereum}
+						/>
+					)
+				})}
+
+				{/* <AssetCard name="Maverick" price="999" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} /> */}
+				{/* <AssetCard name="Big Boi" price="778" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} /> */}
+				{/* <AssetCard name="Django" price="3000" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} /> */}
 			</AssetsSection>
 		</Box>
 	)
