@@ -133,8 +133,6 @@ export const CollectionsPage: React.FC = () => {
 			>
 				{/* use collection id */}
 				<CollectionAssets collection="SUPREMACY" userID={user.id} />
-				{/* <CollectionAssets collection="SUPREMACY" userID={user.id} /> */}
-				{/* <CollectionAssets collection="SUPREMACY" userID={user.id} /> */}
 			</Paper>
 		</Box>
 	)

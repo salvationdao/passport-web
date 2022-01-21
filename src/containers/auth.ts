@@ -521,19 +521,6 @@ export const AuthContainer = createContainer(() => {
 		)
 	}, [id, subscribe, logout, authorised])
 
-	// Effect:
-	useEffect(() => {
-		if (!id || !subscribe || !authorised) return
-		return subscribe<{ records: Asset[]; total: number }>(
-			HubKey.AssetListUpdated,
-			(u) => {
-				// if (u.id !== id) return
-				// setUser(u)
-			},
-			{ id },
-		)
-	}, [id, subscribe, authorised])
-
 	/////////////////
 	//  Container  //
 	/////////////////
