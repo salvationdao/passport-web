@@ -189,10 +189,11 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 				{assets.map((a) => {
 					const attrObj = JSON.parse(a.attributes)
 					console.log("attributes ", attrObj)
+					console.log(a)
 
 					return (
 						<AssetCard
-							key={a.token_id}
+							key={a.tokenID}
 							name="Candice mk ii"
 							price="0.9999"
 							type="War Machine"
