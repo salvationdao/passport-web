@@ -69,8 +69,6 @@ export interface ItemTableProps {
  * Displays a Table containing a list of items.
  */
 export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((props, ref) => {
-	console.log("ahhhhhhhhhhhh")
-
 	const {
 		name,
 		updateSearchParams,
@@ -185,8 +183,6 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	if (pluralName === name) {
 		console.warn("[ItemTable] 'name' must be singular", name)
 	}
-	console.log("before render")
-
 	return (
 		<>
 			{!hideSearch && <SearchBar value={search} onChange={setSearch} placeholder={`Search ${pluralName}...`} loading={loading} />}
