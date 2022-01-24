@@ -173,7 +173,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 					}}
 				/>
 
-				<ViewCollectionButton onClick={() => history.push("/collections/" + collection)}>
+				<ViewCollectionButton onClick={() => history.push("/collections/assets/" + collection)}>
 					<Typography
 						sx={{
 							textAlign: "center",

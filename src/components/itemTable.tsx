@@ -220,7 +220,7 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 						archivedLabel,
 					},
 				}}
-				// error={error ? { message: error } : undefined} // todo fix
+				error={error ? { message: error } : undefined}
 				// Pagination
 				pagination
 				paginationMode={"server"}
