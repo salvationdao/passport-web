@@ -1,8 +1,11 @@
 import { Box, BoxProps, Button, Paper, styled, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
-import EthLogo from "../../../assets/images/crypto/binance-coin-bnb-logo.svg" // fix this
-import BottomLeftMatrix from "../../../assets/images/games/axie infinity.png"
+import EthLogo from "../../../assets/images/crypto/binance-coin-bnb-logo.svg" // TODO switch to Ethereum logo
+import PlaceholderIMG from "../../../assets/images/games/axie infinity.png"
+import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
+import PlaceholderLogo from "../../../assets/images/Zaibatsu_Logo.svg"
+
 import AnomalyIcon from "../../../assets/images/icons/badges/Anomaly.png"
 import CommonIcon from "../../../assets/images/icons/badges/Common.png"
 import EpicIcon from "../../../assets/images/icons/badges/Epic.png"
@@ -13,7 +16,6 @@ import { Navbar } from "../../../components/home/navbar"
 import { Loading } from "../../../components/loading"
 import { AuthContainer } from "../../../containers"
 import { useWebsocket } from "../../../containers/socket"
-import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
@@ -63,10 +65,7 @@ export const CollectionsPage: React.FC = () => {
 					}}
 				>
 					<Typography
-						variant="h3"
 						sx={{
-							marginBottom: "1rem",
-							textAlign: "center",
 							textTransform: "uppercase",
 						}}
 					>
@@ -74,10 +73,7 @@ export const CollectionsPage: React.FC = () => {
 					</Typography>
 
 					<Typography
-						variant="h3"
 						sx={{
-							marginBottom: "1rem",
-							textAlign: "center",
 							textTransform: "uppercase",
 						}}
 					>
@@ -87,8 +83,6 @@ export const CollectionsPage: React.FC = () => {
 					<Typography
 						variant="h1"
 						sx={{
-							marginBottom: "1rem",
-							textAlign: "center",
 							textTransform: "uppercase",
 						}}
 					>
@@ -96,10 +90,7 @@ export const CollectionsPage: React.FC = () => {
 					</Typography>
 
 					<Typography
-						variant="h3"
 						sx={{
-							marginBottom: "1rem",
-							textAlign: "center",
 							textTransform: "uppercase",
 						}}
 					>
@@ -107,10 +98,7 @@ export const CollectionsPage: React.FC = () => {
 					</Typography>
 
 					<Typography
-						variant="h3"
 						sx={{
-							marginBottom: "1rem",
-							textAlign: "center",
 							textTransform: "uppercase",
 						}}
 					>
@@ -131,7 +119,6 @@ export const CollectionsPage: React.FC = () => {
 					justifyContent: "space-between",
 				}}
 			>
-				{/* use collection id */}
 				<CollectionAssets collection="SUPREMACY" userID={user.id} />
 			</Paper>
 		</Box>
@@ -143,7 +130,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 	const { subscribe } = useWebsocket()
 	const [assets, setAssets] = useState<Asset[]>([])
 
-	// Effect:
+	// Effect: get and set user's collection's assets, limit to 4
 	useEffect(() => {
 		if (!userID) return
 		return subscribe<{ records: Asset[]; total: number }>(
@@ -153,7 +140,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 				setAssets(payload.records)
 			},
 			{
-				userID: userID,
+				userID,
 				filter: {
 					linkOperator: "and",
 					pageSize: 4,
@@ -188,11 +175,9 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 					}}
 				/>
 
-				<ViewCollectionButton onClick={() => history.push("/assets/supremacy")}>
+				<ViewCollectionButton onClick={() => history.push("/collections/" + collection)}>
 					<Typography
-						variant="h4"
 						sx={{
-							marginBottom: "1rem",
 							textAlign: "center",
 							textTransform: "uppercase",
 						}}
@@ -203,7 +188,6 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 			</Box>
 
 			<AssetsSection>
-				{/* Place holder cards */}
 				{assets.map((a) => {
 					const attrObj = JSON.parse(a.attributes)
 					console.log("attributes ", attrObj)
@@ -219,10 +203,6 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 						/>
 					)
 				})}
-
-				{/* <AssetCard name="Maverick" price="999" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} /> */}
-				{/* <AssetCard name="Big Boi" price="778" type="War Machine" rarity={Rarity.Epic} currency={Currency.Ethereum} /> */}
-				{/* <AssetCard name="Django" price="3000" type="War Machine" rarity={Rarity.Legendary} currency={Currency.Ethereum} /> */}
 			</AssetsSection>
 		</Box>
 	)
@@ -332,10 +312,10 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 				{/* image */}
 				<Box
 					component="img"
-					src={BottomLeftMatrix}
-					alt="Background matrix image"
+					src={PlaceholderMech}
+					alt="placeholder"
 					sx={{
-						width: 230,
+						width: "100%",
 						height: 230,
 					}}
 				/>
@@ -352,8 +332,8 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 					<Typography variant="h5">{type}</Typography>
 					<Box
 						component="img"
-						src={BottomLeftMatrix}
-						alt="Background matrix image"
+						src={PlaceholderLogo}
+						alt="placeholder"
 						sx={{
 							width: 30,
 							height: 30,
@@ -396,7 +376,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 						}}
 					>
 						<Typography
-							variant="h4"
+							variant="h5"
 							sx={{
 								width: "100%",
 								whiteSpace: "nowrap",
@@ -414,7 +394,6 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 			</Box>
 			<ViewPropertiesButton>
 				<Typography
-					variant="subtitle1"
 					sx={{
 						textTransform: "uppercase",
 						width: "100%",
