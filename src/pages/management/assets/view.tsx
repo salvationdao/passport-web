@@ -2,6 +2,8 @@ import { Box, Paper, styled, Typography } from "@mui/material"
 import { useParams } from "react-router-dom"
 import { Navbar } from "../../../components/home/navbar"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
+import { FancyButton } from "../../../components/fancyButton"
+import { colors } from "../../../theme"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -39,7 +41,6 @@ export const AssetPage = () => {
 							borderRadius: 0,
 							backgroundColor: "transparent",
 							display: "flex",
-							justifyContent: "space-between",
 						}}
 					>
 						{/* image */}
@@ -50,6 +51,7 @@ export const AssetPage = () => {
 							sx={{
 								width: "566px",
 								height: "732px",
+								marginRight: "50px",
 							}}
 						/>
 
@@ -61,6 +63,7 @@ export const AssetPage = () => {
 								maxWidth: "800px",
 								alignItems: "space-between",
 								justifyContent: "flex-start",
+								marginRight: "50px",
 							}}
 						>
 							<Section>
@@ -97,36 +100,24 @@ export const AssetPage = () => {
 								</Typography>
 
 								<PropertiesSection>
-									<Box
-										sx={{
-											width: 50,
-											height: 50,
-											backgroundColor: "red",
-										}}
-									></Box>
-									<Box
-										sx={{
-											width: 50,
-											height: 50,
-											backgroundColor: "red",
-										}}
-									></Box>
-									<Box
-										sx={{
-											width: 50,
-											height: 50,
-											backgroundColor: "red",
-										}}
-									></Box>
-									<Box
-										sx={{
-											width: 50,
-											height: 50,
-											backgroundColor: "red",
-										}}
-									></Box>
+									{[1, 2, 3, 4, 5, 6].map((b) => (
+										<Box
+											key={b}
+											sx={{
+												width: 170,
+												height: 170,
+												margin: "10px 10px 10px 0px",
+												backgroundColor: "transparent",
+												border: "2px solid #fff",
+											}}
+										></Box>
+									))}
 								</PropertiesSection>
 							</Section>
+						</Box>
+
+						<Box>
+							<FancyButton fancy>Deploy</FancyButton>
 						</Box>
 					</Box>
 				</AssetContainer>
@@ -153,6 +144,6 @@ const Section = styled((props) => <Box {...props} />)(({ theme }) => ({
 const PropertiesSection = styled((props) => <Box {...props} />)(({ theme }) => ({
 	display: "flex",
 	overflowX: "auto",
-	flexDirection: "column",
 	marginBottom: "35px",
+	flexWrap: "wrap",
 }))
