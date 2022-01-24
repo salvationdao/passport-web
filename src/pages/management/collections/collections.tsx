@@ -175,6 +175,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 
 				<ViewCollectionButton onClick={() => history.push("/collections/assets/" + collection)}>
 					<Typography
+						variant="h4"
 						sx={{
 							textAlign: "center",
 							textTransform: "uppercase",
@@ -290,7 +291,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 		>
 			{/* Name */}
 			<Typography
-				variant="h3"
+				variant="h4"
 				sx={{
 					textAlign: "center",
 					textTransform: "uppercase",
@@ -375,7 +376,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 						}}
 					>
 						<Typography
-							variant="h5"
+							variant="h4"
 							sx={{
 								width: "100%",
 								whiteSpace: "nowrap",
@@ -393,13 +394,11 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 			</Box>
 			<ViewPropertiesButton>
 				<Typography
+					variant="h4"
 					sx={{
 						textTransform: "uppercase",
 						width: "100%",
-						maxWidth: "180px",
-						overflow: "hidden",
 						whiteSpace: "nowrap",
-						textOverflow: "ellipsis",
 						textAlign: "center",
 					}}
 				>
