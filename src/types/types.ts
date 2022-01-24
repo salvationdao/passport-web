@@ -70,7 +70,7 @@ export interface Product {
 }
 
 export interface Asset {
-	token_id: number
+	tokenID: number
 	name: string
 	collection: string
 	description: string
