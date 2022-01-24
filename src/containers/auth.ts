@@ -17,7 +17,7 @@ import {
 	WalletLoginResponse,
 } from "../types/auth"
 import { Perm } from "../types/enums"
-import { User } from "../types/types"
+import { Asset, User } from "../types/types"
 import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
 
