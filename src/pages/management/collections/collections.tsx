@@ -173,7 +173,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 					}}
 				/>
 
-				<ViewCollectionButton onClick={() => history.push("/collections/assets/" + collection)}>
+				<ViewCollectionButton onClick={() => history.push("/collections/" + collection)}>
 					<Typography
 						variant="h4"
 						sx={{
@@ -194,6 +194,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 
 					return (
 						<AssetCard
+							tokenID={a.tokenID}
 							key={a.tokenID}
 							name="Candice mk ii"
 							price="0.9999"
@@ -208,7 +209,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 	)
 }
 
-const ViewPropertiesButton = styled((props) => <FancyButton fancy borderColor={colors.skyBlue} {...props} />)(({ theme }) => ({
+const ViewPropertiesButton = styled((props: { onClick: () => void }) => <FancyButton fancy borderColor={colors.skyBlue} {...props} />)(({ theme }) => ({
 	border: `2px solid ${theme.palette.secondary.main}`,
 	width: "100%",
 }))
@@ -244,6 +245,7 @@ enum Rarity {
 	Anomaly,
 }
 interface AssetCardProps extends BoxProps {
+	tokenID: number
 	name: string
 	price: string
 	rarity: Rarity
@@ -251,7 +253,8 @@ interface AssetCardProps extends BoxProps {
 	currency: Currency
 }
 
-const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, currency }) => {
+const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, currency, tokenID }) => {
+	const history = useHistory()
 	let currencyLogo = EthLogo
 	if (currency === Currency.Ethereum) {
 		currencyLogo = EthLogo
@@ -392,12 +395,13 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 					<Box component="img" src={rarityIcon} alt="Rarity Icon" />
 				</Box>
 			</Box>
-			<ViewPropertiesButton>
+			<ViewPropertiesButton onClick={() => history.push("/collections/assets/" + tokenID)}>
 				<Typography
 					variant="h4"
 					sx={{
 						textTransform: "uppercase",
 						width: "100%",
+						maxWidth: "180px",
 						whiteSpace: "nowrap",
 						textAlign: "center",
 					}}

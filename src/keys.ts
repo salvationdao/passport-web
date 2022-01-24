@@ -69,6 +69,7 @@ enum HubKey {
 
 	AssetListUpdated = "ASSET:SUBSCRIBE",
 	AssetList = "ASSET:LIST",
+	AssetGet = "ASSET:GET",
 }
 
 export default HubKey
