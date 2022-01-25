@@ -66,6 +66,9 @@ enum HubKey {
 	UserActivityList = "USER_ACTIVITY:LIST",
 	UserActivityGet = "USER_ACTIVITY:GET",
 	UserActivityCreate = "USER_ACTIVITY:CREATE",
+
+	AssetListUpdated = "ASSET:SUBSCRIBE",
+	AssetList = "ASSET:LIST",
 }
 
 export default HubKey
