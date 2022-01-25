@@ -71,6 +71,7 @@ export interface Product {
 
 export interface Asset {
 	tokenID: number
+	userID: string
 	name: string
 	collection: string
 	description: string
@@ -79,7 +80,8 @@ export interface Asset {
 	attributes: Attribute[]
 	createdAt: Date
 	updatedAt: Date
-	deletedAt?: any
+	frozenAt?: Date
+	deletedAt?: Date
 }
 
 export interface Attribute {

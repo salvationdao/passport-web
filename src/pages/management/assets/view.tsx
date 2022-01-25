@@ -1,6 +1,5 @@
 import { Box, Paper, styled, Typography } from "@mui/material"
-import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import { FancyButton } from "../../../components/fancyButton"
 import { Navbar } from "../../../components/home/navbar"
@@ -9,10 +8,13 @@ import { useWebsocket } from "../../../containers/socket"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
+import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
+import { useState, useEffect } from "react"
+import moment from "moment"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
-	const { user, hasPermission } = AuthContainer.useContainer()
+	const { user } = AuthContainer.useContainer()
 
 	const { subscribe } = useWebsocket()
 	const [asset, setAsset] = useState<Asset>()
@@ -21,7 +23,7 @@ export const AssetPage = () => {
 	useEffect(() => {
 		if (!user || !user.id) return
 		return subscribe<Asset>(
-			HubKey.AssetGet,
+			HubKey.AssetUpdated,
 			(payload) => {
 				console.log("th is is pay", payload)
 				console.log("th is is user", user)
@@ -36,11 +38,9 @@ export const AssetPage = () => {
 				tokenID: parseInt(tokenID),
 			},
 		)
-	}, [user?.id, subscribe])
+	}, [user?.id, subscribe, tokenID])
 
 	if (!asset) return <></>
-	console.log("yoyo", tokenID)
-	console.log("this is asset", asset)
 
 	return (
 		<Box
@@ -51,6 +51,36 @@ export const AssetPage = () => {
 			}}
 		>
 			<Navbar />
+			<Paper
+				sx={{
+					maxWidth: "1000px",
+					margin: "0 auto",
+					marginBottom: "2rem",
+					padding: "2rem",
+					borderRadius: 0,
+					background: "transparent",
+				}}
+			>
+				<Box
+					sx={{
+						display: "flex",
+						width: "100%",
+
+						justifyContent: "center",
+					}}
+				>
+					<Box
+						component="img"
+						src={SupremacyLogo}
+						alt="Collection Logo"
+						sx={{
+							width: "306px",
+							height: 35,
+							marginBottom: "5px",
+						}}
+					/>
+				</Box>
+			</Paper>
 
 			<Paper
 				sx={{
@@ -102,14 +132,35 @@ export const AssetPage = () => {
 							}}
 						>
 							<Section>
-								<Typography
-									variant="h1"
+								<Box
 									sx={{
-										textTransform: "uppercase",
+										display: "flex",
+										marginBottom: "48px",
 									}}
 								>
-									{asset.name}
-								</Typography>
+									<Typography
+										variant="h1"
+										sx={{
+											textTransform: "uppercase",
+											fontSize: "33px",
+										}}
+									>
+										{asset.name}
+									</Typography>
+									{asset.frozenAt && (
+										<Typography
+											variant="h1"
+											color={colors.skyBlue}
+											sx={{
+												textTransform: "uppercase",
+												fontSize: "33px",
+												marginLeft: "1rem",
+											}}
+										>
+											(Frozen)
+										</Typography>
+									)}
+								</Box>
 
 								<Typography
 									variant="body1"
@@ -128,6 +179,7 @@ export const AssetPage = () => {
 									color={colors.skyBlue}
 									sx={{
 										textTransform: "uppercase",
+										marginBottom: "37px",
 									}}
 								>
 									Properties
@@ -140,9 +192,8 @@ export const AssetPage = () => {
 										})
 										.map((attr, i) => {
 											return (
-												<Box>
+												<Link key={i} style={{ textDecoration: "none" }} to={`/collections/assets/${attr.token_id}`}>
 													<Box
-														key={i}
 														sx={{
 															width: 170,
 															height: 170,
@@ -153,7 +204,6 @@ export const AssetPage = () => {
 													></Box>
 													<Typography
 														variant="h5"
-														// fontSize={18}
 														color={colors.neonPink}
 														sx={{
 															textTransform: "uppercase",
@@ -161,16 +211,28 @@ export const AssetPage = () => {
 													>
 														{attr.trait_type}
 													</Typography>
-												</Box>
+												</Link>
 											)
 										})}
 								</PropertiesSection>
 							</Section>
 						</Box>
 
-						<Box>
-							<FancyButton fancy>Deploy</FancyButton>
-						</Box>
+						{/* if owner */}
+						{asset.userID === user?.id && !asset.frozenAt && (
+							<Box
+								sx={{
+									marginLeft: "100px",
+									"@media (max-width: 1380px)": {
+										marginLeft: "0px",
+									},
+								}}
+							>
+								<FancyButton sx={{ fontSize: 23, padding: "1rem 2.25rem" }} fancy>
+									Deploy
+								</FancyButton>
+							</Box>
+						)}
 					</Box>
 				</AssetContainer>
 			</Paper>
