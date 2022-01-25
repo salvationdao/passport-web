@@ -10,12 +10,14 @@ import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { useState, useEffect } from "react"
+import { useMutation } from "react-fetching-library"
+import { fetching } from "../../../fetching"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
 	const { user } = AuthContainer.useContainer()
 
-	const { subscribe } = useWebsocket()
+	const { subscribe, send } = useWebsocket()
 	const [asset, setAsset] = useState<Asset>()
 
 	const isWarMachine = (): boolean => {
@@ -23,6 +25,17 @@ export const AssetPage = () => {
 		// loops through asset's attributes checks if it has a trait_type of "Asset Type", and value of "War Machine"
 		const wm = asset.attributes.filter((a) => a.trait_type === "Asset Type" && a.value === "War Machine")
 		return wm.length > 0
+	}
+
+	const onDeploy = async () => {
+		console.log("11111111")
+
+		if (!tokenID) return
+
+		console.log("2222222")
+
+		const resp = await send<any>(HubKey.AssetJoinQue, { AssetTokenID: parseInt(tokenID) })
+		console.log("this is fucking res", resp)
 	}
 
 	// Effect: get/set asset via token id
@@ -229,7 +242,7 @@ export const AssetPage = () => {
 									},
 								}}
 							>
-								<FancyButton onClick={() => {}} sx={{ fontSize: 23, padding: "1rem 2.25rem" }} fancy>
+								<FancyButton onClick={onDeploy} sx={{ fontSize: 23, padding: "1rem 2.25rem" }} fancy>
 									Deploy
 								</FancyButton>
 							</Box>

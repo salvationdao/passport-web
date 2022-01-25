@@ -69,6 +69,7 @@ enum HubKey {
 
 	AssetListUpdated = "ASSET_LIST:SUBSCRIBE",
 	AssetUpdated = "ASSET:SUBSCRIBE",
+	AssetJoinQue = "ASSET:QUEUE:JOIN",
 }
 
 export default HubKey
