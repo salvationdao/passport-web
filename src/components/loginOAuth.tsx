@@ -73,7 +73,7 @@ export const LoginOAuth = ({ admin }: { admin?: boolean }) => {
 					)}
 				/>
 				<GoogleLogin
-					clientId="593683501366-gk7ab1nnskc1tft14bk8ebsja1bce24v.apps.googleusercontent.com"
+					clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
 					buttonText="Login"
 					onSuccess={onGoogleLogin}
 					onFailure={onGoogleLoginFailure}
