@@ -5,6 +5,8 @@ import {
 	AddServiceRequest,
 	AddServiceResponse,
 	AddTwitchRequest,
+	FacebookLoginRequest,
+	GoogleLoginRequest,
 	PasswordLoginRequest,
 	PasswordLoginResponse,
 	RemoveServiceRequest,
@@ -92,12 +94,19 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const loginToken = useCallback(
 		async (token: string) => {
+			const searchParams = new URLSearchParams(window.location.search)
+
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			setLoading(true)
 			try {
-				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, { token, admin, sessionID })
+				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, {
+					token,
+					admin,
+					sessionID,
+					twitchExtensionJWT: searchParams.get("twitchExtensionJWT"),
+				})
 				setUser(resp.user)
 				setAuthorised(true)
 			} catch {
@@ -122,7 +131,7 @@ export const AuthContainer = createContainer(() => {
 				return null
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginGoogle, {
+				const resp = await send<PasswordLoginResponse, GoogleLoginRequest>(HubKey.AuthLoginGoogle, {
 					token,
 					admin,
 					username,
@@ -158,7 +167,7 @@ export const AuthContainer = createContainer(() => {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TokenLoginRequest>(HubKey.AuthLoginFacebook, {
+				const resp = await send<PasswordLoginResponse, FacebookLoginRequest>(HubKey.AuthLoginFacebook, {
 					token,
 					admin,
 					username,
@@ -172,6 +181,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
+
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
@@ -400,6 +410,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<AddServiceResponse, AddTwitchRequest>(HubKey.UserAddTwitch, {
 					token,
 					redirectURI,
+					website: true,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -531,10 +542,10 @@ export const AuthContainer = createContainer(() => {
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
-		if (user && sessionID) {
+		if (authorised && sessionID) {
 			window.close()
 		}
-	}, [user, sessionID])
+	}, [authorised, sessionID])
 
 	/////////////////
 	//  Container  //

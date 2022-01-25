@@ -22,6 +22,21 @@ export interface TokenLoginRequest {
 	admin?: boolean
 	username?: string
 	sessionID?: string
+	twitchExtensionJWT: string | null
+}
+
+export interface GoogleLoginRequest {
+	token: string
+	admin?: boolean
+	username?: string
+	sessionID?: string
+}
+
+export interface FacebookLoginRequest {
+	token: string
+	admin?: boolean
+	username?: string
+	sessionID?: string
 }
 
 export interface TokenLoginResponse {
@@ -72,6 +87,7 @@ export interface RemoveServiceResponse {
 export interface AddTwitchRequest {
 	token: string
 	redirectURI: string
+	website: boolean
 }
 
 export interface SendVerifyEmailRequest {
