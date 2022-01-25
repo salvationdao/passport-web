@@ -15,7 +15,7 @@ import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
 import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
 import { AuthContainer, useAuth } from "../containers/auth"
-import { API_ENDPOINT_HOSTNAME, protocol } from "../containers/socket"
+import { API_ENDPOINT_HOSTNAME } from "../containers/socket"
 import { colors, fonts } from "../theme"
 
 interface LogInInput {
@@ -292,7 +292,7 @@ export const LoginPage: React.FC = () => {
 							/>
 							<TwitchLogin
 								clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
-								redirectUri={`${protocol()}://${API_ENDPOINT_HOSTNAME}`}
+								redirectUri={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`}
 								callback={onTwitchLogin}
 								onFailure={onTwitchLoginFailure}
 								render={(props) => (

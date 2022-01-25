@@ -16,7 +16,7 @@ import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
 import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
 import { useAuth } from "../containers/auth"
-import { API_ENDPOINT_HOSTNAME, protocol, useWebsocket } from "../containers/socket"
+import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../containers/socket"
 import HubKey from "../keys"
 import { colors, fonts } from "../theme"
 import { RegisterResponse } from "../types/auth"
@@ -482,7 +482,7 @@ export const Onboarding = () => {
 							</FancyButton>
 							<TwitchLogin
 								clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
-								redirectUri={`${protocol()}://${API_ENDPOINT_HOSTNAME}`}
+								redirectUri={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`}
 								callback={onTwitchLogin}
 								onFailure={onTwitchLoginFailure}
 								render={(props) => (

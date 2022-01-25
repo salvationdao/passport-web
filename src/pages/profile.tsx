@@ -19,7 +19,7 @@ import { Navbar } from "../components/home/navbar"
 import { Loading } from "../components/loading"
 import { TwitchLogin } from "../components/twitchLogin"
 import { AuthContainer } from "../containers"
-import { API_ENDPOINT_HOSTNAME, protocol, useWebsocket } from "../containers/socket"
+import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
 import HubKey from "../keys"
@@ -689,7 +689,7 @@ const ProfileEdit: React.FC = () => {
 					) : (
 						<TwitchLogin
 							clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
-							redirectUri={`${protocol()}://${API_ENDPOINT_HOSTNAME}`}
+							redirectUri={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`}
 							callback={async (response: any) => {
 								try {
 									setErrorMessage(undefined)
@@ -698,7 +698,7 @@ const ProfileEdit: React.FC = () => {
 										setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
 										return
 									}
-									await addTwitch(response.token, `${protocol()}://${API_ENDPOINT_HOSTNAME}`)
+									await addTwitch(response.token, `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`)
 								} catch (e) {
 									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
 								}
