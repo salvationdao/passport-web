@@ -1,11 +1,12 @@
 import MetaMaskOnboarding from "@metamask/onboarding"
-import { Alert, Button, ButtonProps } from "@mui/material"
+import { Alert } from "@mui/material"
 import { useState } from "react"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
 import { AuthContainer } from "../containers"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { FancyButton, FancyButtonProps } from "./fancyButton"
 
-interface LoginMetaMaskProps extends ButtonProps {
+interface LoginMetaMaskProps extends FancyButtonProps {
 	signUp?: boolean
 	username?: string
 	onFailure?: (err: string) => void
@@ -19,7 +20,7 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, username, 
 
 	return (
 		<>
-			<Button
+			<FancyButton
 				onClick={async () => {
 					if (metaMaskState === MetaMaskState.NotLoggedIn) {
 						await connect()
@@ -49,7 +50,6 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, username, 
 							: "Login With MetaMask"
 				}
 				startIcon={<MetaMaskIcon />}
-				variant="contained"
 				{...props}
 			>
 				{metaMaskState === MetaMaskState.NotInstalled
@@ -59,7 +59,7 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, username, 
 						: signUp
 							? "Sign up with MetaMask"
 							: "Login With MetaMask"}
-			</Button>
+			</FancyButton>
 			{errorMessage && (
 				<Alert severity="error" sx={{ mt: "20px", maxWidth: "600px" }}>
 					{errorMessage}

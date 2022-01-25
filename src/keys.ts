@@ -5,6 +5,7 @@ enum HubKey {
 	AuthLoginToken = "AUTH:TOKEN",
 	AuthLoginGoogle = "AUTH:GOOGLE",
 	AuthLoginFacebook = "AUTH:FACEBOOK",
+	AuthLoginTwitch = "AUTH:TWITCH",
 	AuthLoginWallet = "AUTH:WALLET",
 	AuthLogout = "AUTH:LOGOUT",
 	AuthSuccess = "AUTH:SUCCESS",
@@ -65,6 +66,9 @@ enum HubKey {
 	UserActivityList = "USER_ACTIVITY:LIST",
 	UserActivityGet = "USER_ACTIVITY:GET",
 	UserActivityCreate = "USER_ACTIVITY:CREATE",
+
+	AssetListUpdated = "ASSET:SUBSCRIBE",
+	AssetList = "ASSET:LIST",
 }
 
 export default HubKey

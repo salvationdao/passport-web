@@ -21,11 +21,40 @@ declare module "@mui/material/Button" {
 export const colors = {
 	neonPink: "#f72485",
 	skyBlue: "#4CC9F0",
+	lightNavyBlue: "#211E33",
 	navyBlue: "#0a061f",
 	darkNavyBlue: "#030208",
 	white: "#fff",
 	lightGrey: "#f7f7f7",
 	darkGrey: "#c3c3c3",
+	metamaskOrange: "#F6851B",
+	facebookBlue: "#3F558C",
+	twitchPurple: "#8551F6"
+}
+
+const fallbackFonts = [
+	"-apple-system",
+	"BlinkMacSystemFont",
+	'"Segoe UI"',
+	"Roboto",
+	'"Helvetica Neue"',
+	"Arial",
+	"sans-serif",
+	'"Apple Color Emoji"',
+	'"Segoe UI Emoji"',
+	'"Segoe UI Symbol"',
+]
+
+export const fonts = {
+	bizmoblack: ["bizmoblack", ...fallbackFonts].join(","),
+	bizmobold: ["bizmobold", ...fallbackFonts].join(","),
+	bizmoextra_bold: ["bizmoextra_bold", ...fallbackFonts].join(","),
+	bizmoextra_light: ["bizmoextra_light", ...fallbackFonts].join(","),
+	bizmolight: ["bizmolight", ...fallbackFonts].join(","),
+	bizmomedium: ["bizmomedium", ...fallbackFonts].join(","),
+	bizmosemi_bold: ["bizmosemi_bold", ...fallbackFonts].join(","),
+	bizmothin: ["bizmothin", ...fallbackFonts].join(","),
+	bizmoregular: ["bizmoregular", ...fallbackFonts].join(","),
 }
 
 const lightTheme = createTheme({
@@ -61,6 +90,7 @@ const lightTheme = createTheme({
 		},
 		action: {
 			active: "rgba(255, 255, 255, 0.54)",
+			disabled: colors.lightGrey,
 			disabledBackground: colors.darkGrey
 		}
 	},
@@ -74,19 +104,7 @@ const lightTheme = createTheme({
 		},
 	},
 	typography: {
-		fontFamily: [
-			"bizmomedium",
-			"-apple-system",
-			"BlinkMacSystemFont",
-			'"Segoe UI"',
-			"Roboto",
-			'"Helvetica Neue"',
-			"Arial",
-			"sans-serif",
-			'"Apple Color Emoji"',
-			'"Segoe UI Emoji"',
-			'"Segoe UI Symbol"',
-		].join(","),
+		fontFamily: fonts.bizmomedium,
 		fontSize: 14,
 		fontWeightLight: 300,
 		fontWeightRegular: 400,
@@ -122,7 +140,11 @@ const lightTheme = createTheme({
 			lineHeight: 1.2,
 		},
 		body1: {
+			fontFamily: fonts.bizmoregular,
 			fontSize: 14,
+		},
+		subtitle1: {
+			fontFamily: fonts.bizmoregular
 		},
 		button: {
 			textTransform: "none",
@@ -166,6 +188,17 @@ const lightTheme = createTheme({
 					},
 					"&&::before": {
 						borderColor: colors.darkGrey
+					}
+				}
+			}
+		},
+		MuiFilledInput: {
+			styleOverrides: {
+				root: {
+					borderRadius: 0,
+					backgroundColor: colors.lightNavyBlue,
+					"&&::before": {
+						borderColor: "transparent"
 					}
 				}
 			}

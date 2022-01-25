@@ -3,17 +3,21 @@ import { createContainer } from "unstated-next"
 import HubKey from "../keys"
 import {
 	AddServiceRequest,
-	AddServiceResponse, AddTwitchRequest, PasswordLoginRequest,
+	AddServiceResponse,
+	AddTwitchRequest,
+	PasswordLoginRequest,
 	PasswordLoginResponse,
 	RemoveServiceRequest,
 	RemoveServiceResponse,
 	TokenLoginRequest,
-	TokenLoginResponse, VerifyAccountResponse,
+	TokenLoginResponse,
+	TwitchLoginRequest,
+	VerifyAccountResponse,
 	WalletLoginRequest,
-	WalletLoginResponse
+	WalletLoginResponse,
 } from "../types/auth"
 import { Perm } from "../types/enums"
-import { User } from "../types/types"
+import { Asset, User } from "../types/types"
 import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
 
@@ -36,6 +40,8 @@ export const AuthContainer = createContainer(() => {
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const { state, send, subscribe } = useWebsocket()
 	const [impersonatedUser, setImpersonatedUser] = useState<User>()
+
+	const [sessionID, setSessionID] = useState("")
 
 	/////////////////
 	//  Functions  //
@@ -60,10 +66,12 @@ export const AuthContainer = createContainer(() => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
+
 			const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
 				email,
 				password,
 				admin,
+				sessionID,
 			})
 			if (!resp || !resp.user) {
 				localStorage.clear()
@@ -74,7 +82,7 @@ export const AuthContainer = createContainer(() => {
 			localStorage.setItem("token", resp.token)
 			setAuthorised(true)
 		},
-		[send, state, admin],
+		[send, state, admin, sessionID],
 	)
 
 	/**
@@ -89,7 +97,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			setLoading(true)
 			try {
-				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, { token, admin })
+				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, { token, admin, sessionID })
 				setUser(resp.user)
 				setAuthorised(true)
 			} catch {
@@ -100,7 +108,7 @@ export const AuthContainer = createContainer(() => {
 				setReconnecting(false)
 			}
 		},
-		[send, state, admin],
+		[send, state, admin, sessionID],
 	)
 
 	/**
@@ -118,6 +126,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					admin,
 					username,
+					sessionID,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -131,11 +140,11 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
-				throw e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return null
 		},
-		[send, state, admin],
+		[send, state, admin, sessionID],
 	)
 
 	/**
@@ -153,6 +162,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					admin,
 					username,
+					sessionID,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -166,11 +176,11 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
-				throw e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
 		},
-		[send, state, admin],
+		[send, state, admin, sessionID],
 	)
 
 	/**
@@ -192,6 +202,7 @@ export const AuthContainer = createContainer(() => {
 					signature,
 					admin,
 					username,
+					sessionID,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -209,12 +220,48 @@ export const AuthContainer = createContainer(() => {
 			}
 			return null
 		},
-		[send, state, admin, account, metaMaskState, sign],
+		[send, state, admin, account, metaMaskState, sign, sessionID],
+	)
+
+	/**
+	 * Logs a User in using a Twitch oauth code
+	 *
+	 * @param code Twitch oauth code
+	 */
+	const loginTwitch = useCallback(
+		async (token: string, username?: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<PasswordLoginResponse, TwitchLoginRequest>(HubKey.AuthLoginTwitch, {
+					token,
+					username,
+					sessionID,
+					website: true,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				localStorage.clear()
+				setUser(null)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state, sessionID],
 	)
 
 	/**
 	 * Removes a User's Facebook account
-	*/
+	 */
 	const removeFacebook = useCallback(
 		async (id: string, username: string) => {
 			if (state !== WebSocket.OPEN) {
@@ -222,7 +269,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveFacebook, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -235,7 +283,6 @@ export const AuthContainer = createContainer(() => {
 		},
 		[send, state],
 	)
-
 
 	/**
 	 * Connects a User's existing account to Facebook
@@ -273,7 +320,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveGoogle, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -323,7 +371,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveTwitch, {
-					id, username
+					id,
+					username,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -343,14 +392,14 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Google token
 	 */
 	const addTwitch = useCallback(
-		async (code: string, redirectURI: string) => {
+		async (token: string, redirectURI: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
 				const resp = await send<AddServiceResponse, AddTwitchRequest>(HubKey.UserAddTwitch, {
-					code,
-					redirectURI
+					token,
+					redirectURI,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -447,7 +496,7 @@ export const AuthContainer = createContainer(() => {
 			setReconnecting(true)
 			const token = localStorage.getItem("token")
 			if (token && token !== "") {
-				; (async () => {
+				;(async () => {
 					await loginToken(token)
 				})()
 			}
@@ -480,6 +529,13 @@ export const AuthContainer = createContainer(() => {
 		)
 	}, [id, subscribe, logout, authorised])
 
+	// close web page if it is a iframe login through gamebar
+	useEffect(() => {
+		if (user && sessionID) {
+			window.close()
+		}
+	}, [user, sessionID])
+
 	/////////////////
 	//  Container  //
 	/////////////////
@@ -488,6 +544,7 @@ export const AuthContainer = createContainer(() => {
 		loginToken,
 		loginGoogle,
 		loginFacebook,
+		loginTwitch,
 		loginMetamask,
 		addFacebook,
 		addGoogle,
@@ -506,6 +563,8 @@ export const AuthContainer = createContainer(() => {
 		loading,
 		verifying,
 		verifyCompleteType,
+		setSessionID,
+		sessionID,
 	}
 })
 

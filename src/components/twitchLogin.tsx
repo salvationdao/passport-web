@@ -28,7 +28,7 @@ export interface ReactTwitchFailureResponse {
 }
 
 export interface ReactTwitchLoginInfo {
-    code: string
+    token: string
 }
 
 export interface ReactTwitchLoginState {
@@ -104,7 +104,7 @@ export const TwitchLogin: React.FC<TwitchLoginProps> = (props) => {
                 redirect_uri: redirectUri,
                 response_type: responseType,
                 state,
-                scope,
+                scope: scope ? scope + " openid" : "openid",
             }
             const href = `https://id.twitch.tv/oauth2/authorize${getParamsFromObject(twitchParams)}`
             // Opens Twitch login page in a new window
@@ -168,17 +168,18 @@ export const TwitchLogin: React.FC<TwitchLoginProps> = (props) => {
             const currentUrl = twitchOAuthPopup.location.href
             if (!currentUrl) return
 
-            const searchParams = new URL(currentUrl).searchParams
-            const code = searchParams.get("code")
+            const fragment = window.location.origin + "?" + twitchOAuthPopup.location.hash.split("#")[1]
+            const searchParams = new URL(fragment).searchParams
+            const token = searchParams.get("id_token")
 
             // Return the access token to the callback function
-            if (code) {
+            if (token) {
                 twitchOAuthPopup.close()
                 setTwitchOAuthPopup(null)
                 popupCheckTimer && clearInterval(popupCheckTimer)
 
                 callback({
-                    code
+                    token
                 })
                 setIsProcessing(false)
             }
@@ -196,8 +197,6 @@ export const TwitchLogin: React.FC<TwitchLoginProps> = (props) => {
 
 TwitchLogin.defaultProps = {
     redirectUri: typeof window !== "undefined" ? window.location.href : "/",
-    scope: "user:read:email",
-    onFailure: undefined,
     state: "twitchdirect",
-    responseType: "code",
+    responseType: "id_token",
 }

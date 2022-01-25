@@ -183,7 +183,6 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	if (pluralName === name) {
 		console.warn("[ItemTable] 'name' must be singular", name)
 	}
-
 	return (
 		<>
 			{!hideSearch && <SearchBar value={search} onChange={setSearch} placeholder={`Search ${pluralName}...`} loading={loading} />}

@@ -1,4 +1,4 @@
-import { ObjectType, Perm } from "./enums";
+import { ObjectType, Perm } from "./enums"
 
 export interface User {
 	id: string
@@ -67,4 +67,17 @@ export interface Product {
 	createdAt: Date
 	updatedAt: Date
 	deletedAt: Date | null
+}
+
+export interface Asset {
+	tokenID: number
+	name: string
+	collection: string
+	description: string
+	externalURL: string
+	image: string
+	attributes: string
+	createdAt: Date
+	updatedAt: Date
+	deletedAt?: any
 }
