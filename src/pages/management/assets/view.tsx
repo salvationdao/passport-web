@@ -10,7 +10,6 @@ import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { useState, useEffect } from "react"
-import moment from "moment"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -19,19 +18,21 @@ export const AssetPage = () => {
 	const { subscribe } = useWebsocket()
 	const [asset, setAsset] = useState<Asset>()
 
+	const isWarMachine = (): boolean => {
+		if (!asset) return false
+		// loops through asset's attributes checks if it has a trait_type of "Asset Type", and value of "War Machine"
+		const wm = asset.attributes.filter((a) => a.trait_type === "Asset Type" && a.value === "War Machine")
+		return wm.length > 0
+	}
+
 	// Effect: get/set asset via token id
 	useEffect(() => {
 		if (!user || !user.id) return
 		return subscribe<Asset>(
 			HubKey.AssetUpdated,
 			(payload) => {
-				console.log("th is is pay", payload)
-				console.log("th is is user", user)
-
 				if (!payload || !user || !user.id) return
 				setAsset(payload)
-
-				console.log("after")
 			},
 			{
 				userID: user.id,
@@ -218,8 +219,8 @@ export const AssetPage = () => {
 							</Section>
 						</Box>
 
-						{/* if owner */}
-						{asset.userID === user?.id && !asset.frozenAt && (
+						{/* if owner, not frozen and is a war machine */}
+						{asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
 							<Box
 								sx={{
 									marginLeft: "100px",
@@ -228,7 +229,7 @@ export const AssetPage = () => {
 									},
 								}}
 							>
-								<FancyButton sx={{ fontSize: 23, padding: "1rem 2.25rem" }} fancy>
+								<FancyButton onClick={() => {}} sx={{ fontSize: 23, padding: "1rem 2.25rem" }} fancy>
 									Deploy
 								</FancyButton>
 							</Box>
