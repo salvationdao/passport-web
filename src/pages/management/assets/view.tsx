@@ -1,14 +1,46 @@
 import { Box, Paper, styled, Typography } from "@mui/material"
+import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Navbar } from "../../../components/home/navbar"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import { FancyButton } from "../../../components/fancyButton"
+import { Navbar } from "../../../components/home/navbar"
+import { AuthContainer } from "../../../containers"
+import { useWebsocket } from "../../../containers/socket"
+import HubKey from "../../../keys"
 import { colors } from "../../../theme"
+import { Asset } from "../../../types/types"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
+	const { user, hasPermission } = AuthContainer.useContainer()
 
+	const { subscribe } = useWebsocket()
+	const [asset, setAsset] = useState<Asset>()
+
+	// Effect: get/set asset via token id
+	useEffect(() => {
+		if (!user || !user.id) return
+		return subscribe<Asset>(
+			HubKey.AssetGet,
+			(payload) => {
+				console.log("th is is pay", payload)
+				console.log("th is is user", user)
+
+				if (!payload || !user || !user.id) return
+				setAsset(payload)
+
+				console.log("after")
+			},
+			{
+				userID: user.id,
+				tokenID: parseInt(tokenID),
+			},
+		)
+	}, [user?.id, subscribe])
+
+	if (!asset) return <></>
 	console.log("yoyo", tokenID)
+	console.log("this is asset", asset)
 
 	return (
 		<Box
@@ -41,6 +73,9 @@ export const AssetPage = () => {
 							borderRadius: 0,
 							backgroundColor: "transparent",
 							display: "flex",
+							"@media (max-width: 1380px)": {
+								flexDirection: "column",
+							},
 						}}
 					>
 						{/* image */}
@@ -73,7 +108,7 @@ export const AssetPage = () => {
 										textTransform: "uppercase",
 									}}
 								>
-									Yeah boi
+									{asset.name}
 								</Typography>
 
 								<Typography
@@ -83,15 +118,14 @@ export const AssetPage = () => {
 										textTransform: "uppercase",
 									}}
 								>
-									BattleMechs are controlled by pilots known as MechWarriors. Seated in the cockpit of their ‘Mech, MechWarriors connect to
-									their machine by wearing a neurohelmet, which reads their brainwaves in order to provide the ‘Mech a sense of balance and
-									other necessary functions.
+									{asset.description}
 								</Typography>
 							</Section>
 
 							<Section>
 								<Typography
 									variant="h3"
+									color={colors.skyBlue}
 									sx={{
 										textTransform: "uppercase",
 									}}
@@ -100,18 +134,36 @@ export const AssetPage = () => {
 								</Typography>
 
 								<PropertiesSection>
-									{[1, 2, 3, 4, 5, 6].map((b) => (
-										<Box
-											key={b}
-											sx={{
-												width: 170,
-												height: 170,
-												margin: "10px 10px 10px 0px",
-												backgroundColor: "transparent",
-												border: "2px solid #fff",
-											}}
-										></Box>
-									))}
+									{asset.attributes
+										.filter((a) => {
+											return !!a.token_id
+										})
+										.map((attr, i) => {
+											return (
+												<Box>
+													<Box
+														key={i}
+														sx={{
+															width: 170,
+															height: 170,
+															margin: "10px 10px 10px 0px",
+															backgroundColor: "transparent",
+															border: "2px solid #fff",
+														}}
+													></Box>
+													<Typography
+														variant="h5"
+														// fontSize={18}
+														color={colors.neonPink}
+														sx={{
+															textTransform: "uppercase",
+														}}
+													>
+														{attr.trait_type}
+													</Typography>
+												</Box>
+											)
+										})}
 								</PropertiesSection>
 							</Section>
 						</Box>

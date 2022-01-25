@@ -76,8 +76,14 @@ export interface Asset {
 	description: string
 	externalURL: string
 	image: string
-	attributes: string
+	attributes: Attribute[]
 	createdAt: Date
 	updatedAt: Date
 	deletedAt?: any
+}
+
+export interface Attribute {
+	trait_type: string
+	token_id: number
+	value: string | number
 }

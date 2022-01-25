@@ -188,9 +188,9 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 
 			<AssetsSection>
 				{assets.map((a) => {
-					const attrObj = JSON.parse(a.attributes)
-					console.log("attributes ", attrObj)
-					console.log(a)
+					// const attrObj = JSON.parse(a.attributes)
+					// console.log("attributes ", attrObj)
+					console.log("ass", a)
 
 					return (
 						<AssetCard
