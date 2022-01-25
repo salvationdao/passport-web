@@ -15,10 +15,8 @@ import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
 import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
 import { AuthContainer, useAuth } from "../containers/auth"
-import { API_ENDPOINT_HOSTNAME, protocol, useWebsocket } from "../containers/socket"
-import HubKey from "../keys"
+import { API_ENDPOINT_HOSTNAME, protocol } from "../containers/socket"
 import { colors, fonts } from "../theme"
-import { PasswordLoginResponse } from "../types/auth"
 
 interface LogInInput {
 	email: string
@@ -26,15 +24,14 @@ interface LogInInput {
 }
 
 export const LoginPage: React.FC = () => {
-	const { send } = useWebsocket()
-	const { user, setUser } = useAuth()
+	const { user } = useAuth()
 	const history = useHistory()
 
 	const { loginGoogle, loginFacebook, loginTwitch, loginPassword } = AuthContainer.useContainer()
 
 	const { control, handleSubmit, reset } = useForm<LogInInput>()
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
-	const [loading, setLoading] = useState(false)
+	const [loading] = useState(false)
 	const [showEmailLogin, setShowEmailLogin] = useState(false)
 
 	// Animating background circle
