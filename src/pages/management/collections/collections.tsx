@@ -18,6 +18,17 @@ import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 
+enum Currency {
+	Ethereum,
+}
+
+enum Rarity {
+	Epic,
+	Legendary,
+	Common,
+	Anomaly,
+}
+
 export const CollectionsPage: React.FC = () => {
 	const history = useHistory()
 	const { user } = AuthContainer.useContainer()
@@ -157,7 +168,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 				},
 			},
 		)
-	}, [userID, subscribe])
+	}, [userID, subscribe, collection])
 
 	return (
 		<Box sx={{ marginBottom: "30px", marginLeft: "15px", marginRight: "15px" }}>
@@ -234,16 +245,6 @@ const AssetsSection = styled((props) => <Box {...props} />)(({ theme }) => ({
 	backgroundColor: theme.palette.background.paper,
 }))
 
-enum Currency {
-	Ethereum,
-}
-
-enum Rarity {
-	Epic,
-	Legendary,
-	Common,
-	Anomaly,
-}
 interface AssetCardProps extends BoxProps {
 	tokenID: number
 	name: string

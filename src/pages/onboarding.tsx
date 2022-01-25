@@ -1,9 +1,8 @@
-import { Alert, Box, Link, Snackbar, styled, Typography, TypographyProps } from "@mui/material"
+import { Alert, Box, Link, Snackbar, Typography } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
-import { Transition, TransitionStatus } from "react-transition-group"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
@@ -17,7 +16,7 @@ import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
 import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
 import { useAuth } from "../containers/auth"
-import { useWebsocket } from "../containers/socket"
+import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../containers/socket"
 import HubKey from "../keys"
 import { colors, fonts } from "../theme"
 import { RegisterResponse } from "../types/auth"
@@ -126,7 +125,7 @@ export const Onboarding = () => {
 	const onBack = () => {
 		// Reset errors, but persist form values
 		reset(undefined, {
-			keepValues: true
+			keepValues: true,
 		})
 		setCurrentStep((prevStep) => Math.max(prevStep - 1, 0))
 	}
@@ -135,24 +134,28 @@ export const Onboarding = () => {
 		switch (signUpType) {
 			case "email":
 				return (
-					<Box component="form" onSubmit={handleSubmit(async (input) => {
-						try {
-							setLoading(true)
-							setErrorMessage(undefined)
+					<Box
+						component="form"
+						onSubmit={handleSubmit(async (input) => {
+							try {
+								setLoading(true)
+								setErrorMessage(undefined)
 
-							const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
-							setUser(resp.user)
-							localStorage.setItem("token", resp.token)
-						} catch (e) {
-							setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
-						} finally {
-							setLoading(false)
-						}
-					})} sx={{
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem"
-						}
-					}}>
+								const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
+								setUser(resp.user)
+								localStorage.setItem("token", resp.token)
+							} catch (e) {
+								setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+							} finally {
+								setLoading(false)
+							}
+						})}
+						sx={{
+							"& > *:not(:last-child)": {
+								marginBottom: "1rem",
+							},
+						}}
+					>
 						<InputField
 							autoFocus
 							name="password"
@@ -171,23 +174,35 @@ export const Onboarding = () => {
 							Your password must:
 							<ul>
 								<li>be 8 or more characters long</li>
-								<li>contain <strong>upper</strong> &#38; <strong>lower</strong> case letters</li>
-								<li>contain at least <strong>1 number</strong></li>
-								<li>contain at least <strong>1 symbol</strong></li>
+								<li>
+									contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
+								</li>
+								<li>
+									contain at least <strong>1 number</strong>
+								</li>
+								<li>
+									contain at least <strong>1 symbol</strong>
+								</li>
 							</ul>
 						</Box>
-						<Box sx={{
-							display: "flex",
-							"& > *:not(:last-child)": {
-								marginRight: ".5rem"
-							}
-						}}>
+						<Box
+							sx={{
+								display: "flex",
+								"& > *:not(:last-child)": {
+									marginRight: ".5rem",
+								},
+							}}
+						>
 							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
-							<FancyButton type="submit" disabled={loading} sx={{
-								flexGrow: 1,
-							}}>
+							<FancyButton
+								type="submit"
+								disabled={loading}
+								sx={{
+									flexGrow: 1,
+								}}
+							>
 								Create Account
 							</FancyButton>
 						</Box>
@@ -202,17 +217,30 @@ export const Onboarding = () => {
 		switch (signUpType) {
 			case "email":
 				return (
-					<Box component="form" onSubmit={async (e: any) => {
-						e.preventDefault()
-						const isStepValid = await trigger()
-						if (!isStepValid) return
-						setCurrentStep(2)
-					}} sx={{
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem"
-						}
-					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
+					<Box
+						component="form"
+						onSubmit={async (e: any) => {
+							e.preventDefault()
+							const isStepValid = await trigger()
+							if (!isStepValid) return
+							setCurrentStep(2)
+						}}
+						sx={{
+							"& > *:not(:last-child)": {
+								marginBottom: "1rem",
+							},
+						}}
+					>
+						<InputField
+							name="username"
+							label="Username"
+							control={control}
+							rules={{ required: "Username is required" }}
+							disabled={loading}
+							variant="filled"
+							autoFocus
+							fullWidth
+						/>
 						<InputField name="firstName" label="First Name" control={control} fullWidth variant="filled" disabled={loading} />
 						<InputField name="lastName" label="Last Name" control={control} fullWidth variant="filled" disabled={loading} />
 						<InputField
@@ -231,18 +259,24 @@ export const Onboarding = () => {
 							variant="filled"
 							disabled={loading}
 						/>
-						<Box sx={{
-							display: "flex",
-							"& > *:not(:last-child)": {
-								marginRight: ".5rem"
-							}
-						}}>
+						<Box
+							sx={{
+								display: "flex",
+								"& > *:not(:last-child)": {
+									marginRight: ".5rem",
+								},
+							}}
+						>
 							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
-							<FancyButton type="submit" disabled={loading} sx={{
-								flexGrow: 1,
-							}}>
+							<FancyButton
+								type="submit"
+								disabled={loading}
+								sx={{
+									flexGrow: 1,
+								}}
+							>
 								Next
 							</FancyButton>
 						</Box>
@@ -250,18 +284,33 @@ export const Onboarding = () => {
 				)
 			case "metamask":
 				return (
-					<Box component="form" onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()} sx={{
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem"
-						}
-					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
-						<Box sx={{
-							display: "flex",
+					<Box
+						component="form"
+						onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+						sx={{
 							"& > *:not(:last-child)": {
-								marginRight: ".5rem"
-							}
-						}}>
+								marginBottom: "1rem",
+							},
+						}}
+					>
+						<InputField
+							name="username"
+							label="Username"
+							control={control}
+							rules={{ required: "Username is required" }}
+							disabled={loading}
+							variant="filled"
+							autoFocus
+							fullWidth
+						/>
+						<Box
+							sx={{
+								display: "flex",
+								"& > *:not(:last-child)": {
+									marginRight: ".5rem",
+								},
+							}}
+						>
 							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
@@ -277,7 +326,7 @@ export const Onboarding = () => {
 								}}
 								onFailure={onMetaMaskLoginFailure}
 								sx={{
-									flexGrow: 1
+									flexGrow: 1,
 								}}
 							/>
 						</Box>
@@ -285,23 +334,38 @@ export const Onboarding = () => {
 				)
 			case "google":
 				return (
-					<Box component="form" onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()} sx={{
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem"
-						}
-					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
-						<Box sx={{
-							display: "flex",
+					<Box
+						component="form"
+						onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+						sx={{
 							"& > *:not(:last-child)": {
-								marginRight: ".5rem"
-							}
-						}}>
+								marginBottom: "1rem",
+							},
+						}}
+					>
+						<InputField
+							name="username"
+							label="Username"
+							control={control}
+							rules={{ required: "Username is required" }}
+							disabled={loading}
+							variant="filled"
+							autoFocus
+							fullWidth
+						/>
+						<Box
+							sx={{
+								display: "flex",
+								"& > *:not(:last-child)": {
+									marginRight: ".5rem",
+								},
+							}}
+						>
 							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
 							<GoogleLogin
-								clientId="593683501366-gk7ab1nnskc1tft14bk8ebsja1bce24v.apps.googleusercontent.com"
+								clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
 								onSuccess={onGoogleLogin}
 								onFailure={onGoogleLoginFailure}
 								cookiePolicy={"single_host_origin"}
@@ -328,18 +392,33 @@ export const Onboarding = () => {
 				)
 			case "facebook":
 				return (
-					<Box component="form" onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()} sx={{
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem"
-						}
-					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
-						<Box sx={{
-							display: "flex",
+					<Box
+						component="form"
+						onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+						sx={{
 							"& > *:not(:last-child)": {
-								marginRight: ".5rem"
-							}
-						}}>
+								marginBottom: "1rem",
+							},
+						}}
+					>
+						<InputField
+							name="username"
+							label="Username"
+							control={control}
+							rules={{ required: "Username is required" }}
+							disabled={loading}
+							variant="filled"
+							autoFocus
+							fullWidth
+						/>
+						<Box
+							sx={{
+								display: "flex",
+								"& > *:not(:last-child)": {
+									marginRight: ".5rem",
+								},
+							}}
+						>
 							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
@@ -359,7 +438,7 @@ export const Onboarding = () => {
 										disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
 										startIcon={<FacebookIcon />}
 										sx={{
-											flexGrow: 1
+											flexGrow: 1,
 										}}
 									>
 										Sign Up with Facebook
@@ -371,24 +450,39 @@ export const Onboarding = () => {
 				)
 			case "twitch":
 				return (
-					<Box component="form" onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()} sx={{
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem"
-						}
-					}}>
-						<InputField name="username" label="Username" control={control} rules={{ required: "Username is required" }} disabled={loading} variant="filled" autoFocus fullWidth />
-						<Box sx={{
-							display: "flex",
+					<Box
+						component="form"
+						onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+						sx={{
 							"& > *:not(:last-child)": {
-								marginRight: ".5rem"
-							}
-						}}>
+								marginBottom: "1rem",
+							},
+						}}
+					>
+						<InputField
+							name="username"
+							label="Username"
+							control={control}
+							rules={{ required: "Username is required" }}
+							disabled={loading}
+							variant="filled"
+							autoFocus
+							fullWidth
+						/>
+						<Box
+							sx={{
+								display: "flex",
+								"& > *:not(:last-child)": {
+									marginRight: ".5rem",
+								},
+							}}
+						>
 							<FancyButton type="button" onClick={onBack}>
 								Back
 							</FancyButton>
 							<TwitchLogin
 								clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
-								redirectUri="http://localhost:5003"
+								redirectUri={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`}
 								callback={onTwitchLogin}
 								onFailure={onTwitchLoginFailure}
 								render={(props) => (
@@ -402,78 +496,111 @@ export const Onboarding = () => {
 										disabled={props.isDisabled || props.isProcessing}
 										startIcon={<TwitchIcon />}
 										sx={{
-											flexGrow: 1
+											flexGrow: 1,
 										}}
 									>
 										Sign up with Twitch
 									</FancyButton>
-								)} />
+								)}
+							/>
 						</Box>
 					</Box>
 				)
 		}
 	}
 
-	const renderStep0 = () => (<Box sx={{
-		display: "flex",
-		flexDirection: "column",
-		"& > *:not(:last-child)": {
-			marginBottom: "1rem"
-		}
-	}}>
-		<FancyButton type="button" borderColor={colors.metamaskOrange} onClick={() => {
-			setSignUpType("metamask")
-			setCurrentStep(1)
-		}}
-			startIcon={<MetaMaskIcon />}>
-			Sign up with MetaMask
-		</FancyButton>
-		<FancyButton type="button" borderColor={colors.white} onClick={() => {
-			setSignUpType("google")
-			setCurrentStep(1)
-		}}
-			startIcon={<GoogleIcon />}>
-			Sign up with Google
-		</FancyButton>
-		<FancyButton type="button" borderColor={colors.facebookBlue} onClick={() => {
-			setSignUpType("facebook")
-			setCurrentStep(1)
-		}}
-			startIcon={<FacebookIcon />}>
-			Sign up with Facebook
-		</FancyButton>
-		<FancyButton type="button" borderColor={colors.twitchPurple} onClick={() => {
-			setSignUpType("twitch")
-			setCurrentStep(1)
-		}}
-			startIcon={<TwitchIcon />}>
-			Sign up with Twitch
-		</FancyButton>
-		<Box sx={{
-			display: "flex",
-			alignItems: "center",
-		}}>
-			<Box component="span" sx={(theme) => ({
-				minHeight: "2px",
-				width: "100%",
-				marginRight: "1rem",
-				backgroundColor: theme.palette.primary.main,
-			})} />
-			Or
-			<Box component="span" sx={(theme) => ({
-				minHeight: "2px",
-				width: "100%",
-				marginLeft: "1rem",
-				backgroundColor: theme.palette.primary.main,
-			})} />
+	const renderStep0 = () => (
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				"& > *:not(:last-child)": {
+					marginBottom: "1rem",
+				},
+			}}
+		>
+			<FancyButton
+				type="button"
+				borderColor={colors.metamaskOrange}
+				onClick={() => {
+					setSignUpType("metamask")
+					setCurrentStep(1)
+				}}
+				startIcon={<MetaMaskIcon />}
+			>
+				Sign up with MetaMask
+			</FancyButton>
+			<FancyButton
+				type="button"
+				borderColor={colors.white}
+				onClick={() => {
+					setSignUpType("google")
+					setCurrentStep(1)
+				}}
+				startIcon={<GoogleIcon />}
+			>
+				Sign up with Google
+			</FancyButton>
+			<FancyButton
+				type="button"
+				borderColor={colors.facebookBlue}
+				onClick={() => {
+					setSignUpType("facebook")
+					setCurrentStep(1)
+				}}
+				startIcon={<FacebookIcon />}
+			>
+				Sign up with Facebook
+			</FancyButton>
+			<FancyButton
+				type="button"
+				borderColor={colors.twitchPurple}
+				onClick={() => {
+					setSignUpType("twitch")
+					setCurrentStep(1)
+				}}
+				startIcon={<TwitchIcon />}
+			>
+				Sign up with Twitch
+			</FancyButton>
+			<Box
+				sx={{
+					display: "flex",
+					alignItems: "center",
+				}}
+			>
+				<Box
+					component="span"
+					sx={(theme) => ({
+						minHeight: "2px",
+						width: "100%",
+						marginRight: "1rem",
+						backgroundColor: theme.palette.primary.main,
+					})}
+				/>
+				Or
+				<Box
+					component="span"
+					sx={(theme) => ({
+						minHeight: "2px",
+						width: "100%",
+						marginLeft: "1rem",
+						backgroundColor: theme.palette.primary.main,
+					})}
+				/>
+			</Box>
+			<FancyButton
+				borderColor={colors.white}
+				filled
+				onClick={() => {
+					setCurrentStep(1)
+					setSignUpType("email")
+				}}
+			>
+				Email Signup
+			</FancyButton>
 		</Box>
-		<FancyButton borderColor={colors.white} filled onClick={() => {
-			setCurrentStep(1)
-			setSignUpType("email")
-		}}>
-			Email Signup
-		</FancyButton>
-	</Box>)
+	)
 
 	useEffect(() => {
 		switch (currentStep) {
@@ -484,7 +611,6 @@ export const Onboarding = () => {
 				setAnimationPhase("small")
 				break
 		}
-
 	}, [currentStep])
 
 	useEffect(() => {
@@ -500,7 +626,7 @@ export const Onboarding = () => {
 		return <Loading text="You are already logged in, redirecting to home page..." />
 	}
 
-	return <PassportReady />
+	// return <PassportReady />
 
 	return (
 		<>
@@ -508,7 +634,7 @@ export const Onboarding = () => {
 				open={!!errorMessage}
 				autoHideDuration={6000}
 				onClose={(_, reason) => {
-					if (reason === 'clickaway') {
+					if (reason === "clickaway") {
 						return
 					}
 
@@ -520,182 +646,222 @@ export const Onboarding = () => {
 			</Snackbar>
 			<Box
 				sx={{
-					overflow: 'hidden',
+					overflow: "hidden",
 					position: "relative",
 					minHeight: "100vh",
 					display: "flex",
 					justifyContent: "center",
 					alignItems: "center",
 					flexDirection: "column",
-					padding: "3rem"
+					padding: "3rem",
 				}}
 			>
-				<GradientCircleThing sx={{
-					zIndex: -1,
-					position: "absolute",
-					top: "50%",
-					left: "50%",
-					transform: "translate(-50%, -50%)"
-				}} phase={animationPhase} hideInner />
-				<RouterLink to="/"><Box component="img" src={XSYNLogoImage} alt="XSYN Logo" sx={{
-					width: "100px",
-					marginBottom: "1rem"
-				}} /></RouterLink>
-				<Typography variant="h1" sx={{
-					marginBottom: "1rem",
-					fontFamily: fonts.bizmobold,
-					fontSize: "3rem",
-					textTransform: "uppercase"
-				}}>{currentStep === 0 ? "Create Passport" : "Sign Up"}</Typography>
-				<Box sx={{
-					width: "100%",
-					maxWidth: "400px"
-				}}>
+				<GradientCircleThing
+					sx={{
+						zIndex: -1,
+						position: "absolute",
+						top: "50%",
+						left: "50%",
+						transform: "translate(-50%, -50%)",
+					}}
+					phase={animationPhase}
+					hideInner
+				/>
+				<RouterLink to="/">
+					<Box
+						component="img"
+						src={XSYNLogoImage}
+						alt="XSYN Logo"
+						sx={{
+							width: "100px",
+							marginBottom: "1rem",
+						}}
+					/>
+				</RouterLink>
+				<Typography
+					variant="h1"
+					sx={{
+						marginBottom: "1rem",
+						fontFamily: fonts.bizmobold,
+						fontSize: "3rem",
+						textTransform: "uppercase",
+					}}
+				>
+					{currentStep === 0 ? "Create Passport" : "Sign Up"}
+				</Typography>
+				<Box
+					sx={{
+						width: "100%",
+						maxWidth: "400px",
+					}}
+				>
 					{currentStep === 0 && renderStep0()}
 					{currentStep === 1 && renderStep1()}
 					{currentStep === 2 && renderStep2()}
-					<Typography variant="subtitle1" sx={{
-						marginTop: "1rem"
-					}} >Already have an account? <Link component={RouterLink} to="/login">Login here</Link></Typography>
+					<Typography
+						variant="subtitle1"
+						sx={{
+							marginTop: "1rem",
+						}}
+					>
+						Already have an account?{" "}
+						<Link component={RouterLink} to="/login">
+							Login here
+						</Link>
+					</Typography>
 				</Box>
 			</Box>
 		</>
 	)
 }
 
+// interface PassportReadyProps {}
 
-interface PassportReadyProps {
-
-}
-
-const PassportReady: React.FC<PassportReadyProps> = () => {
-	const [step, setStep] = useState(0)
-
-	useEffect(() => {
-		let timeout2: NodeJS.Timeout
-		const timeout = setTimeout(() => {
-			setStep(1)
-			timeout2 = setTimeout(() => {
-				setStep(2)
-			}, 2000)
-		}, 2000)
-
-		return () => {
-			if (timeout2) clearTimeout(timeout2)
-			clearTimeout(timeout)
-		}
-	}, [])
-
-	return (
-		<Box sx={{
-			overflow: "hidden",
-			position: "relative",
-			minHeight: "100vh",
-		}}>
-			<Box sx={{
-				position: "absolute",
-				top: "50%",
-				left: "50%",
-				transform: "translate(-50%, -50%)",
-				display: 'flex',
-				flexDirection: "column",
-				alignItems: "center",
-				width: "100%"
-			}}>
-				<Typography
-					variant="h1" component="p" sx={{
-						marginBottom: "1rem",
-						opacity: step === 2 ? 1 : 0,
-						transition: "opacity .2s ease-in",
-						lineHeight: 1,
-						fontSize: "3rem",
-						textTransform: "uppercase",
-					}}>
-					Upload a profile image
-				</Typography>
-				<Box
-					sx={(theme) => ({
-						position: "relative",
-						height: step === 2 ? "8rem" : "30rem",
-						width: step === 2 ? "8rem" : "30rem",
-						borderRadius: "50%",
-						border: `2px solid ${theme.palette.secondary.main}`,
-						transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
-					})}
-				>
-					<MiddleText sx={{
-						position: "absolute",
-						top: "50%",
-						left: "50%",
-						transform: "translate(-50%, -50%)",
-						transition: `opacity 200ms ease-in`,
-						opacity: step !== 0 ? 0 : 1,
-						textAlign: "center",
-						whiteSpace: "nowrap",
-					}}>
-						Your passport is ready
-					</MiddleText>
-					<MiddleText sx={{
-						position: "absolute",
-						top: "50%",
-						left: "50%",
-						transform: "translate(-50%, -50%)",
-						transition: `opacity 200ms ease-in`,
-						opacity: step !== 1 ? 0 : 1,
-						textAlign: "center",
-						whiteSpace: "nowrap",
-					}}>
-						Let's set up your profile
-					</MiddleText>
-				</Box>
-				<Typography variant="body1" sx={{
-					marginTop: "1rem",
-					opacity: step === 2 ? 1 : 0,
-					transition: "opacity .2s ease-in",
-					lineHeight: 1,
-					fontSize: "1rem",
-					textTransform: "uppercase",
-				}}>
-					Drag an image here for your profile picture
-				</Typography>
-			</Box>
-		</Box>
-	)
-}
-
-interface TransitionableTextProps extends TypographyProps {
-	inProp: boolean
-}
-
-const TransitionableText: React.FC<TransitionableTextProps> = ({ inProp, sx, ...props }) => {
-	const duration = 200
-
-	const transitionStyles: { [key in TransitionStatus]: any } = {
-		entering: { opacity: 1 },
-		entered: { opacity: 1 },
-		exiting: { opacity: 0 },
-		exited: { opacity: 0 },
-		unmounted: { opacity: 0 },
-	}
-
-	return (
-		<Transition inProp={inProp} timeout={duration}>
-			{state => {
-				console.log(inProp, state)
-				return (
-					<Typography sx={{
-						...sx,
-						...transitionStyles[state],
-						transition: `opacity ${duration}ms ease-in`,
-					}} {...props} />
-				)
-			}
-			}
-		</Transition>
-	)
-}
-
-const MiddleText = styled(Typography)({
-	fontSize: "3rem",
-	textTransform: "uppercase",
-})
+// const PassportReady: React.FC<PassportReadyProps> = () => {
+// 	const [step, setStep] = useState(0)
+//
+// 	useEffect(() => {
+// 		let timeout2: NodeJS.Timeout
+// 		const timeout = setTimeout(() => {
+// 			setStep(1)
+// 			timeout2 = setTimeout(() => {
+// 				setStep(2)
+// 			}, 2000)
+// 		}, 2000)
+//
+// 		return () => {
+// 			if (timeout2) clearTimeout(timeout2)
+// 			clearTimeout(timeout)
+// 		}
+// 	}, [])
+//
+// 	return (
+// 		<Box
+// 			sx={{
+// 				overflow: "hidden",
+// 				position: "relative",
+// 				minHeight: "100vh",
+// 			}}
+// 		>
+// 			<Box
+// 				sx={{
+// 					position: "absolute",
+// 					top: "50%",
+// 					left: "50%",
+// 					transform: "translate(-50%, -50%)",
+// 					display: "flex",
+// 					flexDirection: "column",
+// 					alignItems: "center",
+// 					width: "100%",
+// 				}}
+// 			>
+// 				<Typography
+// 					variant="h1"
+// 					component="p"
+// 					sx={{
+// 						marginBottom: "1rem",
+// 						opacity: step === 2 ? 1 : 0,
+// 						transition: "opacity .2s ease-in",
+// 						lineHeight: 1,
+// 						fontSize: "3rem",
+// 						textTransform: "uppercase",
+// 					}}
+// 				>
+// 					Upload a profile image
+// 				</Typography>
+// 				<Box
+// 					sx={(theme) => ({
+// 						position: "relative",
+// 						height: step === 2 ? "8rem" : "30rem",
+// 						width: step === 2 ? "8rem" : "30rem",
+// 						borderRadius: "50%",
+// 						border: `2px solid ${theme.palette.secondary.main}`,
+// 						transition:
+// 							"height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
+// 					})}
+// 				>
+// 					<MiddleText
+// 						sx={{
+// 							position: "absolute",
+// 							top: "50%",
+// 							left: "50%",
+// 							transform: "translate(-50%, -50%)",
+// 							transition: `opacity 200ms ease-in`,
+// 							opacity: step !== 0 ? 0 : 1,
+// 							textAlign: "center",
+// 							whiteSpace: "nowrap",
+// 						}}
+// 					>
+// 						Your passport is ready
+// 					</MiddleText>
+// 					<MiddleText
+// 						sx={{
+// 							position: "absolute",
+// 							top: "50%",
+// 							left: "50%",
+// 							transform: "translate(-50%, -50%)",
+// 							transition: `opacity 200ms ease-in`,
+// 							opacity: step !== 1 ? 0 : 1,
+// 							textAlign: "center",
+// 							whiteSpace: "nowrap",
+// 						}}
+// 					>
+// 						Let's set up your profile
+// 					</MiddleText>
+// 				</Box>
+// 				<Typography
+// 					variant="body1"
+// 					sx={{
+// 						marginTop: "1rem",
+// 						opacity: step === 2 ? 1 : 0,
+// 						transition: "opacity .2s ease-in",
+// 						lineHeight: 1,
+// 						fontSize: "1rem",
+// 						textTransform: "uppercase",
+// 					}}
+// 				>
+// 					Drag an image here for your profile picture
+// 				</Typography>
+// 			</Box>
+// 		</Box>
+// 	)
+// }
+//
+// interface TransitionableTextProps extends TypographyProps {
+// 	inProp: boolean
+// }
+//
+// const TransitionableText: React.FC<TransitionableTextProps> = ({ inProp, sx, ...props }) => {
+// 	const duration = 200
+//
+// 	const transitionStyles: { [key in TransitionStatus]: any } = {
+// 		entering: { opacity: 1 },
+// 		entered: { opacity: 1 },
+// 		exiting: { opacity: 0 },
+// 		exited: { opacity: 0 },
+// 		unmounted: { opacity: 0 },
+// 	}
+//
+// 	return (
+// 		<Transition inProp={inProp} timeout={duration}>
+// 			{(state) => {
+// 				console.log(inProp, state)
+// 				return (
+// 					<Typography
+// 						sx={{
+// 							...sx,
+// 							...transitionStyles[state],
+// 							transition: `opacity ${duration}ms ease-in`,
+// 						}}
+// 						{...props}
+// 					/>
+// 				)
+// 			}}
+// 		</Transition>
+// 	)
+// }
+//
+// const MiddleText = styled(Typography)({
+// 	fontSize: "3rem",
+// 	textTransform: "uppercase",
+// })

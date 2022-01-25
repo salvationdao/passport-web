@@ -17,7 +17,7 @@ import {
 	WalletLoginResponse,
 } from "../types/auth"
 import { Perm } from "../types/enums"
-import { Asset, User } from "../types/types"
+import { User } from "../types/types"
 import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
 
@@ -39,7 +39,7 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const { state, send, subscribe } = useWebsocket()
-	const [impersonatedUser, setImpersonatedUser] = useState<User>()
+	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
 
 	const [sessionID, setSessionID] = useState("")
 
@@ -466,7 +466,7 @@ export const AuthContainer = createContainer(() => {
 
 	/** Checks if current user has a permission */
 	const hasPermission = (perm: Perm) => {
-		if (impersonatedUser) return impersonatedUser.role.permissions.includes(perm)
+		// if (impersonatedUser) return impersonatedUser.role.permissions.includes(perm)
 
 		if (!user || !user.role || !user.role.permissions) return false
 		return user.role.permissions.includes(perm)
@@ -556,10 +556,10 @@ export const AuthContainer = createContainer(() => {
 		verify,
 		hideVerifyComplete: () => setVerifyCompleteType(undefined),
 		hasPermission,
-		user: impersonatedUser || user,
+		user: user,
 		setUser,
 		impersonateUser,
-		isImpersonatingUser: impersonatedUser !== undefined,
+		isImpersonatingUser: false,
 		loading,
 		verifying,
 		verifyCompleteType,

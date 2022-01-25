@@ -4,6 +4,7 @@ import HubKey from "../keys"
 
 /** API Endpoint Host */
 export const API_ENDPOINT_HOSTNAME = `${process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME ?? window.location.host}`
+// export const API_ENDPOINT_HOSTNAME = `staging-passport.xsyn.io`
 
 // makeid is used to generate a random transactionID for the websocket
 export function makeid(length: number = 12): string {
@@ -30,8 +31,8 @@ const DateParse = () => {
 
 const dp = DateParse()
 
-function protocol() {
-	return window.location.protocol.match(/^https/) ? "wss" : "ws"
+export function protocol() {
+	return window.location.protocol.match(/^https/) ? "ws" : "ws"
 }
 
 enum SocketState {
