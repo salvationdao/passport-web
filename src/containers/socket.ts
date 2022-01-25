@@ -32,7 +32,7 @@ const DateParse = () => {
 const dp = DateParse()
 
 export function protocol() {
-	return window.location.protocol.match(/^https/) ? "wss" : "ws"
+	return window.location.protocol.match(/^https/) ? "ws" : "ws"
 }
 
 enum SocketState {
