@@ -73,21 +73,7 @@ export const CollectionsPage: React.FC = () => {
 						justifyContent: "space-between",
 					}}
 				>
-					<Typography
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						Nfts Owned
-					</Typography>
-
-					<Typography
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						Traded
-					</Typography>
+					<HeaderStat label={"NFTs Owned"} value={"45"} />
 
 					<Typography
 						variant="h1"
@@ -97,22 +83,7 @@ export const CollectionsPage: React.FC = () => {
 					>
 						Badges
 					</Typography>
-
-					<Typography
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						Nfts Owned
-					</Typography>
-
-					<Typography
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						Traded
-					</Typography>
+					<HeaderStat label={"Traded"} value={"45"} />
 				</Box>
 			</Paper>
 
@@ -237,6 +208,36 @@ const ViewCollectionButton = styled((props: { onClick: () => void }) => <Button 
 		},
 	},
 }))
+
+const HeaderStat: React.FC<{ label: string; value: string }> = ({ label, value }) => {
+	return (
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				textAlign: "center",
+			}}
+		>
+			<Typography
+				color={colors.neonPink}
+				variant="h2"
+				sx={{
+					textTransform: "uppercase",
+				}}
+			>
+				{value}
+			</Typography>
+			<Typography
+				sx={{
+					textTransform: "uppercase",
+					fontSize: "1.4rem",
+				}}
+			>
+				{label}
+			</Typography>
+		</Box>
+	)
+}
 
 const AssetsSection = styled((props) => <Box {...props} />)(({ theme }) => ({
 	display: "flex",
