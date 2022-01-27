@@ -10,8 +10,6 @@ import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { useState, useEffect } from "react"
-import { useMutation } from "react-fetching-library"
-import { fetching } from "../../../fetching"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -35,7 +33,7 @@ export const AssetPage = () => {
 		console.log("2222222")
 
 		const resp = await send<any>(HubKey.AssetJoinQue, { AssetTokenID: parseInt(tokenID) })
-		console.log("this is fucking res", resp)
+		console.log("response here", resp)
 	}
 
 	// Effect: get/set asset via token id
