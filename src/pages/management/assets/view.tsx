@@ -17,6 +17,10 @@ export const AssetPage = () => {
 
 	const { subscribe, send } = useWebsocket()
 	const [asset, setAsset] = useState<Asset>()
+	const [attributes, setAttributes] = useState<Asset[]>([])
+
+	const [submitting, setSubmitting] = useState(false)
+	const [errorMessage, setErrorMessage] = useState<string>()
 
 	const isWarMachine = (): boolean => {
 		if (!asset) return false
@@ -26,14 +30,19 @@ export const AssetPage = () => {
 	}
 
 	const onDeploy = async () => {
-		console.log("11111111")
-
 		if (!tokenID) return
-
-		console.log("2222222")
-
-		const resp = await send<any>(HubKey.AssetJoinQue, { AssetTokenID: parseInt(tokenID) })
-		console.log("response here", resp)
+		setSubmitting(true)
+		try {
+			await send(HubKey.AssetJoinQue, { AssetTokenID: parseInt(tokenID) })
+			setSubmitting(false)
+			setErrorMessage(undefined)
+		} catch (e) {
+			setSubmitting(false)
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+		} finally {
+			setSubmitting(false)
+			setErrorMessage(undefined)
+		}
 	}
 
 	// Effect: get/set asset via token id
@@ -50,9 +59,28 @@ export const AssetPage = () => {
 				tokenID: parseInt(tokenID),
 			},
 		)
-	}, [user?.id, subscribe, tokenID])
+	}, [user?.id, asset?.tokenID, subscribe, tokenID])
 
-	if (!asset) return <></>
+	// Effect: get/set attributes as assets
+	useEffect(() => {
+		setAttributes([])
+		if (!user || !user.id || !asset) return
+		// get list of token ids from asset's attributes
+		const tokenIDs = asset.attributes.filter((a) => !!a.token_id).map((aa) => aa.token_id)
+		return subscribe<{ records: Asset[]; total: number }>(
+			HubKey.AssetListUpdated,
+			(payload) => {
+				if (!payload) return
+				setAttributes(payload.records)
+			},
+			{
+				userID: user.id,
+				includedTokenIDs: tokenIDs,
+			},
+		)
+	}, [user?.id, asset?.tokenID, subscribe, tokenID])
+
+	if (!asset || !attributes) return <></>
 
 	return (
 		<Box
@@ -116,7 +144,7 @@ export const AssetPage = () => {
 							backgroundColor: "transparent",
 							display: "flex",
 							"@media (max-width: 1380px)": {
-								flexDirection: "column",
+								// flexDirection: "column",
 							},
 						}}
 					>
@@ -126,9 +154,12 @@ export const AssetPage = () => {
 							src={PlaceholderMech}
 							alt="placeholder"
 							sx={{
-								width: "566px",
-								height: "732px",
+								// width: "566px",
 								marginRight: "50px",
+								"@media (max-width: 1380px)": {
+									// maxWidth: "300px",
+									height: "300px",
+								},
 							}}
 						/>
 
@@ -198,34 +229,30 @@ export const AssetPage = () => {
 								</Typography>
 
 								<PropertiesSection>
-									{asset.attributes
-										.filter((a) => {
-											return !!a.token_id
-										})
-										.map((attr, i) => {
-											return (
-												<Link key={i} style={{ textDecoration: "none" }} to={`/collections/assets/${attr.token_id}`}>
-													<Box
-														sx={{
-															width: 170,
-															height: 170,
-															margin: "10px 10px 10px 0px",
-															backgroundColor: "transparent",
-															border: "2px solid #fff",
-														}}
-													></Box>
-													<Typography
-														variant="h5"
-														color={colors.neonPink}
-														sx={{
-															textTransform: "uppercase",
-														}}
-													>
-														{attr.trait_type}
-													</Typography>
-												</Link>
-											)
-										})}
+									{attributes.map((attr, i) => {
+										return (
+											<Link key={i} style={{ textDecoration: "none" }} to={`/collections/assets/${attr.tokenID}`}>
+												<Box
+													sx={{
+														width: 170,
+														height: 170,
+														margin: "10px 10px 10px 0px",
+														backgroundColor: "transparent",
+														border: "2px solid #fff",
+													}}
+												></Box>
+												<Typography
+													variant="h5"
+													color={colors.neonPink}
+													sx={{
+														textTransform: "uppercase",
+													}}
+												>
+													{attr.name}
+												</Typography>
+											</Link>
+										)
+									})}
 								</PropertiesSection>
 							</Section>
 						</Box>
@@ -240,7 +267,7 @@ export const AssetPage = () => {
 									},
 								}}
 							>
-								<FancyButton onClick={onDeploy} sx={{ fontSize: 23, padding: "1rem 2.25rem" }} fancy>
+								<FancyButton loading={submitting} onClick={onDeploy} sx={{ fontSize: "1.438rem", padding: "1rem 2.25rem" }} fancy>
 									Deploy
 								</FancyButton>
 							</Box>
