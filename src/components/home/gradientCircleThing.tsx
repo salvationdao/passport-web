@@ -14,8 +14,8 @@ interface GradientCircleThingProps extends BoxProps {
 export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerOpacity, hideInner, phase, playDisappear, sx, ...props }) => {
     const theme = useTheme()
     const [animationStyles, setAnimationStyles] = useState({
-        height: "70vw",
-        width: "70vw",
+        height: "60rem",
+        width: "60rem",
         opacity: 1
     })
 
@@ -24,16 +24,16 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerO
             case "small":
                 setAnimationStyles((prev) => ({
                     ...prev,
-                    height: "45vw",
-                    width: "45vw",
+                    height: "40rem",
+                    width: "40rem",
                     opacity: 1
                 }))
                 break
             case "big":
                 setAnimationStyles((prev) => ({
                     ...prev,
-                    height: "80vw",
-                    width: "80vw",
+                    height: "70rem",
+                    width: "70rem",
                     opacity: 1
                 }))
                 break
@@ -46,8 +46,8 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerO
             case "default":
             default:
                 setAnimationStyles({
-                    height: "70vw",
-                    width: "70vw",
+                    height: "60rem",
+                    width: "60rem",
                     opacity: 1,
                 })
         }

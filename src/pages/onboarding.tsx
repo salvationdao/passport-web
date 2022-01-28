@@ -1,25 +1,36 @@
-import { Alert, Box, Link, Snackbar, Typography } from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
+import UploadIcon from "@mui/icons-material/Upload"
+import { Alert, Avatar, Box, BoxProps, Button, Link, Snackbar, styled, Typography } from "@mui/material"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useDropzone } from "react-dropzone"
+import { useMutation } from "react-fetching-library"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link as RouterLink, useHistory } from "react-router-dom"
+import { Link as RouterLink, Route, Switch, useHistory, useRouteMatch } from "react-router-dom"
+import { ReactComponent as DiscordIcon } from "../assets/images/icons/discord.svg"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
 import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
+import { ReactComponent as TwitterIcon } from "../assets/images/icons/twitter.svg"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
+import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../components/discordLogin"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { FancyButton } from "../components/fancyButton"
 import { InputField } from "../components/form/inputField"
 import { GradientCircleThing, PhaseTypes } from "../components/home/gradientCircleThing"
 import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
-import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
-import { useAuth } from "../containers/auth"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../containers/socket"
+import { Transition, TransitionState } from "../components/transition"
+import { ReactTwitchFailureResponse, ReactTwitchLoginResponse, TwitchLogin } from "../components/twitchLogin"
+import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } from "../components/twitterLogin"
+import { AuthContainer, useAuth } from "../containers/auth"
+import { useWebsocket } from "../containers/socket"
+import { fetching } from "../fetching"
+import { formatBytes } from "../helpers"
 import HubKey from "../keys"
 import { colors, fonts } from "../theme"
 import { RegisterResponse } from "../types/auth"
+import { User } from "../types/types"
 
 interface SignUpInput {
 	username: string
@@ -29,16 +40,27 @@ interface SignUpInput {
 	password?: string
 }
 
-type SignUpType = "email" | "metamask" | "google" | "facebook" | "twitch"
+export type ConnectionType = "email" | "metamask" | "google" | "facebook" | "twitch" | "twitter" | "discord"
+
+export const Onboarding: React.FC = () => {
+	const { path } = useRouteMatch()
+
+	return (
+		<Switch>
+			<Route exact path={`${path}`} component={SignUp} />
+			<Route path={`${path}/upload`} component={PassportReady} />
+		</Switch>
+	)
+}
 
 /**
  * Onboarding Page to Sign up New Users
  */
-export const Onboarding = () => {
+const SignUp = () => {
 	const history = useHistory()
 	const { send } = useWebsocket()
 	const { user } = useAuth()
-	const { loginFacebook, loginGoogle, loginTwitch, setUser } = useAuth()
+	const { loginFacebook, loginGoogle, loginTwitch, loginTwitter, loginDiscord, setUser } = useAuth()
 
 	const [loading, setLoading] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
@@ -46,7 +68,7 @@ export const Onboarding = () => {
 	const { control, handleSubmit, watch, trigger, reset } = useForm<SignUpInput>()
 	const username = watch("username")
 
-	const [signUpType, setSignUpType] = useState<SignUpType | null>(null)
+	const [signUpType, setSignUpType] = useState<ConnectionType | null>(null)
 	const [currentStep, setCurrentStep] = useState(0)
 
 	// For gradient circle animations
@@ -104,15 +126,10 @@ export const Onboarding = () => {
 		setErrorMessage(error.status || "Failed to signup with Facebook.")
 	}
 
-	const onTwitchLogin = async (response: any) => {
+	const onTwitchLogin = async (response: ReactTwitchLoginResponse) => {
 		try {
-			if (!!response && !!response.status) {
-				setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
-				return
-			}
 			setErrorMessage(undefined)
-			const r = response as ReactTwitchLoginInfo
-			await loginTwitch(r.token, username)
+			await loginTwitch(response.token, username)
 		} catch (e) {
 			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -120,6 +137,32 @@ export const Onboarding = () => {
 
 	const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Twitch.")
+	}
+
+	const onTwitterLogin = async (response: ReactTwitterLoginResponse) => {
+		try {
+			setErrorMessage(undefined)
+			await loginTwitter(response.token, response.verifier, username)
+		} catch (e) {
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+		}
+	}
+
+	const onTwitterLoginFailure = (error: ReactTwitterFailureResponse) => {
+		setErrorMessage(error.status || "Failed to login with Twitter.")
+	}
+
+	const onDiscordLogin = async (response: ReactDiscordLoginResponse) => {
+		try {
+			setErrorMessage(undefined)
+			await loginDiscord(response.code, username)
+		} catch (e) {
+			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+		}
+	}
+
+	const onDiscordLoginFailure = (error: ReactDiscordFailureResponse) => {
+		setErrorMessage(error.status || "Failed to login with Discord.")
 	}
 
 	const onBack = () => {
@@ -145,7 +188,7 @@ export const Onboarding = () => {
 								setUser(resp.user)
 								localStorage.setItem("token", resp.token)
 							} catch (e) {
-								setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+								setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 							} finally {
 								setLoading(false)
 							}
@@ -376,6 +419,7 @@ export const Onboarding = () => {
 											if (!(await validUsername())) return
 											props.onClick()
 										}}
+										loading={props.disabled}
 										disabled={props.disabled}
 										title="Sign up with Google"
 										startIcon={<GoogleIcon />}
@@ -423,8 +467,6 @@ export const Onboarding = () => {
 								Back
 							</FancyButton>
 							<FacebookLogin
-								appId="577913423867745"
-								fields="email"
 								callback={onFacebookLogin}
 								onFailure={onFacebookLoginFailure}
 								render={(props) => (
@@ -435,7 +477,7 @@ export const Onboarding = () => {
 											if (!(await validUsername())) return
 											props.onClick(event)
 										}}
-										disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
+										loading={!props.isSdkLoaded || props.isProcessing}
 										startIcon={<FacebookIcon />}
 										sx={{
 											flexGrow: 1,
@@ -481,8 +523,6 @@ export const Onboarding = () => {
 								Back
 							</FancyButton>
 							<TwitchLogin
-								clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
-								redirectUri={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`}
 								callback={onTwitchLogin}
 								onFailure={onTwitchLoginFailure}
 								render={(props) => (
@@ -493,13 +533,125 @@ export const Onboarding = () => {
 											if (!(await validUsername())) return
 											props.onClick(event)
 										}}
-										disabled={props.isDisabled || props.isProcessing}
+										loading={props.isProcessing}
 										startIcon={<TwitchIcon />}
 										sx={{
 											flexGrow: 1,
 										}}
 									>
 										Sign up with Twitch
+									</FancyButton>
+								)}
+							/>
+						</Box>
+					</Box>
+				)
+			case "twitter":
+				return (
+					<Box
+						component="form"
+						onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+						sx={{
+							"& > *:not(:last-child)": {
+								marginBottom: "1rem",
+							},
+						}}
+					>
+						<InputField
+							name="username"
+							label="Username"
+							control={control}
+							rules={{ required: "Username is required" }}
+							disabled={loading}
+							variant="filled"
+							autoFocus
+							fullWidth
+						/>
+						<Box
+							sx={{
+								display: "flex",
+								"& > *:not(:last-child)": {
+									marginRight: ".5rem",
+								},
+							}}
+						>
+							<FancyButton type="button" onClick={onBack}>
+								Back
+							</FancyButton>
+							<TwitterLogin
+								callback={onTwitterLogin}
+								onFailure={onTwitterLoginFailure}
+								render={(props) => (
+									<FancyButton
+										type="submit"
+										title="Sign up with Twitter"
+										onClick={async (event) => {
+											if (!(await validUsername())) return
+											props.onClick(event)
+										}}
+										loading={props.isProcessing}
+										startIcon={<TwitterIcon />}
+										sx={{
+											flexGrow: 1,
+										}}
+									>
+										Sign up with Twitter
+									</FancyButton>
+								)}
+							/>
+						</Box>
+					</Box>
+				)
+			case "discord":
+				return (
+					<Box
+						component="form"
+						onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+						sx={{
+							"& > *:not(:last-child)": {
+								marginBottom: "1rem",
+							},
+						}}
+					>
+						<InputField
+							name="username"
+							label="Username"
+							control={control}
+							rules={{ required: "Username is required" }}
+							disabled={loading}
+							variant="filled"
+							autoFocus
+							fullWidth
+						/>
+						<Box
+							sx={{
+								display: "flex",
+								"& > *:not(:last-child)": {
+									marginRight: ".5rem",
+								},
+							}}
+						>
+							<FancyButton type="button" onClick={onBack}>
+								Back
+							</FancyButton>
+							<DiscordLogin
+								callback={onDiscordLogin}
+								onFailure={onDiscordLoginFailure}
+								render={(props) => (
+									<FancyButton
+										type="submit"
+										title="Sign up with Discord"
+										onClick={async (event) => {
+											if (!(await validUsername())) return
+											props.onClick(event)
+										}}
+										loading={props.isProcessing}
+										startIcon={<DiscordIcon />}
+										sx={{
+											flexGrow: 1,
+										}}
+									>
+										Sign up with Discord
 									</FancyButton>
 								)}
 							/>
@@ -563,6 +715,28 @@ export const Onboarding = () => {
 			>
 				Sign up with Twitch
 			</FancyButton>
+			<FancyButton
+				type="button"
+				borderColor={colors.twitterBlue}
+				onClick={() => {
+					setSignUpType("twitter")
+					setCurrentStep(1)
+				}}
+				startIcon={<TwitterIcon />}
+			>
+				Sign up with Twitter
+			</FancyButton>
+			<FancyButton
+				type="button"
+				borderColor={colors.discordGrey}
+				onClick={() => {
+					setSignUpType("discord")
+					setCurrentStep(1)
+				}}
+				startIcon={<DiscordIcon />}
+			>
+				Sign up with Discord
+			</FancyButton>
 			<Box
 				sx={{
 					display: "flex",
@@ -617,16 +791,14 @@ export const Onboarding = () => {
 		if (!user) return
 
 		const userTimeout = setTimeout(() => {
-			history.push("/")
+			history.push("/onboarding/upload")
 		}, 2000)
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
 
 	if (user) {
-		return <Loading text="You are already logged in, redirecting to home page..." />
+		return <Loading text="Loading" />
 	}
-
-	// return <PassportReady />
 
 	return (
 		<>
@@ -715,153 +887,298 @@ export const Onboarding = () => {
 	)
 }
 
-// interface PassportReadyProps {}
+interface PassportReadyProps {}
 
-// const PassportReady: React.FC<PassportReadyProps> = () => {
-// 	const [step, setStep] = useState(0)
-//
-// 	useEffect(() => {
-// 		let timeout2: NodeJS.Timeout
-// 		const timeout = setTimeout(() => {
-// 			setStep(1)
-// 			timeout2 = setTimeout(() => {
-// 				setStep(2)
-// 			}, 2000)
-// 		}, 2000)
-//
-// 		return () => {
-// 			if (timeout2) clearTimeout(timeout2)
-// 			clearTimeout(timeout)
-// 		}
-// 	}, [])
-//
-// 	return (
-// 		<Box
-// 			sx={{
-// 				overflow: "hidden",
-// 				position: "relative",
-// 				minHeight: "100vh",
-// 			}}
-// 		>
-// 			<Box
-// 				sx={{
-// 					position: "absolute",
-// 					top: "50%",
-// 					left: "50%",
-// 					transform: "translate(-50%, -50%)",
-// 					display: "flex",
-// 					flexDirection: "column",
-// 					alignItems: "center",
-// 					width: "100%",
-// 				}}
-// 			>
-// 				<Typography
-// 					variant="h1"
-// 					component="p"
-// 					sx={{
-// 						marginBottom: "1rem",
-// 						opacity: step === 2 ? 1 : 0,
-// 						transition: "opacity .2s ease-in",
-// 						lineHeight: 1,
-// 						fontSize: "3rem",
-// 						textTransform: "uppercase",
-// 					}}
-// 				>
-// 					Upload a profile image
-// 				</Typography>
-// 				<Box
-// 					sx={(theme) => ({
-// 						position: "relative",
-// 						height: step === 2 ? "8rem" : "30rem",
-// 						width: step === 2 ? "8rem" : "30rem",
-// 						borderRadius: "50%",
-// 						border: `2px solid ${theme.palette.secondary.main}`,
-// 						transition:
-// 							"height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
-// 					})}
-// 				>
-// 					<MiddleText
-// 						sx={{
-// 							position: "absolute",
-// 							top: "50%",
-// 							left: "50%",
-// 							transform: "translate(-50%, -50%)",
-// 							transition: `opacity 200ms ease-in`,
-// 							opacity: step !== 0 ? 0 : 1,
-// 							textAlign: "center",
-// 							whiteSpace: "nowrap",
-// 						}}
-// 					>
-// 						Your passport is ready
-// 					</MiddleText>
-// 					<MiddleText
-// 						sx={{
-// 							position: "absolute",
-// 							top: "50%",
-// 							left: "50%",
-// 							transform: "translate(-50%, -50%)",
-// 							transition: `opacity 200ms ease-in`,
-// 							opacity: step !== 1 ? 0 : 1,
-// 							textAlign: "center",
-// 							whiteSpace: "nowrap",
-// 						}}
-// 					>
-// 						Let's set up your profile
-// 					</MiddleText>
-// 				</Box>
-// 				<Typography
-// 					variant="body1"
-// 					sx={{
-// 						marginTop: "1rem",
-// 						opacity: step === 2 ? 1 : 0,
-// 						transition: "opacity .2s ease-in",
-// 						lineHeight: 1,
-// 						fontSize: "1rem",
-// 						textTransform: "uppercase",
-// 					}}
-// 				>
-// 					Drag an image here for your profile picture
-// 				</Typography>
-// 			</Box>
-// 		</Box>
-// 	)
-// }
-//
-// interface TransitionableTextProps extends TypographyProps {
-// 	inProp: boolean
-// }
-//
-// const TransitionableText: React.FC<TransitionableTextProps> = ({ inProp, sx, ...props }) => {
-// 	const duration = 200
-//
-// 	const transitionStyles: { [key in TransitionStatus]: any } = {
-// 		entering: { opacity: 1 },
-// 		entered: { opacity: 1 },
-// 		exiting: { opacity: 0 },
-// 		exited: { opacity: 0 },
-// 		unmounted: { opacity: 0 },
-// 	}
-//
-// 	return (
-// 		<Transition inProp={inProp} timeout={duration}>
-// 			{(state) => {
-// 				console.log(inProp, state)
-// 				return (
-// 					<Typography
-// 						sx={{
-// 							...sx,
-// 							...transitionStyles[state],
-// 							transition: `opacity ${duration}ms ease-in`,
-// 						}}
-// 						{...props}
-// 					/>
-// 				)
-// 			}}
-// 		</Transition>
-// 	)
-// }
-//
-// const MiddleText = styled(Typography)({
-// 	fontSize: "3rem",
-// 	textTransform: "uppercase",
-// })
+const PassportReady: React.FC<PassportReadyProps> = () => {
+	const { user } = AuthContainer.useContainer()
+	const history = useHistory()
+	const [step, setStep] = useState(0)
+	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
+
+	// Image uploads
+	const [loading, setLoading] = useState(false)
+	const { send } = useWebsocket()
+	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
+	const [errorMessage, setErrorMessage] = useState<string>()
+	const [file, setFile] = useState<File>()
+	const maxFileSize = 1e7
+
+	const onSubmit = async () => {
+		if (!file || !user) return
+
+		try {
+			setLoading(true)
+			// Upload avatar
+			const r = await upload({ file, public: true })
+			if (r.error || !r.payload) {
+				throw new Error("Failed to upload image, please try again.")
+			}
+
+			// Update user
+			const avatarID = r.payload.id
+			const resp = await send<User>(HubKey.UserUpdate, {
+				id: user.id,
+				avatarID,
+			})
+
+			// On success
+			if (resp) {
+				setStep(3)
+			}
+		} catch (e) {
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+		} finally {
+			setLoading(false)
+		}
+	}
+
+	const onRemoveImage = () => {
+		setFile(undefined)
+		setErrorMessage(undefined)
+	}
+
+	const onDrop = useCallback((files: File[]) => {
+		if (files.length <= 0) return
+		const file = files[0]
+		if (!!maxFileSize && file.size > maxFileSize) {
+			setErrorMessage("File is larger than the max file size: " + formatBytes(maxFileSize))
+			return
+		}
+
+		setFile(file)
+		setErrorMessage(undefined)
+	}, [])
+	const { getRootProps, getInputProps, isDragActive, isFocused } = useDropzone({ onDrop, disabled: step !== 2 || loading })
+
+	useEffect(() => {
+		let timeout2: NodeJS.Timeout
+		const timeout = setTimeout(() => {
+			setStep(1)
+			timeout2 = setTimeout(() => {
+				setStep(2)
+			}, 2000)
+		}, 2000)
+
+		return () => {
+			if (timeout2) clearTimeout(timeout2)
+			clearTimeout(timeout)
+		}
+	}, [])
+
+	useEffect(() => {
+		if (step !== 3 || loading) return
+		const timeout = setTimeout(() => {
+			history.push("/profile")
+		}, 300)
+
+		return () => {
+			clearTimeout(timeout)
+		}
+	}, [step, loading, history])
+
+	return (
+		<>
+			<Snackbar
+				open={!!errorMessage}
+				autoHideDuration={6000}
+				onClose={(_, reason) => {
+					if (reason === "clickaway") {
+						return
+					}
+
+					setErrorMessage(undefined)
+				}}
+				message={errorMessage}
+			>
+				<Alert severity="error">{errorMessage}</Alert>
+			</Snackbar>
+			<Box
+				sx={{
+					overflow: "hidden",
+					position: "relative",
+					minHeight: "100vh",
+				}}
+			>
+				<FadeTransition show={step < 3 || loading}>
+					<Box
+						sx={{
+							position: "absolute",
+							top: "50%",
+							left: "50%",
+							transform: "translate(-50%, -50%)",
+							display: "flex",
+							flexDirection: "column",
+							alignItems: "center",
+							width: "100%",
+							"& > *:not(:last-child)": {
+								marginBottom: "1rem",
+							},
+						}}
+					>
+						<FadeTransition show={step === 2 && !loading} occupySpace>
+							<Typography
+								variant="h1"
+								component="p"
+								sx={{
+									lineHeight: 1,
+									fontSize: "3rem",
+									textTransform: "uppercase",
+									textAlign: "center",
+								}}
+							>
+								Upload a profile image
+							</Typography>
+						</FadeTransition>
+						<Box
+							{...getRootProps()}
+							ref={(r: HTMLDivElement) => {
+								if (!r || step !== 3) return
+								uploadCircleRef.current = r
+							}}
+							sx={(theme) => ({
+								position: "relative",
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								height: step === 2 && !loading ? (isDragActive ? "10rem" : "8rem") : "30rem",
+								width: step === 2 && !loading ? (isDragActive ? "10rem" : "8rem") : "30rem",
+								borderRadius: "50%",
+								border: `2px solid ${theme.palette.secondary.main}`,
+								transition:
+									"height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
+								cursor: step === 2 && !loading ? "pointer" : "initial",
+								"&:hover #UploadIcon": {
+									opacity: step === 2 && !loading ? 1 : 0,
+								},
+							})}
+						>
+							<input {...getInputProps()} />
+							<Box
+								id="UploadIcon"
+								sx={{
+									zIndex: 1,
+									position: "absolute",
+									top: 0,
+									left: 0,
+									right: 0,
+									bottom: 0,
+									display: "flex",
+									justifyContent: "center",
+									alignItems: "center",
+									borderRadius: "50%",
+									backgroundColor: "rgba(0, 0, 0, .6)",
+									opacity: isDragActive || isFocused ? 1 : 0,
+									transition: "opacity .2s ease-in",
+									pointerEvents: "none",
+								}}
+							>
+								<UploadIcon />
+							</Box>
+							{!!file && step === 2 && !loading && (
+								<Avatar
+									src={URL.createObjectURL(file)}
+									sx={{
+										height: "95%",
+										width: "95%",
+									}}
+								/>
+							)}
+							<MiddleText show={step === 0}>Your passport is ready</MiddleText>
+							<MiddleText show={step === 1}>Let's set up your profile</MiddleText>
+							<MiddleText show={loading}>Loading...</MiddleText>
+						</Box>
+						<FadeTransition show={step === 2 && !loading} occupySpace>
+							<Typography
+								variant="body1"
+								sx={{
+									lineHeight: 1,
+									fontSize: "1rem",
+									textTransform: "uppercase",
+									textAlign: "center",
+								}}
+							>
+								Drag an image here for your profile picture
+							</Typography>
+						</FadeTransition>
+						<FadeTransition show={step === 2 && !loading}>
+							<Box
+								sx={{
+									display: "flex",
+									"& > *:not(:last-child)": {
+										marginRight: "1rem",
+									},
+								}}
+							>
+								<FadeTransition show={!file} occupySpace>
+									<Button onClick={() => setStep(3)} variant="text">
+										Or, skip this step
+									</Button>
+								</FadeTransition>
+								<FadeTransition show={!!file} occupySpace>
+									<Button onClick={() => onRemoveImage()} variant="text">
+										Clear Image
+									</Button>
+								</FadeTransition>
+								<FadeTransition show={!!file}>
+									<Button onClick={() => onSubmit()} variant="contained">
+										Submit Profile Image
+									</Button>
+								</FadeTransition>
+							</Box>
+						</FadeTransition>
+					</Box>
+				</FadeTransition>
+			</Box>
+		</>
+	)
+}
+
+interface FadeTransitionProps extends BoxProps {
+	show: boolean
+	occupySpace?: boolean
+}
+
+const FadeTransition: React.FC<FadeTransitionProps> = ({ show, occupySpace, sx, ...props }) => {
+	const duration = 200
+
+	const transitionStyles: { [key in TransitionState]: any } = {
+		entering: {
+			opacity: 1,
+		},
+		exiting: {
+			opacity: 0,
+			visibilty: occupySpace ? "hidden" : "initial",
+		},
+	}
+
+	return (
+		<Transition show={show} timeout={duration}>
+			{(state) => {
+				return (
+					<Box
+						sx={{
+							...sx,
+							...transitionStyles[state],
+							transition: `opacity ${duration}ms ease-in`,
+						}}
+						{...props}
+					/>
+				)
+			}}
+		</Transition>
+	)
+}
+
+const MiddleText = styled(FadeTransition)({
+	position: "absolute",
+	top: "50%",
+	left: "50%",
+	transform: "translate(-50%, -50%)",
+	textAlign: "center",
+	whiteSpace: "nowrap",
+	fontSize: "3rem",
+	textTransform: "uppercase",
+	"@media (max-width: 650px)": {
+		whiteSpace: "initial",
+	},
+})

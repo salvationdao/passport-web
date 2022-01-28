@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import MetaMaskOnboarding from "@metamask/onboarding"
 import EditIcon from "@mui/icons-material/Edit"
+import { LoadingButton } from "@mui/lab"
 import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, Snackbar, styled, TextField, Typography } from "@mui/material"
 import { User } from "@sentry/react"
 import { useCallback, useEffect, useState } from "react"
@@ -8,22 +9,28 @@ import { useMutation } from "react-fetching-library"
 import GoogleLogin, { GoogleLoginResponse } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, Route, Switch, useHistory } from "react-router-dom"
+import { ReactComponent as DiscordIcon } from "../assets/images/icons/discord.svg"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
 import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
+import { ReactComponent as TwitterIcon } from "../assets/images/icons/twitter.svg"
+import { DiscordLogin } from "../components/discordLogin"
 import { FacebookLogin } from "../components/facebookLogin"
 import { ImageUpload } from "../components/form/imageUpload"
 import { InputField } from "../components/form/inputField"
 import { Navbar } from "../components/home/navbar"
 import { Loading } from "../components/loading"
 import { TwitchLogin } from "../components/twitchLogin"
+import { TwitterLogin } from "../components/twitterLogin"
 import { AuthContainer } from "../containers"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../containers/socket"
+import { useAuth } from "../containers/auth"
+import { useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
 import HubKey from "../keys"
 import { Organisation, Role } from "../types/types"
+import { ConnectionType } from "./onboarding"
 
 export const ProfilePage: React.FC = () => {
 	const history = useHistory()
@@ -174,6 +181,8 @@ const ProfileDetails: React.FC = () => {
 					<ConnectedAppCard type="facebook" label={user.facebookID || "Not Connected"} isConnected={!!user.facebookID} />
 					<ConnectedAppCard type="google" label={user.googleID || "Not Connected"} isConnected={!!user.googleID} />
 					<ConnectedAppCard type="twitch" label={user.twitchID || "Not Connected"} isConnected={!!user.twitchID} />
+					<ConnectedAppCard type="twitter" label={user.twitterID || "Not Connected"} isConnected={!!user.twitterID} />
+					<ConnectedAppCard type="discord" label={user.discordID || "Not Connected"} isConnected={!!user.discordID} />
 				</Box>
 			</Box>
 		</>
@@ -199,7 +208,8 @@ interface UserInput {
 
 const ProfileEdit: React.FC = () => {
 	const { metaMaskState, sign, account, connect } = useWeb3()
-	const { user, addFacebook, addGoogle, addTwitch, removeFacebook, removeGoogle, removeTwitch } = AuthContainer.useContainer()
+	const { user, addFacebook, addGoogle, addTwitch, addTwitter, addDiscord, removeFacebook, removeGoogle, removeTwitch, removeTwitter, removeDiscord } =
+		useAuth()
 	const token = localStorage.getItem("token")
 	const { send } = useWebsocket()
 
@@ -253,6 +263,7 @@ const ProfileEdit: React.FC = () => {
 				setSuccessMessage("Profile successfully updated.")
 			}
 			setErrorMessage(undefined)
+			setChangePassword(false)
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 			setSuccessMessage(undefined)
@@ -296,11 +307,6 @@ const ProfileEdit: React.FC = () => {
 			setAvatar(file)
 		}
 	}
-
-	// useEffect(() => {
-	//     if (!user) return
-	//     console.log(user)
-	// }, [user])
 
 	// Load defaults
 	useEffect(() => {
@@ -424,6 +430,7 @@ const ProfileEdit: React.FC = () => {
 						type="email"
 						control={control}
 						rules={{
+							required: changePassword && "Email must be provided if you are changing your password.",
 							pattern: {
 								value: /.+@.+\..+/,
 								message: "Invalid email address",
@@ -463,7 +470,16 @@ const ProfileEdit: React.FC = () => {
 								placeholder="Enter a new password"
 								label="New password"
 							/>
-							<Button type="button" variant="contained" onClick={() => setChangePassword(false)}>
+							<Button
+								type="button"
+								variant="contained"
+								onClick={() => {
+									reset(undefined, {
+										keepValues: true,
+									})
+									setChangePassword(false)
+								}}
+							>
 								Cancel Password Change
 							</Button>
 						</>
@@ -481,7 +497,7 @@ const ProfileEdit: React.FC = () => {
 				>
 					<Button
 						type="submit"
-						disabled={(!isDirty && !avatarChanged) || submitting}
+						disabled={(!isDirty && !avatarChanged && !changePassword) || submitting}
 						variant="contained"
 						color="primary"
 						startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}
@@ -584,8 +600,6 @@ const ProfileEdit: React.FC = () => {
 						</>
 					) : (
 						<FacebookLogin
-							appId="577913423867745"
-							fields="email"
 							callback={async (response: any) => {
 								try {
 									setErrorMessage(undefined)
@@ -603,16 +617,16 @@ const ProfileEdit: React.FC = () => {
 								setErrorMessage(error.status || "Failed to connect account to Facebook.")
 							}}
 							render={(props) => (
-								<Button
+								<LoadingButton
 									onClick={async (event) => {
 										props.onClick(event)
 									}}
-									disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
+									loading={!props.isSdkLoaded || props.isProcessing}
 									startIcon={<FacebookIcon />}
 									variant="contained"
 								>
 									Connect Facebook to account
-								</Button>
+								</LoadingButton>
 							)}
 						/>
 					)}
@@ -688,17 +702,10 @@ const ProfileEdit: React.FC = () => {
 						</>
 					) : (
 						<TwitchLogin
-							clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
-							redirectUri={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`}
-							callback={async (response: any) => {
+							callback={async (response) => {
 								try {
 									setErrorMessage(undefined)
-
-									if (!!response && !!response.status) {
-										setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
-										return
-									}
-									await addTwitch(response.token, `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`)
+									await addTwitch(response.token)
 								} catch (e) {
 									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
 								}
@@ -707,16 +714,112 @@ const ProfileEdit: React.FC = () => {
 								setErrorMessage(error.status || "Failed to connect account to Twitch.")
 							}}
 							render={(props) => (
-								<Button
+								<LoadingButton
 									onClick={async (event) => {
 										props.onClick(event)
 									}}
-									disabled={props.isDisabled || props.isProcessing}
+									loading={props.isProcessing}
 									startIcon={<TwitchIcon />}
 									variant="contained"
 								>
 									Connect Twitch to account
-								</Button>
+								</LoadingButton>
+							)}
+						/>
+					)}
+				</Section>
+
+				<Section>
+					<Typography variant="subtitle1">Twitter</Typography>
+					{!!user.twitterID ? (
+						<>
+							<TextField label="Twitter ID" value={user.twitterID} disabled multiline />
+							<Button
+								onClick={async () => {
+									try {
+										await removeTwitter(user.id, user.username)
+									} catch (e) {
+										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									}
+								}}
+								variant="contained"
+								color="error"
+							>
+								Remove Twitter
+							</Button>
+						</>
+					) : (
+						<TwitterLogin
+							callback={async (response) => {
+								try {
+									setErrorMessage(undefined)
+									await addTwitter(response.token, response.verifier)
+								} catch (e) {
+									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
+								}
+							}}
+							onFailure={(error) => {
+								setErrorMessage(error.status || "Failed to connect account to Twitter.")
+							}}
+							render={(props) => (
+								<LoadingButton
+									onClick={async (event) => {
+										props.onClick(event)
+									}}
+									loading={props.isProcessing}
+									startIcon={<TwitterIcon />}
+									variant="contained"
+								>
+									Connect Twitter to account
+								</LoadingButton>
+							)}
+						/>
+					)}
+				</Section>
+
+				<Section>
+					<Typography variant="subtitle1">Discord</Typography>
+					{!!user.discordID ? (
+						<>
+							<TextField label="Discord ID" value={user.discordID} disabled multiline />
+							<Button
+								onClick={async () => {
+									try {
+										await removeDiscord(user.id, user.username)
+									} catch (e) {
+										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									}
+								}}
+								variant="contained"
+								color="error"
+							>
+								Remove Discord
+							</Button>
+						</>
+					) : (
+						<DiscordLogin
+							callback={async (response) => {
+								try {
+									setErrorMessage(undefined)
+									await addDiscord(response.code)
+								} catch (e) {
+									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
+								}
+							}}
+							onFailure={(error) => {
+								setErrorMessage(error.status || "Failed to connect account to Discord.")
+							}}
+							render={(props) => (
+								<LoadingButton
+									onClick={async (event) => {
+										props.onClick(event)
+									}}
+									loading={props.isProcessing}
+									startIcon={<DiscordIcon />}
+									variant="contained"
+								>
+									Connect Discord to account
+								</LoadingButton>
 							)}
 						/>
 					)}
@@ -804,10 +907,8 @@ const EditableAvatar: React.FC<EditableAvatarProps> = ({ avatar, sx, onClick, on
 	)
 }
 
-type ConnectionTypes = "metamask" | "facebook" | "google" | "twitch"
-
 interface ConnectedAppCardProps extends BoxProps {
-	type: ConnectionTypes
+	type: ConnectionType
 	label: string
 	isConnected?: boolean
 }
@@ -829,6 +930,12 @@ const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConn
 			break
 		case "twitch":
 			connectionIcon = <TwitchIcon />
+			break
+		case "twitter":
+			connectionIcon = <TwitterIcon />
+			break
+		case "discord":
+			connectionIcon = <DiscordIcon />
 			break
 	}
 

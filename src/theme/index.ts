@@ -17,7 +17,6 @@ declare module "@mui/material/Button" {
 	}
 }
 
-
 export const colors = {
 	neonPink: "#f72485",
 	skyBlue: "#4CC9F0",
@@ -29,7 +28,9 @@ export const colors = {
 	darkGrey: "#c3c3c3",
 	metamaskOrange: "#F6851B",
 	facebookBlue: "#3F558C",
-	twitchPurple: "#8551F6"
+	twitchPurple: "#8551F6",
+	twitterBlue: "#1DA1F2",
+	discordGrey: "#2c2f33",
 }
 
 const fallbackFonts = [
@@ -77,7 +78,7 @@ const lightTheme = createTheme({
 		error: {
 			main: "#d32f2f",
 			light: "#ef5350",
-			dark: "#c62828"
+			dark: "#c62828",
 		},
 		background: {
 			default: colors.darkNavyBlue,
@@ -91,8 +92,8 @@ const lightTheme = createTheme({
 		action: {
 			active: "rgba(255, 255, 255, 0.54)",
 			disabled: colors.lightGrey,
-			disabledBackground: colors.darkGrey
-		}
+			disabledBackground: colors.darkGrey,
+		},
 	},
 	breakpoints: {
 		values: {
@@ -144,7 +145,7 @@ const lightTheme = createTheme({
 			fontSize: 14,
 		},
 		subtitle1: {
-			fontFamily: fonts.bizmoregular
+			fontFamily: fonts.bizmoregular,
 		},
 		button: {
 			textTransform: "none",
@@ -156,12 +157,12 @@ const lightTheme = createTheme({
 				html: {
 					"@media (max-width: 1000px)": {
 						fontSize: "80%",
-					}
+					},
 				},
 				body: {
 					backgroundColor: colors.darkNavyBlue,
 				},
-			}
+			},
 		},
 		MuiCardHeader: {
 			defaultProps: {
@@ -184,13 +185,13 @@ const lightTheme = createTheme({
 			styleOverrides: {
 				root: {
 					"& .MuiOutlinedInput-notchedOutline": {
-						borderColor: colors.darkGrey
+						borderColor: colors.darkGrey,
 					},
 					"&&::before": {
-						borderColor: colors.darkGrey
-					}
-				}
-			}
+						borderColor: colors.darkGrey,
+					},
+				},
+			},
 		},
 		MuiFilledInput: {
 			styleOverrides: {
@@ -198,10 +199,10 @@ const lightTheme = createTheme({
 					borderRadius: 0,
 					backgroundColor: colors.lightNavyBlue,
 					"&&::before": {
-						borderColor: "transparent"
-					}
-				}
-			}
+						borderColor: "transparent",
+					},
+				},
+			},
 		},
 		MuiFormLabel: {
 			styleOverrides: {

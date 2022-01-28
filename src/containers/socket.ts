@@ -35,7 +35,7 @@ export function protocol() {
 	return window.location.protocol.match(/^https/) ? "wss" : "ws"
 }
 
-enum SocketState {
+export enum SocketState {
 	CONNECTING = WebSocket.CONNECTING,
 	OPEN = WebSocket.OPEN,
 	CLOSING = WebSocket.CLOSING,

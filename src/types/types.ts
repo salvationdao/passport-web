@@ -23,6 +23,8 @@ export interface User {
 	facebookID?: string
 	googleID?: string
 	twitchID?: string
+	twitterID?: string
+	discordID?: string
 }
 
 export interface UserActivity {
