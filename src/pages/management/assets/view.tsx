@@ -1,5 +1,5 @@
 import { Box, Paper, styled, Typography } from "@mui/material"
-import { Link, useParams } from "react-router-dom"
+import { Link, useHistory, useParams } from "react-router-dom"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import { FancyButton } from "../../../components/fancyButton"
 import { Navbar } from "../../../components/home/navbar"
@@ -10,16 +10,19 @@ import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { useState, useEffect } from "react"
+import { Loading } from "../../../components/loading"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
 	const { user } = AuthContainer.useContainer()
+	const history = useHistory()
 
 	const { subscribe, send } = useWebsocket()
 	const [asset, setAsset] = useState<Asset>()
 	const [attributes, setAttributes] = useState<Asset[]>([])
 
 	const [submitting, setSubmitting] = useState(false)
+	const [frozen, setFrozen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
 
 	const isWarMachine = (): boolean => {
@@ -41,6 +44,7 @@ export const AssetPage = () => {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		} finally {
 			setSubmitting(false)
+			setFrozen(true)
 			setErrorMessage(undefined)
 		}
 	}
@@ -59,7 +63,7 @@ export const AssetPage = () => {
 				tokenID: parseInt(tokenID),
 			},
 		)
-	}, [user?.id, asset?.tokenID, subscribe, tokenID])
+	}, [user?.id, asset?.tokenID, subscribe, tokenID, send])
 
 	// Effect: get/set attributes as assets
 	useEffect(() => {
@@ -79,6 +83,18 @@ export const AssetPage = () => {
 			},
 		)
 	}, [user?.id, asset?.tokenID, subscribe, tokenID])
+
+	useEffect(() => {
+		if (user) return
+		const userTimeout = setTimeout(() => {
+			history.push("/login")
+		}, 2000)
+		return () => clearTimeout(userTimeout)
+	}, [user, history])
+
+	if (!user) {
+		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+	}
 
 	if (!asset || !attributes) return <></>
 
@@ -143,9 +159,7 @@ export const AssetPage = () => {
 							borderRadius: 0,
 							backgroundColor: "transparent",
 							display: "flex",
-							"@media (max-width: 1380px)": {
-								// flexDirection: "column",
-							},
+							"@media (max-width: 1380px)": {},
 						}}
 					>
 						{/* image */}
@@ -157,7 +171,6 @@ export const AssetPage = () => {
 								// width: "566px",
 								marginRight: "50px",
 								"@media (max-width: 1380px)": {
-									// maxWidth: "300px",
 									height: "300px",
 								},
 							}}
@@ -190,7 +203,7 @@ export const AssetPage = () => {
 									>
 										{asset.name}
 									</Typography>
-									{asset.frozenAt && (
+									{(asset.frozenAt || frozen) && (
 										<Typography
 											variant="h1"
 											color={colors.skyBlue}
@@ -258,7 +271,7 @@ export const AssetPage = () => {
 						</Box>
 
 						{/* if owner, not frozen and is a war machine */}
-						{asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
+						{asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
 							<Box
 								sx={{
 									marginLeft: "100px",
@@ -282,7 +295,6 @@ export const AssetPage = () => {
 const AssetContainer = styled((props) => <Box {...props} />)(({ theme }) => ({
 	display: "flex",
 	overflowX: "auto",
-	// marginBottom: "10px",
 	margin: "76px",
 	backgroundColor: theme.palette.background.paper,
 }))
