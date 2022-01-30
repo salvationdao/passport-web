@@ -1,4 +1,4 @@
-import { Box, Paper, Skeleton, styled, Typography } from "@mui/material"
+import { Box, Paper, Skeleton, styled, Typography, Link as MuiLink } from "@mui/material"
 import { Link, useHistory, useParams } from "react-router-dom"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import { FancyButton } from "../../../components/fancyButton"
@@ -10,6 +10,8 @@ import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { useState, useEffect } from "react"
+import { GradientCircleThing } from "../../../components/home/gradientCircleThing"
+import XSYNWordmarkImage from "../../../assets/images/XSYN Wordmark White.png"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -90,300 +92,362 @@ export const AssetPage = () => {
 	}, [user])
 
 	return (
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				minHeight: "100vh",
-				overflowX: "hidden",
-			}}
-		>
-			<Navbar />
-			<Paper
+		<>
+			<Box
 				sx={{
-					maxWidth: "1000px",
-					margin: "0 auto",
-					marginBottom: "2rem",
-					padding: "2rem",
-					borderRadius: 0,
-					background: "transparent",
+					display: "flex",
+					flexDirection: "column",
+					minHeight: "100vh",
+					overflowX: "hidden",
 				}}
 			>
-				<Box
+				<Navbar />
+				<Paper
 					sx={{
-						display: "flex",
-						width: "100%",
-						flexDirection: "column",
-						alignContent: "center",
-						justifyContent: "center",
-						alignItems: "center",
-						overflow: "hidden",
+						maxWidth: "1000px",
+						margin: "0 auto",
+						marginBottom: "2rem",
+						padding: "2rem",
+						borderRadius: 0,
+						background: "transparent",
 					}}
 				>
 					<Box
-						component="img"
-						src={SupremacyLogo}
-						alt="Collection Logo"
 						sx={{
-							height: 35,
-							marginBottom: 5,
-							"@media (max-width: 550px)": {
-								height: 30,
-							},
-						}}
-					/>
-
-					<Typography
-						variant="h1"
-						sx={{
-							textTransform: "uppercase",
-							fontSize: "2rem",
-							color: colors.neonPink,
-						}}
-					>
-						Collection
-					</Typography>
-				</Box>
-			</Paper>
-
-			<Paper
-				sx={{
-					maxWidth: "1768px",
-					margin: "0 auto",
-					borderRadius: 0,
-					backgroundColor: "transparent",
-					display: "flex",
-					flexDirection: "column",
-					justifyContent: "space-between",
-					overflow: "hidden",
-				}}
-			>
-				<AssetContainer>
-					<Box
-						sx={{
-							width: "100%",
-							maxWidth: "1768px",
-							overflow: "hidden",
-							margin: "50px",
-							borderRadius: 0,
-							backgroundColor: "transparent",
 							display: "flex",
-							"@media (max-width: 550px)": {
-								flexDirection: "column",
-								margin: 0,
-							},
+							width: "100%",
+							flexDirection: "column",
+							alignContent: "center",
+							justifyContent: "center",
+							alignItems: "center",
+							overflow: "hidden",
 						}}
 					>
-						{/* image */}
-						{!asset && (
-							<Skeleton
-								variant="rectangular"
-								sx={{
-									marginRight: "50px",
-								}}
-								width={210}
-								height={118}
-							/>
-						)}
+						<Box
+							component="img"
+							src={SupremacyLogo}
+							alt="Collection Logo"
+							sx={{
+								height: 35,
+								marginBottom: 5,
+								"@media (max-width: 550px)": {
+									height: 30,
+								},
+							}}
+						/>
 
-						{!!asset && (
-							<Box
-								sx={{
-									"@media (max-width: 550px)": {
-										maskImage: "linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 50%, transparent 100%)",
-									},
-								}}
-							>
-								<Box
-									component="img"
-									src={PlaceholderMech}
-									alt="placeholder"
+						<Typography
+							variant="h1"
+							sx={{
+								textTransform: "uppercase",
+								fontSize: "2rem",
+								color: colors.neonPink,
+							}}
+						>
+							Collection
+						</Typography>
+					</Box>
+				</Paper>
+
+				<Paper
+					sx={{
+						maxWidth: "1803px",
+						margin: "0 auto",
+						borderRadius: 0,
+						backgroundColor: "transparent",
+						display: "flex",
+						flexDirection: "column",
+						justifyContent: "space-between",
+						overflow: "hidden",
+					}}
+				>
+					<AssetContainer>
+						<Box
+							sx={{
+								width: "100%",
+								maxWidth: "1768px",
+								overflow: "hidden",
+								margin: "50px",
+								borderRadius: 0,
+								backgroundColor: "transparent",
+								display: "flex",
+								"@media (max-width: 550px)": {
+									flexDirection: "column",
+									margin: 0,
+								},
+							}}
+						>
+							{/* image */}
+							{!asset && (
+								<Skeleton
+									variant="rectangular"
 									sx={{
 										marginRight: "50px",
-										"@media (max-width: 1300px)": {
-											height: "400px",
-										},
-										"@media (max-width: 1000px)": {
-											height: "300px",
-										},
-										"@media (max-width: 550px)": {
-											height: "auto",
-											margin: 0,
-										},
-										"@media (max-width: 470px)": {
-											width: "100%",
-										},
 									}}
+									width={210}
+									height={118}
 								/>
-							</Box>
-						)}
+							)}
 
-						{/* Info */}
-						{!asset && <Skeleton variant="rectangular" width={"100%"} sx={{ minWidth: "200px" }} height={118} />}
-						{!!asset && (
-							<Box
-								sx={{
-									display: "flex",
-									flexDirection: "column",
-									maxWidth: "800px",
-									alignItems: "space-between",
-									justifyContent: "flex-start",
-									marginRight: "50px",
-									"@media (max-width: 550px)": {
-										marginRight: 0,
-									},
-								}}
-							>
-								<Section
+							{!!asset && (
+								<Box
 									sx={{
 										"@media (max-width: 550px)": {
-											marginTop: "-120px",
-											justifyContent: "center",
+											maskImage: "linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 50%, transparent 100%)",
 										},
 									}}
 								>
 									<Box
+										component="img"
+										src={PlaceholderMech}
+										alt="placeholder"
 										sx={{
-											display: "flex",
-											alignContent: "center",
-											marginBottom: "48px",
-											alignItems: "center",
+											marginRight: "50px",
+											"@media (max-width: 1300px)": {
+												height: "400px",
+											},
+											"@media (max-width: 1000px)": {
+												height: "300px",
+											},
 											"@media (max-width: 550px)": {
-												textAlign: "center",
-												flexDirection: "column",
+												height: "auto",
+												margin: 0,
+											},
+											"@media (max-width: 470px)": {
+												width: "100%",
+											},
+										}}
+									/>
+								</Box>
+							)}
+
+							{/* Info */}
+							{!asset && <Skeleton variant="rectangular" width={"100%"} sx={{ minWidth: "200px" }} height={118} />}
+							{!!asset && (
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "column",
+										maxWidth: "800px",
+										alignItems: "space-between",
+										justifyContent: "flex-start",
+										marginRight: "50px",
+										"@media (max-width: 550px)": {
+											marginRight: 0,
+										},
+									}}
+								>
+									<Section
+										sx={{
+											"@media (max-width: 550px)": {
+												marginTop: "-120px",
+												justifyContent: "center",
+											},
+										}}
+									>
+										<Box
+											sx={{
+												display: "flex",
+												alignContent: "center",
+												marginBottom: "48px",
+												alignItems: "center",
+												"@media (max-width: 550px)": {
+													textAlign: "center",
+													flexDirection: "column",
+												},
+											}}
+										>
+											<Typography
+												variant="h1"
+												sx={{
+													textTransform: "uppercase",
+													fontSize: "2rem",
+													zIndex: 3,
+												}}
+											>
+												{asset.name}
+											</Typography>
+											{/* if owner, not frozen and is a war machine */}
+
+											{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
+												<Box
+													sx={{
+														marginLeft: "100px",
+														display: "none",
+														"@media (max-width: 1000px)": {
+															marginTop: "5px",
+															display: "block",
+															marginLeft: "0px",
+														},
+													}}
+												>
+													<FancyButton
+														loading={submitting}
+														onClick={onDeploy}
+														sx={{ fontSize: "1.438rem", padding: "1rem 1rem" }}
+														fancy
+													>
+														Deploy
+													</FancyButton>
+												</Box>
+											)}
+											{(asset.frozenAt || frozen) && (
+												<Typography
+													variant="h3"
+													color={colors.skyBlue}
+													sx={{
+														textTransform: "uppercase",
+														marginLeft: "1rem",
+													}}
+												>
+													(Frozen)
+												</Typography>
+											)}
+										</Box>
+
+										<Typography
+											variant="body1"
+											fontSize={18}
+											sx={{
+												textTransform: "uppercase",
+												"@media (max-width: 550px)": {
+													display: "none",
+												},
+											}}
+										>
+											{asset.description}
+										</Typography>
+									</Section>
+
+									<Section
+										sx={{
+											"@media (max-width: 550px)": {
+												margin: "0 40px 0 40px",
 											},
 										}}
 									>
 										<Typography
-											variant="h1"
+											variant="h3"
+											color={colors.skyBlue}
 											sx={{
 												textTransform: "uppercase",
-												fontSize: "2rem",
-												zIndex: 3,
+												marginBottom: "30px",
 											}}
 										>
-											{asset.name}
+											Properties
 										</Typography>
-										{/* if owner, not frozen and is a war machine */}
 
-										{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
-											<Box
-												sx={{
-													marginLeft: "100px",
-													display: "none",
-													"@media (max-width: 1000px)": {
-														marginTop: "5px",
-														display: "block",
-														marginLeft: "0px",
-													},
-												}}
-											>
-												<FancyButton loading={submitting} onClick={onDeploy} sx={{ fontSize: "1.438rem", padding: "1rem 1rem" }} fancy>
-													Deploy
-												</FancyButton>
-											</Box>
-										)}
-										{(asset.frozenAt || frozen) && (
-											<Typography
-												variant="h3"
-												color={colors.skyBlue}
-												sx={{
-													textTransform: "uppercase",
-													marginLeft: "1rem",
-												}}
-											>
-												(Frozen)
-											</Typography>
-										)}
-									</Box>
+										<PropertiesSection>
+											{attributes.map((attr, i) => {
+												return (
+													<Link key={i} style={{ textDecoration: "none" }} to={`/collections/assets/${attr.tokenID}`}>
+														<Box
+															sx={{
+																width: 170,
+																height: 170,
+																margin: "10px 10px 10px 0px",
+																backgroundColor: "transparent",
+																border: "2px solid #fff",
+																"@media (max-width: 550px)": {
+																	width: 140,
+																	height: 140,
+																},
+															}}
+														></Box>
+														<Typography
+															variant="h5"
+															color={colors.neonPink}
+															sx={{
+																textTransform: "uppercase",
+															}}
+														>
+															{attr.name}
+														</Typography>
+													</Link>
+												)
+											})}
+										</PropertiesSection>
+									</Section>
+								</Box>
+							)}
 
-									<Typography
-										variant="body1"
-										fontSize={18}
-										sx={{
-											textTransform: "uppercase",
-											"@media (max-width: 550px)": {
-												display: "none",
-											},
-										}}
-									>
-										{asset.description}
-									</Typography>
-								</Section>
-
-								<Section
+							{/* if owner, not frozen and is a war machine */}
+							{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
+								<Box
 									sx={{
-										"@media (max-width: 550px)": {
-											margin: "0 40px 0 40px",
+										// marginLeft: "100px",
+										"@media (max-width: 1000px)": {
+											marginLeft: "0px",
+											display: "none",
 										},
 									}}
 								>
-									<Typography
-										variant="h3"
-										color={colors.skyBlue}
-										sx={{
-											textTransform: "uppercase",
-											marginBottom: "30px",
-										}}
-									>
-										Properties
-									</Typography>
+									<FancyButton loading={submitting} onClick={onDeploy} sx={{ fontSize: "1.438rem", padding: "1rem 2.25rem" }} fancy>
+										Deploy
+									</FancyButton>
+								</Box>
+							)}
+						</Box>
+					</AssetContainer>
+				</Paper>
+			</Box>
 
-									<PropertiesSection>
-										{attributes.map((attr, i) => {
-											return (
-												<Link key={i} style={{ textDecoration: "none" }} to={`/collections/assets/${attr.tokenID}`}>
-													<Box
-														sx={{
-															width: 170,
-															height: 170,
-															margin: "10px 10px 10px 0px",
-															backgroundColor: "transparent",
-															border: "2px solid #fff",
-															"@media (max-width: 550px)": {
-																width: 140,
-																height: 140,
-															},
-														}}
-													></Box>
-													<Typography
-														variant="h5"
-														color={colors.neonPink}
-														sx={{
-															textTransform: "uppercase",
-															textAlign: "center",
-														}}
-													>
-														{attr.name}
-													</Typography>
-												</Link>
-											)
-										})}
-									</PropertiesSection>
-								</Section>
-							</Box>
-						)}
-
-						{/* if owner, not frozen and is a war machine */}
-						{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
-							<Box
-								sx={{
-									// marginLeft: "100px",
-									"@media (max-width: 1000px)": {
-										marginLeft: "0px",
-										display: "none",
-									},
-								}}
-							>
-								<FancyButton loading={submitting} onClick={onDeploy} sx={{ fontSize: "1.438rem", padding: "1rem 2.25rem" }} fancy>
-									Deploy
-								</FancyButton>
-							</Box>
-						)}
-					</Box>
-				</AssetContainer>
-			</Paper>
-		</Box>
+			<Box
+				sx={{
+					overflow: "hidden",
+					position: "relative",
+					display: "flex",
+					flexDirection: "column",
+					minHeight: "100vh",
+					width: "100%",
+					maxWidth: "1700px",
+					margin: "0 auto",
+					padding: "4rem 3rem",
+					paddingBottom: "1rem",
+				}}
+			>
+				<GradientCircleThing
+					innerOpacity={0.6}
+					sx={{
+						zIndex: -1,
+						position: "absolute",
+						left: "50%",
+						bottom: "-30rem",
+						transform: "translate(-50%, 0)",
+					}}
+				/>
+				<Box
+					sx={{
+						flex: 1,
+					}}
+				/>
+				<Box
+					component="img"
+					src={XSYNWordmarkImage}
+					alt="XSYN Wordmark"
+					sx={{
+						alignSelf: "center",
+						marginBottom: "3rem",
+					}}
+				/>
+				<Box
+					sx={{
+						display: "flex",
+						justifyContent: "space-between",
+						width: "100%",
+						maxWidth: "600px",
+						margin: "0 auto",
+					}}
+				>
+					<MuiLink href="/privacy-policy" underline="none" color="white">
+						Privacy Policy
+					</MuiLink>
+					<MuiLink href="/terms-and-conditions" underline="none" color="white">
+						Terms And Conditions
+					</MuiLink>
+				</Box>
+			</Box>
+		</>
 	)
 }
 
