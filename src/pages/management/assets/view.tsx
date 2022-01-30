@@ -375,7 +375,6 @@ export const AssetPage = () => {
 							{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
 								<Box
 									sx={{
-										// marginLeft: "100px",
 										"@media (max-width: 1000px)": {
 											marginLeft: "0px",
 											display: "none",
