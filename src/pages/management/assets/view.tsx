@@ -245,12 +245,12 @@ export const AssetPage = () => {
 									<Box
 										sx={{
 											display: "flex",
+											alignContent: "center",
 											marginBottom: "48px",
-											"@media (max-width: 1000px)": {
-												flexDirection: "column",
-											},
+											alignItems: "center",
 											"@media (max-width: 550px)": {
 												textAlign: "center",
+												flexDirection: "column",
 											},
 										}}
 									>
@@ -285,11 +285,10 @@ export const AssetPage = () => {
 										)}
 										{(asset.frozenAt || frozen) && (
 											<Typography
-												variant="h1"
+												variant="h3"
 												color={colors.skyBlue}
 												sx={{
 													textTransform: "uppercase",
-													fontSize: "33px",
 													marginLeft: "1rem",
 												}}
 											>
