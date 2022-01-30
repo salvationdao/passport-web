@@ -3,19 +3,22 @@ import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
+import { ReactComponent as DiscordIcon } from "../assets/images/icons/discord.svg"
 import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
 import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
 import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
+import { ReactComponent as TwitterIcon } from "../assets/images/icons/twitter.svg"
 import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
+import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../components/discordLogin"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { FancyButton } from "../components/fancyButton"
 import { InputField } from "../components/form/inputField"
 import { GradientCircleThing, PhaseTypes } from "../components/home/gradientCircleThing"
 import { Loading } from "../components/loading"
 import { LoginMetaMask } from "../components/loginMetaMask"
-import { ReactTwitchFailureResponse, ReactTwitchLoginInfo, TwitchLogin } from "../components/twitchLogin"
+import { ReactTwitchFailureResponse, ReactTwitchLoginResponse, TwitchLogin } from "../components/twitchLogin"
+import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } from "../components/twitterLogin"
 import { AuthContainer, useAuth } from "../containers/auth"
-import { API_ENDPOINT_HOSTNAME } from "../containers/socket"
 import { colors, fonts } from "../theme"
 
 interface LogInInput {
@@ -27,11 +30,11 @@ export const LoginPage: React.FC = () => {
 	const { user } = useAuth()
 	const history = useHistory()
 
-	const { loginGoogle, loginFacebook, loginTwitch, loginPassword } = AuthContainer.useContainer()
+	const { loginGoogle, loginFacebook, loginTwitch, loginTwitter, loginDiscord, loginPassword } = AuthContainer.useContainer()
 
 	const { control, handleSubmit, reset } = useForm<LogInInput>()
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
-	const [loading] = useState(false)
+	const [loading, setLoading] = useState(false)
 	const [showEmailLogin, setShowEmailLogin] = useState(false)
 
 	// Animating background circle
@@ -41,7 +44,19 @@ export const LoginPage: React.FC = () => {
 		setErrorMessage(error)
 	}
 
-	// OAuth
+	// Email login
+	const onEmailLogin = handleSubmit(async (input) => {
+		try {
+			setLoading(true)
+			await loginPassword(input.email, input.password)
+		} catch (e) {
+			setErrorMessage(typeof e === "string" ? e : "Somethign went wrong, please try again.")
+		} finally {
+			setLoading(false)
+		}
+	})
+
+	// OAuth login
 	const onGoogleLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
 		try {
 			if (!!response.code) {
@@ -52,7 +67,7 @@ export const LoginPage: React.FC = () => {
 			const r = response as GoogleLoginResponse
 			await loginGoogle(r.tokenId)
 		} catch (e) {
-			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
 	}
 	const onGoogleLoginFailure = (error: Error) => {
@@ -69,28 +84,47 @@ export const LoginPage: React.FC = () => {
 			const r = response as ReactFacebookLoginInfo
 			await loginFacebook(r.accessToken)
 		} catch (e) {
-			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
 	}
 	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Facebook.")
 	}
 
-	const onTwitchLogin = async (response: any) => {
+	const onTwitchLogin = async (response: ReactTwitchLoginResponse) => {
 		try {
-			if (!!response && !!response.status) {
-				setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
-				return
-			}
 			setErrorMessage(null)
-			const r = response as ReactTwitchLoginInfo
-			await loginTwitch(r.token)
+			await loginTwitch(response.token)
 		} catch (e) {
-			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
 	}
 	const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Twitch.")
+	}
+
+	const onTwitterLogin = async (response: ReactTwitterLoginResponse) => {
+		try {
+			setErrorMessage(null)
+			await loginTwitter(response.token, response.verifier)
+		} catch (e) {
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+		}
+	}
+	const onTwitterLoginFailure = (error: ReactTwitterFailureResponse) => {
+		setErrorMessage(error.status || "Failed to login with Twitter.")
+	}
+
+	const onDiscordLogin = async (response: ReactDiscordLoginResponse) => {
+		try {
+			setErrorMessage(null)
+			await loginDiscord(response.code)
+		} catch (e) {
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+		}
+	}
+	const onDiscordLoginFailure = (error: ReactDiscordFailureResponse) => {
+		setErrorMessage(error.status || "Failed to login with Discord.")
 	}
 
 	useEffect(() => {
@@ -176,7 +210,7 @@ export const LoginPage: React.FC = () => {
 					{showEmailLogin ? (
 						<Box
 							component="form"
-							onSubmit={handleSubmit(async (input) => await loginPassword(input.email, input.password))}
+							onSubmit={onEmailLogin}
 							sx={{
 								"& > *:not(:last-child)": {
 									marginBottom: "1rem",
@@ -256,22 +290,6 @@ export const LoginPage: React.FC = () => {
 							}}
 						>
 							<LoginMetaMask onFailure={onMetaMaskLoginFailure} borderColor={colors.metamaskOrange} />
-							<FacebookLogin
-								appId="577913423867745"
-								fields="email"
-								callback={onFacebookLogin}
-								onFailure={onFacebookLoginFailure}
-								render={(props) => (
-									<FancyButton
-										borderColor={colors.facebookBlue}
-										onClick={props.onClick}
-										disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
-										startIcon={<FacebookIcon />}
-									>
-										Log in with Facebook
-									</FancyButton>
-								)}
-							/>
 							<GoogleLogin
 								clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
 								buttonText="Login"
@@ -290,19 +308,59 @@ export const LoginPage: React.FC = () => {
 									</FancyButton>
 								)}
 							/>
+							<FacebookLogin
+								callback={onFacebookLogin}
+								onFailure={onFacebookLoginFailure}
+								render={(props) => (
+									<FancyButton
+										borderColor={colors.facebookBlue}
+										onClick={props.onClick}
+										loading={!props.isSdkLoaded || props.isProcessing}
+										startIcon={<FacebookIcon />}
+									>
+										Log in with Facebook
+									</FancyButton>
+								)}
+							/>
 							<TwitchLogin
-								clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
-								redirectUri={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`}
 								callback={onTwitchLogin}
 								onFailure={onTwitchLoginFailure}
 								render={(props) => (
 									<FancyButton
 										borderColor={colors.twitchPurple}
 										onClick={props.onClick}
-										disabled={props.isDisabled || props.isProcessing}
+										loading={props.isProcessing}
 										startIcon={<TwitchIcon />}
 									>
 										Log in with Twitch
+									</FancyButton>
+								)}
+							/>
+							<TwitterLogin
+								callback={onTwitterLogin}
+								onFailure={onTwitterLoginFailure}
+								render={(props) => (
+									<FancyButton
+										borderColor={colors.twitterBlue}
+										onClick={props.onClick}
+										loading={props.isProcessing}
+										startIcon={<TwitterIcon />}
+									>
+										Log in with Twitter
+									</FancyButton>
+								)}
+							/>
+							<DiscordLogin
+								callback={onDiscordLogin}
+								onFailure={onDiscordLoginFailure}
+								render={(props) => (
+									<FancyButton
+										borderColor={colors.discordGrey}
+										onClick={props.onClick}
+										loading={props.isProcessing}
+										startIcon={<DiscordIcon />}
+									>
+										Log in with Discord
 									</FancyButton>
 								)}
 							/>
@@ -342,14 +400,14 @@ export const LoginPage: React.FC = () => {
 							>
 								Email Login
 							</FancyButton>
-							<Typography variant="subtitle1">
-								Don't have an account?{" "}
-								<Link component={RouterLink} to="/onboarding">
-									Sign up here
-								</Link>
-							</Typography>
 						</Box>
 					)}
+					<Typography variant="subtitle1" marginTop="1rem">
+						Don't have an account?{" "}
+						<Link component={RouterLink} to="/onboarding">
+							Sign up here
+						</Link>
+					</Typography>
 				</Box>
 			</Box>
 		</>

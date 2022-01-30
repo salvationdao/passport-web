@@ -67,6 +67,20 @@ export interface TwitchLoginRequest {
 	sessionID?: string
 }
 
+export interface TwitterLoginRequest {
+	oauthToken: string
+	oauthVerifier: string
+	username?: string
+	sessionID?: string
+}
+
+export interface DiscordLoginRequest {
+	code: string
+	username?: string
+	sessionID?: string
+	redirectURI: string
+}
+
 export interface AddServiceRequest {
 	token: string
 }
@@ -86,8 +100,17 @@ export interface RemoveServiceResponse {
 
 export interface AddTwitchRequest {
 	token: string
-	redirectURI: string
 	website: boolean
+}
+
+export interface AddDiscordRequest {
+	code: string
+	redirectURI: string
+}
+
+export interface AddTwitterRequest {
+	oauthToken: string
+	oauthVerifier: string
 }
 
 export interface SendVerifyEmailRequest {

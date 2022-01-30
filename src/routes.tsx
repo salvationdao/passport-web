@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
+import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { useAuth } from "./containers/auth"
 import { Home } from "./pages/home"
 import { LoginPage } from "./pages/login"
@@ -38,7 +39,7 @@ export const Routes = () => {
 					<Route path="/settings" component={Settings} />
 				</Switch>
 			</Router>
-			{/* <ConnectionLostSnackbar app="admin" /> */}
+			<ConnectionLostSnackbar app="admin" />
 		</>
 	)
 }

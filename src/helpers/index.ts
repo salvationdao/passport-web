@@ -48,3 +48,31 @@ export function makeid(length: number = 12): string {
 	}
 	return result
 }
+
+// Generates a string of URI encoded parameters from an object
+export const getParamsFromObject = (params: any) => {
+	return (
+		"?" +
+		Object.keys(params)
+			.filter((param) => !!params[param])
+			.map((param) => `${param}=${window.encodeURIComponent(params[param])}`)
+			.join("&")
+	)
+}
+
+// Returns true if user agent is mobile
+export const getIsMobile = () => {
+	let isMobile = false
+	try {
+		isMobile = !!(
+			(window.navigator && (window.navigator as any).standalone === true) ||
+			window.matchMedia("(display-mode: standalone)").matches ||
+			navigator.userAgent.match("CriOS") ||
+			navigator.userAgent.match(/mobile/i)
+		)
+	} catch (ex) {
+		// continue regardless of error
+	}
+
+	return isMobile
+}

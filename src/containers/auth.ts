@@ -2,9 +2,12 @@ import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import HubKey from "../keys"
 import {
+	AddDiscordRequest,
 	AddServiceRequest,
 	AddServiceResponse,
 	AddTwitchRequest,
+	AddTwitterRequest,
+	DiscordLoginRequest,
 	FacebookLoginRequest,
 	GoogleLoginRequest,
 	PasswordLoginRequest,
@@ -14,6 +17,7 @@ import {
 	TokenLoginRequest,
 	TokenLoginResponse,
 	TwitchLoginRequest,
+	TwitterLoginRequest,
 	VerifyAccountResponse,
 	WalletLoginRequest,
 	WalletLoginResponse,
@@ -234,9 +238,7 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Logs a User in using a Twitch oauth code
-	 *
-	 * @param code Twitch oauth code
+	 * Logs a User in using a Twitch JWT
 	 */
 	const loginTwitch = useCallback(
 		async (token: string, username?: string) => {
@@ -249,6 +251,74 @@ export const AuthContainer = createContainer(() => {
 					username,
 					sessionID,
 					website: true,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				localStorage.clear()
+				setUser(null)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state, sessionID],
+	)
+
+	/**
+	 * Logs a User in using a Twitter OAuth code
+	 */
+	const loginTwitter = useCallback(
+		async (oauthToken: string, oauthVerifier: string, username?: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<PasswordLoginResponse, TwitterLoginRequest>(HubKey.AuthLoginTwitter, {
+					oauthToken,
+					oauthVerifier,
+					username,
+					sessionID,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				localStorage.clear()
+				setUser(null)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state, sessionID],
+	)
+
+	/**
+	 * Logs a User in using a Discord OAuth code
+	 */
+	const loginDiscord = useCallback(
+		async (code: string, username?: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<PasswordLoginResponse, DiscordLoginRequest>(HubKey.AuthLoginDiscord, {
+					code,
+					username,
+					sessionID,
+					redirectURI: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -398,19 +468,118 @@ export const AuthContainer = createContainer(() => {
 
 	/**
 	 * Connects a User's existing account to Twitch
-	 *
-	 * @param token Google token
 	 */
 	const addTwitch = useCallback(
-		async (token: string, redirectURI: string) => {
+		async (token: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
 				const resp = await send<AddServiceResponse, AddTwitchRequest>(HubKey.UserAddTwitch, {
 					token,
-					redirectURI,
 					website: true,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Removes a User's Twitter account
+	 */
+	const removeTwitter = useCallback(
+		async (id: string, username: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveTwitter, {
+					id,
+					username,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Connects a User's existing account to Twitter
+	 */
+	const addTwitter = useCallback(
+		async (oauthToken: string, oauthVerifier: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<AddServiceResponse, AddTwitterRequest>(HubKey.UserAddTwitter, {
+					oauthToken,
+					oauthVerifier,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Removes a User's Discord account
+	 */
+	const removeDiscord = useCallback(
+		async (id: string, username: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveDiscord, {
+					id,
+					username,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Connects a User's existing account to Discord
+	 *
+	 * @param token Google token
+	 */
+	const addDiscord = useCallback(
+		async (code: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<AddServiceResponse, AddDiscordRequest>(HubKey.UserAddDiscord, {
+					code,
+					redirectURI: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -556,13 +725,19 @@ export const AuthContainer = createContainer(() => {
 		loginGoogle,
 		loginFacebook,
 		loginTwitch,
+		loginTwitter,
+		loginDiscord,
 		loginMetamask,
 		addFacebook,
 		addGoogle,
 		addTwitch,
+		addTwitter,
+		addDiscord,
 		removeFacebook,
 		removeGoogle,
 		removeTwitch,
+		removeTwitter,
+		removeDiscord,
 		logout,
 		verify,
 		hideVerifyComplete: () => setVerifyCompleteType(undefined),

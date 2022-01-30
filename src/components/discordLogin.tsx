@@ -8,33 +8,33 @@ const getParamsFromObject = (params: any) =>
 		.map((param) => `${param}=${window.encodeURIComponent(params[param])}`)
 		.join("&")
 
-export interface ReactTwitchFailureResponse {
+export interface ReactDiscordFailureResponse {
 	status?: string
 }
 
-export interface ReactTwitchLoginResponse {
-	token: string
+export interface ReactDiscordLoginResponse {
+	code: string
 }
 
-export interface ReactTwitchLoginState {
+export interface ReactDiscordLoginState {
 	isProcessing?: boolean
 }
 
-interface TwitchLoginButtonRenderProps {
+interface DiscordLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 	isProcessing: boolean
 }
 
-interface TwitchLoginProps {
-	callback(userInfo: ReactTwitchLoginResponse): void
-	onFailure?(response: ReactTwitchFailureResponse): void
+interface DiscordLoginProps {
+	callback(userInfo: ReactDiscordLoginResponse): void
+	onFailure?(response: ReactDiscordFailureResponse): void
 
-	render?: (props: TwitchLoginButtonRenderProps) => JSX.Element
+	render?: (props: DiscordLoginButtonRenderProps) => JSX.Element
 }
 
-export const TwitchLogin: React.FC<TwitchLoginProps> = ({ callback, onFailure, render }) => {
+export const DiscordLogin: React.FC<DiscordLoginProps> = ({ callback, onFailure, render }) => {
 	const [isProcessing, setIsProcessing] = useState(false)
-	const [twitchOAuthPopup, setTwitchOAuthPopup] = useState<Window | null>(null)
+	const [discordOAuthPopup, setDiscordOAuthPopup] = useState<Window | null>(null)
 	const [state, setState] = useState<string>()
 
 	const click = useCallback(async () => {
@@ -46,20 +46,21 @@ export const TwitchLogin: React.FC<TwitchLoginProps> = ({ callback, onFailure, r
 
 		const currState = nanoid()
 		setState(currState)
-		const twitchParams = {
-			client_id: "1l3xc5yczselbc4yiwdieaw0hr1oap",
+		const discordParams = {
+			client_id: "935036501983645816",
 			redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
-			response_type: "id_token",
+			response_type: "code",
 			state: currState,
-			scope: "openid",
+			scope: "identify",
+			prompt: "consent",
 		}
-		const href = `https://id.twitch.tv/oauth2/authorize${getParamsFromObject(twitchParams)}`
-		// Opens Twitch login page in a new window
+		const href = `https://discord.com/api/oauth2/authorize${getParamsFromObject(discordParams)}`
+		// Opens Discord login page in a new window
 		const width = 500
 		const height = 600
 		const top = window.screenY + (window.outerHeight - height) / 2.5
 		const left = window.screenX + (window.outerWidth - width) / 2
-		const popup = window.open(href, "Connect Twitch to XSYN Passport", `width=${width},height=${height},left=${left},top=${top},popup=1`)
+		const popup = window.open(href, "Connect Discord to XSYN Passport", `width=${width},height=${height},left=${left},top=${top},popup=1`)
 		if (!popup) {
 			if (onFailure) {
 				onFailure({
@@ -68,7 +69,7 @@ export const TwitchLogin: React.FC<TwitchLoginProps> = ({ callback, onFailure, r
 			}
 			return
 		}
-		setTwitchOAuthPopup(popup)
+		setDiscordOAuthPopup(popup)
 	}, [isProcessing, onFailure])
 
 	const propsForRender = useMemo(
@@ -80,56 +81,55 @@ export const TwitchLogin: React.FC<TwitchLoginProps> = ({ callback, onFailure, r
 	)
 
 	useEffect(() => {
-		if (!twitchOAuthPopup) return
+		if (!discordOAuthPopup) return
 
 		const popupCheckTimer = setInterval(() => {
-			if (!twitchOAuthPopup) {
+			if (!discordOAuthPopup) {
 				return
 			}
 
 			try {
-				if (twitchOAuthPopup.closed) {
-					throw new Error("Twitch window has been closed, aborting connection.")
+				if (discordOAuthPopup.closed) {
+					throw new Error("Discord window has been closed, aborting connection.")
 				}
 
-				// Get access token from Twitch
-				const currentUrl = twitchOAuthPopup.location.href
+				// Get access token from Discord
+				const currentUrl = discordOAuthPopup.location.href
 				if (!currentUrl) return
 
-				const errorParams = new URL(currentUrl).searchParams
-				if (errorParams.has("error")) {
+				const params = new URL(currentUrl).searchParams
+				if (params.has("error")) {
 					throw new Error("The operation was cancelled.")
 				}
 
-				const fragment = window.location.origin + "?" + twitchOAuthPopup.location.hash.split("#")[1]
-				const searchParams = new URL(fragment).searchParams
-				const token = searchParams.get("id_token")
-				const incomingState = searchParams.get("state")
+				const code = params.get("code")
+				const incomingState = params.get("state")
 				// Protect against XSRF attacks
 				if (incomingState !== state) {
+					console.log(true)
 					throw new Error("Something went wrong. Please try again.")
 				}
 
-				// Return the access token to the callback function
-				if (token) {
-					twitchOAuthPopup.close()
-					setTwitchOAuthPopup(null)
+				// Return the code to the callback function
+				if (code) {
+					discordOAuthPopup.close()
+					setDiscordOAuthPopup(null)
 					popupCheckTimer && clearInterval(popupCheckTimer)
 
 					callback({
-						token,
+						code,
 					})
 					setIsProcessing(false)
 				}
 			} catch (e) {
 				if (onFailure && e instanceof Error && !(e instanceof DOMException)) {
 					// Close popup window, clear timers etc.
-					if (!twitchOAuthPopup.closed) {
-						twitchOAuthPopup.close()
+					if (!discordOAuthPopup.closed) {
+						discordOAuthPopup.close()
 					}
 					popupCheckTimer && clearInterval(popupCheckTimer)
 					setIsProcessing(false)
-					setTwitchOAuthPopup(null)
+					setDiscordOAuthPopup(null)
 					// Call the onFailure callback
 					onFailure({ status: e.message })
 				}
@@ -137,10 +137,10 @@ export const TwitchLogin: React.FC<TwitchLoginProps> = ({ callback, onFailure, r
 		}, 1000)
 
 		return () => clearInterval(popupCheckTimer)
-	}, [twitchOAuthPopup, callback, onFailure, state])
+	}, [discordOAuthPopup, callback, onFailure, state])
 
 	if (!render) {
-		throw new Error("TwitchLogin requires a render prop to render")
+		throw new Error("DiscordLogin requires a render prop to render")
 	}
 
 	return render(propsForRender)

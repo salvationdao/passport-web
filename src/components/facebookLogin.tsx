@@ -1,33 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-
-const getParamsFromObject = (params: any) =>
-	"?" +
-	Object.keys(params)
-		.map((param) => `${param}=${window.encodeURIComponent(params[param])}`)
-		.join("&")
+import { API_ENDPOINT_HOSTNAME } from "../containers/socket"
+import { getIsMobile, getParamsFromObject } from "../helpers"
 
 const decodeParamForKey = (paramString: string, key: string) =>
 	window.decodeURIComponent(
 		paramString.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[.+*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"),
 	)
-
-const getIsMobile = () => {
-	let isMobile = false
-
-	try {
-		isMobile = !!(
-			(window.navigator && (window.navigator as any).standalone === true) ||
-			window.matchMedia("(display-mode: standalone)").matches ||
-			navigator.userAgent.match("CriOS") ||
-			navigator.userAgent.match(/mobile/i)
-		)
-	} catch (ex) {
-		// continue regardless of error
-	}
-
-	return isMobile
-}
-
 export interface ReactFacebookFailureResponse {
 	status?: string
 }
@@ -54,74 +32,33 @@ export interface ReactFacebookLoginState {
 
 interface FacebookLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
-	isDisabled: boolean
 	isProcessing: boolean
 	isSdkLoaded: boolean
 }
 
 interface FacebookLoginProps {
-	appId: string
-
 	callback(userInfo: ReactFacebookLoginInfo | ReactFacebookFailureResponse): void
-
 	onFailure?(response: ReactFacebookFailureResponse): void
-
-	autoLoad?: boolean
-	buttonStyle?: React.CSSProperties
-	containerStyle?: React.CSSProperties
-	cookie?: boolean
-	cssClass?: string
-	disableMobileRedirect?: boolean
-	fields?: string
-	icon?: React.ReactNode
-	isDisabled?: boolean
-	language?: string
-
-	onClick?(event: React.MouseEvent<HTMLDivElement>): void
-
-	reAuthenticate?: boolean
-	redirectUri?: string
-	scope?: string
-	size?: "small" | "medium" | "metro"
-	textButton?: string
-	typeButton?: string
-	version?: string
-	xfbml?: boolean
-	isMobile?: boolean
-	tag?: Node | React.Component<any>
-	returnScopes?: boolean
-	state?: string
-	authType?: "reauthenticate" | "reauthorize" | "rerequest" | undefined
-	responseType?: string
-
 	render?: (props: FacebookLoginButtonRenderProps) => JSX.Element
 }
 
-export const FacebookLogin = (props: FacebookLoginProps) => {
-	const {
-		appId,
-		xfbml,
-		cookie,
-		version,
-		autoLoad,
-		language,
-		fields,
-		callback,
-		onFailure,
-		isDisabled,
-		scope,
-		onClick,
-		returnScopes,
-		responseType,
-		redirectUri,
-		disableMobileRedirect,
-		authType,
-		state,
-		isMobile,
-		render,
-	} = props
+export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailure, render }) => {
 	const [isSdkLoaded, setIsSdkLoaded] = useState(false)
 	const [isProcessing, setIsProcessing] = useState(false)
+	const appId = "577913423867745"
+	const language = "en_US"
+	const fields = "email"
+	const version = "3.1"
+	const xfbml = false
+	const cookie = false
+	const scope = "public_profile,email"
+	const returnScopes = false
+	const authType = undefined
+	const disableMobileRedirect = true
+	const isMobile = getIsMobile()
+	const state = "facebookdirect"
+	const responseType = "code"
+	const autoLoad = false
 
 	const isRedirectedFromFb = useCallback(() => {
 		const params = window.location.search
@@ -141,7 +78,7 @@ export const FacebookLogin = (props: FacebookLoginProps) => {
 			js.src = `https://connect.facebook.net/${language}/sdk.js`
 			fjs.parentNode.insertBefore(js, fjs)
 		})(document, "script", "facebook-jssdk")
-	}, [language])
+	}, [])
 
 	const responseApi = useCallback(
 		(authResponse) => {
@@ -197,20 +134,13 @@ export const FacebookLogin = (props: FacebookLoginProps) => {
 
 	const click = useCallback(
 		async (e) => {
-			if (!isSdkLoaded || isProcessing || isDisabled) {
+			if (!isSdkLoaded || isProcessing) {
 				return
 			}
 			setIsProcessing(true)
-			if (typeof onClick === "function") {
-				onClick(e)
-				if (e.defaultPrevented) {
-					setIsProcessing(false)
-					return
-				}
-			}
 			const params = {
 				client_id: appId,
-				redirect_uri: redirectUri,
+				redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				state,
 				return_scopes: returnScopes,
 				scope,
@@ -247,33 +177,16 @@ export const FacebookLogin = (props: FacebookLoginProps) => {
 				})
 			}
 		},
-		[
-			isSdkLoaded,
-			isProcessing,
-			isDisabled,
-			scope,
-			onClick,
-			returnScopes,
-			responseType,
-			redirectUri,
-			disableMobileRedirect,
-			authType,
-			state,
-			isMobile,
-			appId,
-			checkLoginState,
-			onFailure,
-		],
+		[isSdkLoaded, isProcessing, checkLoginState, onFailure, authType, disableMobileRedirect, isMobile, returnScopes],
 	)
 
 	const propsForRender = useMemo(
 		() => ({
 			onClick: click,
-			isDisabled: !!isDisabled,
 			isProcessing,
 			isSdkLoaded,
 		}),
-		[click, isDisabled, isProcessing, isSdkLoaded],
+		[click, isProcessing, isSdkLoaded],
 	)
 
 	useEffect(() => {
@@ -302,21 +215,4 @@ export const FacebookLogin = (props: FacebookLoginProps) => {
 	}
 
 	return render(propsForRender)
-}
-
-FacebookLogin.defaultProps = {
-	redirectUri: typeof window !== "undefined" ? window.location.href : "/",
-	scope: "public_profile,email",
-	returnScopes: false,
-	xfbml: false,
-	cookie: false,
-	authType: "",
-	fields: "name",
-	version: "3.1",
-	language: "en_US",
-	disableMobileRedirect: true,
-	isMobile: getIsMobile(),
-	onFailure: null,
-	state: "facebookdirect",
-	responseType: "code",
 }
