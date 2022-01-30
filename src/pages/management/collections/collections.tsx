@@ -36,10 +36,7 @@ export const CollectionsPage: React.FC = () => {
 	useEffect(() => {
 		if (user) return
 
-		const userTimeout = setTimeout(() => {
-			history.push("/login")
-		}, 2000)
-		return () => clearTimeout(userTimeout)
+		history.push("/login")
 	}, [user, history])
 
 	if (!user) {
@@ -91,12 +88,12 @@ export const CollectionsPage: React.FC = () => {
 				sx={{
 					width: "100%",
 					maxWidth: "1768px",
-					margin: "0 auto",
+					margin: "auto",
 					borderRadius: 0,
 					backgroundColor: "transparent",
 					display: "flex",
 					flexDirection: "column",
-					justifyContent: "space-between",
+					justifyContent: "center",
 				}}
 			>
 				<CollectionAssets collection="SUPREMACY" userID={user.id} />

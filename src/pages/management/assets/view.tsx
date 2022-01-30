@@ -1,4 +1,4 @@
-import { Box, Paper, styled, Typography } from "@mui/material"
+import { Box, Paper, Skeleton, styled, Typography } from "@mui/material"
 import { Link, useHistory, useParams } from "react-router-dom"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import { FancyButton } from "../../../components/fancyButton"
@@ -22,6 +22,8 @@ export const AssetPage = () => {
 	const [attributes, setAttributes] = useState<Asset[]>([])
 
 	const [submitting, setSubmitting] = useState(false)
+	const [loading, setLoading] = useState(false)
+
 	const [frozen, setFrozen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
 
@@ -63,7 +65,7 @@ export const AssetPage = () => {
 				tokenID: parseInt(tokenID),
 			},
 		)
-	}, [user?.id, asset?.tokenID, subscribe, tokenID, send])
+	}, [user?.id, subscribe, tokenID])
 
 	// Effect: get/set attributes as assets
 	useEffect(() => {
@@ -86,17 +88,10 @@ export const AssetPage = () => {
 
 	useEffect(() => {
 		if (user) return
-		const userTimeout = setTimeout(() => {
-			history.push("/login")
-		}, 2000)
-		return () => clearTimeout(userTimeout)
-	}, [user, history])
+		history.push("/login")
+	}, [user])
 
-	if (!user) {
-		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
-	}
-
-	if (!asset || !attributes) return <></>
+	// if (!asset || !attributes) return <Skeleton variant="rectangular" width={210} height={118} />
 
 	return (
 		<Box
@@ -121,8 +116,10 @@ export const AssetPage = () => {
 					sx={{
 						display: "flex",
 						width: "100%",
-
+						flexDirection: "column",
+						alignContent: "center",
 						justifyContent: "center",
+						alignItems: "center",
 					}}
 				>
 					<Box
@@ -135,12 +132,22 @@ export const AssetPage = () => {
 							marginBottom: "5px",
 						}}
 					/>
+
+					<Typography
+						variant="h1"
+						sx={{
+							textTransform: "uppercase",
+							fontSize: "2rem",
+							color: colors.neonPink,
+						}}
+					>
+						Collection
+					</Typography>
 				</Box>
 			</Paper>
 
 			<Paper
 				sx={{
-					width: "100%",
 					maxWidth: "1768px",
 					margin: "0 auto",
 					borderRadius: 0,
@@ -148,6 +155,11 @@ export const AssetPage = () => {
 					display: "flex",
 					flexDirection: "column",
 					justifyContent: "space-between",
+
+					"@media (max-width: 1100px)": {
+						flexDirection: "column",
+						margin: "0 ",
+					},
 				}}
 			>
 				<AssetContainer>
@@ -155,128 +167,185 @@ export const AssetPage = () => {
 						sx={{
 							width: "100%",
 							maxWidth: "1768px",
+							overflowY: "hidden",
 							margin: "50px",
 							borderRadius: 0,
 							backgroundColor: "transparent",
 							display: "flex",
-							"@media (max-width: 1380px)": {},
+							"@media (max-width: 1100px)": {
+								flexDirection: "column",
+								margin: "0",
+							},
 						}}
 					>
 						{/* image */}
-						<Box
-							component="img"
-							src={PlaceholderMech}
-							alt="placeholder"
-							sx={{
-								// width: "566px",
-								marginRight: "50px",
-								"@media (max-width: 1380px)": {
-									height: "300px",
-								},
-							}}
-						/>
+						{!asset && (
+							<Skeleton
+								variant="rectangular"
+								sx={{
+									marginRight: "50px",
+								}}
+								width={210}
+								height={118}
+							/>
+						)}
+
+						{!!asset && (
+							<Box
+								component="img"
+								src={PlaceholderMech}
+								alt="placeholder"
+								sx={{
+									marginRight: "50px",
+									"@media (max-width: 1100px)": {
+										// height: "10%",
+										marginRight: "0",
+									},
+								}}
+							/>
+						)}
 
 						{/* Info */}
-						<Box
-							sx={{
-								display: "flex",
-								flexDirection: "column",
-								maxWidth: "800px",
-								alignItems: "space-between",
-								justifyContent: "flex-start",
-								marginRight: "50px",
-							}}
-						>
-							<Section>
-								<Box
+						{!asset && <Skeleton variant="rectangular" width={"100%"} sx={{ minWidth: "200px" }} height={118} />}
+						{!!asset && (
+							<Box
+								sx={{
+									display: "flex",
+									flexDirection: "column",
+									maxWidth: "800px",
+									alignItems: "space-between",
+									justifyContent: "flex-start",
+									marginRight: "50px",
+									"@media (max-width: 1100px)": {
+										marginLeft: "50px",
+									},
+								}}
+							>
+								<Section
 									sx={{
-										display: "flex",
-										marginBottom: "48px",
+										"@media (max-width: 1100px)": {
+											marginTop: "-120px",
+										},
 									}}
 								>
-									<Typography
-										variant="h1"
+									<Box
 										sx={{
-											textTransform: "uppercase",
-											fontSize: "33px",
+											display: "flex",
+											marginBottom: "48px",
+											"@media (max-width: 1380px)": {
+												flexDirection: "column",
+												textAlign: "center",
+											},
 										}}
 									>
-										{asset.name}
-									</Typography>
-									{(asset.frozenAt || frozen) && (
 										<Typography
 											variant="h1"
-											color={colors.skyBlue}
 											sx={{
 												textTransform: "uppercase",
 												fontSize: "33px",
-												marginLeft: "1rem",
 											}}
 										>
-											(Frozen)
+											{asset.name}
 										</Typography>
-									)}
-								</Box>
+										{/* if owner, not frozen and is a war machine */}
 
-								<Typography
-									variant="body1"
-									fontSize={18}
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									{asset.description}
-								</Typography>
-							</Section>
-
-							<Section>
-								<Typography
-									variant="h3"
-									color={colors.skyBlue}
-									sx={{
-										textTransform: "uppercase",
-										marginBottom: "37px",
-									}}
-								>
-									Properties
-								</Typography>
-
-								<PropertiesSection>
-									{attributes.map((attr, i) => {
-										return (
-											<Link key={i} style={{ textDecoration: "none" }} to={`/collections/assets/${attr.tokenID}`}>
-												<Box
-													sx={{
-														width: 170,
-														height: 170,
-														margin: "10px 10px 10px 0px",
-														backgroundColor: "transparent",
-														border: "2px solid #fff",
-													}}
-												></Box>
-												<Typography
-													variant="h5"
-													color={colors.neonPink}
-													sx={{
-														textTransform: "uppercase",
-													}}
+										{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
+											<Box
+												sx={{
+													marginLeft: "100px",
+													display: "none",
+													"@media (max-width: 1380px)": {
+														display: "block",
+														marginLeft: "0px",
+													},
+												}}
+											>
+												<FancyButton
+													loading={submitting}
+													onClick={onDeploy}
+													sx={{ fontSize: "1.438rem", padding: "1rem 2.25rem" }}
+													fancy
 												>
-													{attr.name}
-												</Typography>
-											</Link>
-										)
-									})}
-								</PropertiesSection>
-							</Section>
-						</Box>
+													Deploy
+												</FancyButton>
+											</Box>
+										)}
+										{(asset.frozenAt || frozen) && (
+											<Typography
+												variant="h1"
+												color={colors.skyBlue}
+												sx={{
+													textTransform: "uppercase",
+													fontSize: "33px",
+													marginLeft: "1rem",
+												}}
+											>
+												(Frozen)
+											</Typography>
+										)}
+									</Box>
+
+									<Typography
+										variant="body1"
+										fontSize={18}
+										sx={{
+											textTransform: "uppercase",
+										}}
+									>
+										{asset.description}
+									</Typography>
+								</Section>
+
+								<Section>
+									<Typography
+										variant="h3"
+										color={colors.skyBlue}
+										sx={{
+											textTransform: "uppercase",
+											marginBottom: "37px",
+										}}
+									>
+										Properties
+									</Typography>
+
+									<PropertiesSection>
+										{attributes.map((attr, i) => {
+											return (
+												<Link key={i} style={{ textDecoration: "none" }} to={`/collections/assets/${attr.tokenID}`}>
+													<Box
+														sx={{
+															width: 170,
+															height: 170,
+															margin: "10px 10px 10px 0px",
+															backgroundColor: "transparent",
+															border: "2px solid #fff",
+														}}
+													></Box>
+													<Typography
+														variant="h5"
+														color={colors.neonPink}
+														sx={{
+															textTransform: "uppercase",
+														}}
+													>
+														{attr.name}
+													</Typography>
+												</Link>
+											)
+										})}
+									</PropertiesSection>
+								</Section>
+							</Box>
+						)}
 
 						{/* if owner, not frozen and is a war machine */}
-						{asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
+						{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
 							<Box
 								sx={{
 									marginLeft: "100px",
 									"@media (max-width: 1380px)": {
 										marginLeft: "0px",
+										display: "none",
 									},
 								}}
 							>
@@ -295,7 +364,7 @@ export const AssetPage = () => {
 const AssetContainer = styled((props) => <Box {...props} />)(({ theme }) => ({
 	display: "flex",
 	overflowX: "auto",
-	margin: "76px",
+	// margin: "76px",
 	backgroundColor: theme.palette.background.paper,
 }))
 
