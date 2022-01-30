@@ -10,7 +10,6 @@ import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { useState, useEffect } from "react"
-import { Loading } from "../../../components/loading"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -22,7 +21,6 @@ export const AssetPage = () => {
 	const [attributes, setAttributes] = useState<Asset[]>([])
 
 	const [submitting, setSubmitting] = useState(false)
-	const [loading, setLoading] = useState(false)
 
 	const [frozen, setFrozen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
@@ -91,14 +89,13 @@ export const AssetPage = () => {
 		history.push("/login")
 	}, [user])
 
-	// if (!asset || !attributes) return <Skeleton variant="rectangular" width={210} height={118} />
-
 	return (
 		<Box
 			sx={{
 				display: "flex",
 				flexDirection: "column",
 				minHeight: "100vh",
+				overflowX: "hidden",
 			}}
 		>
 			<Navbar />
@@ -120,6 +117,7 @@ export const AssetPage = () => {
 						alignContent: "center",
 						justifyContent: "center",
 						alignItems: "center",
+						overflow: "hidden",
 					}}
 				>
 					<Box
@@ -127,9 +125,11 @@ export const AssetPage = () => {
 						src={SupremacyLogo}
 						alt="Collection Logo"
 						sx={{
-							width: "306px",
 							height: 35,
-							marginBottom: "5px",
+							marginBottom: 5,
+							"@media (max-width: 550px)": {
+								height: 30,
+							},
 						}}
 					/>
 
@@ -155,11 +155,7 @@ export const AssetPage = () => {
 					display: "flex",
 					flexDirection: "column",
 					justifyContent: "space-between",
-
-					"@media (max-width: 1100px)": {
-						flexDirection: "column",
-						margin: "0 ",
-					},
+					overflow: "hidden",
 				}}
 			>
 				<AssetContainer>
@@ -167,14 +163,14 @@ export const AssetPage = () => {
 						sx={{
 							width: "100%",
 							maxWidth: "1768px",
-							overflowY: "hidden",
+							overflow: "hidden",
 							margin: "50px",
 							borderRadius: 0,
 							backgroundColor: "transparent",
 							display: "flex",
-							"@media (max-width: 1100px)": {
+							"@media (max-width: 550px)": {
 								flexDirection: "column",
-								margin: "0",
+								margin: 0,
 							},
 						}}
 					>
@@ -192,17 +188,34 @@ export const AssetPage = () => {
 
 						{!!asset && (
 							<Box
-								component="img"
-								src={PlaceholderMech}
-								alt="placeholder"
 								sx={{
-									marginRight: "50px",
-									"@media (max-width: 1100px)": {
-										// height: "10%",
-										marginRight: "0",
+									"@media (max-width: 550px)": {
+										maskImage: "linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 50%, transparent 100%)",
 									},
 								}}
-							/>
+							>
+								<Box
+									component="img"
+									src={PlaceholderMech}
+									alt="placeholder"
+									sx={{
+										marginRight: "50px",
+										"@media (max-width: 1300px)": {
+											height: "400px",
+										},
+										"@media (max-width: 1000px)": {
+											height: "300px",
+										},
+										"@media (max-width: 550px)": {
+											height: "auto",
+											margin: 0,
+										},
+										"@media (max-width: 470px)": {
+											width: "100%",
+										},
+									}}
+								/>
+							</Box>
 						)}
 
 						{/* Info */}
@@ -216,15 +229,16 @@ export const AssetPage = () => {
 									alignItems: "space-between",
 									justifyContent: "flex-start",
 									marginRight: "50px",
-									"@media (max-width: 1100px)": {
-										marginLeft: "50px",
+									"@media (max-width: 550px)": {
+										marginRight: 0,
 									},
 								}}
 							>
 								<Section
 									sx={{
-										"@media (max-width: 1100px)": {
+										"@media (max-width: 550px)": {
 											marginTop: "-120px",
+											justifyContent: "center",
 										},
 									}}
 								>
@@ -232,8 +246,10 @@ export const AssetPage = () => {
 										sx={{
 											display: "flex",
 											marginBottom: "48px",
-											"@media (max-width: 1380px)": {
+											"@media (max-width: 1000px)": {
 												flexDirection: "column",
+											},
+											"@media (max-width: 550px)": {
 												textAlign: "center",
 											},
 										}}
@@ -242,7 +258,8 @@ export const AssetPage = () => {
 											variant="h1"
 											sx={{
 												textTransform: "uppercase",
-												fontSize: "33px",
+												fontSize: "2rem",
+												zIndex: 3,
 											}}
 										>
 											{asset.name}
@@ -254,18 +271,14 @@ export const AssetPage = () => {
 												sx={{
 													marginLeft: "100px",
 													display: "none",
-													"@media (max-width: 1380px)": {
+													"@media (max-width: 1000px)": {
+														marginTop: "5px",
 														display: "block",
 														marginLeft: "0px",
 													},
 												}}
 											>
-												<FancyButton
-													loading={submitting}
-													onClick={onDeploy}
-													sx={{ fontSize: "1.438rem", padding: "1rem 2.25rem" }}
-													fancy
-												>
+												<FancyButton loading={submitting} onClick={onDeploy} sx={{ fontSize: "1.438rem", padding: "1rem 1rem" }} fancy>
 													Deploy
 												</FancyButton>
 											</Box>
@@ -290,19 +303,28 @@ export const AssetPage = () => {
 										fontSize={18}
 										sx={{
 											textTransform: "uppercase",
+											"@media (max-width: 550px)": {
+												display: "none",
+											},
 										}}
 									>
 										{asset.description}
 									</Typography>
 								</Section>
 
-								<Section>
+								<Section
+									sx={{
+										"@media (max-width: 550px)": {
+											margin: "0 40px 0 40px",
+										},
+									}}
+								>
 									<Typography
 										variant="h3"
 										color={colors.skyBlue}
 										sx={{
 											textTransform: "uppercase",
-											marginBottom: "37px",
+											marginBottom: "30px",
 										}}
 									>
 										Properties
@@ -319,6 +341,10 @@ export const AssetPage = () => {
 															margin: "10px 10px 10px 0px",
 															backgroundColor: "transparent",
 															border: "2px solid #fff",
+															"@media (max-width: 550px)": {
+																width: 140,
+																height: 140,
+															},
 														}}
 													></Box>
 													<Typography
@@ -326,6 +352,7 @@ export const AssetPage = () => {
 														color={colors.neonPink}
 														sx={{
 															textTransform: "uppercase",
+															textAlign: "center",
 														}}
 													>
 														{attr.name}
@@ -342,8 +369,8 @@ export const AssetPage = () => {
 						{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
 							<Box
 								sx={{
-									marginLeft: "100px",
-									"@media (max-width: 1380px)": {
+									// marginLeft: "100px",
+									"@media (max-width: 1000px)": {
 										marginLeft: "0px",
 										display: "none",
 									},
@@ -363,8 +390,7 @@ export const AssetPage = () => {
 
 const AssetContainer = styled((props) => <Box {...props} />)(({ theme }) => ({
 	display: "flex",
-	overflowX: "auto",
-	// margin: "76px",
+	overflowX: "hidden",
 	backgroundColor: theme.palette.background.paper,
 }))
 
