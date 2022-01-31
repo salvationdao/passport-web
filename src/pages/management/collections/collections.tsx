@@ -36,10 +36,7 @@ export const CollectionsPage: React.FC = () => {
 	useEffect(() => {
 		if (user) return
 
-		const userTimeout = setTimeout(() => {
-			history.push("/login")
-		}, 2000)
-		return () => clearTimeout(userTimeout)
+		history.push("/login")
 	}, [user, history])
 
 	if (!user) {
@@ -73,21 +70,7 @@ export const CollectionsPage: React.FC = () => {
 						justifyContent: "space-between",
 					}}
 				>
-					<Typography
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						Nfts Owned
-					</Typography>
-
-					<Typography
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						Traded
-					</Typography>
+					<HeaderStat label={"NFTs Owned"} value={"45"} />
 
 					<Typography
 						variant="h1"
@@ -97,22 +80,7 @@ export const CollectionsPage: React.FC = () => {
 					>
 						Badges
 					</Typography>
-
-					<Typography
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						Nfts Owned
-					</Typography>
-
-					<Typography
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						Traded
-					</Typography>
+					<HeaderStat label={"Traded"} value={"45"} />
 				</Box>
 			</Paper>
 
@@ -120,12 +88,12 @@ export const CollectionsPage: React.FC = () => {
 				sx={{
 					width: "100%",
 					maxWidth: "1768px",
-					margin: "0 auto",
+					margin: "auto",
 					borderRadius: 0,
 					backgroundColor: "transparent",
 					display: "flex",
 					flexDirection: "column",
-					justifyContent: "space-between",
+					justifyContent: "center",
 				}}
 			>
 				<CollectionAssets collection="SUPREMACY" userID={user.id} />
@@ -184,8 +152,9 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 					}}
 				/>
 
-				<ViewCollectionButton onClick={() => history.push("/collections/assets/" + collection)}>
+				<ViewCollectionButton onClick={() => history.push("/collections/" + collection)}>
 					<Typography
+						variant="h4"
 						sx={{
 							textAlign: "center",
 							textTransform: "uppercase",
@@ -198,12 +167,9 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 
 			<AssetsSection>
 				{assets.map((a) => {
-					const attrObj = JSON.parse(a.attributes)
-					console.log("attributes ", attrObj)
-					console.log(a)
-
 					return (
 						<AssetCard
+							tokenID={a.tokenID}
 							key={a.tokenID}
 							name="Candice mk ii"
 							price="0.9999"
@@ -218,7 +184,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 	)
 }
 
-const ViewPropertiesButton = styled((props) => <FancyButton fancy borderColor={colors.skyBlue} {...props} />)(({ theme }) => ({
+const ViewPropertiesButton = styled((props: { onClick: () => void }) => <FancyButton fancy borderColor={colors.skyBlue} {...props} />)(({ theme }) => ({
 	border: `2px solid ${theme.palette.secondary.main}`,
 	width: "100%",
 }))
@@ -236,6 +202,36 @@ const ViewCollectionButton = styled((props: { onClick: () => void }) => <Button 
 	},
 }))
 
+const HeaderStat: React.FC<{ label: string; value: string }> = ({ label, value }) => {
+	return (
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				textAlign: "center",
+			}}
+		>
+			<Typography
+				color={colors.neonPink}
+				variant="h2"
+				sx={{
+					textTransform: "uppercase",
+				}}
+			>
+				{value}
+			</Typography>
+			<Typography
+				sx={{
+					textTransform: "uppercase",
+					fontSize: "1.4rem",
+				}}
+			>
+				{label}
+			</Typography>
+		</Box>
+	)
+}
+
 const AssetsSection = styled((props) => <Box {...props} />)(({ theme }) => ({
 	display: "flex",
 	overflowX: "auto",
@@ -244,6 +240,7 @@ const AssetsSection = styled((props) => <Box {...props} />)(({ theme }) => ({
 }))
 
 interface AssetCardProps extends BoxProps {
+	tokenID: number
 	name: string
 	price: string
 	rarity: Rarity
@@ -251,7 +248,8 @@ interface AssetCardProps extends BoxProps {
 	currency: Currency
 }
 
-const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, currency }) => {
+const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, currency, tokenID }) => {
+	const history = useHistory()
 	let currencyLogo = EthLogo
 	if (currency === Currency.Ethereum) {
 		currencyLogo = EthLogo
@@ -291,7 +289,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 		>
 			{/* Name */}
 			<Typography
-				variant="h3"
+				variant="h4"
 				sx={{
 					textAlign: "center",
 					textTransform: "uppercase",
@@ -376,7 +374,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 						}}
 					>
 						<Typography
-							variant="h5"
+							variant="h4"
 							sx={{
 								width: "100%",
 								whiteSpace: "nowrap",
@@ -392,15 +390,14 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 					<Box component="img" src={rarityIcon} alt="Rarity Icon" />
 				</Box>
 			</Box>
-			<ViewPropertiesButton>
+			<ViewPropertiesButton onClick={() => history.push("/collections/assets/" + tokenID)}>
 				<Typography
+					variant="h4"
 					sx={{
 						textTransform: "uppercase",
 						width: "100%",
 						maxWidth: "180px",
-						overflow: "hidden",
 						whiteSpace: "nowrap",
-						textOverflow: "ellipsis",
 						textAlign: "center",
 					}}
 				>
