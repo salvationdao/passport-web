@@ -580,6 +580,55 @@ const ProfileEdit: React.FC = () => {
 				</Section>
 
 				<Section>
+					<Typography variant="subtitle1">Google</Typography>
+					{!!user.googleID ? (
+						<>
+							<TextField label="Google ID" value={user.googleID} disabled multiline />
+							<Button
+								onClick={async () => {
+									try {
+										await removeGoogle(user.id, user.username)
+									} catch (e) {
+										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									}
+								}}
+								variant="contained"
+								color="error"
+							>
+								Remove Google
+							</Button>
+						</>
+					) : (
+						<GoogleLogin
+							clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
+							buttonText="Login"
+							onSuccess={async (response) => {
+								try {
+									if (!!response.code) {
+										setErrorMessage(`Couldn't connect to Google: ${response.code}`)
+										return
+									}
+									setErrorMessage(undefined)
+									const r = response as GoogleLoginResponse
+									await addGoogle(r.tokenId)
+								} catch (e) {
+									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+								}
+							}}
+							onFailure={(error) => {
+								setErrorMessage(error.message)
+							}}
+							cookiePolicy={"single_host_origin"}
+							render={(props) => (
+								<Button onClick={props.onClick} disabled={props.disabled} startIcon={<GoogleIcon />} variant="contained">
+									Connect Google to account
+								</Button>
+							)}
+						/>
+					)}
+				</Section>
+
+				<Section>
 					<Typography variant="subtitle1">Facebook</Typography>
 					{!!user.facebookID ? (
 						<>
@@ -627,55 +676,6 @@ const ProfileEdit: React.FC = () => {
 								>
 									Connect Facebook to account
 								</LoadingButton>
-							)}
-						/>
-					)}
-				</Section>
-
-				<Section>
-					<Typography variant="subtitle1">Google</Typography>
-					{!!user.googleID ? (
-						<>
-							<TextField label="Google ID" value={user.googleID} disabled multiline />
-							<Button
-								onClick={async () => {
-									try {
-										await removeGoogle(user.id, user.username)
-									} catch (e) {
-										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
-									}
-								}}
-								variant="contained"
-								color="error"
-							>
-								Remove Google
-							</Button>
-						</>
-					) : (
-						<GoogleLogin
-							clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
-							buttonText="Login"
-							onSuccess={async (response) => {
-								try {
-									if (!!response.code) {
-										setErrorMessage(`Couldn't connect to Google: ${response.code}`)
-										return
-									}
-									setErrorMessage(undefined)
-									const r = response as GoogleLoginResponse
-									await addGoogle(r.tokenId)
-								} catch (e) {
-									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
-								}
-							}}
-							onFailure={(error) => {
-								setErrorMessage(error.message)
-							}}
-							cookiePolicy={"single_host_origin"}
-							render={(props) => (
-								<Button onClick={props.onClick} disabled={props.disabled} startIcon={<GoogleIcon />} variant="contained">
-									Connect Google to account
-								</Button>
 							)}
 						/>
 					)}

@@ -25,20 +25,6 @@ export interface TokenLoginRequest {
 	twitchExtensionJWT: string | null
 }
 
-export interface GoogleLoginRequest {
-	token: string
-	admin?: boolean
-	username?: string
-	sessionID?: string
-}
-
-export interface FacebookLoginRequest {
-	token: string
-	admin?: boolean
-	username?: string
-	sessionID?: string
-}
-
 export interface TokenLoginResponse {
 	user: User
 }
@@ -47,36 +33,75 @@ export interface GetNonceResponse {
 	nonce: string
 }
 
-export interface WalletLoginRequest {
+export interface WalletSignUpRequest {
 	publicAddress: string
-	signature: string
-	admin?: boolean
-	username?: string
+	username: string
 	sessionID?: string
 }
 
-export interface WalletLoginResponse {
-	user: User
+export interface WalletLoginRequest {
+	publicAddress: string
+	signature: string
+	sessionID?: string
+}
+
+export interface GoogleSignUpRequest {
 	token: string
+	username: string
+	sessionID?: string
+}
+
+export interface GoogleLoginRequest {
+	token: string
+	sessionID?: string
+}
+
+export interface FacebookSignUpRequest {
+	token: string
+	username: string
+	sessionID?: string
+}
+
+export interface FacebookLoginRequest {
+	token: string
+	sessionID?: string
+}
+
+export interface TwitchSignUpRequest {
+	token: string
+	username: string
+	website: boolean
+	sessionID?: string
 }
 
 export interface TwitchLoginRequest {
 	token: string
-	username?: string
-	website?: boolean
+	website: boolean
+	sessionID?: string
+}
+
+export interface TwitterSignUpRequest {
+	oauthToken: string
+	oauthVerifier: string
+	username: string
 	sessionID?: string
 }
 
 export interface TwitterLoginRequest {
 	oauthToken: string
 	oauthVerifier: string
+	sessionID?: string
+}
+
+export interface DiscordSignUpRequest {
+	code: string
 	username?: string
 	sessionID?: string
+	redirectURI: string
 }
 
 export interface DiscordLoginRequest {
 	code: string
-	username?: string
 	sessionID?: string
 	redirectURI: string
 }

@@ -8,8 +8,11 @@ import {
 	AddTwitchRequest,
 	AddTwitterRequest,
 	DiscordLoginRequest,
+	DiscordSignUpRequest,
 	FacebookLoginRequest,
+	FacebookSignUpRequest,
 	GoogleLoginRequest,
+	GoogleSignUpRequest,
 	PasswordLoginRequest,
 	PasswordLoginResponse,
 	RemoveServiceRequest,
@@ -17,10 +20,12 @@ import {
 	TokenLoginRequest,
 	TokenLoginResponse,
 	TwitchLoginRequest,
+	TwitchSignUpRequest,
 	TwitterLoginRequest,
+	TwitterSignUpRequest,
 	VerifyAccountResponse,
 	WalletLoginRequest,
-	WalletLoginResponse,
+	WalletSignUpRequest,
 } from "../types/auth"
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
@@ -125,19 +130,80 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Logs a User in using a Google oauth token
-	 *
-	 * @param token Google token id
+	 * Signs a user up using a Metamask public address
 	 */
-	const loginGoogle = useCallback(
-		async (token: string, username?: string) => {
+	const signUpMetamask = useCallback(
+		async (username: string): Promise<string | null> => {
+			if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
+
+			try {
+				const resp = await send<PasswordLoginResponse, WalletSignUpRequest>(HubKey.AuthSignUpWallet, {
+					publicAddress: account,
+					username,
+					sessionID,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return null
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				localStorage.clear()
+				setUser(null)
+				return typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return null
+		},
+		[send, state, account, metaMaskState, sign, sessionID],
+	)
+
+	/**
+	 * Logs a User in using a Metamask public address
+	 *
+	 * @param token Metamask public address
+	 */
+	const loginMetamask = useCallback(async (): Promise<string | null> => {
+		if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
+
+		try {
+			let signature = await sign()
+			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
+				publicAddress: account,
+				signature,
+				sessionID,
+			})
+			setUser(resp.user)
+			if (!resp || !resp.user) {
+				localStorage.clear()
+				setUser(null)
+				return null
+			}
+			setUser(resp.user)
+			localStorage.setItem("token", resp.token)
+			setAuthorised(true)
+		} catch (e) {
+			localStorage.clear()
+			setUser(null)
+			return typeof e === "string" ? e : "Something went wrong, please try again."
+		}
+		return null
+	}, [send, state, account, metaMaskState, sign, sessionID])
+
+	/**
+	 * Signs a user up using a Google oauth token
+	 */
+	const signUpGoogle = useCallback(
+		async (token: string, username: string) => {
 			if (state !== WebSocket.OPEN) {
 				return null
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, GoogleLoginRequest>(HubKey.AuthLoginGoogle, {
+				const resp = await send<PasswordLoginResponse, GoogleSignUpRequest>(HubKey.AuthSignUpGoogle, {
 					token,
-					admin,
 					username,
 					sessionID,
 				})
@@ -157,23 +223,52 @@ export const AuthContainer = createContainer(() => {
 			}
 			return null
 		},
-		[send, state, admin, sessionID],
+		[send, state, sessionID],
 	)
 
 	/**
-	 * Logs a User in using a Facebook oauth token
-	 *
-	 * @param token Facebook token id
+	 * Logs a User in using a Google oauth token
 	 */
-	const loginFacebook = useCallback(
-		async (token: string, username?: string) => {
+	const loginGoogle = useCallback(
+		async (token: string) => {
+			if (state !== WebSocket.OPEN) {
+				return null
+			}
+			try {
+				const resp = await send<PasswordLoginResponse, GoogleLoginRequest>(HubKey.AuthLoginGoogle, {
+					token,
+					sessionID,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return null
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				localStorage.clear()
+				setUser(null)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return null
+		},
+		[send, state, sessionID],
+	)
+
+	/**
+	 * Signs a user up using a Facebook oauth token
+	 */
+	const signUpFacebook = useCallback(
+		async (token: string, username: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, FacebookLoginRequest>(HubKey.AuthLoginFacebook, {
+				const resp = await send<PasswordLoginResponse, FacebookSignUpRequest>(HubKey.AuthSignUpFacebook, {
 					token,
-					admin,
 					username,
 					sessionID,
 				})
@@ -194,59 +289,54 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, admin, sessionID],
+		[send, state, sessionID],
 	)
 
 	/**
-	 * Logs a User in using a Metamask public address
+	 * Logs a User in using a Facebook oauth token
 	 *
-	 * @param token Metamask public address
+	 * @param token Facebook token id
 	 */
-	const loginMetamask = useCallback(
-		async (username?: string): Promise<string | null> => {
-			if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
-
+	const loginFacebook = useCallback(
+		async (token: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
 			try {
-				let signature = ""
-				if (username === undefined || username === "") {
-					signature = await sign()
-				}
-				const resp = await send<WalletLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
-					publicAddress: account,
-					signature,
-					admin,
-					username,
+				const resp = await send<PasswordLoginResponse, FacebookLoginRequest>(HubKey.AuthLoginFacebook, {
+					token,
 					sessionID,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
 					setUser(null)
-					return null
+					return
 				}
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
+
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
-				return typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			return null
+			return
 		},
-		[send, state, admin, account, metaMaskState, sign, sessionID],
+		[send, state, sessionID],
 	)
 
 	/**
-	 * Logs a User in using a Twitch JWT
+	 * Signs a user up using a Twitch JWT
 	 */
-	const loginTwitch = useCallback(
-		async (token: string, username?: string) => {
+	const signUpTwitch = useCallback(
+		async (token: string, username: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TwitchLoginRequest>(HubKey.AuthLoginTwitch, {
+				const resp = await send<PasswordLoginResponse, TwitchSignUpRequest>(HubKey.AuthSignUpTwitch, {
 					token,
 					username,
 					sessionID,
@@ -272,15 +362,48 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Logs a User in using a Twitter OAuth code
+	 * Logs a User in using a Twitch JWT
 	 */
-	const loginTwitter = useCallback(
-		async (oauthToken: string, oauthVerifier: string, username?: string) => {
+	const loginTwitch = useCallback(
+		async (token: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TwitterLoginRequest>(HubKey.AuthLoginTwitter, {
+				const resp = await send<PasswordLoginResponse, TwitchLoginRequest>(HubKey.AuthLoginTwitch, {
+					token,
+					sessionID,
+					website: true,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				localStorage.clear()
+				setUser(null)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state, sessionID],
+	)
+
+	/**
+	 * Signs a user up using a Twitter OAuth token and verifier
+	 */
+	const signUpTwitter = useCallback(
+		async (oauthToken: string, oauthVerifier: string, username: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<PasswordLoginResponse, TwitterSignUpRequest>(HubKey.AuthSignUpTwitter, {
 					oauthToken,
 					oauthVerifier,
 					username,
@@ -306,15 +429,48 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Logs a User in using a Discord OAuth code
+	 * Logs a User in using a Twitter OAuth code
 	 */
-	const loginDiscord = useCallback(
-		async (code: string, username?: string) => {
+	const loginTwitter = useCallback(
+		async (oauthToken: string, oauthVerifier: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, DiscordLoginRequest>(HubKey.AuthLoginDiscord, {
+				const resp = await send<PasswordLoginResponse, TwitterLoginRequest>(HubKey.AuthLoginTwitter, {
+					oauthToken,
+					oauthVerifier,
+					sessionID,
+				})
+				setUser(resp.user)
+				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				localStorage.clear()
+				setUser(null)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state, sessionID],
+	)
+
+	/**
+	 * Signs a new user up using a Discord OAuth code
+	 */
+	const signUpDiscord = useCallback(
+		async (code: string, username: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<PasswordLoginResponse, DiscordSignUpRequest>(HubKey.AuthSignUpDiscord, {
 					code,
 					username,
 					sessionID,
@@ -340,54 +496,36 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Removes a User's Facebook account
+	 * Logs a user in using a Discord OAuth code
 	 */
-	const removeFacebook = useCallback(
-		async (id: string, username: string) => {
+	const loginDiscord = useCallback(
+		async (code: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
-				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveFacebook, {
-					id,
-					username,
+				const resp = await send<PasswordLoginResponse, DiscordLoginRequest>(HubKey.AuthLoginDiscord, {
+					code,
+					sessionID,
+					redirectURI: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				})
+				setUser(resp.user)
 				if (!resp || !resp.user) {
+					localStorage.clear()
+					setUser(null)
 					return
 				}
 				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
 			} catch (e) {
+				localStorage.clear()
+				setUser(null)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
 		},
-		[send, state],
-	)
-
-	/**
-	 * Connects a User's existing account to Facebook
-	 *
-	 * @param token Facebook token
-	 */
-	const addFacebook = useCallback(
-		async (token: string) => {
-			if (state !== WebSocket.OPEN) {
-				return
-			}
-			try {
-				const resp = await send<AddServiceResponse, AddServiceRequest>(HubKey.UserAddFacebook, {
-					token,
-				})
-				if (!resp || !resp.user) {
-					return
-				}
-				setUser(resp.user)
-			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
-			}
-			return
-		},
-		[send, state],
+		[send, state, sessionID],
 	)
 
 	/**
@@ -417,8 +555,6 @@ export const AuthContainer = createContainer(() => {
 
 	/**
 	 * Connects a User's existing account to Google
-	 *
-	 * @param token Google token
 	 */
 	const addGoogle = useCallback(
 		async (token: string) => {
@@ -427,6 +563,55 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<AddServiceResponse, AddServiceRequest>(HubKey.UserAddGoogle, {
+					token,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Removes a User's Facebook account
+	 */
+	const removeFacebook = useCallback(
+		async (id: string, username: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<RemoveServiceResponse, RemoveServiceRequest>(HubKey.UserRemoveFacebook, {
+					id,
+					username,
+				})
+				if (!resp || !resp.user) {
+					return
+				}
+				setUser(resp.user)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			}
+			return
+		},
+		[send, state],
+	)
+
+	/**
+	 * Connects a User's existing account to Facebook
+	 */
+	const addFacebook = useCallback(
+		async (token: string) => {
+			if (state !== WebSocket.OPEN) {
+				return
+			}
+			try {
+				const resp = await send<AddServiceResponse, AddServiceRequest>(HubKey.UserAddFacebook, {
 					token,
 				})
 				if (!resp || !resp.user) {
@@ -722,12 +907,18 @@ export const AuthContainer = createContainer(() => {
 	return {
 		loginPassword,
 		loginToken,
+		signUpMetamask,
+		signUpGoogle,
+		signUpFacebook,
+		signUpTwitch,
+		signUpTwitter,
+		signUpDiscord,
+		loginMetamask,
 		loginGoogle,
 		loginFacebook,
 		loginTwitch,
 		loginTwitter,
 		loginDiscord,
-		loginMetamask,
 		addFacebook,
 		addGoogle,
 		addTwitch,

@@ -144,7 +144,7 @@ export const LoginPage: React.FC = () => {
 		<>
 			<Snackbar
 				open={!!errorMessage}
-				autoHideDuration={6000}
+				autoHideDuration={3000}
 				onClose={(_, reason) => {
 					if (reason === "clickaway") {
 						return

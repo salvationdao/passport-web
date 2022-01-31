@@ -60,7 +60,7 @@ export const DiscordLogin: React.FC<DiscordLoginProps> = ({ callback, onFailure,
 		const height = 600
 		const top = window.screenY + (window.outerHeight - height) / 2.5
 		const left = window.screenX + (window.outerWidth - width) / 2
-		const popup = window.open(href, "Connect Discord to XSYN Passport", `width=${width},height=${height},left=${left},top=${top},popup=1`)
+		const popup = window.open(href, "Connect Discord to XSYN Passport", `width=${width},height=${height},popup=1`)
 		if (!popup) {
 			if (onFailure) {
 				onFailure({
