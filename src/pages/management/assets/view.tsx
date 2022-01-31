@@ -44,9 +44,9 @@ export const AssetPage = () => {
 		} catch (e) {
 			setSubmitting(false)
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			setFrozen(true)
 		} finally {
 			setSubmitting(false)
-			setFrozen(true)
 			setErrorMessage(undefined)
 		}
 	}
