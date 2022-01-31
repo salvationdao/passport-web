@@ -8,6 +8,7 @@ import { CollectionsPage } from "./pages/management/collections/collections"
 import { Onboarding } from "./pages/onboarding"
 import { ProfilePage } from "./pages/profile"
 import { Settings } from "./pages/settings"
+import { ViewPage } from "./pages/viewPages"
 import { WalletPage } from "./pages/wallet"
 
 export const Routes = () => {
@@ -28,8 +29,9 @@ export const Routes = () => {
 					<Route path="/profile" component={ProfilePage} />
 					<Route path="/wallet" component={WalletPage} />
 
+					<Route path="/collections/assets/:tokenID" component={ViewPage.Asset} />
+					<Route path="/collections/:slug" component={CollectionsPage} />
 					<Route path="/collections" component={CollectionsPage} />
-					<Route path="/collections/assets/:slug" component={CollectionsPage} />
 
 					<Route path="/privacy-policy" component={Home} />
 					<Route path="/terms-and-conditions" component={Home} />

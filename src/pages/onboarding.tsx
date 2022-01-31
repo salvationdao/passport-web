@@ -60,7 +60,7 @@ const SignUp = () => {
 	const history = useHistory()
 	const { send } = useWebsocket()
 	const { user } = useAuth()
-	const { loginFacebook, loginGoogle, loginTwitch, loginTwitter, loginDiscord, setUser } = useAuth()
+	const { signUpFacebook, signUpGoogle, signUpTwitch, signUpTwitter, signUpDiscord, setUser } = useAuth()
 
 	const [loading, setLoading] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
@@ -80,6 +80,10 @@ const SignUp = () => {
 	}, [trigger])
 
 	// OAuth
+	const onMetaMaskLoginFailure = (error: string) => {
+		setErrorMessage(error)
+	}
+
 	const onGoogleLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
 		try {
 			setLoading(true)
@@ -91,17 +95,13 @@ const SignUp = () => {
 			}
 			setErrorMessage(undefined)
 			const r = response as GoogleLoginResponse
-			await loginGoogle(r.tokenId, username)
+			await signUpGoogle(r.tokenId, username)
 		} catch (e) {
-			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
 	}
 	const onGoogleLoginFailure = (error: Error) => {
 		setErrorMessage(error.message)
-	}
-
-	const onMetaMaskLoginFailure = (error: string) => {
-		setErrorMessage(error)
 	}
 
 	const onFacebookLogin = async (response: any) => {
@@ -114,14 +114,13 @@ const SignUp = () => {
 				return
 			}
 			const r = response as ReactFacebookLoginInfo
-			await loginFacebook(r.accessToken, username)
+			await signUpFacebook(r.accessToken, username)
 		} catch (e) {
-			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		} finally {
 			setLoading(false)
 		}
 	}
-
 	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
 		setErrorMessage(error.status || "Failed to signup with Facebook.")
 	}
@@ -129,12 +128,11 @@ const SignUp = () => {
 	const onTwitchLogin = async (response: ReactTwitchLoginResponse) => {
 		try {
 			setErrorMessage(undefined)
-			await loginTwitch(response.token, username)
+			await signUpTwitch(response.token, username)
 		} catch (e) {
-			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
 	}
-
 	const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Twitch.")
 	}
@@ -142,12 +140,11 @@ const SignUp = () => {
 	const onTwitterLogin = async (response: ReactTwitterLoginResponse) => {
 		try {
 			setErrorMessage(undefined)
-			await loginTwitter(response.token, response.verifier, username)
+			await signUpTwitter(response.token, response.verifier, username)
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
 	}
-
 	const onTwitterLoginFailure = (error: ReactTwitterFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Twitter.")
 	}
@@ -155,12 +152,11 @@ const SignUp = () => {
 	const onDiscordLogin = async (response: ReactDiscordLoginResponse) => {
 		try {
 			setErrorMessage(undefined)
-			await loginDiscord(response.code, username)
+			await signUpDiscord(response.code, username)
 		} catch (e) {
-			setErrorMessage(e === "string" ? e : "Something went wrong, please try again.")
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
 	}
-
 	const onDiscordLoginFailure = (error: ReactDiscordFailureResponse) => {
 		setErrorMessage(error.status || "Failed to login with Discord.")
 	}
@@ -359,8 +355,9 @@ const SignUp = () => {
 							</FancyButton>
 							<LoginMetaMask
 								type="submit"
-								signUp
-								username={username}
+								signUp={{
+									username,
+								}}
 								onClick={async () => {
 									if (!(await validUsername())) {
 										return false
@@ -804,7 +801,7 @@ const SignUp = () => {
 		<>
 			<Snackbar
 				open={!!errorMessage}
-				autoHideDuration={6000}
+				autoHideDuration={3000}
 				onClose={(_, reason) => {
 					if (reason === "clickaway") {
 						return

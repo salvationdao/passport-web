@@ -73,13 +73,21 @@ export interface Product {
 
 export interface Asset {
 	tokenID: number
+	userID: string
 	name: string
 	collection: string
 	description: string
 	externalURL: string
 	image: string
-	attributes: string
+	attributes: Attribute[]
 	createdAt: Date
 	updatedAt: Date
-	deletedAt?: any
+	frozenAt?: Date
+	deletedAt?: Date
+}
+
+export interface Attribute {
+	trait_type: string
+	token_id: number
+	value: string | number
 }
