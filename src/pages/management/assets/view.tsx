@@ -1,4 +1,4 @@
-import { Box, Paper, Skeleton, styled, Typography, Link as MuiLink } from "@mui/material"
+import { Box, Paper, Skeleton, styled, Typography, Link as MuiLink, Snackbar, Alert } from "@mui/material"
 import { Link, useHistory, useParams } from "react-router-dom"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import { FancyButton } from "../../../components/fancyButton"
@@ -24,7 +24,6 @@ export const AssetPage = () => {
 
 	const [submitting, setSubmitting] = useState(false)
 
-	const [frozen, setFrozen] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
 
 	const isWarMachine = (): boolean => {
@@ -42,9 +41,10 @@ export const AssetPage = () => {
 			setSubmitting(false)
 			setErrorMessage(undefined)
 		} catch (e) {
+			console.log("")
+
 			setSubmitting(false)
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
-			setFrozen(true)
 		} finally {
 			setSubmitting(false)
 			setErrorMessage(undefined)
@@ -57,15 +57,14 @@ export const AssetPage = () => {
 		return subscribe<Asset>(
 			HubKey.AssetUpdated,
 			(payload) => {
-				if (!payload || !user || !user.id) return
+				if (!payload) return
 				setAsset(payload)
 			},
 			{
-				userID: user.id,
 				tokenID: parseInt(tokenID),
 			},
 		)
-	}, [user?.id, subscribe, tokenID])
+	}, [user?.id, subscribe, asset?.tokenID])
 
 	// Effect: get/set attributes as assets
 	useEffect(() => {
@@ -88,11 +87,29 @@ export const AssetPage = () => {
 
 	useEffect(() => {
 		if (user) return
-		history.push("/login")
-	}, [user])
+
+		const userTimeout = setTimeout(() => {
+			history.push("/")
+		}, 2000)
+		return () => clearTimeout(userTimeout)
+	}, [user, history])
 
 	return (
 		<>
+			<Snackbar
+				open={!!errorMessage}
+				autoHideDuration={6000}
+				onClose={(_, reason) => {
+					if (reason === "clickaway") {
+						return
+					}
+
+					setErrorMessage(undefined)
+				}}
+				message={errorMessage}
+			>
+				<Alert severity="error">{errorMessage}</Alert>
+			</Snackbar>
 			<Box
 				sx={{
 					display: "flex",
@@ -269,7 +286,7 @@ export const AssetPage = () => {
 											</Typography>
 											{/* if owner, not frozen and is a war machine */}
 
-											{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
+											{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
 												<Box
 													sx={{
 														marginLeft: "100px",
@@ -291,7 +308,7 @@ export const AssetPage = () => {
 													</FancyButton>
 												</Box>
 											)}
-											{(asset.frozenAt || frozen) && (
+											{asset.frozenAt && (
 												<Typography
 													variant="h3"
 													color={colors.skyBlue}
@@ -372,7 +389,7 @@ export const AssetPage = () => {
 							)}
 
 							{/* if owner, not frozen and is a war machine */}
-							{!!asset && asset.userID === user?.id && !asset.frozenAt && !frozen && isWarMachine() && (
+							{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
 								<Box
 									sx={{
 										"@media (max-width: 1000px)": {
