@@ -43,6 +43,10 @@ export const CollectionsPage: React.FC = () => {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
 
+	// get users collections
+
+	console.log("in collections page")
+
 	return (
 		<Box
 			sx={{
@@ -88,8 +92,8 @@ export const CollectionsPage: React.FC = () => {
 				sx={{
 					width: "100%",
 					maxWidth: "1768px",
-					margin: "auto",
-					borderRadius: 0,
+					margin: "0 auto",
+					borderRadius: "0",
 					backgroundColor: "transparent",
 					display: "flex",
 					flexDirection: "column",

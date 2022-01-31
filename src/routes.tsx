@@ -29,6 +29,8 @@ export const Routes = () => {
 					<Route path="/profile" component={ProfilePage} />
 					<Route path="/wallet" component={WalletPage} />
 
+					<Route path="/:username/collections" component={CollectionsPage} />
+
 					<Route path="/collections/assets/:tokenID" component={ViewPage.Asset} />
 					<Route path="/collections/:slug" component={CollectionsPage} />
 					<Route path="/collections" component={CollectionsPage} />
