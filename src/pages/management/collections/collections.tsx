@@ -16,7 +16,7 @@ import { AuthContainer } from "../../../containers"
 import { useWebsocket } from "../../../containers/socket"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
-import { Asset } from "../../../types/types"
+import { Asset, Collection } from "../../../types/types"
 
 enum Currency {
 	Ethereum,
@@ -31,21 +31,50 @@ enum Rarity {
 
 export const CollectionsPage: React.FC = () => {
 	const history = useHistory()
+	const { subscribe, send } = useWebsocket()
 	const { user } = AuthContainer.useContainer()
+	const [collections, setCollections] = useState<Collection[]>([])
+
+	// Effect: get and set user's collection's
+	useEffect(() => {
+		if (!user || !user.id) return
+		return subscribe<{ records: Collection[]; total: number }>(
+			HubKey.CollectionListUpdated,
+			(payload) => {
+				if (!payload) return
+				setCollections(payload.records)
+			},
+			{
+				userID: user.id,
+				filter: {
+					linkOperator: "and",
+					// pageSize: 4,
+					items: [
+						// filter by user id
+						{
+							columnField: "user_id",
+							operatorValue: "=",
+							value: user.id,
+						},
+					],
+				},
+			},
+		)
+	}, [user?.id, subscribe])
 
 	useEffect(() => {
 		if (user) return
-
-		history.push("/login")
+		const userTimeout = setTimeout(() => {
+			history.push("/")
+		}, 2000)
+		return () => clearTimeout(userTimeout)
 	}, [user, history])
 
 	if (!user) {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
 
-	// get users collections
-
-	console.log("in collections page")
+	console.log("in collections page", collections)
 
 	return (
 		<Box
@@ -100,13 +129,15 @@ export const CollectionsPage: React.FC = () => {
 					justifyContent: "center",
 				}}
 			>
-				<CollectionAssets collection="SUPREMACY" userID={user.id} />
+				{collections.map((c) => {
+					return <CollectionAssets collectionID={c.id} userID={user.id} />
+				})}
 			</Paper>
 		</Box>
 	)
 }
 
-const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ collection, userID }) => {
+const CollectionAssets: React.FC<{ collectionID: string; userID: string }> = ({ collectionID, userID }) => {
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [assets, setAssets] = useState<Asset[]>([])
@@ -126,11 +157,13 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 					linkOperator: "and",
 					pageSize: 4,
 					items: [
+						// filter by collection id
 						{
-							columnField: "collection",
+							columnField: "collection_id",
 							operatorValue: "=",
-							value: collection,
+							value: collectionID,
 						},
+						// filter by user id
 						{
 							columnField: "user_id",
 							operatorValue: "=",
@@ -140,7 +173,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 				},
 			},
 		)
-	}, [userID, subscribe, collection])
+	}, [userID, subscribe, collectionID])
 
 	return (
 		<Box sx={{ marginBottom: "30px", marginLeft: "15px", marginRight: "15px" }}>
@@ -156,7 +189,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 					}}
 				/>
 
-				<ViewCollectionButton onClick={() => history.push("/collections/" + collection)}>
+				<ViewCollectionButton onClick={() => history.push("/collections/" + "yoyo")}>
 					<Typography
 						variant="h4"
 						sx={{
@@ -171,17 +204,7 @@ const CollectionAssets: React.FC<{ collection: string; userID: string }> = ({ co
 
 			<AssetsSection>
 				{assets.map((a) => {
-					return (
-						<AssetCard
-							tokenID={a.tokenID}
-							key={a.tokenID}
-							name="Candice mk ii"
-							price="0.9999"
-							type="War Machine"
-							rarity={Rarity.Legendary}
-							currency={Currency.Ethereum}
-						/>
-					)
+					return <AssetCard key={a.tokenID} asset={a} />
 				})}
 			</AssetsSection>
 		</Box>
@@ -244,33 +267,41 @@ const AssetsSection = styled((props) => <Box {...props} />)(({ theme }) => ({
 }))
 
 interface AssetCardProps extends BoxProps {
-	tokenID: number
-	name: string
-	price: string
-	rarity: Rarity
-	type: string
-	currency: Currency
+	asset: Asset
 }
 
-const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, currency, tokenID }) => {
+const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
 	const history = useHistory()
+	const { name, attributes, tokenID } = asset
+
 	let currencyLogo = EthLogo
-	if (currency === Currency.Ethereum) {
-		currencyLogo = EthLogo
-	}
+	// if (currency === Currency.Ethereum) {
+	// 	currencyLogo = EthLogo
+	// }
 
 	let rarityIcon = EpicIcon
-	if (rarity === Rarity.Epic) {
-		rarityIcon = EpicIcon
-	}
-	if (rarity === Rarity.Common) {
-		rarityIcon = CommonIcon
-	}
-	if (rarity === Rarity.Legendary) {
-		rarityIcon = LegendaryIcon
-	}
-	if (rarity === Rarity.Anomaly) {
-		rarityIcon = AnomalyIcon
+	// if (rarity === Rarity.Epic) {
+	// 	rarityIcon = EpicIcon
+	// }
+	// if (rarity === Rarity.Common) {
+	// 	rarityIcon = CommonIcon
+	// }
+	// if (rarity === Rarity.Legendary) {
+	// 	rarityIcon = LegendaryIcon
+	// }
+	// if (rarity === Rarity.Anomaly) {
+	// 	rarityIcon = AnomalyIcon
+	// }
+
+	const getAssetType = (): string => {
+		let output = ""
+
+		// get asset type from attributes array
+		const arr = attributes.filter((a) => a.trait_type === "Asset Type")
+		if (arr && arr.length > 0) {
+			output = `${arr[0].value}`
+		}
+		return output
 	}
 
 	return (
@@ -331,7 +362,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 						padding: "10px",
 					}}
 				>
-					<Typography variant="h5">{type}</Typography>
+					<Typography variant="h5">{getAssetType()}</Typography>
 					<Box
 						component="img"
 						src={PlaceholderLogo}
@@ -344,7 +375,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 				</Box>
 			</Box>
 
-			{/* Price */}
+			{/* Currency logo + Price + rarity*/}
 			<Box
 				sx={{
 					display: "flex",
@@ -385,7 +416,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ name, price, rarity, type, curren
 								textOverflow: "ellipsis",
 							}}
 						>
-							{price}
+							{".69"}
 						</Typography>
 					</Box>
 				</Box>

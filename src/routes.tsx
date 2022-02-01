@@ -29,11 +29,14 @@ export const Routes = () => {
 					<Route path="/profile" component={ProfilePage} />
 					<Route path="/wallet" component={WalletPage} />
 
+					{/* users collections */}
 					<Route path="/:username/collections" component={CollectionsPage} />
 
+					{/* asset view page */}
 					<Route path="/collections/assets/:tokenID" component={ViewPage.Asset} />
+
+					{/* work in prog */}
 					<Route path="/collections/:slug" component={CollectionsPage} />
-					<Route path="/collections" component={CollectionsPage} />
 
 					<Route path="/privacy-policy" component={Home} />
 					<Route path="/terms-and-conditions" component={Home} />

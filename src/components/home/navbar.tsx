@@ -166,7 +166,7 @@ const MenuButton: React.FC = () => {
 					{!!user ? (
 						[
 							<StyledMenuItem key={0} route="/wallet" label="Wallet" handleClose={handleClose} />,
-							<StyledMenuItem key={1} route="/collections" label="Collections" handleClose={handleClose} />,
+							<StyledMenuItem key={1} route={`/${user.username}/collections`} label="Collections" handleClose={handleClose} />,
 							<StyledMenuItem key={2} onClick={() => logout()} label="Logout" handleClose={handleClose} />,
 						]
 					) : (

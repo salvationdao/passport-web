@@ -71,6 +71,16 @@ export interface Product {
 	deletedAt: Date | null
 }
 
+export interface Collection {
+	id: string
+	name: string
+	image: string
+	createdAt: Date
+	updatedAt: Date
+	frozenAt?: Date
+	deletedAt?: Date
+}
+
 export interface Asset {
 	tokenID: number
 	userID: string
