@@ -115,6 +115,8 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	const query = useCallback(() => {
 		setError(undefined)
 		setLoading(true)
+		console.log("in query")
+
 		send<{ records: any[]; total: number }>(hubKey, {
 			sortDir,
 			sortBy,
@@ -126,6 +128,8 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 			...extraArgs,
 		})
 			.then((response) => {
+				console.log("then ", response)
+
 				if (!response) {
 					return
 				}
@@ -137,6 +141,8 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 				if (!!setRecords) setRecords(response.records)
 			})
 			.catch((e) => {
+				console.log("this is e", e)
+
 				setError(e)
 			})
 			.finally(() => {
@@ -183,10 +189,15 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	if (pluralName === name) {
 		console.warn("[ItemTable] 'name' must be singular", name)
 	}
+
+	console.log("ahhhhhhhhhhhhh", payload)
+	console.log("ahhhhhhhhhhhhh2", props.hubKey)
+
 	return (
 		<>
 			{!hideSearch && <SearchBar value={search} onChange={setSearch} placeholder={`Search ${pluralName}...`} loading={loading} />}
 			<DataGridPro
+				getRowId={(row) => row.tokenID || row.id}
 				className={className}
 				columns={props.columns}
 				rows={payload && payload.records ? payload.records : []}
@@ -220,7 +231,7 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 						archivedLabel,
 					},
 				}}
-				error={error ? { message: error } : undefined}
+				// error={error ? { message: error } : undefined}
 				// Pagination
 				pagination
 				paginationMode={"server"}
@@ -229,18 +240,18 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 				pageSize={pageSize}
 				onPageSizeChange={(pageSize) => setPageSize(pageSize)}
 				rowsPerPageOptions={[10, 20, 50, 100, 200]}
-				// Sorting
+				// // Sorting
 				sortingMode={"server"}
 				sortModel={[{ field: sortBy, sort: sortDir }]}
-				onSortModelChange={(sortModel) => {
-					if (sortModel.length === 0) {
-						setSortDir((prev) => (prev === "desc" ? "asc" : "desc"))
-						return
-					}
-					setSortBy(sortModel[0].field)
-					setSortDir(sortModel[0].sort)
-				}}
-				// Filtering
+				// onSortModelChange={(sortModel) => {
+				// 	if (sortModel.length === 0) {
+				// 		setSortDir((prev) => (prev === "desc" ? "asc" : "desc"))
+				// 		return
+				// 	}
+				// 	setSortBy(sortModel[0].field)
+				// 	setSortDir(sortModel[0].sort)
+				// }}
+				// // Filtering
 				filterMode={"server"}
 				filterModel={filter ? filter : undefined}
 				onFilterModelChange={(filterModel) => setFilter(filterModel)}
