@@ -1,11 +1,29 @@
 import { Box, Link, Typography } from "@mui/material"
-import { styled } from "@mui/system"
 import { useHistory } from "react-router-dom"
+import {
+	AxieInfinityLogoImagePath,
+	BinanceCoinBnbLogoImagePath,
+	BinanceUsdBusdLogoImagePath,
+	BitcoinBtcLogoImagePath,
+	DashDashLogoImagePath,
+	DecentralandManaLogoImagePath,
+	EthereumEthLogoImagePath,
+	IlluviumLogoImagePath,
+	LitecoinLtcLogoImagePath,
+	MobloxLogoImagePath,
+	MoneroXmrLogoImagePath,
+	NexoNexoLogoImagePath,
+	OmgOmgLogoImagePath,
+	SandboxLogoImagePath,
+	SolanaSolLogoImagePath,
+	SomethingLogoImagePath,
+	StarAtlasLogoImagePath,
+	SteemSteemLogoImagePath,
+	TheSandboxSandLogoImagePath,
+	XSYNWordmarkImagePath,
+} from "../assets"
 import BottomRightMatrix from "../assets/images/Bottom right corner matrix accent.png"
-import BinanceCoinBnbLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg"
-import AxieInfinityLogo from "../assets/images/games/axie infinity.png"
 import BottomLeftMatrix from "../assets/images/Left Corner Matrix.png"
-import XSYNWordmarkImage from "../assets/images/XSYN Wordmark White.png"
 import { FancyButton } from "../components/fancyButton"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
 import { Navbar } from "../components/home/navbar"
@@ -22,7 +40,7 @@ export const Home = () => {
 				sx={{
 					overflow: "hidden",
 					position: "relative",
-					minHeight: "max(100vh, 60rem)",
+					minHeight: "max(100vh, 70rem)",
 				}}
 			>
 				<GradientCircleThing
@@ -31,7 +49,7 @@ export const Home = () => {
 						position: "absolute",
 						top: "50%",
 						left: "50%",
-						transform: "translate(-50%, -50%)",
+						transform: "translate(-50%, calc(-50% + (100vh - 70rem) / 2))",
 					}}
 				/>
 				<Navbar />
@@ -40,7 +58,7 @@ export const Home = () => {
 						position: "absolute",
 						top: "50%",
 						left: "50%",
-						transform: "translate(-50%, -50%)",
+						transform: "translate(-50%, calc(-50% + (100vh - 70rem) / 2))",
 						display: "flex",
 						flexDirection: "column",
 						alignItems: "center",
@@ -70,7 +88,6 @@ export const Home = () => {
 				variant="h1"
 				component="p"
 				sx={(theme) => ({
-					marginTop: "10vw",
 					padding: "4rem 3rem",
 					fontSize: "3rem",
 					textAlign: "center",
@@ -136,31 +153,40 @@ export const Home = () => {
 					<Box
 						sx={{
 							display: "grid",
-							gridTemplateColumns: "repeat(4, 100px)",
+							gridTemplateColumns: "repeat(4, 72px)",
+							gridTemplateRows: "repeat(auto-fill, 72px)",
 							columnGap: "8rem",
 							rowGap: "4rem",
 							justifyItems: "center",
 							marginBottom: "4rem",
-							"@media (max-width: 800px)": {
-								gridTemplateColumns: "repeat(3, 100px)",
+							"@media (max-width: 700px)": {
+								gridTemplateColumns: "repeat(3, 72px)",
 								columnGap: "4rem",
 								rowGap: "2rem",
 							},
 							"@media (max-width: 500px)": {
-								gridTemplateColumns: "repeat(2, 100px)",
+								gridTemplateColumns: "repeat(3, 64px)",
+								columnGap: "2rem",
+								rowGap: "2rem",
+							},
+							"& > *": {
+								width: "100%",
+								maxHeight: "100%",
 							},
 						}}
 					>
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
-						<LogoImage src={BinanceCoinBnbLogo} alt="Binance Coin BNB Logo" />
+						<Box component="img" src={BinanceCoinBnbLogoImagePath} alt="Logo" />
+						<Box component="img" src={BinanceUsdBusdLogoImagePath} alt="Logo" />
+						<Box component="img" src={BitcoinBtcLogoImagePath} alt="Logo" />
+						<Box component="img" src={DashDashLogoImagePath} alt="Logo" />
+						<Box component="img" src={EthereumEthLogoImagePath} alt="Logo" />
+						<Box component="img" src={LitecoinLtcLogoImagePath} alt="Logo" />
+						<Box component="img" src={MoneroXmrLogoImagePath} alt="Logo" />
+						<Box component="img" src={NexoNexoLogoImagePath} alt="Logo" />
+						<Box component="img" src={OmgOmgLogoImagePath} alt="Logo" />
+						<Box component="img" src={SolanaSolLogoImagePath} alt="Logo" />
+						<Box component="img" src={SteemSteemLogoImagePath} alt="Logo" />
+						<Box component="img" src={TheSandboxSandLogoImagePath} alt="Logo" />
 					</Box>
 					<Typography
 						variant="h1"
@@ -175,30 +201,31 @@ export const Home = () => {
 					</Typography>
 					<Box
 						sx={{
-							display: "grid",
-							gridTemplateColumns: "repeat(4, 100px)",
-							columnGap: "8rem",
-							rowGap: "4rem",
-							justifyItems: "center",
-							"@media (max-width: 800px)": {
-								gridTemplateColumns: "repeat(3, 100px)",
-								columnGap: "4rem",
-								rowGap: "2rem",
+							display: "flex",
+							flexWrap: "wrap",
+							justifyContent: "center",
+							width: "100%",
+							maxWidth: "1200px",
+							"& > *": {
+								maxWidth: "100%",
+								maxHeight: "72px",
+								margin: "2rem",
 							},
-							"@media (max-width: 500px)": {
-								gridTemplateColumns: "repeat(2, 100px)",
+							"@media (max-width: 700px)": {
+								"& > *": {
+									maxHeight: "64px",
+									margin: "1.5rem",
+								},
 							},
 						}}
 					>
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
-						<LogoImage src={AxieInfinityLogo} alt="Axie Infinity Logo" />
+						<Box component="img" src={AxieInfinityLogoImagePath} alt="Game Logo" />
+						<Box component="img" src={DecentralandManaLogoImagePath} alt="Game Logo" />
+						<Box component="img" src={IlluviumLogoImagePath} alt="Game Logo" />
+						<Box component="img" src={SomethingLogoImagePath} alt="Game Logo" />
+						<Box component="img" src={MobloxLogoImagePath} alt="Game Logo" />
+						<Box component="img" src={SandboxLogoImagePath} alt="Game Logo" />
+						<Box component="img" src={StarAtlasLogoImagePath} alt="Game Logo" />
 					</Box>
 				</Box>
 			</Box>
@@ -236,7 +263,7 @@ export const Home = () => {
 						zIndex: -1,
 						position: "absolute",
 						left: "50%",
-						bottom: "-30rem",
+						bottom: "-50%",
 						transform: "translate(-50%, 0)",
 					}}
 				/>
@@ -247,7 +274,7 @@ export const Home = () => {
 				/>
 				<Box
 					component="img"
-					src={XSYNWordmarkImage}
+					src={XSYNWordmarkImagePath}
 					alt="XSYN Wordmark"
 					sx={{
 						alignSelf: "center",
@@ -274,7 +301,3 @@ export const Home = () => {
 		</>
 	)
 }
-
-const LogoImage = styled("img")({
-	width: "100%",
-})

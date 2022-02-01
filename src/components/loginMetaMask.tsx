@@ -1,7 +1,7 @@
 import MetaMaskOnboarding from "@metamask/onboarding"
 import { Alert } from "@mui/material"
 import { useState } from "react"
-import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
+import { MetaMaskIcon } from "../assets"
 import { AuthContainer } from "../containers"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { FancyButton, FancyButtonProps } from "./fancyButton"
