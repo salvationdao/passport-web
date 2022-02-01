@@ -9,12 +9,7 @@ import { useMutation } from "react-fetching-library"
 import GoogleLogin, { GoogleLoginResponse } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, Route, Switch, useHistory } from "react-router-dom"
-import { ReactComponent as DiscordIcon } from "../assets/images/icons/discord.svg"
-import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
-import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
-import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
-import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
-import { ReactComponent as TwitterIcon } from "../assets/images/icons/twitter.svg"
+import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon } from "../assets"
 import { DiscordLogin } from "../components/discordLogin"
 import { FacebookLogin } from "../components/facebookLogin"
 import { ImageUpload } from "../components/form/imageUpload"
@@ -30,7 +25,7 @@ import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
 import HubKey from "../keys"
 import { Organisation, Role } from "../types/types"
-import { ConnectionType } from "./onboarding"
+import { ConnectionType, PasswordRequirement } from "./onboarding"
 
 export const ProfilePage: React.FC = () => {
 	const history = useHistory()
@@ -214,8 +209,10 @@ const ProfileEdit: React.FC = () => {
 	const { send } = useWebsocket()
 
 	// Setup form
-	const { control, handleSubmit, reset, formState } = useForm<UserInput>()
+	const { control, handleSubmit, reset, watch, formState } = useForm<UserInput>()
 	const { isDirty } = formState
+	const password = watch("newPassword")
+
 	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
 	const [submitting, setSubmitting] = useState(false)
 	const [successMessage, setSuccessMessage] = useState<string>()
@@ -470,6 +467,21 @@ const ProfileEdit: React.FC = () => {
 								placeholder="Enter a new password"
 								label="New password"
 							/>
+							<Box>
+								Your new password must:
+								<ul>
+									<PasswordRequirement fulfilled={!!password && password.length >= 8}>be 8 or more characters long</PasswordRequirement>
+									<PasswordRequirement fulfilled={!!password && password.toUpperCase() != password && password.toLowerCase() != password}>
+										contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
+									</PasswordRequirement>
+									<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
+										contain at least <strong>1 number</strong>
+									</PasswordRequirement>
+									<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password)}>
+										contain at least <strong>1 symbol</strong>
+									</PasswordRequirement>
+								</ul>
+							</Box>
 							<Button
 								type="button"
 								variant="contained"

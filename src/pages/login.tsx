@@ -3,12 +3,7 @@ import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
-import { ReactComponent as DiscordIcon } from "../assets/images/icons/discord.svg"
-import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
-import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
-import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
-import { ReactComponent as TwitterIcon } from "../assets/images/icons/twitter.svg"
-import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
+import { DiscordIcon, FacebookIcon, GoogleIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../assets"
 import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../components/discordLogin"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { FancyButton } from "../components/fancyButton"
@@ -181,9 +176,7 @@ export const LoginPage: React.FC = () => {
 				/>
 				<RouterLink to="/">
 					<Box
-						component="img"
-						src={XSYNLogoImage}
-						alt="XSYN Logo"
+						component={XSYNLogo}
 						sx={{
 							width: "100px",
 							marginBottom: "1rem",

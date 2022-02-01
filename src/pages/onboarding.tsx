@@ -1,18 +1,12 @@
 import UploadIcon from "@mui/icons-material/Upload"
-import { Alert, Avatar, Box, BoxProps, Button, Link, Snackbar, styled, Typography } from "@mui/material"
+import { Alert, Avatar, Box, BoxProps, Button, Link, Snackbar, styled, Typography, useTheme } from "@mui/material"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { useMutation } from "react-fetching-library"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, Route, Switch, useHistory, useRouteMatch } from "react-router-dom"
-import { ReactComponent as DiscordIcon } from "../assets/images/icons/discord.svg"
-import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
-import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
-import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
-import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
-import { ReactComponent as TwitterIcon } from "../assets/images/icons/twitter.svg"
-import XSYNLogoImage from "../assets/images/XSYN Stack White.svg"
+import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../assets"
 import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../components/discordLogin"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
 import { FancyButton } from "../components/fancyButton"
@@ -67,6 +61,7 @@ const SignUp = () => {
 
 	const { control, handleSubmit, watch, trigger, reset } = useForm<SignUpInput>()
 	const username = watch("username")
+	const password = watch("password")
 
 	const [signUpType, setSignUpType] = useState<ConnectionType | null>(null)
 	const [currentStep, setCurrentStep] = useState(0)
@@ -212,16 +207,16 @@ const SignUp = () => {
 						<Box>
 							Your password must:
 							<ul>
-								<li>be 8 or more characters long</li>
-								<li>
+								<PasswordRequirement fulfilled={!!password && password.length >= 8}>be 8 or more characters long</PasswordRequirement>
+								<PasswordRequirement fulfilled={!!password && password.toUpperCase() != password && password.toLowerCase() != password}>
 									contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
-								</li>
-								<li>
+								</PasswordRequirement>
+								<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
 									contain at least <strong>1 number</strong>
-								</li>
-								<li>
+								</PasswordRequirement>
+								<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password)}>
 									contain at least <strong>1 symbol</strong>
-								</li>
+								</PasswordRequirement>
 							</ul>
 						</Box>
 						<Box
@@ -838,9 +833,7 @@ const SignUp = () => {
 				/>
 				<RouterLink to="/">
 					<Box
-						component="img"
-						src={XSYNLogoImage}
-						alt="XSYN Logo"
+						component={XSYNLogo}
 						sx={{
 							width: "100px",
 							marginBottom: "1rem",
@@ -881,6 +874,24 @@ const SignUp = () => {
 				</Box>
 			</Box>
 		</>
+	)
+}
+
+interface PasswordRequirementProps extends BoxProps {
+	fulfilled: boolean
+}
+
+export const PasswordRequirement: React.FC<PasswordRequirementProps> = ({ fulfilled, sx, ...props }) => {
+	const theme = useTheme()
+	return (
+		<Box
+			component="li"
+			sx={{
+				...sx,
+				color: fulfilled ? theme.palette.secondary.main : "inherit",
+			}}
+			{...props}
+		/>
 	)
 }
 

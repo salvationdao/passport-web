@@ -2,8 +2,7 @@ import { LoadingButton } from "@mui/lab"
 import { Avatar, Box, BoxProps, IconButton, IconButtonProps, Menu, MenuItem, MenuItemProps, MenuList, useTheme } from "@mui/material"
 import React, { useState } from "react"
 import { Link, useHistory, useLocation } from "react-router-dom"
-import SupremacyLogo from "../../assets/images/supremacy-logo.svg"
-import XSYNLogoImage from "../../assets/images/XSYN Stack White.svg"
+import { SupremacyLogo, XSYNLogo } from "../../assets"
 import { AuthContainer } from "../../containers"
 
 interface NavbarProps extends BoxProps {}
@@ -24,7 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 			{...props}
 		>
 			<Link to="/">
-				<Box component="img" src={XSYNLogoImage} alt="XSYN Logo" />
+				<XSYNLogo />
 			</Link>
 			<Box
 				sx={{
@@ -186,12 +185,10 @@ const MenuButton: React.FC = () => {
 					</Box>,
 					<a key={1} href="https://supremacy.game">
 						<Box
-							component="img"
+							component={SupremacyLogo}
 							sx={{
 								width: "100%",
 							}}
-							src={SupremacyLogo}
-							alt="Supremacy Logo"
 						/>
 					</a>,
 				]}
