@@ -41,8 +41,6 @@ export const AssetPage = () => {
 			setSubmitting(false)
 			setErrorMessage(undefined)
 		} catch (e) {
-			console.log("err", e)
-
 			setSubmitting(false)
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		} finally {
@@ -92,8 +90,6 @@ export const AssetPage = () => {
 		}, 2000)
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
-
-	console.log("this is error message", !!errorMessage)
 
 	return (
 		<>

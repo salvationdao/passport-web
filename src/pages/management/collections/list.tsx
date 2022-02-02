@@ -26,8 +26,6 @@ export const AssetsList = (props: Props) => {
 	const { collection_name } = useParams<{ collection_name: string }>()
 
 	useEffect(() => {
-		console.log("name of the collection", collection_name)
-
 		if (!collection_name || state != SocketState.OPEN) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,

@@ -106,7 +106,6 @@ export const DiscordLogin: React.FC<DiscordLoginProps> = ({ callback, onFailure,
 				const incomingState = params.get("state")
 				// Protect against XSRF attacks
 				if (incomingState !== state) {
-					console.log(true)
 					throw new Error("Something went wrong. Please try again.")
 				}
 

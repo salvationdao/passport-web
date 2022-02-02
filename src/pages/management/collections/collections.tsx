@@ -56,8 +56,6 @@ export const CollectionsPage: React.FC = () => {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
 
-	console.log("in collections page", collections)
-
 	return (
 		<Box
 			sx={{

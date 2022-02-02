@@ -115,8 +115,6 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	const query = useCallback(() => {
 		setError(undefined)
 		setLoading(true)
-		console.log("in query")
-
 		send<{ records: any[]; total: number }>(hubKey, {
 			sortDir,
 			sortBy,
@@ -128,8 +126,6 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 			...extraArgs,
 		})
 			.then((response) => {
-				console.log("then ", response)
-
 				if (!response) {
 					return
 				}
@@ -141,8 +137,6 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 				if (!!setRecords) setRecords(response.records)
 			})
 			.catch((e) => {
-				console.log("this is e", e)
-
 				setError(e)
 			})
 			.finally(() => {
@@ -189,9 +183,6 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	if (pluralName === name) {
 		console.warn("[ItemTable] 'name' must be singular", name)
 	}
-
-	console.log("ahhhhhhhhhhhhh", payload)
-	console.log("ahhhhhhhhhhhhh2", props.hubKey)
 
 	return (
 		<>

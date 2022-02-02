@@ -18,8 +18,6 @@ export const ItemTablePage = (props: ItemTablePageProps & ItemTableProps) => {
 	const hasReadPermission = readPermission === undefined || hasPermission(readPermission)
 	const onRowClick = !!rest.onRowClick ? rest.onRowClick : !!onRowClickLink && hasReadPermission ? (row: any) => push(onRowClickLink(row)) : undefined
 
-	console.log("in to component")
-
 	return (
 		<Box
 			sx={{
