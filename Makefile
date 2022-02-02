@@ -32,3 +32,7 @@ lb:
 .PHONY: lb-disown
 lb-disown:
 	./bin/caddy run & disown
+
+.PHONY: wt
+wt:
+	wt --window 0 --tabColor #4747E2 --title "Passport Web - Watch" -p "PowerShell" -d ./ powershell -NoExit "make watch" ; split-pane --tabColor #4747E2 --title "Passport Web - Load Balancer" -p "PowerShell" -d ./ powershell -NoExit "make lb"
