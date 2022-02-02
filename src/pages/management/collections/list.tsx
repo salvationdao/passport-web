@@ -21,7 +21,7 @@ export const AssetsList = (props: Props) => {
 	const { user } = AuthContainer.useContainer()
 	const [assets, setAssets] = useState<Asset[]>([])
 	const [collection, setCollection] = useState<Collection>()
-	const [currentTab, setCurrentTab] = useState(0)
+	const [currentTab, setCurrentTab] = useState<string>("All")
 
 	const { collection_name } = useParams<{ collection_name: string }>()
 
@@ -52,7 +52,7 @@ export const AssetsList = (props: Props) => {
 			},
 			{
 				userID: user.id,
-				assetType: "War Machine",
+				assetType: currentTab === "All" ? "" : currentTab,
 				filter: {
 					linkOperator: "and",
 					pageSize: 4,
@@ -64,18 +64,16 @@ export const AssetsList = (props: Props) => {
 							value: collection.id,
 						},
 						// filter by user id
-						{
-							columnField: "user_id",
-							operatorValue: "=",
-							value: user.id,
-						},
+						// {
+						// 	columnField: "user_id",
+						// 	operatorValue: "=",
+						// 	value: user.id,
+						// },
 					],
 				},
 			},
 		)
-	}, [user, subscribe, collection, state])
-
-	console.log("current collection", collection)
+	}, [user, subscribe, collection, state, currentTab])
 
 	useEffect(() => {
 		if (user) return
@@ -86,28 +84,13 @@ export const AssetsList = (props: Props) => {
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
 
-	console.log("this is asset", assets)
-
 	return (
 		<Box sx={{ marginBottom: "30px", marginLeft: "15px", marginRight: "15px" }}>
-			<Box sx={{ display: "flex" }}>
-				<Box
-					component="img"
-					src={SupremacyLogo}
-					alt="Collection Logo"
-					sx={{
-						width: 229,
-						height: 25,
-						marginBottom: "5px",
-					}}
-				/>
-			</Box>
-
 			<Navbar />
 			<Paper
 				sx={{
 					width: "100%",
-					maxWidth: "1000px",
+					maxWidth: "1768px",
 					margin: "0 auto",
 					borderRadius: 0,
 					backgroundColor: "transparent",
@@ -116,7 +99,7 @@ export const AssetsList = (props: Props) => {
 				{/* Filter tabs */}
 				<Tabs
 					value={currentTab}
-					onChange={(e, value) => {
+					onChange={(_, value) => {
 						setCurrentTab(value)
 					}}
 					aria-label="Filter tabs"
@@ -125,12 +108,12 @@ export const AssetsList = (props: Props) => {
 						hidden: true,
 					}}
 				>
-					<StyledTab label="All" />
-					<StyledTab label="Land" />
-					<StyledTab label="Pilot" />
-					<StyledTab label="Production Facility" />
-					<StyledTab label="War Machine" />
-					<StyledTab label="weapons" />
+					<StyledTab value="All" label="All" />
+					<StyledTab value="Land" label="Land" />
+					<StyledTab value="Pilot" label="Pilot" />
+					<StyledTab value="Utility" label="Utility" />
+					<StyledTab value="War Machine" label="War Machine" />
+					<StyledTab value="Weapons" label="Weapon" />
 				</Tabs>
 				<Box
 					sx={{
