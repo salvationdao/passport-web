@@ -61,7 +61,7 @@ export const AssetPage = () => {
 				tokenID: parseInt(tokenID),
 			},
 		)
-	}, [user?.id, subscribe, asset?.tokenID])
+	}, [user, subscribe, asset?.tokenID, tokenID])
 
 	// Effect: get/set attributes as assets
 	useEffect(() => {
@@ -80,7 +80,7 @@ export const AssetPage = () => {
 				includedTokenIDs: tokenIDs,
 			},
 		)
-	}, [user?.id, asset?.tokenID, subscribe, tokenID])
+	}, [user, asset, subscribe, tokenID])
 
 	useEffect(() => {
 		if (user) return

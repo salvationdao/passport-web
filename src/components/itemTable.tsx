@@ -242,7 +242,7 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 					setSortBy(sortModel[0].field)
 					setSortDir(sortModel[0].sort)
 				}}
-				// // Filtering
+				// Filtering
 				filterMode={"server"}
 				filterModel={filter ? filter : undefined}
 				onFilterModelChange={(filterModel) => setFilter(filterModel)}

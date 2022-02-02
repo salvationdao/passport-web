@@ -30,7 +30,7 @@ export const CollectionsPage: React.FC = () => {
 				userID: user.id,
 				filter: {
 					linkOperator: "and",
-					// pageSize: 4,
+					pageSize: 4,
 					items: [
 						// filter by user id
 						{
