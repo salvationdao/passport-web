@@ -33,7 +33,7 @@ export const AssetsList = () => {
 		)
 	}, [collection_name, subscribe, state])
 
-	// Effect: get and set user's collection's assets, limit to 4
+	// Effect: get and set user's assets, apply filters
 	useEffect(() => {
 		if (!user || !user.id || state != SocketState.OPEN) return
 
