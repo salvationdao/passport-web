@@ -7,6 +7,7 @@ import { Navbar } from "../../../components/home/navbar"
 import { AuthContainer } from "../../../containers/auth"
 import { SocketState, useWebsocket } from "../../../containers/socket"
 import HubKey from "../../../keys"
+import { colors } from "../../../theme"
 import { Asset, Collection } from "../../../types/types"
 
 interface Props {
@@ -51,6 +52,7 @@ export const AssetsList = (props: Props) => {
 			},
 			{
 				userID: user.id,
+				assetType: "War Machine",
 				filter: {
 					linkOperator: "and",
 					pageSize: 4,
@@ -71,7 +73,7 @@ export const AssetsList = (props: Props) => {
 				},
 			},
 		)
-	}, [user?.id, subscribe, collection])
+	}, [user, subscribe, collection, state])
 
 	console.log("current collection", collection)
 
@@ -134,6 +136,7 @@ export const AssetsList = (props: Props) => {
 					sx={{
 						display: "flex",
 						flexWrap: "wrap",
+						backgroundColor: colors.navyBlue,
 					}}
 				>
 					{assets.map((a) => {

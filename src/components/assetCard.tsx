@@ -13,16 +13,16 @@ interface AssetCardProps extends BoxProps {
 	asset: Asset
 }
 
-enum Currency {
-	Ethereum,
-}
+// enum Currency {
+// 	Ethereum,
+// }
 
-enum Rarity {
-	Epic,
-	Legendary,
-	Common,
-	Anomaly,
-}
+// enum Rarity {
+// 	Epic,
+// 	Legendary,
+// 	Common,
+// 	Anomaly,
+// }
 
 export const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
 	const history = useHistory()

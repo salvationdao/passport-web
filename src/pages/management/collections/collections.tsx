@@ -13,7 +13,7 @@ import { Asset, Collection, User } from "../../../types/types"
 
 export const CollectionsPage: React.FC = () => {
 	const history = useHistory()
-	const { subscribe, send } = useWebsocket()
+	const { subscribe } = useWebsocket()
 	const { user } = AuthContainer.useContainer()
 	const [collections, setCollections] = useState<Collection[]>([])
 
