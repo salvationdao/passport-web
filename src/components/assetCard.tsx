@@ -170,7 +170,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
 								textOverflow: "ellipsis",
 							}}
 						>
-							{".69"}
+							{"TBC"}
 						</Typography>
 					</Box>
 				</Box>

@@ -1,7 +1,6 @@
 import { Box, Paper, styled, Tab, TabProps, Tabs } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
-import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { AssetCard } from "../../../components/assetCard"
 import { Navbar } from "../../../components/home/navbar"
 import { AuthContainer } from "../../../containers/auth"
@@ -10,12 +9,7 @@ import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset, Collection } from "../../../types/types"
 
-interface Props {
-	onRowClick?: (data: any) => void
-	hideCreateButton?: boolean
-}
-
-export const AssetsList = (props: Props) => {
+export const AssetsList = () => {
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = AuthContainer.useContainer()
@@ -41,7 +35,26 @@ export const AssetsList = (props: Props) => {
 
 	// Effect: get and set user's collection's assets, limit to 4
 	useEffect(() => {
-		if (!user || !user.id || !collection || !collection.id || state != SocketState.OPEN) return
+		if (!user || !user.id || state != SocketState.OPEN) return
+
+		const filtersItems: any[] = [
+			// filter by user id
+			{
+				columnField: "user_id",
+				operatorValue: "=",
+				value: user.id,
+			},
+		]
+
+		if (collection && collection.id) {
+			filtersItems.push({
+				// filter by collection id
+				columnField: "collection_id",
+				operatorValue: "=",
+				value: collection.id,
+			})
+		}
+
 		return subscribe<{ records: Asset[]; total: number }>(
 			HubKey.AssetListUpdated,
 			(payload) => {
@@ -49,25 +62,13 @@ export const AssetsList = (props: Props) => {
 				setAssets(payload.records)
 			},
 			{
+				// search: "", // not yet implemented
 				userID: user.id,
 				assetType: currentTab === "All" ? "" : currentTab,
 				filter: {
 					linkOperator: "and",
-					pageSize: 4,
-					items: [
-						// filter by collection id
-						{
-							columnField: "collection_id",
-							operatorValue: "=",
-							value: collection.id,
-						},
-						// filter by user id
-						// {
-						// 	columnField: "user_id",
-						// 	operatorValue: "=",
-						// 	value: user.id,
-						// },
-					],
+					pageSize: 20,
+					items: filtersItems,
 				},
 			},
 		)
@@ -131,8 +132,10 @@ export const AssetsList = (props: Props) => {
 
 const StyledTab = styled((props: TabProps) => <Tab {...props} />)(({ theme }) => ({
 	textTransform: "uppercase",
+	fontSize: "1.125rem",
 	color: theme.palette.text.primary,
 	backgroundColor: "transparent",
+
 	"&.Mui-selected": {
 		backgroundColor: theme.palette.background.paper,
 		color: theme.palette.secondary.main,
