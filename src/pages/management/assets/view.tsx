@@ -12,6 +12,7 @@ import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { useState, useEffect } from "react"
 import { GradientCircleThing } from "../../../components/home/gradientCircleThing"
 import XSYNWordmarkImage from "../../../assets/images/XSYN Wordmark White.png"
+import { useQuery } from "../../../hooks/useSend"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -23,8 +24,9 @@ export const AssetPage = () => {
 	const [attributes, setAttributes] = useState<Asset[]>([])
 
 	const [submitting, setSubmitting] = useState(false)
-
 	const [errorMessage, setErrorMessage] = useState<string>()
+
+	const { loading, error, payload, query } = useQuery<{ records: Asset[]; total: number }>(HubKey.AssetList, false)
 
 	const isWarMachine = (): boolean => {
 		if (!asset) return false
@@ -63,24 +65,24 @@ export const AssetPage = () => {
 		)
 	}, [user, subscribe, asset?.tokenID, tokenID])
 
-	// Effect: get/set attributes as assets
+	// Effect: get attributes as assets
 	useEffect(() => {
 		setAttributes([])
 		if (!user || !user.id || !asset) return
+
 		// get list of token ids from asset's attributes
 		const tokenIDs = asset.attributes.filter((a) => !!a.token_id).map((aa) => aa.token_id)
-		return subscribe<{ records: Asset[]; total: number }>(
-			HubKey.AssetListUpdated,
-			(payload) => {
-				if (!payload) return
-				setAttributes(payload.records)
-			},
-			{
-				userID: user.id,
-				includedTokenIDs: tokenIDs,
-			},
-		)
-	}, [user, asset, subscribe, tokenID])
+		query({
+			userID: user.id,
+			includedTokenIDs: tokenIDs,
+		})
+	}, [user, asset, query, tokenID])
+
+	// Effect: set attributes
+	useEffect(() => {
+		if (error || loading || !payload) return
+		setAttributes(payload.records)
+	}, [payload, loading, error])
 
 	useEffect(() => {
 		if (user) return

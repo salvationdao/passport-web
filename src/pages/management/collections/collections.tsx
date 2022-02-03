@@ -7,42 +7,41 @@ import { Navbar } from "../../../components/home/navbar"
 import { Loading } from "../../../components/loading"
 import { AuthContainer } from "../../../containers"
 import { useWebsocket } from "../../../containers/socket"
+import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset, Collection, User } from "../../../types/types"
 
 export const CollectionsPage: React.FC = () => {
 	const history = useHistory()
-	const { subscribe } = useWebsocket()
 	const { user } = AuthContainer.useContainer()
 	const [collections, setCollections] = useState<Collection[]>([])
+	const { loading, error, payload, query } = useQuery<{ records: Collection[]; total: number }>(HubKey.CollectionList, false)
 
-	// Effect: get and set user's collection's
+	// Effect: get user's collection's
 	useEffect(() => {
 		if (!user || !user.id) return
-		return subscribe<{ records: Collection[]; total: number }>(
-			HubKey.CollectionListUpdated,
-			(payload) => {
-				if (!payload) return
-				setCollections(payload.records)
+		query({
+			userID: user?.id || "",
+			filter: {
+				linkOperator: "and",
+				items: [
+					// filter by user id
+					{
+						columnField: "user_id",
+						operatorValue: "=",
+						value: user?.id || "",
+					},
+				],
 			},
-			{
-				userID: user.id,
-				filter: {
-					linkOperator: "and",
-					pageSize: 4,
-					items: [
-						// filter by user id
-						{
-							columnField: "user_id",
-							operatorValue: "=",
-							value: user.id,
-						},
-					],
-				},
-			},
-		)
-	}, [user, subscribe])
+		})
+	}, [user, query])
+
+	// Effect: set user's collection's
+	useEffect(() => {
+		if (!payload || loading || error) return
+		setCollections(payload.records)
+	}, [payload, loading, error])
 
 	useEffect(() => {
 		if (user) return
@@ -126,7 +125,7 @@ const CollectionAssets: React.FC<{ collection: Collection; user: User }> = ({ co
 	useEffect(() => {
 		if (!user.id) return
 		return subscribe<{ records: Asset[]; total: number }>(
-			HubKey.AssetListUpdated,
+			HubKey.AssetList,
 			(payload) => {
 				if (!payload) return
 				setAssets(payload.records)

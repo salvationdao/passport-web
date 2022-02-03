@@ -6,6 +6,7 @@ import { Navbar } from "../../../components/home/navbar"
 import { SearchBar } from "../../../components/searchBar"
 import { AuthContainer } from "../../../containers/auth"
 import { SocketState, useWebsocket } from "../../../containers/socket"
+import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset, Collection } from "../../../types/types"
@@ -14,15 +15,15 @@ export const AssetsList = () => {
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = AuthContainer.useContainer()
+	const { collection_name } = useParams<{ collection_name: string }>()
 	const [assets, setAssets] = useState<Asset[]>([])
 	const [collection, setCollection] = useState<Collection>()
+	const { loading, error, payload, query } = useQuery<{ records: Asset[]; total: number }>(HubKey.AssetList, false)
 
 	// search and filter
 	const [search, setSearch] = useState("")
 	const [querySearch, setQuerySearch] = useState("")
 	const [currentTab, setCurrentTab] = useState<string>("All")
-
-	const { collection_name } = useParams<{ collection_name: string }>()
 
 	useEffect(() => {
 		const t = setTimeout(() => {
@@ -31,8 +32,9 @@ export const AssetsList = () => {
 		return () => clearTimeout(t)
 	}, [search])
 
+	// Effect: gets collection
 	useEffect(() => {
-		if (!collection_name || state + SocketState.OPEN) return
+		if (!collection_name || state != SocketState.OPEN) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -45,7 +47,7 @@ export const AssetsList = () => {
 		)
 	}, [collection_name, subscribe, state])
 
-	// Effect: get and set user's assets, apply filters
+	// Effect: get user's assets, apply filters
 	useEffect(() => {
 		if (!user || !user.id || state !== SocketState.OPEN) return
 
@@ -67,24 +69,23 @@ export const AssetsList = () => {
 			})
 		}
 
-		return subscribe<{ records: Asset[]; total: number }>(
-			HubKey.AssetListUpdated,
-			(payload) => {
-				if (!payload) return
-				setAssets(payload.records)
+		query({
+			search: querySearch,
+			userID: user.id,
+			assetType: currentTab === "All" ? "" : currentTab,
+			filter: {
+				linkOperator: "and",
+				pageSize: 20,
+				items: filtersItems,
 			},
-			{
-				search: querySearch,
-				userID: user.id,
-				assetType: currentTab === "All" ? "" : currentTab,
-				filter: {
-					linkOperator: "and",
-					pageSize: 20,
-					items: filtersItems,
-				},
-			},
-		)
-	}, [user, subscribe, collection, state, currentTab, querySearch])
+		})
+	}, [user, query, collection, state, currentTab, querySearch])
+
+	// Effect: set users assets
+	useEffect(() => {
+		if (!payload || loading || error) return
+		setAssets(payload.records)
+	}, [payload, loading, error])
 
 	useEffect(() => {
 		if (user) return
