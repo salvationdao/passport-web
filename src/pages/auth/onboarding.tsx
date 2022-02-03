@@ -7,6 +7,7 @@ import { Control, useForm } from "react-hook-form"
 import { Link as RouterLink, Route, Switch, useHistory, useRouteMatch } from "react-router-dom"
 import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
+import { InputField } from "../../components/form/inputField"
 import { GradientCircleThing, PhaseTypes } from "../../components/home/gradientCircleThing"
 import { Loading } from "../../components/loading"
 import { Transition, TransitionState } from "../../components/transition"
@@ -394,10 +395,24 @@ export const PasswordRequirement: React.FC<PasswordRequirementProps> = ({ fulfil
 
 interface PassportReadyProps {}
 
+enum Step {
+	YourPassportIsReadyStep,
+	LetsSetUpYourProfileStep,
+	UsernameStep,
+	UploadStep,
+	SuccessStep,
+}
+
 export const PassportReady: React.FC<PassportReadyProps> = () => {
+	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
 	const { user } = AuthContainer.useContainer()
 	const history = useHistory()
-	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
+
+	// Username form
+	const { control, handleSubmit, watch, trigger, reset } = useForm<{
+		username: string
+	}>()
+	const username = watch("username")
 
 	// Image uploads
 	const [loading, setLoading] = useState(false)
@@ -408,14 +423,12 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	const maxFileSize = 1e7
 
 	// Steps
-	const [step, setStep] = useState(0)
+	const [step, setStep] = useState<Step>(Step.YourPassportIsReadyStep)
 
-	enum Step {
-		YourPassportIsReadyStep,
-		LetsSetUpYourProfileStep,
-		UploadStep,
-		SuccessStep,
-	}
+	const validUsername = useCallback(async (): Promise<boolean> => {
+		// check username isn't empty
+		return await trigger("username")
+	}, [trigger])
 
 	const onSubmit = async () => {
 		if (!file || !user) return
@@ -432,6 +445,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 			const avatarID = r.payload.id
 			const resp = await send<User>(HubKey.UserUpdate, {
 				id: user.id,
+				username,
 				avatarID,
 			})
 
@@ -469,7 +483,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 		const timeout = setTimeout(() => {
 			setStep(Step.LetsSetUpYourProfileStep)
 			timeout2 = setTimeout(() => {
-				setStep(Step.UploadStep)
+				setStep(Step.UsernameStep)
 			}, 2000)
 		}, 2000)
 
@@ -599,6 +613,53 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 							)}
 							<MiddleText show={step === Step.YourPassportIsReadyStep}>Your passport is ready</MiddleText>
 							<MiddleText show={step === Step.LetsSetUpYourProfileStep}>Let's set up your profile</MiddleText>
+							<FadeTransition
+								show={step === Step.UsernameStep}
+								component="form"
+								onSubmit={async (e: any) => {
+									e.preventDefault()
+									if (!(await validUsername())) return
+									setStep(Step.UploadStep)
+								}}
+								sx={{
+									position: "absolute",
+									top: "50%",
+									left: "50%",
+									transform: "translate(-50%, -50%)",
+								}}
+							>
+								<Typography
+									variant="h1"
+									component="p"
+									sx={{
+										lineHeight: 1,
+										fontSize: "3rem",
+										textTransform: "uppercase",
+										textAlign: "center",
+									}}
+								>
+									Enter your username
+								</Typography>
+								<InputField
+									name="username"
+									label="Username"
+									control={control}
+									rules={{ required: "Username is required" }}
+									disabled={loading}
+									variant="filled"
+									autoFocus
+									fullWidth
+								/>
+								<FancyButton
+									sx={{
+										marginTop: "1rem",
+									}}
+									type="submit"
+									color="primary"
+								>
+									Next
+								</FancyButton>
+							</FadeTransition>
 							<MiddleText show={loading}>Loading...</MiddleText>
 						</Box>
 						<FadeTransition show={step === Step.UploadStep && !loading} occupySpace>
