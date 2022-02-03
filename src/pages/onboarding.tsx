@@ -214,7 +214,7 @@ const SignUp = () => {
 								<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
 									contain at least <strong>1 number</strong>
 								</PasswordRequirement>
-								<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password)}>
+								<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)}>
 									contain at least <strong>1 symbol</strong>
 								</PasswordRequirement>
 							</ul>
