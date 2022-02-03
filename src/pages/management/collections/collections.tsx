@@ -118,7 +118,6 @@ export const CollectionsPage: React.FC = () => {
 
 const CollectionAssets: React.FC<{ collection: Collection; user: User }> = ({ collection, user }) => {
 	const history = useHistory()
-	const { subscribe } = useWebsocket()
 	const { loading, error, payload, query } = useQuery<{ records: Asset[]; total: number }>(HubKey.AssetList, false)
 	const [assets, setAssets] = useState<Asset[]>([])
 
@@ -146,7 +145,7 @@ const CollectionAssets: React.FC<{ collection: Collection; user: User }> = ({ co
 				],
 			},
 		})
-	}, [user.id, subscribe, collection.id])
+	}, [user.id, query, collection.id])
 
 	// Effect: set user's collection's assets
 	useEffect(() => {
