@@ -394,7 +394,7 @@ export const PasswordRequirement: React.FC<PasswordRequirementProps> = ({ fulfil
 
 interface PassportReadyProps {}
 
-const PassportReady: React.FC<PassportReadyProps> = () => {
+export const PassportReady: React.FC<PassportReadyProps> = () => {
 	const { user } = AuthContainer.useContainer()
 	const history = useHistory()
 	const [step, setStep] = useState(0)

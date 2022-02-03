@@ -1,6 +1,7 @@
 import MetaMaskOnboarding from "@metamask/onboarding"
 import { Alert } from "@mui/material"
 import { useState } from "react"
+import { useHistory } from "react-router-dom"
 import { MetaMaskIcon } from "../assets"
 import { AuthContainer } from "../containers"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -18,6 +19,7 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, onFailure,
 	const { loginMetamask, signUpMetamask } = AuthContainer.useContainer()
 	const { metaMaskState, connect } = useWeb3()
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
+	const history = useHistory()
 
 	return (
 		<>
@@ -30,21 +32,21 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, onFailure,
 					if (metaMaskState === MetaMaskState.Active) {
 						if (onClick && !(await onClick())) return
 
-						let err: string | null = null
-						if (signUp) {
-							// If signup
-							err = await signUpMetamask(signUp.username)
-						} else {
-							//  If login
-							err = await loginMetamask()
-						}
-
-						if (err) {
-							if (onFailure) {
-								onFailure(err)
-								return
+						try {
+							if (signUp) {
+								// If signup
+								await signUpMetamask(signUp.username)
+							} else {
+								//  If login
+								const resp = await loginMetamask()
+								if (!resp || !resp.isNew) return
+								history.push("/onboarding")
 							}
-							setErrorMessage(err)
+						} catch (e) {
+							if (onFailure) {
+								onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
+							}
+							setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 						}
 						return
 					}

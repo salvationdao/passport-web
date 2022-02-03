@@ -60,7 +60,9 @@ export const LoginPage: React.FC = () => {
 			}
 			setErrorMessage(null)
 			const r = response as GoogleLoginResponse
-			await loginGoogle(r.tokenId)
+			const resp = await loginGoogle(r.tokenId)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -77,7 +79,9 @@ export const LoginPage: React.FC = () => {
 			}
 			setErrorMessage(null)
 			const r = response as ReactFacebookLoginInfo
-			await loginFacebook(r.accessToken)
+			const resp = await loginFacebook(r.accessToken)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -89,7 +93,9 @@ export const LoginPage: React.FC = () => {
 	const onTwitchLogin = async (response: ReactTwitchLoginResponse) => {
 		try {
 			setErrorMessage(null)
-			await loginTwitch(response.token)
+			const resp = await loginTwitch(response.token)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -101,7 +107,9 @@ export const LoginPage: React.FC = () => {
 	const onTwitterLogin = async (response: ReactTwitterLoginResponse) => {
 		try {
 			setErrorMessage(null)
-			await loginTwitter(response.token, response.verifier)
+			const resp = await loginTwitter(response.token, response.verifier)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -113,7 +121,9 @@ export const LoginPage: React.FC = () => {
 	const onDiscordLogin = async (response: ReactDiscordLoginResponse) => {
 		try {
 			setErrorMessage(null)
-			await loginDiscord(response.code)
+			const resp = await loginDiscord(response.code)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}

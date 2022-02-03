@@ -15,6 +15,7 @@ import {
 	GoogleSignUpRequest,
 	PasswordLoginRequest,
 	PasswordLoginResponse,
+	RegisterResponse,
 	RemoveServiceRequest,
 	RemoveServiceResponse,
 	TokenLoginRequest,
@@ -84,7 +85,7 @@ export const AuthContainer = createContainer(() => {
 				admin,
 				sessionID,
 			})
-			if (!resp || !resp.user) {
+			if (!resp || !resp.user || !resp.token) {
 				localStorage.clear()
 				setUser(null)
 				return
@@ -137,7 +138,7 @@ export const AuthContainer = createContainer(() => {
 			if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
 
 			try {
-				const resp = await send<PasswordLoginResponse, WalletSignUpRequest>(HubKey.AuthSignUpWallet, {
+				const resp = await send<RegisterResponse, WalletSignUpRequest>(HubKey.AuthSignUpWallet, {
 					publicAddress: account,
 					username,
 					sessionID,
@@ -166,7 +167,7 @@ export const AuthContainer = createContainer(() => {
 	 *
 	 * @param token Metamask public address
 	 */
-	const loginMetamask = useCallback(async (): Promise<string | null> => {
+	const loginMetamask = useCallback(async () => {
 		if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
 
 		try {
@@ -176,21 +177,22 @@ export const AuthContainer = createContainer(() => {
 				signature,
 				sessionID,
 			})
-			setUser(resp.user)
-			if (!resp || !resp.user) {
+			if (!resp || !resp.user || !resp.token) {
 				localStorage.clear()
 				setUser(null)
-				return null
+				return
 			}
 			setUser(resp.user)
 			localStorage.setItem("token", resp.token)
 			setAuthorised(true)
+
+			return resp
 		} catch (e) {
 			localStorage.clear()
 			setUser(null)
-			return typeof e === "string" ? e : "Something went wrong, please try again."
+			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
-		return null
+		return
 	}, [send, state, account, metaMaskState, sign, sessionID])
 
 	/**
@@ -202,7 +204,7 @@ export const AuthContainer = createContainer(() => {
 				return null
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, GoogleSignUpRequest>(HubKey.AuthSignUpGoogle, {
+				const resp = await send<RegisterResponse, GoogleSignUpRequest>(HubKey.AuthSignUpGoogle, {
 					token,
 					username,
 					sessionID,
@@ -239,8 +241,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					sessionID,
 				})
-				setUser(resp.user)
-				if (!resp || !resp.user) {
+				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
 					setUser(null)
 					return null
@@ -248,6 +249,8 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
 				setAuthorised(true)
+
+				return resp
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
@@ -267,7 +270,7 @@ export const AuthContainer = createContainer(() => {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, FacebookSignUpRequest>(HubKey.AuthSignUpFacebook, {
+				const resp = await send<RegisterResponse, FacebookSignUpRequest>(HubKey.AuthSignUpFacebook, {
 					token,
 					username,
 					sessionID,
@@ -280,7 +283,6 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
-
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
@@ -307,16 +309,16 @@ export const AuthContainer = createContainer(() => {
 					token,
 					sessionID,
 				})
-				setUser(resp.user)
-				if (!resp || !resp.user) {
+				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
 					setUser(null)
 					return
 				}
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
-
 				setAuthorised(true)
+
+				return resp
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
@@ -336,7 +338,7 @@ export const AuthContainer = createContainer(() => {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TwitchSignUpRequest>(HubKey.AuthSignUpTwitch, {
+				const resp = await send<RegisterResponse, TwitchSignUpRequest>(HubKey.AuthSignUpTwitch, {
 					token,
 					username,
 					sessionID,
@@ -375,8 +377,7 @@ export const AuthContainer = createContainer(() => {
 					sessionID,
 					website: true,
 				})
-				setUser(resp.user)
-				if (!resp || !resp.user) {
+				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
 					setUser(null)
 					return
@@ -384,6 +385,8 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
 				setAuthorised(true)
+
+				return resp
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
@@ -403,7 +406,7 @@ export const AuthContainer = createContainer(() => {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, TwitterSignUpRequest>(HubKey.AuthSignUpTwitter, {
+				const resp = await send<RegisterResponse, TwitterSignUpRequest>(HubKey.AuthSignUpTwitter, {
 					oauthToken,
 					oauthVerifier,
 					username,
@@ -442,8 +445,7 @@ export const AuthContainer = createContainer(() => {
 					oauthVerifier,
 					sessionID,
 				})
-				setUser(resp.user)
-				if (!resp || !resp.user) {
+				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
 					setUser(null)
 					return
@@ -451,6 +453,8 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
 				setAuthorised(true)
+
+				return resp
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)
@@ -470,7 +474,7 @@ export const AuthContainer = createContainer(() => {
 				return
 			}
 			try {
-				const resp = await send<PasswordLoginResponse, DiscordSignUpRequest>(HubKey.AuthSignUpDiscord, {
+				const resp = await send<RegisterResponse, DiscordSignUpRequest>(HubKey.AuthSignUpDiscord, {
 					code,
 					username,
 					sessionID,
@@ -509,8 +513,7 @@ export const AuthContainer = createContainer(() => {
 					sessionID,
 					redirectURI: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				})
-				setUser(resp.user)
-				if (!resp || !resp.user) {
+				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
 					setUser(null)
 					return
@@ -518,6 +521,8 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
 				setAuthorised(true)
+
+				return resp
 			} catch (e) {
 				localStorage.clear()
 				setUser(null)

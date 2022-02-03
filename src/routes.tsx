@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
 import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { useAuth } from "./containers/auth"
 import { LoginPage } from "./pages/auth/login"
-import { Onboarding } from "./pages/auth/onboarding"
+import { PassportReady } from "./pages/auth/onboarding"
 import { Home } from "./pages/home"
 import { CollectionsPage } from "./pages/management/collections/collections"
 import { ProfilePage } from "./pages/profile"
@@ -24,7 +24,7 @@ export const Routes = () => {
 				<Switch>
 					<Route exact path="/" component={Home} />
 					<Route path="/login" component={LoginPage} />
-					<Route path="/onboarding" component={Onboarding} />
+					<Route path="/onboarding" component={PassportReady} />
 					<Route path="/profile" component={ProfilePage} />
 					<Route path="/wallet" component={WalletPage} />
 					<Route path="/collections/assets/:tokenID" component={ViewPage.Asset} />

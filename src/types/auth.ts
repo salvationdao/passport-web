@@ -15,6 +15,7 @@ export interface PasswordLoginRequest {
 export interface PasswordLoginResponse {
 	user: User
 	token: string
+	isNew: boolean
 }
 
 export interface TokenLoginRequest {
