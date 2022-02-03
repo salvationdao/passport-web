@@ -108,8 +108,8 @@ export const CollectionsPage: React.FC = () => {
 					justifyContent: "center",
 				}}
 			>
-				{collections.map((c) => {
-					return <CollectionAssets collection={c} user={user} />
+				{collections.map((c, i) => {
+					return <CollectionAssets key={i} collection={c} user={user} />
 				})}
 			</Paper>
 		</Box>
@@ -119,40 +119,40 @@ export const CollectionsPage: React.FC = () => {
 const CollectionAssets: React.FC<{ collection: Collection; user: User }> = ({ collection, user }) => {
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
+	const { loading, error, payload, query } = useQuery<{ records: Asset[]; total: number }>(HubKey.AssetList, false)
 	const [assets, setAssets] = useState<Asset[]>([])
 
-	// Effect: get and set user's collection's assets, limit to 4
+	// Effect: get user's collection's assets, limit to 4
 	useEffect(() => {
 		if (!user.id) return
-		return subscribe<{ records: Asset[]; total: number }>(
-			HubKey.AssetList,
-			(payload) => {
-				if (!payload) return
-				setAssets(payload.records)
+		query({
+			userID: user.id,
+			filter: {
+				linkOperator: "and",
+				pageSize: 4,
+				items: [
+					// filter by collection id
+					{
+						columnField: "collection_id",
+						operatorValue: "=",
+						value: collection.id,
+					},
+					// filter by user id
+					{
+						columnField: "user_id",
+						operatorValue: "=",
+						value: user.id,
+					},
+				],
 			},
-			{
-				userID: user.id,
-				filter: {
-					linkOperator: "and",
-					pageSize: 4,
-					items: [
-						// filter by collection id
-						{
-							columnField: "collection_id",
-							operatorValue: "=",
-							value: collection.id,
-						},
-						// filter by user id
-						{
-							columnField: "user_id",
-							operatorValue: "=",
-							value: user.id,
-						},
-					],
-				},
-			},
-		)
+		})
 	}, [user.id, subscribe, collection.id])
+
+	// Effect: set user's collection's assets
+	useEffect(() => {
+		if (error || loading || !payload) return
+		setAssets(payload.records)
+	}, [payload, error, loading])
 
 	return (
 		<Box sx={{ marginBottom: "30px", marginLeft: "15px", marginRight: "15px" }}>

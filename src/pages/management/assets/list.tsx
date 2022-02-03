@@ -1,4 +1,4 @@
-import { Box, Paper, styled, Tab, TabProps, Tabs } from "@mui/material"
+import { Box, Link, Paper, styled, Tab, TabProps, Tabs, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { AssetCard } from "../../../components/assetCard"
@@ -34,7 +34,7 @@ export const AssetsList = () => {
 
 	// Effect: gets collection
 	useEffect(() => {
-		if (!collection_name || state != SocketState.OPEN) return
+		if (!collection_name || state !== SocketState.OPEN) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -110,7 +110,12 @@ export const AssetsList = () => {
 			>
 				<Box
 					sx={{
-						textAlign: "center",
+						maxWidth: "630px",
+						margin: "0 auto",
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						flexDirection: "column",
 					}}
 				>
 					<SearchBar
@@ -119,6 +124,18 @@ export const AssetsList = () => {
 							setSearch(value)
 						}}
 					/>
+					{user && (
+						<Link
+							href={`/${user?.username}/collections`}
+							sx={{
+								cursor: "pointer",
+								color: "white",
+								textDecoration: "none",
+							}}
+						>
+							<Typography variant={"h5"}> {"< Back to Collections"} </Typography>
+						</Link>
+					)}
 				</Box>
 
 				{/* Filter tabs */}
