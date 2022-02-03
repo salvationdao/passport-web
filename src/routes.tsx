@@ -2,10 +2,10 @@ import { useEffect } from "react"
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
 import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { useAuth } from "./containers/auth"
+import { LoginPage } from "./pages/auth/login"
+import { Onboarding } from "./pages/auth/onboarding"
 import { Home } from "./pages/home"
-import { LoginPage } from "./pages/login"
 import { CollectionsPage } from "./pages/management/collections/collections"
-import { Onboarding } from "./pages/onboarding"
 import { ProfilePage } from "./pages/profile"
 import { Settings } from "./pages/settings"
 import { ViewPage } from "./pages/viewPages"
@@ -22,13 +22,11 @@ export const Routes = () => {
 		<>
 			<Router>
 				<Switch>
-					{/* <Route path="/" component={Portal} /> */}
 					<Route exact path="/" component={Home} />
 					<Route path="/login" component={LoginPage} />
 					<Route path="/onboarding" component={Onboarding} />
 					<Route path="/profile" component={ProfilePage} />
 					<Route path="/wallet" component={WalletPage} />
-
 					<Route path="/collections/assets/:tokenID" component={ViewPage.Asset} />
 					<Route path="/collections/:slug" component={CollectionsPage} />
 					<Route path="/collections" component={CollectionsPage} />

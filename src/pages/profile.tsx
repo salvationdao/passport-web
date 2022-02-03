@@ -25,7 +25,7 @@ import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
 import HubKey from "../keys"
 import { Organisation, Role } from "../types/types"
-import { ConnectionType, PasswordRequirement } from "./onboarding"
+import { ConnectionType, PasswordRequirement } from "./auth/onboarding"
 
 export const ProfilePage: React.FC = () => {
 	const history = useHistory()
