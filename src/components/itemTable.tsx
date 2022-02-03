@@ -183,10 +183,12 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	if (pluralName === name) {
 		console.warn("[ItemTable] 'name' must be singular", name)
 	}
+
 	return (
 		<>
 			{!hideSearch && <SearchBar value={search} onChange={setSearch} placeholder={`Search ${pluralName}...`} loading={loading} />}
 			<DataGridPro
+				getRowId={(row) => row.tokenID || row.id}
 				className={className}
 				columns={props.columns}
 				rows={payload && payload.records ? payload.records : []}

@@ -58,8 +58,6 @@ export const DiscordLogin: React.FC<DiscordLoginProps> = ({ callback, onFailure,
 		// Opens Discord login page in a new window
 		const width = 500
 		const height = 600
-		const top = window.screenY + (window.outerHeight - height) / 2.5
-		const left = window.screenX + (window.outerWidth - width) / 2
 		const popup = window.open(href, "Connect Discord to XSYN Passport", `width=${width},height=${height},popup=1`)
 		if (!popup) {
 			if (onFailure) {
@@ -106,7 +104,6 @@ export const DiscordLogin: React.FC<DiscordLoginProps> = ({ callback, onFailure,
 				const incomingState = params.get("state")
 				// Protect against XSRF attacks
 				if (incomingState !== state) {
-					console.log(true)
 					throw new Error("Something went wrong. Please try again.")
 				}
 

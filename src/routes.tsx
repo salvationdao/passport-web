@@ -5,6 +5,7 @@ import { useAuth } from "./containers/auth"
 import { Home } from "./pages/home"
 import { LoginPage } from "./pages/login"
 import { CollectionsPage } from "./pages/management/collections/collections"
+import { AssetsList } from "./pages/management/assets/list"
 import { Onboarding } from "./pages/onboarding"
 import { ProfilePage } from "./pages/profile"
 import { Settings } from "./pages/settings"
@@ -29,9 +30,14 @@ export const Routes = () => {
 					<Route path="/profile" component={ProfilePage} />
 					<Route path="/wallet" component={WalletPage} />
 
+					{/* users collections (all) */}
+					<Route path="/:username/collections/:collection_name" component={AssetsList} />
+
+					{/* asset view page */}
 					<Route path="/collections/assets/:tokenID" component={ViewPage.Asset} />
-					<Route path="/collections/:slug" component={CollectionsPage} />
-					<Route path="/collections" component={CollectionsPage} />
+
+					{/* users collections (filtered) */}
+					<Route path="/:username/collections" component={CollectionsPage} />
 
 					<Route path="/privacy-policy" component={Home} />
 					<Route path="/terms-and-conditions" component={Home} />

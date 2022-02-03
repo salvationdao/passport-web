@@ -79,7 +79,10 @@ enum HubKey {
 	UserActivityGet = "USER_ACTIVITY:GET",
 	UserActivityCreate = "USER_ACTIVITY:CREATE",
 
-	AssetListUpdated = "ASSET_LIST:SUBSCRIBE",
+	CollectionList = "COLLECTION:LIST",
+	CollectionUpdated = "COLLECTION:SUBSCRIBE",
+
+	AssetList = "ASSET:LIST",
 	AssetUpdated = "ASSET:SUBSCRIBE",
 	AssetJoinQue = "ASSET:QUEUE:JOIN",
 }

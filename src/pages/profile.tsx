@@ -471,12 +471,14 @@ const ProfileEdit: React.FC = () => {
 								Your new password must:
 								<ul>
 									<PasswordRequirement fulfilled={!!password && password.length >= 8}>be 8 or more characters long</PasswordRequirement>
-									<PasswordRequirement fulfilled={!!password && password.toUpperCase() != password && password.toLowerCase() != password}>
+									<PasswordRequirement fulfilled={!!password && password.toUpperCase() !== password && password.toLowerCase() !== password}>
 										contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
 									</PasswordRequirement>
+									{/* eslint-disable-next-line */}
 									<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
 										contain at least <strong>1 number</strong>
 									</PasswordRequirement>
+									{/* eslint-disable-next-line */}
 									<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password)}>
 										contain at least <strong>1 symbol</strong>
 									</PasswordRequirement>
