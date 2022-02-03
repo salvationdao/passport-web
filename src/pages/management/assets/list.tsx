@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { AssetCard } from "../../../components/assetCard"
 import { Navbar } from "../../../components/home/navbar"
+import { SearchBar } from "../../../components/searchBar"
 import { AuthContainer } from "../../../containers/auth"
 import { SocketState, useWebsocket } from "../../../containers/socket"
 import HubKey from "../../../keys"
@@ -15,9 +16,20 @@ export const AssetsList = () => {
 	const { user } = AuthContainer.useContainer()
 	const [assets, setAssets] = useState<Asset[]>([])
 	const [collection, setCollection] = useState<Collection>()
+
+	// search and filter
+	const [search, setSearch] = useState("")
+	const [querySearch, setQuerySearch] = useState("")
 	const [currentTab, setCurrentTab] = useState<string>("All")
 
 	const { collection_name } = useParams<{ collection_name: string }>()
+
+	useEffect(() => {
+		const t = setTimeout(() => {
+			setQuerySearch(search)
+		}, 350)
+		return () => clearTimeout(t)
+	}, [search])
 
 	useEffect(() => {
 		if (!collection_name || state + SocketState.OPEN) return
@@ -62,7 +74,7 @@ export const AssetsList = () => {
 				setAssets(payload.records)
 			},
 			{
-				// search: "", // not yet implemented
+				search: querySearch,
 				userID: user.id,
 				assetType: currentTab === "All" ? "" : currentTab,
 				filter: {
@@ -72,7 +84,7 @@ export const AssetsList = () => {
 				},
 			},
 		)
-	}, [user, subscribe, collection, state, currentTab])
+	}, [user, subscribe, collection, state, currentTab, querySearch])
 
 	useEffect(() => {
 		if (user) return
@@ -100,7 +112,12 @@ export const AssetsList = () => {
 						textAlign: "center",
 					}}
 				>
-					<h1>Search</h1>
+					<SearchBar
+						value={search}
+						onChange={(value: string) => {
+							setSearch(value)
+						}}
+					/>
 				</Box>
 
 				{/* Filter tabs */}
