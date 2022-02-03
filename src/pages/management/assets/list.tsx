@@ -118,12 +118,34 @@ export const AssetsList = () => {
 						flexDirection: "column",
 					}}
 				>
-					<SearchBar
-						value={search}
-						onChange={(value: string) => {
-							setSearch(value)
+					{collection && (
+						<Box
+							sx={{
+								width: "100%",
+								marginBottom: "1.375rem",
+								textAlign: "center",
+								textTransform: "uppercase",
+							}}
+						>
+							{/* TODO: change to collection logo once seeded */}
+							<Typography variant="h1">{collection.name}</Typography>
+						</Box>
+					)}
+
+					<Box
+						sx={{
+							width: "100%",
+							marginBottom: "1.375rem",
 						}}
-					/>
+					>
+						<SearchBar
+							value={search}
+							onChange={(value: string) => {
+								setSearch(value)
+							}}
+						/>
+					</Box>
+
 					{user && (
 						<Link
 							href={`/${user?.username}/collections`}
@@ -131,6 +153,7 @@ export const AssetsList = () => {
 								cursor: "pointer",
 								color: "white",
 								textDecoration: "none",
+								marginBottom: "1.375rem",
 							}}
 						>
 							<Typography variant={"h5"}> {"< Back to Collections"} </Typography>
