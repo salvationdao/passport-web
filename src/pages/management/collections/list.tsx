@@ -20,7 +20,7 @@ export const AssetsList = () => {
 	const { collection_name } = useParams<{ collection_name: string }>()
 
 	useEffect(() => {
-		if (!collection_name || state != SocketState.OPEN) return
+		if (!collection_name || state + SocketState.OPEN) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -35,7 +35,7 @@ export const AssetsList = () => {
 
 	// Effect: get and set user's assets, apply filters
 	useEffect(() => {
-		if (!user || !user.id || state != SocketState.OPEN) return
+		if (!user || !user.id || state !== SocketState.OPEN) return
 
 		const filtersItems: any[] = [
 			// filter by user id
@@ -95,6 +95,14 @@ export const AssetsList = () => {
 					backgroundColor: "transparent",
 				}}
 			>
+				<Box
+					sx={{
+						textAlign: "center",
+					}}
+				>
+					<h1>Search</h1>
+				</Box>
+
 				{/* Filter tabs */}
 				<Tabs
 					value={currentTab}
@@ -112,7 +120,7 @@ export const AssetsList = () => {
 					<StyledTab value="Pilot" label="Pilot" />
 					<StyledTab value="Utility" label="Utility" />
 					<StyledTab value="War Machine" label="War Machine" />
-					<StyledTab value="Weapons" label="Weapon" />
+					<StyledTab value="Weapon" label="Weapons" />
 				</Tabs>
 				<Box
 					sx={{

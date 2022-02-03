@@ -42,7 +42,7 @@ export const CollectionsPage: React.FC = () => {
 				},
 			},
 		)
-	}, [user?.id, subscribe])
+	}, [user, subscribe])
 
 	useEffect(() => {
 		if (user) return

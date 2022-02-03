@@ -208,7 +208,7 @@ const SignUp = () => {
 							Your password must:
 							<ul>
 								<PasswordRequirement fulfilled={!!password && password.length >= 8}>be 8 or more characters long</PasswordRequirement>
-								<PasswordRequirement fulfilled={!!password && password.toUpperCase() != password && password.toLowerCase() != password}>
+								<PasswordRequirement fulfilled={!!password && password.toUpperCase() !== password && password.toLowerCase() !== password}>
 									contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
 								</PasswordRequirement>
 								<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>

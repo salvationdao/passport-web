@@ -12,11 +12,12 @@ import { Asset } from "../types/types"
 interface AssetCardProps extends BoxProps {
 	asset: Asset
 }
-
+// TODO: need to confirm which currencies to be used
 // enum Currency {
 // 	Ethereum,
 // }
 
+// TODO: need to confirm Rarities
 // enum Rarity {
 // 	Epic,
 // 	Legendary,
