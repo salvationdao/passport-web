@@ -397,7 +397,6 @@ interface PassportReadyProps {}
 export const PassportReady: React.FC<PassportReadyProps> = () => {
 	const { user } = AuthContainer.useContainer()
 	const history = useHistory()
-	const [step, setStep] = useState(0)
 	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
 
 	// Image uploads
@@ -407,6 +406,16 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	const [errorMessage, setErrorMessage] = useState<string>()
 	const [file, setFile] = useState<File>()
 	const maxFileSize = 1e7
+
+	// Steps
+	const [step, setStep] = useState(0)
+
+	enum Step {
+		YourPassportIsReadyStep,
+		LetsSetUpYourProfileStep,
+		UploadStep,
+		SuccessStep,
+	}
 
 	const onSubmit = async () => {
 		if (!file || !user) return
@@ -428,7 +437,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 
 			// On success
 			if (resp) {
-				setStep(3)
+				setStep(Step.SuccessStep)
 			}
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
@@ -453,14 +462,14 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 		setFile(file)
 		setErrorMessage(undefined)
 	}, [])
-	const { getRootProps, getInputProps, isDragActive, isFocused } = useDropzone({ onDrop, disabled: step !== 2 || loading })
+	const { getRootProps, getInputProps, isDragActive, isFocused } = useDropzone({ onDrop, disabled: step !== Step.UploadStep || loading })
 
 	useEffect(() => {
 		let timeout2: NodeJS.Timeout
 		const timeout = setTimeout(() => {
-			setStep(1)
+			setStep(Step.LetsSetUpYourProfileStep)
 			timeout2 = setTimeout(() => {
-				setStep(2)
+				setStep(Step.UploadStep)
 			}, 2000)
 		}, 2000)
 
@@ -471,7 +480,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	}, [])
 
 	useEffect(() => {
-		if (step !== 3 || loading) return
+		if (step !== Step.SuccessStep || loading) return
 		const timeout = setTimeout(() => {
 			history.push("/profile")
 		}, 300)
@@ -504,7 +513,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 					minHeight: "100vh",
 				}}
 			>
-				<FadeTransition show={step < 3 || loading}>
+				<FadeTransition show={step < Step.SuccessStep || loading}>
 					<Box
 						sx={{
 							position: "absolute",
@@ -520,7 +529,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 							},
 						}}
 					>
-						<FadeTransition show={step === 2 && !loading} occupySpace>
+						<FadeTransition show={step === Step.UploadStep && !loading} occupySpace>
 							<Typography
 								variant="h1"
 								component="p"
@@ -537,7 +546,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 						<Box
 							{...getRootProps()}
 							ref={(r: HTMLDivElement) => {
-								if (!r || step !== 3) return
+								if (!r || step !== Step.SuccessStep) return
 								uploadCircleRef.current = r
 							}}
 							sx={(theme) => ({
@@ -545,15 +554,15 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 								display: "flex",
 								justifyContent: "center",
 								alignItems: "center",
-								height: step === 2 && !loading ? (isDragActive ? "10rem" : "8rem") : "30rem",
-								width: step === 2 && !loading ? (isDragActive ? "10rem" : "8rem") : "30rem",
+								height: step === Step.UploadStep && !loading ? (isDragActive ? "10rem" : "8rem") : "30rem",
+								width: step === Step.UploadStep && !loading ? (isDragActive ? "10rem" : "8rem") : "30rem",
 								borderRadius: "50%",
 								border: `2px solid ${theme.palette.secondary.main}`,
 								transition:
 									"height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
-								cursor: step === 2 && !loading ? "pointer" : "initial",
+								cursor: step === Step.UploadStep && !loading ? "pointer" : "initial",
 								"&:hover #UploadIcon": {
-									opacity: step === 2 && !loading ? 1 : 0,
+									opacity: step === Step.UploadStep && !loading ? 1 : 0,
 								},
 							})}
 						>
@@ -579,7 +588,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 							>
 								<UploadIcon />
 							</Box>
-							{!!file && step === 2 && !loading && (
+							{!!file && step === Step.UploadStep && !loading && (
 								<Avatar
 									src={URL.createObjectURL(file)}
 									sx={{
@@ -588,11 +597,11 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 									}}
 								/>
 							)}
-							<MiddleText show={step === 0}>Your passport is ready</MiddleText>
-							<MiddleText show={step === 1}>Let's set up your profile</MiddleText>
+							<MiddleText show={step === Step.YourPassportIsReadyStep}>Your passport is ready</MiddleText>
+							<MiddleText show={step === Step.LetsSetUpYourProfileStep}>Let's set up your profile</MiddleText>
 							<MiddleText show={loading}>Loading...</MiddleText>
 						</Box>
-						<FadeTransition show={step === 2 && !loading} occupySpace>
+						<FadeTransition show={step === Step.UploadStep && !loading} occupySpace>
 							<Typography
 								variant="body1"
 								sx={{
@@ -605,7 +614,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 								Drag an image here for your profile picture
 							</Typography>
 						</FadeTransition>
-						<FadeTransition show={step === 2 && !loading}>
+						<FadeTransition show={step === Step.UploadStep && !loading}>
 							<Box
 								sx={{
 									display: "flex",
@@ -615,7 +624,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 								}}
 							>
 								<FadeTransition show={!file} occupySpace>
-									<Button onClick={() => setStep(3)} variant="text">
+									<Button onClick={() => setStep(Step.SuccessStep)} variant="text">
 										Or, skip this step
 									</Button>
 								</FadeTransition>
