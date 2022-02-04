@@ -625,7 +625,6 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 								onSubmit={handleSubmit(async (input) => {
 									setLoading(true)
 									try {
-										console.log(input)
 										const resp = await send<User>(HubKey.UserUsernameUpdate, {
 											username: input.username,
 										})
