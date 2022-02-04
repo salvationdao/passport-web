@@ -30,11 +30,6 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 					flex: 1,
 				}}
 			/>
-			<ProfileButton
-				sx={{
-					marginRight: "2rem",
-				}}
-			/>
 			<MenuButton />
 		</Box>
 	)
@@ -155,12 +150,17 @@ const MenuButton: React.FC = () => {
 					"aria-labelledby": "basic-button",
 				}}
 				PaperProps={{
-					sx: (theme) => ({
+					sx: {
 						padding: "1rem",
-						backgroundColor: theme.palette.background.default,
-					}),
+						backgroundColor: "rgba(0, 0, 0, .6)",
+					},
 				}}
 			>
+				<ProfileButton
+					sx={{
+						zIndex: 1,
+					}}
+				/>
 				<MenuList>
 					{!!user ? (
 						[

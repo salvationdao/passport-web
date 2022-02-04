@@ -1,23 +1,19 @@
 import MetaMaskOnboarding from "@metamask/onboarding"
-import { Alert } from "@mui/material"
-import { useState } from "react"
+import { useHistory } from "react-router-dom"
 import { MetaMaskIcon } from "../assets"
 import { AuthContainer } from "../containers"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { FancyButton, FancyButtonProps } from "./fancyButton"
 
 interface LoginMetaMaskProps extends FancyButtonProps {
-	signUp?: {
-		username: string
-	}
 	onFailure?: (err: string) => void
 	onClick?: () => Promise<boolean> // return false to stop login
 }
 
-export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, onFailure, onClick, ...props }) => {
-	const { loginMetamask, signUpMetamask } = AuthContainer.useContainer()
+export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ onFailure, onClick, ...props }) => {
+	const { loginMetamask } = AuthContainer.useContainer()
 	const { metaMaskState, connect } = useWeb3()
-	const [errorMessage, setErrorMessage] = useState<string | null>(null)
+	const history = useHistory()
 
 	return (
 		<>
@@ -30,21 +26,14 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, onFailure,
 					if (metaMaskState === MetaMaskState.Active) {
 						if (onClick && !(await onClick())) return
 
-						let err: string | null = null
-						if (signUp) {
-							// If signup
-							err = await signUpMetamask(signUp.username)
-						} else {
-							//  If login
-							err = await loginMetamask()
-						}
-
-						if (err) {
+						try {
+							const resp = await loginMetamask()
+							if (!resp || !resp.isNew) return
+							history.push("/onboarding?skip_username=true")
+						} catch (e) {
 							if (onFailure) {
-								onFailure(err)
-								return
+								onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
 							}
-							setErrorMessage(err)
 						}
 						return
 					}
@@ -65,15 +54,8 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, onFailure,
 					? "Install MetaMask"
 					: metaMaskState === MetaMaskState.NotLoggedIn
 					? "Connect and sign into your MetaMask to continue"
-					: signUp
-					? "Sign up with MetaMask"
 					: "Login With MetaMask"}
 			</FancyButton>
-			{errorMessage && (
-				<Alert severity="error" sx={{ mt: "20px", maxWidth: "600px" }}>
-					{errorMessage}
-				</Alert>
-			)}
 		</>
 	)
 }

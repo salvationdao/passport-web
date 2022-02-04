@@ -32,6 +32,7 @@ enum HubKey {
 	UserCreate = "USER:CREATE",
 	UserUpdate = "USER:UPDATE",
 	/** Tracks user changes */
+	UserUsernameUpdate = "USER:USERNAME:UPDATE",
 	UserUpdated = "USER:SUBSCRIBE",
 	UserArchive = "USER:ARCHIVE",
 	UserUnarchive = "USER:UNARCHIVE",
