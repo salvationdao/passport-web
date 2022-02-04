@@ -4,6 +4,7 @@ import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { useAuth } from "./containers/auth"
 import { LoginPage } from "./pages/auth/login"
 import { PassportReady } from "./pages/auth/onboarding"
+import { SignUpPage } from "./pages/auth/signup"
 import { Home } from "./pages/home"
 import { CollectionsPage } from "./pages/management/collections/collections"
 import { ProfilePage } from "./pages/profile"
@@ -24,6 +25,7 @@ export const Routes = () => {
 				<Switch>
 					<Route exact path="/" component={Home} />
 					<Route path="/login" component={LoginPage} />
+					<Route path="/signup" component={SignUpPage} />
 					<Route path="/onboarding" component={PassportReady} />
 					<Route path="/profile" component={ProfilePage} />
 					<Route path="/wallet" component={WalletPage} />

@@ -211,77 +211,85 @@ export const LoginPage: React.FC = () => {
 					}}
 				>
 					{showEmailLogin ? (
-						<Box
-							component="form"
-							onSubmit={onEmailLogin}
-							sx={{
-								"& > *:not(:last-child)": {
-									marginBottom: "1rem",
-								},
-							}}
-						>
-							<InputField
-								name="email"
-								label="Email"
-								type="email"
-								control={control}
-								rules={{
-									required: "Email is required",
-									pattern: {
-										value: /.+@.+\..+/,
-										message: "Invalid email address",
-									},
-								}}
-								fullWidth
-								autoFocus
-								variant="standard"
-								disabled={loading}
-							/>
-							<InputField
-								name="password"
-								label="Password"
-								type="password"
-								control={control}
-								placeholder="Password"
-								fullWidth
-								variant="standard"
-								disabled={loading}
-								rules={{
-									required: "Password is required",
-								}}
-							/>
+						<>
 							<Box
+								component="form"
+								onSubmit={onEmailLogin}
 								sx={{
-									display: "flex",
 									"& > *:not(:last-child)": {
-										marginRight: ".5rem",
+										marginBottom: "1rem",
 									},
 								}}
 							>
-								<FancyButton
-									type="button"
-									onClick={() => {
-										reset(undefined, {
-											keepValues: true,
-										})
-										setAnimationPhase("default")
-										setShowEmailLogin(false)
+								<InputField
+									name="email"
+									label="Email"
+									type="email"
+									control={control}
+									rules={{
+										required: "Email is required",
+										pattern: {
+											value: /.+@.+\..+/,
+											message: "Invalid email address",
+										},
 									}}
-								>
-									Back
-								</FancyButton>
-								<FancyButton
-									type="submit"
-									color="primary"
-									loading={loading}
+									fullWidth
+									autoFocus
+									variant="standard"
+									disabled={loading}
+								/>
+								<InputField
+									name="password"
+									label="Password"
+									type="password"
+									control={control}
+									placeholder="Password"
+									fullWidth
+									variant="standard"
+									disabled={loading}
+									rules={{
+										required: "Password is required",
+									}}
+								/>
+								<Box
 									sx={{
-										flexGrow: 1,
+										display: "flex",
+										"& > *:not(:last-child)": {
+											marginRight: ".5rem",
+										},
 									}}
 								>
-									Log In
-								</FancyButton>
+									<FancyButton
+										type="button"
+										onClick={() => {
+											reset(undefined, {
+												keepValues: true,
+											})
+											setAnimationPhase("default")
+											setShowEmailLogin(false)
+										}}
+									>
+										Back
+									</FancyButton>
+									<FancyButton
+										type="submit"
+										color="primary"
+										loading={loading}
+										sx={{
+											flexGrow: 1,
+										}}
+									>
+										Log In
+									</FancyButton>
+								</Box>
 							</Box>
-						</Box>
+							<Typography variant="subtitle1" marginTop="1rem">
+								Don't have an account?{" "}
+								<Link component={RouterLink} to="/signup">
+									Sign up here
+								</Link>
+							</Typography>
+						</>
 					) : (
 						<Box
 							sx={{
@@ -405,12 +413,6 @@ export const LoginPage: React.FC = () => {
 							</FancyButton>
 						</Box>
 					)}
-					<Typography variant="subtitle1" marginTop="1rem">
-						Don't have an account?{" "}
-						<Link component={RouterLink} to="/onboarding">
-							Sign up here
-						</Link>
-					</Typography>
 				</Box>
 			</Box>
 		</>

@@ -1,25 +1,40 @@
-import { Box } from "@mui/material"
-import React, { useState } from "react"
-import { UseFormHandleSubmit, UseFormTrigger } from "react-hook-form"
-import { FancyButton } from "../../../components/fancyButton"
-import { InputField } from "../../../components/form/inputField"
-import { useAuth } from "../../../containers/auth"
-import { useWebsocket } from "../../../containers/socket"
-import HubKey from "../../../keys"
-import { RegisterResponse } from "../../../types/auth"
-import { OauthSignUpProps, PasswordRequirement, SignUpInput } from "../onboarding"
+import { Alert, Box, Snackbar, Typography } from "@mui/material"
+import React, { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { Link as RouterLink, useHistory } from "react-router-dom"
+import { XSYNLogo } from "../../assets"
+import { FancyButton } from "../../components/fancyButton"
+import { InputField } from "../../components/form/inputField"
+import { GradientCircleThing } from "../../components/home/gradientCircleThing"
+import { Loading } from "../../components/loading"
+import { useAuth } from "../../containers/auth"
+import { useWebsocket } from "../../containers/socket"
+import HubKey from "../../keys"
+import { fonts } from "../../theme"
+import { RegisterResponse } from "../../types/auth"
+import { PasswordRequirement } from "./onboarding"
 
-export interface EmailSignUpProps extends OauthSignUpProps {
+interface SignUpInput {
+	username: string
+	firstName?: string
+	lastName?: string
+	email?: string
 	password?: string
-	setLoading: React.Dispatch<React.SetStateAction<boolean>>
-	handleSubmit: UseFormHandleSubmit<SignUpInput>
-	trigger: UseFormTrigger<SignUpInput>
 }
 
-export const EmailSignUp: React.FC<EmailSignUpProps> = ({ password, setLoading, handleSubmit, trigger, control, loading, onBack, setErrorMessage }) => {
-	const [currentStep, setCurrentStep] = useState(0)
+export const SignUpPage: React.FC = () => {
+	const history = useHistory()
 	const { send } = useWebsocket()
-	const { setUser } = useAuth()
+	const { setUser, user } = useAuth()
+
+	const [loading, setLoading] = useState(false)
+	const [errorMessage, setErrorMessage] = useState<string | undefined>()
+
+	// Form
+	const { control, handleSubmit, watch, trigger } = useForm<SignUpInput>()
+	const password = watch("password")
+
+	const [currentStep, setCurrentStep] = useState(0)
 
 	const renderStep1 = () => (
 		<Box
@@ -32,6 +47,8 @@ export const EmailSignUp: React.FC<EmailSignUpProps> = ({ password, setLoading, 
 					const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
 					setUser(resp.user)
 					localStorage.setItem("token", resp.token)
+
+					history.push("/onboarding")
 				} catch (e) {
 					setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 				} finally {
@@ -148,7 +165,7 @@ export const EmailSignUp: React.FC<EmailSignUpProps> = ({ password, setLoading, 
 					},
 				}}
 			>
-				<FancyButton type="button" onClick={() => onBack()}>
+				<FancyButton type="button" onClick={() => history.goBack()}>
 					Back
 				</FancyButton>
 				<FancyButton
@@ -164,10 +181,89 @@ export const EmailSignUp: React.FC<EmailSignUpProps> = ({ password, setLoading, 
 		</Box>
 	)
 
+	useEffect(() => {
+		if (!user) return
+
+		const userTimeout = setTimeout(() => {
+			history.push("/")
+		}, 2000)
+		return () => clearTimeout(userTimeout)
+	}, [user, history])
+
+	if (user) {
+		return <Loading text="You are already logged in, redirecting to home page..." />
+	}
+
 	return (
 		<>
-			{currentStep === 0 && renderStep0()}
-			{currentStep === 1 && renderStep1()}
+			<Snackbar
+				open={!!errorMessage}
+				autoHideDuration={3000}
+				onClose={(_, reason) => {
+					if (reason === "clickaway") {
+						return
+					}
+
+					setErrorMessage(undefined)
+				}}
+				message={errorMessage}
+			>
+				<Alert severity="error">{errorMessage}</Alert>
+			</Snackbar>
+			<Box
+				sx={{
+					overflow: "hidden",
+					position: "relative",
+					minHeight: "100vh",
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					flexDirection: "column",
+					padding: "3rem",
+				}}
+			>
+				<GradientCircleThing
+					sx={{
+						zIndex: -1,
+						position: "absolute",
+						top: "50%",
+						left: "50%",
+						transform: "translate(-50%, -50%)",
+					}}
+					phase={"small"}
+					disableAnimations
+					hideInner
+				/>
+				<RouterLink to="/">
+					<Box
+						component={XSYNLogo}
+						sx={{
+							width: "100px",
+							marginBottom: "1rem",
+						}}
+					/>
+				</RouterLink>
+				<Typography
+					variant="h1"
+					sx={{
+						marginBottom: "1rem",
+						fontFamily: fonts.bizmobold,
+						fontSize: "3rem",
+						textTransform: "uppercase",
+					}}
+				>
+					Sign Up
+				</Typography>
+				<Box
+					sx={{
+						width: "100%",
+						maxWidth: "400px",
+					}}
+				>
+					{currentStep === 0 && renderStep0()}
+					{currentStep === 1 && renderStep1()}
+				</Box>
+			</Box>
 		</>
 	)
 }
