@@ -148,7 +148,7 @@ export const AssetsList = () => {
 
 					{user && (
 						<Link
-							href={`/${user?.username}/collections`}
+							onClick={() => history.push(`/${user.username}/collections`)}
 							sx={{
 								cursor: "pointer",
 								color: "white",
