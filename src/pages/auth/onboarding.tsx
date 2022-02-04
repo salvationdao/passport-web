@@ -49,7 +49,7 @@ export const Onboarding: React.FC = () => {
  * Onboarding Page to Sign up New Users
  */
 const SignUp = () => {
-	const { path, url } = useRouteMatch()
+	const { path } = useRouteMatch()
 	const history = useHistory()
 
 	const { user } = useAuth()
@@ -409,10 +409,9 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	const history = useHistory()
 
 	// Username form
-	const { control, handleSubmit, watch, trigger, reset } = useForm<{
+	const { control, handleSubmit } = useForm<{
 		username: string
 	}>()
-	const username = watch("username")
 
 	// Image uploads
 	const [loading, setLoading] = useState(false)
@@ -425,12 +424,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	// Steps
 	const [step, setStep] = useState<Step>(Step.YourPassportIsReadyStep)
 
-	const validUsername = useCallback(async (): Promise<boolean> => {
-		// check username isn't empty
-		return await trigger("username")
-	}, [trigger])
-
-	const onSubmit = async () => {
+	const onSubmitAvatar = async () => {
 		if (!file || !user) return
 
 		try {
@@ -445,7 +439,6 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 			const avatarID = r.payload.id
 			const resp = await send<User>(HubKey.UserUpdate, {
 				id: user.id,
-				username,
 				avatarID,
 			})
 
@@ -503,6 +496,19 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 			clearTimeout(timeout)
 		}
 	}, [step, loading, history])
+
+	useEffect(() => {
+		if (user) return
+
+		const userTimeout = setTimeout(() => {
+			history.push("/login")
+		}, 2000)
+		return () => clearTimeout(userTimeout)
+	}, [user, history])
+
+	if (!user) {
+		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+	}
 
 	return (
 		<>
@@ -614,13 +620,26 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 							<MiddleText show={step === Step.YourPassportIsReadyStep}>Your passport is ready</MiddleText>
 							<MiddleText show={step === Step.LetsSetUpYourProfileStep}>Let's set up your profile</MiddleText>
 							<FadeTransition
-								show={step === Step.UsernameStep}
+								show={step === Step.UsernameStep && !loading}
 								component="form"
-								onSubmit={async (e: any) => {
-									e.preventDefault()
-									if (!(await validUsername())) return
-									setStep(Step.UploadStep)
-								}}
+								onSubmit={handleSubmit(async (input) => {
+									setLoading(true)
+									try {
+										console.log(input)
+										const resp = await send<User>(HubKey.UserUsernameUpdate, {
+											username: input.username,
+										})
+
+										// On success
+										if (resp) {
+											setStep(Step.UploadStep)
+										}
+									} catch (e) {
+										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									} finally {
+										setLoading(false)
+									}
+								})}
 								sx={{
 									position: "absolute",
 									top: "50%",
@@ -695,7 +714,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 									</Button>
 								</FadeTransition>
 								<FadeTransition show={!!file}>
-									<Button onClick={() => onSubmit()} variant="contained">
+									<Button onClick={() => onSubmitAvatar()} variant="contained">
 										Submit Profile Image
 									</Button>
 								</FadeTransition>
