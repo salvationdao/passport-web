@@ -474,6 +474,7 @@ const ProfileEdit: React.FC = () => {
 									<PasswordRequirement fulfilled={!!password && password.toUpperCase() !== password && password.toLowerCase() !== password}>
 										contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
 									</PasswordRequirement>
+									{/* eslint-disable-next-line */}
 									<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
 										contain at least <strong>1 number</strong>
 									</PasswordRequirement>
