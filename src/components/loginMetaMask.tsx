@@ -1,7 +1,4 @@
 import MetaMaskOnboarding from "@metamask/onboarding"
-import { Alert } from "@mui/material"
-import { useState } from "react"
-import { useHistory } from "react-router-dom"
 import { MetaMaskIcon } from "../assets"
 import { AuthContainer } from "../containers"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -18,8 +15,6 @@ interface LoginMetaMaskProps extends FancyButtonProps {
 export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, onFailure, onClick, ...props }) => {
 	const { loginMetamask, signUpMetamask } = AuthContainer.useContainer()
 	const { metaMaskState, connect } = useWeb3()
-	const [errorMessage, setErrorMessage] = useState<string | null>(null)
-	const history = useHistory()
 
 	return (
 		<>
@@ -38,15 +33,12 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, onFailure,
 								await signUpMetamask(signUp.username)
 							} else {
 								//  If login
-								const resp = await loginMetamask()
-								if (!resp || !resp.isNew) return
-								history.push("/onboarding")
+								await loginMetamask()
 							}
 						} catch (e) {
 							if (onFailure) {
 								onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
 							}
-							setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 						}
 						return
 					}
@@ -71,11 +63,6 @@ export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, onFailure,
 					? "Sign up with MetaMask"
 					: "Login With MetaMask"}
 			</FancyButton>
-			{errorMessage && (
-				<Alert severity="error" sx={{ mt: "20px", maxWidth: "600px" }}>
-					{errorMessage}
-				</Alert>
-			)}
 		</>
 	)
 }

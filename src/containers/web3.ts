@@ -1,6 +1,6 @@
+import { ethers } from "ethers"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
-import { ethers } from "ethers"
 import { GetNonceResponse } from "../types/auth"
 
 export enum MetaMaskState {
@@ -94,6 +94,7 @@ export const Web3Container = createContainer(() => {
 		return jsn.nonce
 	}, [])
 
+	// Returns an empty string if user does not exist
 	const sign = useCallback(
 		async (userID?: string): Promise<string> => {
 			if (!provider) return ""

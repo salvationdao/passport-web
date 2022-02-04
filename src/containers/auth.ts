@@ -26,7 +26,7 @@ import {
 	TwitterSignUpRequest,
 	VerifyAccountResponse,
 	WalletLoginRequest,
-	WalletSignUpRequest,
+	WalletSignUpRequest
 } from "../types/auth"
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
@@ -171,7 +171,7 @@ export const AuthContainer = createContainer(() => {
 		if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
 
 		try {
-			let signature = await sign()
+			const signature = await sign()
 			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 				publicAddress: account,
 				signature,
