@@ -48,7 +48,7 @@ export const SignUpPage: React.FC = () => {
 					setUser(resp.user)
 					localStorage.setItem("token", resp.token)
 
-					history.push("/onboarding")
+					history.push("/onboarding?skip_username=true")
 				} catch (e) {
 					setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 				} finally {

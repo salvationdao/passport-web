@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { useMutation } from "react-fetching-library"
 import { useForm } from "react-hook-form"
-import { useHistory } from "react-router-dom"
+import { useHistory, useLocation } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { InputField } from "../../components/form/inputField"
 import { Loading } from "../../components/loading"
@@ -45,16 +45,18 @@ enum Step {
 }
 
 export const PassportReady: React.FC<PassportReadyProps> = () => {
-	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
-	const { user } = AuthContainer.useContainer()
 	const history = useHistory()
+	const { user } = AuthContainer.useContainer()
+	const { search } = useLocation()
+	const skipUsername = new URLSearchParams(search).get("skip_username") === "true"
 
 	// Username form
 	const { control, handleSubmit } = useForm<{
 		username: string
 	}>()
-
+	
 	// Image uploads
+	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
 	const [loading, setLoading] = useState(false)
 	const { send } = useWebsocket()
 	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
@@ -117,7 +119,11 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 		const timeout = setTimeout(() => {
 			setStep(Step.LetsSetUpYourProfileStep)
 			timeout2 = setTimeout(() => {
-				setStep(Step.UsernameStep)
+				if (skipUsername) {
+					setStep(Step.UploadStep)
+				} else {
+					setStep(Step.UsernameStep)
+				}
 			}, 2000)
 		}, 2000)
 
