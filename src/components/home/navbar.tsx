@@ -23,14 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 			}}
 			{...props}
 		>
-			<MenuButton
-			// sx={{
-			// 	display: "none",
-			// 	"@media (max-width: 1000px)": {
-			// 		display: "block",
-			// 	},
-			// }}
-			/>
+			<MenuButton />
 			<Box
 				sx={{
 					flex: 1,
