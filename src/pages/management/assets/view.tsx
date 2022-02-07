@@ -505,34 +505,40 @@ export const AssetPage = () => {
 			</Box>
 
 			{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
-				<UpdateNameModal isOpen={updateModalOpen} onClose={() => setUpdateModalOpen(false)} tokenID={asset.tokenID} userID={user.id} />
+				<UpdateNameModal isOpen={updateModalOpen} onClose={() => setUpdateModalOpen(false)} asset={asset} userID={user.id} />
 			)}
 		</>
 	)
 }
 
-export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; tokenID: number; userID: string }) => {
-	const { isOpen, onClose, tokenID, userID } = props
-	const { subscribe, send } = useWebsocket()
-	const { control, handleSubmit } = useForm<{ name: string }>()
+export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; asset: Asset; userID: string }) => {
+	const { isOpen, onClose, asset, userID } = props
+	const { send } = useWebsocket()
+	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
 	const [success, setSuccess] = useState(false)
 	const [loading, setLoading] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-	const onSubmit = handleSubmit(async ({ name }) => {
-		console.log("wwht the fu")
+	const getName = (): string => {
+		let result = ""
+		const attr = asset.attributes.filter((a) => a.trait_type === "Name")
+		if (attr.length > 0) {
+			result = `${attr[0].value}`
+		}
+		return result
+	}
 
+	const onSubmit = handleSubmit(async ({ name }) => {
 		setLoading(true)
 		try {
-			const resp = await send<Asset>(HubKey.AssetUpdateName, {
-				tokenID,
+			await send<Asset>(HubKey.AssetUpdateName, {
+				tokenID: asset.tokenID,
 				userID,
 				name,
 			})
-			console.log("this is resp", resp)
-
 			setLoading(false)
 			setSuccess(true)
+			onClose()
 		} catch (e) {
 			setSuccess(false)
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
@@ -541,17 +547,50 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; t
 		}
 	})
 
-	return (
-		<Dialog onClose={() => onClose()} open={isOpen}>
-			<DialogTitle>Update Asset Name</DialogTitle>
-			<DialogContent
-				sx={{
-					backgroundColor: colors.navyBlue,
-				}}
-			>
-				{success === true && <Alert>Asset name updated successfully</Alert>}
+	// set default name
+	useEffect(() => {
+		setValue("name", getName())
+	}, [])
 
-				{!success && (
+	return (
+		<>
+			<Snackbar
+				open={!!errorMessage}
+				autoHideDuration={3000}
+				onClose={(_, reason) => {
+					if (reason === "clickaway") {
+						return
+					}
+
+					setErrorMessage("")
+				}}
+				message={errorMessage}
+			>
+				<Alert severity="error">{errorMessage}</Alert>
+			</Snackbar>
+
+			<Snackbar
+				open={!!success}
+				autoHideDuration={3000}
+				onClose={(_, reason) => {
+					if (reason === "clickaway") {
+						return
+					}
+
+					setSuccess(false)
+				}}
+				message={errorMessage}
+			>
+				<Alert severity="success">Asset successfully updated</Alert>
+			</Snackbar>
+
+			<Dialog onClose={() => onClose()} open={isOpen}>
+				<DialogTitle>Update Asset Name</DialogTitle>
+				<DialogContent
+					sx={{
+						backgroundColor: colors.navyBlue,
+					}}
+				>
 					<form onSubmit={onSubmit}>
 						<InputField
 							name="name"
@@ -567,27 +606,29 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; t
 							disabled={loading}
 						/>
 						<DialogActions>
-							{success ? (
-								<Button variant="contained" color="primary" onClick={onClose}>
-									OK
+							<>
+								<Button variant="contained" type="submit" color="primary" disabled={loading}>
+									Save
 								</Button>
-							) : (
-								<>
-									<Button variant="contained" type="submit" color="primary" disabled={loading}>
-										Save
-									</Button>
-									<Button variant="contained" type="button" color="error" disabled={loading} onClick={onClose}>
-										Cancel
-									</Button>
-								</>
-							)}
+								<Button
+									variant="contained"
+									type="button"
+									color="error"
+									disabled={loading}
+									onClick={() => {
+										onClose()
+										setSuccess(false)
+										setErrorMessage("")
+									}}
+								>
+									Cancel
+								</Button>
+							</>
 						</DialogActions>
 					</form>
-				)}
-
-				{!!errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-			</DialogContent>
-		</Dialog>
+				</DialogContent>
+			</Dialog>
+		</>
 	)
 }
 
