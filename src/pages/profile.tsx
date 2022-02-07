@@ -25,7 +25,7 @@ import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
 import HubKey from "../keys"
 import { Organisation, Role } from "../types/types"
-import { ConnectionType, PasswordRequirement } from "./onboarding"
+import { PasswordRequirement } from "./auth/onboarding"
 
 export const ProfilePage: React.FC = () => {
 	const history = useHistory()
@@ -478,8 +478,7 @@ const ProfileEdit: React.FC = () => {
 									<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
 										contain at least <strong>1 number</strong>
 									</PasswordRequirement>
-									{/* eslint-disable-next-line */}
-									<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password)}>
+									<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)}>
 										contain at least <strong>1 symbol</strong>
 									</PasswordRequirement>
 								</ul>
@@ -920,6 +919,8 @@ const EditableAvatar: React.FC<EditableAvatarProps> = ({ avatar, sx, onClick, on
 		</IconButton>
 	)
 }
+
+type ConnectionType = "email" | "metamask" | "google" | "facebook" | "twitch" | "twitter" | "discord"
 
 interface ConnectedAppCardProps extends BoxProps {
 	type: ConnectionType

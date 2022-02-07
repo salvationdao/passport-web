@@ -9,9 +9,10 @@ interface GradientCircleThingProps extends BoxProps {
 	// For animation purposes
 	phase?: PhaseTypes
 	playDisappear?: boolean
+	disableAnimations?: boolean
 }
 
-export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerOpacity, hideInner, phase, playDisappear, sx, ...props }) => {
+export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerOpacity, hideInner, phase, playDisappear, disableAnimations, sx, ...props }) => {
 	const theme = useTheme()
 	const [animationStyles, setAnimationStyles] = useState({
 		height: "70rem",
@@ -59,7 +60,9 @@ export const GradientCircleThing: React.FC<GradientCircleThingProps> = ({ innerO
 				overflow: "hidden",
 				borderRadius: "50%",
 				border: `2px solid ${theme.palette.secondary.main}`,
-				transition: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
+				transition: disableAnimations
+					? undefined
+					: "height .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .5s ease-out",
 				...animationStyles,
 				...sx,
 			}}

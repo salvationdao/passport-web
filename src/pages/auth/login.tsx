@@ -3,18 +3,18 @@ import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../assets"
-import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../components/discordLogin"
-import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../components/facebookLogin"
-import { FancyButton } from "../components/fancyButton"
-import { InputField } from "../components/form/inputField"
-import { GradientCircleThing, PhaseTypes } from "../components/home/gradientCircleThing"
-import { Loading } from "../components/loading"
-import { LoginMetaMask } from "../components/loginMetaMask"
-import { ReactTwitchFailureResponse, ReactTwitchLoginResponse, TwitchLogin } from "../components/twitchLogin"
-import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } from "../components/twitterLogin"
-import { AuthContainer, useAuth } from "../containers/auth"
-import { colors, fonts } from "../theme"
+import { DiscordIcon, FacebookIcon, GoogleIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../../assets"
+import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../../components/discordLogin"
+import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../../components/facebookLogin"
+import { FancyButton } from "../../components/fancyButton"
+import { InputField } from "../../components/form/inputField"
+import { GradientCircleThing, PhaseTypes } from "../../components/home/gradientCircleThing"
+import { Loading } from "../../components/loading"
+import { LoginMetaMask } from "../../components/loginMetaMask"
+import { ReactTwitchFailureResponse, ReactTwitchLoginResponse, TwitchLogin } from "../../components/twitchLogin"
+import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } from "../../components/twitterLogin"
+import { AuthContainer, useAuth } from "../../containers/auth"
+import { colors, fonts } from "../../theme"
 
 interface LogInInput {
 	email: string
@@ -60,7 +60,9 @@ export const LoginPage: React.FC = () => {
 			}
 			setErrorMessage(null)
 			const r = response as GoogleLoginResponse
-			await loginGoogle(r.tokenId)
+			const resp = await loginGoogle(r.tokenId)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -77,7 +79,9 @@ export const LoginPage: React.FC = () => {
 			}
 			setErrorMessage(null)
 			const r = response as ReactFacebookLoginInfo
-			await loginFacebook(r.accessToken)
+			const resp = await loginFacebook(r.accessToken)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -89,7 +93,9 @@ export const LoginPage: React.FC = () => {
 	const onTwitchLogin = async (response: ReactTwitchLoginResponse) => {
 		try {
 			setErrorMessage(null)
-			await loginTwitch(response.token)
+			const resp = await loginTwitch(response.token)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -101,7 +107,9 @@ export const LoginPage: React.FC = () => {
 	const onTwitterLogin = async (response: ReactTwitterLoginResponse) => {
 		try {
 			setErrorMessage(null)
-			await loginTwitter(response.token, response.verifier)
+			const resp = await loginTwitter(response.token, response.verifier)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -113,7 +121,9 @@ export const LoginPage: React.FC = () => {
 	const onDiscordLogin = async (response: ReactDiscordLoginResponse) => {
 		try {
 			setErrorMessage(null)
-			await loginDiscord(response.code)
+			const resp = await loginDiscord(response.code)
+			if (!resp || !resp.isNew) return
+			history.push("/onboarding")
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 		}
@@ -201,77 +211,85 @@ export const LoginPage: React.FC = () => {
 					}}
 				>
 					{showEmailLogin ? (
-						<Box
-							component="form"
-							onSubmit={onEmailLogin}
-							sx={{
-								"& > *:not(:last-child)": {
-									marginBottom: "1rem",
-								},
-							}}
-						>
-							<InputField
-								name="email"
-								label="Email"
-								type="email"
-								control={control}
-								rules={{
-									required: "Email is required",
-									pattern: {
-										value: /.+@.+\..+/,
-										message: "Invalid email address",
-									},
-								}}
-								fullWidth
-								autoFocus
-								variant="standard"
-								disabled={loading}
-							/>
-							<InputField
-								name="password"
-								label="Password"
-								type="password"
-								control={control}
-								placeholder="Password"
-								fullWidth
-								variant="standard"
-								disabled={loading}
-								rules={{
-									required: "Password is required",
-								}}
-							/>
+						<>
 							<Box
+								component="form"
+								onSubmit={onEmailLogin}
 								sx={{
-									display: "flex",
 									"& > *:not(:last-child)": {
-										marginRight: ".5rem",
+										marginBottom: "1rem",
 									},
 								}}
 							>
-								<FancyButton
-									type="button"
-									onClick={() => {
-										reset(undefined, {
-											keepValues: true,
-										})
-										setAnimationPhase("default")
-										setShowEmailLogin(false)
+								<InputField
+									name="email"
+									label="Email"
+									type="email"
+									control={control}
+									rules={{
+										required: "Email is required",
+										pattern: {
+											value: /.+@.+\..+/,
+											message: "Invalid email address",
+										},
 									}}
-								>
-									Back
-								</FancyButton>
-								<FancyButton
-									type="submit"
-									color="primary"
-									loading={loading}
+									fullWidth
+									autoFocus
+									variant="standard"
+									disabled={loading}
+								/>
+								<InputField
+									name="password"
+									label="Password"
+									type="password"
+									control={control}
+									placeholder="Password"
+									fullWidth
+									variant="standard"
+									disabled={loading}
+									rules={{
+										required: "Password is required",
+									}}
+								/>
+								<Box
 									sx={{
-										flexGrow: 1,
+										display: "flex",
+										"& > *:not(:last-child)": {
+											marginRight: ".5rem",
+										},
 									}}
 								>
-									Log In
-								</FancyButton>
+									<FancyButton
+										type="button"
+										onClick={() => {
+											reset(undefined, {
+												keepValues: true,
+											})
+											setAnimationPhase("default")
+											setShowEmailLogin(false)
+										}}
+									>
+										Back
+									</FancyButton>
+									<FancyButton
+										type="submit"
+										color="primary"
+										loading={loading}
+										sx={{
+											flexGrow: 1,
+										}}
+									>
+										Log In
+									</FancyButton>
+								</Box>
 							</Box>
-						</Box>
+							<Typography variant="subtitle1" marginTop="1rem">
+								Don't have an account?{" "}
+								<Link component={RouterLink} to="/signup">
+									Sign up here
+								</Link>
+							</Typography>
+						</>
 					) : (
 						<Box
 							sx={{
@@ -395,12 +413,6 @@ export const LoginPage: React.FC = () => {
 							</FancyButton>
 						</Box>
 					)}
-					<Typography variant="subtitle1" marginTop="1rem">
-						Don't have an account?{" "}
-						<Link component={RouterLink} to="/onboarding">
-							Sign up here
-						</Link>
-					</Typography>
 				</Box>
 			</Box>
 		</>
