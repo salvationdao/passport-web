@@ -148,6 +148,10 @@ export const LoginPage: React.FC = () => {
 	return (
 		<>
 			<Snackbar
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "right",
+				}}
 				open={!!errorMessage}
 				autoHideDuration={3000}
 				onClose={(_, reason) => {

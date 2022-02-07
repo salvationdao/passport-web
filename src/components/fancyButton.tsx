@@ -1,28 +1,59 @@
 import { LoadingButton, LoadingButtonProps } from "@mui/lab"
 import { useTheme } from "@mui/material"
+import { colors } from "../theme"
+
+type ButtonSize = "small" | "medium" | "large"
 
 export interface FancyButtonProps extends LoadingButtonProps {
 	fancy?: boolean
 	borderColor?: string
 	filled?: boolean
+	size?: ButtonSize
 }
 
-export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, filled, borderColor, sx, children, ...props }) => {
+export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, filled, size = "medium", sx, children, ...props }) => {
 	const theme = useTheme()
 
 	const mainColor = borderColor || theme.palette.primary.main
+
+	const sizeStyles: { [key in ButtonSize]: any } = {
+		small: {
+			padding: ".3rem",
+			fontSize: ".7rem",
+		},
+		medium: {
+			padding: ".5rem",
+		},
+		large: {
+			padding: ".8rem",
+			fontSize: "1.3rem",
+		},
+	}
 
 	return (
 		<LoadingButton
 			sx={{
 				boxSizing: "content-box",
 				position: "relative",
-				padding: ".5rem",
 				borderRadius: 0,
 				border: `2px solid ${mainColor}`,
 				textTransform: "uppercase",
 				background: filled ? borderColor : "transparent",
 				color: filled ? theme.palette.background.default : "inherit",
+				"&:disabled": {
+					color: colors.darkGrey,
+					border: `2px solid ${colors.darkGrey}`,
+					cursor: "not-allowed",
+					"&:hover": {
+						boxShadow: "none",
+						"&::before": {
+							display: "none",
+						},
+						"&::after": {
+							display: "none",
+						},
+					},
+				},
 				"&:hover": {
 					color: "inherit",
 					boxShadow: `inset 0px 0px 10px ${mainColor},0px 0px 10px ${mainColor}`,
@@ -62,6 +93,7 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, filled, borderC
 							pointerEvents: "none",
 					  }
 					: null,
+				...sizeStyles[size],
 				...sx,
 			}}
 			{...props}

@@ -11,7 +11,6 @@ import { CollectionsPage } from "./pages/management/collections/collections"
 import { ProfilePage } from "./pages/profile"
 import { Settings } from "./pages/settings"
 import { ViewPage } from "./pages/viewPages"
-import { WalletPage } from "./pages/wallet"
 
 export const Routes = () => {
 	const { setSessionID } = useAuth()
@@ -29,7 +28,6 @@ export const Routes = () => {
 					<Route path="/signup" component={SignUpPage} />
 					<Route path="/onboarding" component={PassportReady} />
 					<Route path="/profile" component={ProfilePage} />
-					<Route path="/wallet" component={WalletPage} />
 
 					{/* users collections (all) */}
 					<Route path="/:username/collections/:collection_name" component={AssetsList} />

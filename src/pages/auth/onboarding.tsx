@@ -54,7 +54,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	const { control, handleSubmit } = useForm<{
 		username: string
 	}>()
-	
+
 	// Image uploads
 	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
 	const [loading, setLoading] = useState(false)
@@ -131,7 +131,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 			if (timeout2) clearTimeout(timeout2)
 			clearTimeout(timeout)
 		}
-	}, [])
+	}, [skipUsername])
 
 	useEffect(() => {
 		if (step !== Step.SuccessStep || loading) return
@@ -160,6 +160,10 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	return (
 		<>
 			<Snackbar
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "right",
+				}}
 				open={!!errorMessage}
 				autoHideDuration={6000}
 				onClose={(_, reason) => {

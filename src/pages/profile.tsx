@@ -1,14 +1,13 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import MetaMaskOnboarding from "@metamask/onboarding"
-import EditIcon from "@mui/icons-material/Edit"
 import { LoadingButton } from "@mui/lab"
-import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, Snackbar, styled, TextField, Typography } from "@mui/material"
+import { Alert, Box, Button, Link, Snackbar, styled, TextField, Typography } from "@mui/material"
 import { User } from "@sentry/react"
 import { useCallback, useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
 import GoogleLogin, { GoogleLoginResponse } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link as RouterLink, Route, Switch, useHistory } from "react-router-dom"
+import { Link as RouterLink, useHistory } from "react-router-dom"
 import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon } from "../assets"
 import { DiscordLogin } from "../components/discordLogin"
 import { FacebookLogin } from "../components/facebookLogin"
@@ -16,10 +15,11 @@ import { ImageUpload } from "../components/form/imageUpload"
 import { InputField } from "../components/form/inputField"
 import { Navbar } from "../components/home/navbar"
 import { Loading } from "../components/loading"
+import { SidebarLayout } from "../components/sidebarLayout"
 import { TwitchLogin } from "../components/twitchLogin"
 import { TwitterLogin } from "../components/twitterLogin"
-import { AuthContainer } from "../containers"
 import { useAuth } from "../containers/auth"
+import { useSidebarState } from "../containers/sidebar"
 import { useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
@@ -29,7 +29,8 @@ import { PasswordRequirement } from "./auth/onboarding"
 
 export const ProfilePage: React.FC = () => {
 	const history = useHistory()
-	const { user } = AuthContainer.useContainer()
+	const { user } = useAuth()
+	const { sidebarOpen, setSidebarOpen } = useSidebarState()
 
 	useEffect(() => {
 		if (user) return
@@ -45,142 +46,37 @@ export const ProfilePage: React.FC = () => {
 	}
 
 	return (
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				minHeight: "100vh",
-			}}
-		>
-			<Navbar />
-			<Switch>
-				<Route exact path="/profile" component={ProfileDetails} />
-				<Route path="/profile/edit" component={ProfileEdit} />
-			</Switch>
-			<Box
-				sx={{
-					display: "flex",
-					justifyContent: "space-between",
-					width: "100%",
-					maxWidth: "600px",
-					margin: "0 auto",
-					marginTop: "auto",
-					padding: "0 3rem",
-					paddingBottom: "1rem",
-				}}
-			>
-				<Link component={RouterLink} to="/privacy-policy">
-					Privacy Policy
-				</Link>
-				<Link component={RouterLink} to="/terms-and-conditions">
-					Terms And Conditions
-				</Link>
-			</Box>
-		</Box>
-	)
-}
-
-const ProfileDetails: React.FC = () => {
-	const history = useHistory()
-	const { user } = AuthContainer.useContainer()
-	const token = localStorage.getItem("token")
-
-	if (!user) return <Loading />
-
-	return (
-		<>
+		<SidebarLayout open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
 			<Box
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					alignItems: "center",
-					padding: "0 3rem",
-					height: "100%",
+					minHeight: "100vh",
 				}}
 			>
+				<Navbar />
+				<ProfileEdit />
 				<Box
 					sx={{
-						position: "relative",
-						width: "fit-content",
-						marginBottom: "3rem",
+						display: "flex",
+						justifyContent: "space-between",
+						width: "100%",
+						maxWidth: "600px",
+						margin: "0 auto",
+						marginTop: "auto",
+						padding: "0 3rem",
+						paddingBottom: "1rem",
 					}}
 				>
-					<Box
-						sx={(theme) => ({
-							zIndex: -1,
-							position: "absolute",
-							top: "1rem",
-							left: "1rem",
-							display: "block",
-							width: "100%",
-							height: "100%",
-							borderRadius: "50%",
-							border: `2px solid ${theme.palette.secondary.main}`,
-						})}
-					/>
-					<EditableAvatar
-						avatar={user.avatarID ? `/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}` : undefined}
-						onClick={() => history.push("/profile/edit#profile")}
-					/>
-				</Box>
-				<Button
-					onClick={() => history.push("/profile/edit#profile")}
-					variant="text"
-					sx={{
-						marginBottom: "2rem",
-					}}
-					endIcon={
-						<EditIcon
-							sx={{
-								marginBottom: ".3rem",
-							}}
-						/>
-					}
-				>
-					<Typography variant="h2" component="p">
-						{user.username}
-					</Typography>
-				</Button>
-				<Typography
-					variant="h2"
-					sx={(theme) => ({
-						marginBottom: "2rem",
-						color: theme.palette.primary.main,
-						textTransform: "uppercase",
-					})}
-				>
-					Connected Apps
-				</Typography>
-				<Box
-					sx={{
-						display: "grid",
-						gridTemplateColumns: "repeat(4, 250px)",
-						gap: "4rem",
-						marginBottom: "2rem",
-						"@media (max-width: 1300px)": {
-							gridTemplateColumns: "repeat(4, 200px)",
-						},
-						"@media (max-width: 1100px)": {
-							gridTemplateColumns: "repeat(2, 200px)",
-						},
-						"@media (max-width: 800px)": {
-							gap: "2rem",
-						},
-						"@media (max-width: 600px)": {
-							width: "100%",
-							gridTemplateColumns: "repeat(1, 1fr)",
-						},
-					}}
-				>
-					<ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={!!user.publicAddress} />
-					<ConnectedAppCard type="facebook" label={user.facebookID || "Not Connected"} isConnected={!!user.facebookID} />
-					<ConnectedAppCard type="google" label={user.googleID || "Not Connected"} isConnected={!!user.googleID} />
-					<ConnectedAppCard type="twitch" label={user.twitchID || "Not Connected"} isConnected={!!user.twitchID} />
-					<ConnectedAppCard type="twitter" label={user.twitterID || "Not Connected"} isConnected={!!user.twitterID} />
-					<ConnectedAppCard type="discord" label={user.discordID || "Not Connected"} isConnected={!!user.discordID} />
+					<Link component={RouterLink} to="/privacy-policy">
+						Privacy Policy
+					</Link>
+					<Link component={RouterLink} to="/terms-and-conditions">
+						Terms And Conditions
+					</Link>
 				</Box>
 			</Box>
-		</>
+		</SidebarLayout>
 	)
 }
 
@@ -337,6 +233,10 @@ const ProfileEdit: React.FC = () => {
 	return (
 		<>
 			<Snackbar
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "right",
+				}}
 				open={!!successMessage}
 				autoHideDuration={6000}
 				onClose={(_, reason) => {
@@ -350,6 +250,10 @@ const ProfileEdit: React.FC = () => {
 				<Alert severity="success">{successMessage}</Alert>
 			</Snackbar>
 			<Snackbar
+			anchorOrigin={{
+				vertical: "bottom",
+				horizontal: "right",
+			}}
 				open={!!errorMessage}
 				autoHideDuration={6000}
 				onClose={(_, reason) => {
@@ -378,15 +282,6 @@ const ProfileEdit: React.FC = () => {
 					},
 				}}
 			>
-				<Box
-					sx={{
-						marginBottom: "1rem",
-					}}
-				>
-					<Link component={RouterLink} to="/profile">
-						Back to Profile
-					</Link>
-				</Box>
 				<Typography id="profile" variant="h1" component="h2">
 					Edit Profile
 				</Typography>
@@ -849,187 +744,3 @@ const Section = styled("div")({
 		marginBottom: ".5rem",
 	},
 })
-
-interface EditableAvatarProps extends Omit<IconButtonProps, "children"> {
-	avatar?: string
-}
-
-const EditableAvatar: React.FC<EditableAvatarProps> = ({ avatar, sx, onClick, onMouseLeave, onFocus, onBlur, ...props }) => {
-	const [isFocused, setIsFocused] = useState(false)
-
-	return (
-		<IconButton
-			onClick={(e) => {
-				if (onClick) onClick(e)
-				setIsFocused((prevIsFocused) => !prevIsFocused)
-			}}
-			onMouseLeave={(e) => {
-				if (onMouseLeave) onMouseLeave(e)
-				setIsFocused(false)
-			}}
-			onFocus={(e) => {
-				if (onFocus) onFocus(e)
-				setIsFocused(true)
-			}}
-			onBlur={(e) => {
-				if (onBlur) onBlur(e)
-				setIsFocused(false)
-			}}
-			sx={{
-				overflow: "hidden",
-				position: "relative",
-				width: "8rem",
-				height: "8rem",
-				padding: 0,
-				borderRadius: "50%",
-				...sx,
-			}}
-			{...props}
-		>
-			<Avatar
-				sx={{
-					width: "100%",
-					height: "100%",
-				}}
-				src={avatar}
-				alt="Avatar Image"
-			/>
-			<Box
-				sx={(theme) => ({
-					zIndex: 1,
-					position: "absolute",
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-					display: "flex",
-					justifyContent: "center",
-					alignItems: "center",
-					backgroundColor: "rgba(0, 0, 0, .6)",
-					color: theme.palette.text.primary,
-					opacity: isFocused ? 1 : 0,
-					transition: "opacity .3s ease-in",
-					"&:hover": {
-						opacity: 1,
-					},
-				})}
-			>
-				<EditIcon />
-			</Box>
-		</IconButton>
-	)
-}
-
-type ConnectionType = "email" | "metamask" | "google" | "facebook" | "twitch" | "twitter" | "discord"
-
-interface ConnectedAppCardProps extends BoxProps {
-	type: ConnectionType
-	label: string
-	isConnected?: boolean
-}
-
-const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConnected }) => {
-	const history = useHistory()
-	const [isFocused, setIsFocused] = useState(false)
-	let connectionIcon: React.ReactNode = null
-
-	switch (type) {
-		case "metamask":
-			connectionIcon = <MetaMaskIcon />
-			break
-		case "facebook":
-			connectionIcon = <FacebookIcon />
-			break
-		case "google":
-			connectionIcon = <GoogleIcon />
-			break
-		case "twitch":
-			connectionIcon = <TwitchIcon />
-			break
-		case "twitter":
-			connectionIcon = <TwitterIcon />
-			break
-		case "discord":
-			connectionIcon = <DiscordIcon />
-			break
-	}
-
-	return (
-		<Box
-			sx={(theme) => ({
-				position: "relative",
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				padding: "2rem",
-				border: `2px solid ${theme.palette.secondary.main}`,
-				cursor: "pointer",
-			})}
-		>
-			<Box
-				sx={{
-					zIndex: 1,
-					position: "absolute",
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					justifyContent: "center",
-					opacity: isFocused ? 1 : 0,
-					backgroundColor: "rgba(0, 0, 0, .8)",
-					transition: "opacity .3s ease-in",
-					"&:hover": {
-						opacity: 1,
-					},
-				}}
-			>
-				<Button
-					variant="text"
-					onClick={() => {
-						setIsFocused((prevIsFocused) => !prevIsFocused)
-						history.push("/profile/edit#connections")
-					}}
-					onMouseLeave={() => setIsFocused(false)}
-					onFocus={() => setIsFocused(true)}
-					onBlur={() => setIsFocused(false)}
-					sx={{
-						height: "100%",
-						width: "100%",
-						borderRadius: 0,
-					}}
-				>
-					{isConnected ? "Manage" : "Connect"}
-				</Button>
-			</Box>
-			<Box
-				sx={{
-					width: "5rem",
-					marginBottom: "1rem",
-					filter: isConnected ? "none" : "grayscale(1)",
-					"& svg": {
-						width: "100%",
-						height: "auto",
-					},
-				}}
-			>
-				{connectionIcon}
-			</Box>
-			<Typography
-				variant="subtitle1"
-				sx={{
-					width: "100%",
-					maxWidth: "180px",
-					overflow: "hidden",
-					whiteSpace: "nowrap",
-					textOverflow: "ellipsis",
-					textAlign: "center",
-				}}
-			>
-				{label}
-			</Typography>
-		</Box>
-	)
-}

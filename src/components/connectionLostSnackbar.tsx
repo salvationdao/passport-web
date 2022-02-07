@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react"
-import { useWebsocket } from "../containers/socket"
-import { Snackbar, Typography, Link, SnackbarOrigin } from "@mui/material"
+import { Link, Snackbar, SnackbarOrigin, Typography } from "@mui/material"
 import Alert, { AlertColor } from "@mui/material/Alert"
+import { useEffect, useState } from "react"
+import { useWebsocket } from "../containers/socket"
 
 const MAX_COUNTDOWN_SECONDS = 5
 const MAX_RECONNECT_ATTEMPTS = 3
@@ -54,7 +54,7 @@ export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
 		props.app === "admin"
 			? {
 					vertical: "bottom",
-					horizontal: "left",
+					horizontal: "right",
 			  }
 			: {
 					vertical: "top",

@@ -2,7 +2,7 @@ import { useState } from "react"
 import { createContainer } from "unstated-next"
 
 const SidebarStateContainer = createContainer(() => {
-	const [sidebarOpen, setSidebarOpen] = useState(true)
+	const [sidebarOpen, setSidebarOpen] = useState(false)
 	return {
 		sidebarOpen,
 		setSidebarOpen,

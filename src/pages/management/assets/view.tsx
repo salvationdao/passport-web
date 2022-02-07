@@ -1,34 +1,34 @@
 import {
+	Alert,
 	Box,
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	Link as MuiLink,
 	Paper,
 	Skeleton,
+	Snackbar,
 	styled,
 	Typography,
-	Link as MuiLink,
-	Snackbar,
-	Alert,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogActions,
-	Button,
 } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 import { Link, useHistory, useParams } from "react-router-dom"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
+import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
+import XSYNWordmarkImage from "../../../assets/images/XSYN Wordmark White.png"
 import { FancyButton } from "../../../components/fancyButton"
+import { InputField } from "../../../components/form/inputField"
+import { GradientCircleThing } from "../../../components/home/gradientCircleThing"
 import { Navbar } from "../../../components/home/navbar"
 import { AuthContainer } from "../../../containers"
 import { useWebsocket } from "../../../containers/socket"
+import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
-import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
-import { useState, useEffect, useCallback } from "react"
-import { GradientCircleThing } from "../../../components/home/gradientCircleThing"
-import XSYNWordmarkImage from "../../../assets/images/XSYN Wordmark White.png"
-import { useQuery } from "../../../hooks/useSend"
-import { useForm } from "react-hook-form"
-import { InputField } from "../../../components/form/inputField"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -114,6 +114,10 @@ export const AssetPage = () => {
 	return (
 		<>
 			<Snackbar
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "right",
+				}}
 				open={!!errorMessage}
 				autoHideDuration={6000}
 				onClose={(_, reason) => {

@@ -31,6 +31,7 @@ export const colors = {
 	twitchPurple: "#8551F6",
 	twitterBlue: "#1DA1F2",
 	discordGrey: "#2c2f33",
+	supremacyGold: "#F3D977",
 }
 
 const fallbackFonts = [
@@ -89,6 +90,7 @@ const lightTheme = createTheme({
 			secondary: colors.white,
 			disabled: colors.darkGrey,
 		},
+		divider: colors.lightNavyBlue,
 		action: {
 			active: "rgba(255, 255, 255, 0.54)",
 			disabled: colors.lightGrey,

@@ -26,7 +26,7 @@ import {
 	TwitterSignUpRequest,
 	VerifyAccountResponse,
 	WalletLoginRequest,
-	WalletSignUpRequest
+	WalletSignUpRequest,
 } from "../types/auth"
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
@@ -159,7 +159,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return null
 		},
-		[send, state, account, metaMaskState, sign, sessionID],
+		[send, state, account, metaMaskState, sessionID],
 	)
 
 	/**
@@ -192,7 +192,6 @@ export const AuthContainer = createContainer(() => {
 			setUser(null)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
-		return
 	}, [send, state, account, metaMaskState, sign, sessionID])
 
 	/**
@@ -256,7 +255,6 @@ export const AuthContainer = createContainer(() => {
 				setUser(null)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			return null
 		},
 		[send, state, sessionID],
 	)
@@ -324,7 +322,6 @@ export const AuthContainer = createContainer(() => {
 				setUser(null)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			return
 		},
 		[send, state, sessionID],
 	)
@@ -392,7 +389,6 @@ export const AuthContainer = createContainer(() => {
 				setUser(null)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			return
 		},
 		[send, state, sessionID],
 	)
@@ -460,7 +456,6 @@ export const AuthContainer = createContainer(() => {
 				setUser(null)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			return
 		},
 		[send, state, sessionID],
 	)
@@ -528,7 +523,6 @@ export const AuthContainer = createContainer(() => {
 				setUser(null)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			return
 		},
 		[send, state, sessionID],
 	)
