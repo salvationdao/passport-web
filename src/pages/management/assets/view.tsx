@@ -23,7 +23,7 @@ import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { GradientCircleThing } from "../../../components/home/gradientCircleThing"
 import XSYNWordmarkImage from "../../../assets/images/XSYN Wordmark White.png"
 import { useQuery } from "../../../hooks/useSend"
@@ -519,14 +519,14 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; a
 	const [loading, setLoading] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-	const getName = (): string => {
+	const getName = useCallback(() => {
 		let result = ""
 		const attr = asset.attributes.filter((a) => a.trait_type === "Name")
 		if (attr.length > 0) {
 			result = `${attr[0].value}`
 		}
 		return result
-	}
+	}, [asset])
 
 	const onSubmit = handleSubmit(async ({ name }) => {
 		setLoading(true)
@@ -550,7 +550,7 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; a
 	// set default name
 	useEffect(() => {
 		setValue("name", getName())
-	}, [setValue])
+	}, [getName, setValue])
 
 	return (
 		<>
