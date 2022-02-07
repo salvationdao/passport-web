@@ -1,4 +1,18 @@
-import { Box, Paper, Skeleton, styled, Typography, Link as MuiLink, Snackbar, Alert } from "@mui/material"
+import {
+	Box,
+	Paper,
+	Skeleton,
+	styled,
+	Typography,
+	Link as MuiLink,
+	Snackbar,
+	Alert,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	Button,
+} from "@mui/material"
 import { Link, useHistory, useParams } from "react-router-dom"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import { FancyButton } from "../../../components/fancyButton"
@@ -9,10 +23,12 @@ import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { GradientCircleThing } from "../../../components/home/gradientCircleThing"
 import XSYNWordmarkImage from "../../../assets/images/XSYN Wordmark White.png"
 import { useQuery } from "../../../hooks/useSend"
+import { useForm } from "react-hook-form"
+import { InputField } from "../../../components/form/inputField"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -26,8 +42,10 @@ export const AssetPage = () => {
 	const [submitting, setSubmitting] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string>()
 
+	// query asset
 	const { loading, error, payload, query } = useQuery<{ records: Asset[]; total: number }>(HubKey.AssetList, false)
 
+	const [updateModalOpen, setUpdateModalOpen] = useState(false)
 	const isWarMachine = (): boolean => {
 		if (!asset) return false
 		// loops through asset's attributes checks if it has a trait_type of "Asset Type", and value of "War Machine"
@@ -284,7 +302,6 @@ export const AssetPage = () => {
 												{asset.name}
 											</Typography>
 											{/* if owner, not frozen and is a war machine */}
-
 											{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
 												<Box
 													sx={{
@@ -292,18 +309,27 @@ export const AssetPage = () => {
 														display: "none",
 														"@media (max-width: 1000px)": {
 															marginTop: "5px",
-															display: "block",
-															marginLeft: "0px",
+															display: "flex",
+															flexDirection: "column",
+															marginLeft: "1rem",
 														},
 													}}
 												>
 													<FancyButton
 														loading={submitting}
 														onClick={onDeploy}
-														sx={{ fontSize: "1.438rem", padding: "1rem 1rem" }}
+														sx={{ fontSize: "1rem", padding: "1rem 1rem", marginBottom: "1rem" }}
 														fancy
 													>
 														Deploy
+													</FancyButton>
+													<FancyButton
+														loading={submitting}
+														onClick={() => setUpdateModalOpen(true)}
+														sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
+														fancy
+													>
+														Edit Name
 													</FancyButton>
 												</Box>
 											)}
@@ -391,14 +417,29 @@ export const AssetPage = () => {
 							{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
 								<Box
 									sx={{
+										display: "flex",
+										flexDirection: "column",
 										"@media (max-width: 1000px)": {
 											marginLeft: "0px",
 											display: "none",
 										},
 									}}
 								>
-									<FancyButton loading={submitting} onClick={onDeploy} sx={{ fontSize: "1.438rem", padding: "1rem 2.25rem" }} fancy>
+									<FancyButton
+										loading={submitting}
+										onClick={onDeploy}
+										sx={{ fontSize: "1rem", padding: "1rem 2.25rem", marginBottom: "1rem" }}
+										fancy
+									>
 										Deploy
+									</FancyButton>
+									<FancyButton
+										loading={submitting}
+										onClick={() => setUpdateModalOpen(true)}
+										sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
+										fancy
+									>
+										Edit Name
 									</FancyButton>
 								</Box>
 							)}
@@ -462,6 +503,130 @@ export const AssetPage = () => {
 					</MuiLink>
 				</Box>
 			</Box>
+
+			{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
+				<UpdateNameModal isOpen={updateModalOpen} onClose={() => setUpdateModalOpen(false)} asset={asset} userID={user.id} />
+			)}
+		</>
+	)
+}
+
+export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; asset: Asset; userID: string }) => {
+	const { isOpen, onClose, asset, userID } = props
+	const { send } = useWebsocket()
+	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
+	const [success, setSuccess] = useState(false)
+	const [loading, setLoading] = useState(false)
+	const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+	const getName = useCallback(() => {
+		let result = ""
+		const attr = asset.attributes.filter((a) => a.trait_type === "Name")
+		if (attr.length > 0) {
+			result = `${attr[0].value}`
+		}
+		return result
+	}, [asset])
+
+	const onSubmit = handleSubmit(async ({ name }) => {
+		setLoading(true)
+		try {
+			await send<Asset>(HubKey.AssetUpdateName, {
+				tokenID: asset.tokenID,
+				userID,
+				name,
+			})
+			setLoading(false)
+			setSuccess(true)
+			onClose()
+		} catch (e) {
+			setSuccess(false)
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			setLoading(false)
+		} finally {
+		}
+	})
+
+	// set default name
+	useEffect(() => {
+		setValue("name", getName())
+	}, [getName, setValue])
+
+	return (
+		<>
+			<Snackbar
+				open={!!errorMessage}
+				autoHideDuration={3000}
+				onClose={(_, reason) => {
+					if (reason === "clickaway") {
+						return
+					}
+
+					setErrorMessage("")
+				}}
+				message={errorMessage}
+			>
+				<Alert severity="error">{errorMessage}</Alert>
+			</Snackbar>
+
+			<Snackbar
+				open={!!success}
+				autoHideDuration={3000}
+				onClose={(_, reason) => {
+					if (reason === "clickaway") {
+						return
+					}
+
+					setSuccess(false)
+				}}
+			>
+				<Alert severity="success">Asset successfully updated</Alert>
+			</Snackbar>
+
+			<Dialog onClose={() => onClose()} open={isOpen}>
+				<DialogTitle>Update Asset Name</DialogTitle>
+				<DialogContent
+					sx={{
+						backgroundColor: colors.navyBlue,
+					}}
+				>
+					<form onSubmit={onSubmit}>
+						<InputField
+							name="name"
+							label="name"
+							type="name"
+							control={control}
+							rules={{
+								required: "Name is required.",
+							}}
+							placeholder="name"
+							style={{ width: "300px" }}
+							autoFocus
+							disabled={loading}
+						/>
+						<DialogActions>
+							<>
+								<Button variant="contained" type="submit" color="primary" disabled={loading}>
+									Save
+								</Button>
+								<Button
+									variant="contained"
+									type="button"
+									color="error"
+									disabled={loading}
+									onClick={() => {
+										onClose()
+										setSuccess(false)
+										setErrorMessage("")
+									}}
+								>
+									Cancel
+								</Button>
+							</>
+						</DialogActions>
+					</form>
+				</DialogContent>
+			</Dialog>
 		</>
 	)
 }
