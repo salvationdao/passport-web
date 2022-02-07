@@ -579,7 +579,6 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; a
 
 					setSuccess(false)
 				}}
-				message={errorMessage}
 			>
 				<Alert severity="success">Asset successfully updated</Alert>
 			</Snackbar>
