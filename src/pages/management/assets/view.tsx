@@ -550,7 +550,7 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; a
 	// set default name
 	useEffect(() => {
 		setValue("name", getName())
-	}, [])
+	}, [setValue])
 
 	return (
 		<>
