@@ -88,6 +88,10 @@ enum HubKey {
 	AssetUpdated = "ASSET:SUBSCRIBE",
 	AssetJoinQue = "ASSET:QUEUE:JOIN",
 	AssetUpdateName = "ASSET:UPDATE:NAME",
+
+	StoreItemSubscribe = "STORE:ITEM",
+	StoreList = "STORE:LIST",
+	StorePurchase = "STORE:PURCHASE"
 }
 
 export default HubKey

@@ -13,24 +13,21 @@ import { DiscordLogin } from "../components/discordLogin"
 import { FacebookLogin } from "../components/facebookLogin"
 import { ImageUpload } from "../components/form/imageUpload"
 import { InputField } from "../components/form/inputField"
-import { Navbar } from "../components/home/navbar"
 import { Loading } from "../components/loading"
-import { SidebarLayout } from "../components/sidebarLayout"
 import { TwitchLogin } from "../components/twitchLogin"
 import { TwitterLogin } from "../components/twitterLogin"
 import { useAuth } from "../containers/auth"
-import { useSidebarState } from "../containers/sidebar"
 import { useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
 import HubKey from "../keys"
 import { Organisation, Role } from "../types/types"
 import { PasswordRequirement } from "./auth/onboarding"
+import { Navbar } from "../components/home/navbar"
 
 export const ProfilePage: React.FC = () => {
 	const history = useHistory()
 	const { user } = useAuth()
-	const { sidebarOpen, setSidebarOpen } = useSidebarState()
 
 	useEffect(() => {
 		if (user) return
@@ -46,37 +43,35 @@ export const ProfilePage: React.FC = () => {
 	}
 
 	return (
-		<SidebarLayout open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				minHeight: "100vh",
+			}}
+		>
+			<Navbar />
+			<ProfileEdit />
 			<Box
 				sx={{
 					display: "flex",
-					flexDirection: "column",
-					minHeight: "100vh",
+					justifyContent: "space-between",
+					width: "100%",
+					maxWidth: "600px",
+					margin: "0 auto",
+					marginTop: "auto",
+					padding: "0 3rem",
+					paddingBottom: "1rem",
 				}}
 			>
-				<Navbar />
-				<ProfileEdit />
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "space-between",
-						width: "100%",
-						maxWidth: "600px",
-						margin: "0 auto",
-						marginTop: "auto",
-						padding: "0 3rem",
-						paddingBottom: "1rem",
-					}}
-				>
-					<Link component={RouterLink} to="/privacy-policy">
-						Privacy Policy
-					</Link>
-					<Link component={RouterLink} to="/terms-and-conditions">
-						Terms And Conditions
-					</Link>
-				</Box>
+				<Link component={RouterLink} to="/privacy-policy">
+					Privacy Policy
+				</Link>
+				<Link component={RouterLink} to="/terms-and-conditions">
+					Terms And Conditions
+				</Link>
 			</Box>
-		</SidebarLayout>
+		</Box>
 	)
 }
 
@@ -250,10 +245,10 @@ const ProfileEdit: React.FC = () => {
 				<Alert severity="success">{successMessage}</Alert>
 			</Snackbar>
 			<Snackbar
-			anchorOrigin={{
-				vertical: "bottom",
-				horizontal: "right",
-			}}
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "right",
+				}}
 				open={!!errorMessage}
 				autoHideDuration={6000}
 				onClose={(_, reason) => {

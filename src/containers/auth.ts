@@ -44,7 +44,7 @@ export enum VerificationType {
 export const AuthContainer = createContainer(() => {
 	const { metaMaskState, sign, account } = useWeb3()
 	const admin = process.env.REACT_APP_BUILD_TARGET === "ADMIN"
-	const [user, setUser] = useState<User | null>(null)
+	const [user, setUser] = useState<User>()
 	const [authorised, setAuthorised] = useState(false)
 	const [reconnecting, setReconnecting] = useState(false)
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
@@ -87,7 +87,7 @@ export const AuthContainer = createContainer(() => {
 			})
 			if (!resp || !resp.user || !resp.token) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				return
 			}
 			setUser(resp.user)
@@ -121,7 +121,7 @@ export const AuthContainer = createContainer(() => {
 				setAuthorised(true)
 			} catch {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 			} finally {
 				setLoading(false)
 				setReconnecting(false)
@@ -134,8 +134,8 @@ export const AuthContainer = createContainer(() => {
 	 * Signs a user up using a Metamask public address
 	 */
 	const signUpMetamask = useCallback(
-		async (username: string): Promise<string | null> => {
-			if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
+		async (username: string): Promise<string | undefined> => {
+			if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return undefined
 
 			try {
 				const resp = await send<RegisterResponse, WalletSignUpRequest>(HubKey.AuthSignUpWallet, {
@@ -146,18 +146,18 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
-					setUser(null)
-					return null
+					setUser(undefined)
+					return undefined
 				}
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				return typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			return null
+			return undefined
 		},
 		[send, state, account, metaMaskState, sessionID],
 	)
@@ -168,7 +168,7 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Metamask public address
 	 */
 	const loginMetamask = useCallback(async () => {
-		if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return null
+		if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return undefined
 
 		try {
 			const signature = await sign()
@@ -179,7 +179,7 @@ export const AuthContainer = createContainer(() => {
 			})
 			if (!resp || !resp.user || !resp.token) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				return
 			}
 			setUser(resp.user)
@@ -189,7 +189,7 @@ export const AuthContainer = createContainer(() => {
 			return resp
 		} catch (e) {
 			localStorage.clear()
-			setUser(null)
+			setUser(undefined)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
 	}, [send, state, account, metaMaskState, sign, sessionID])
@@ -200,7 +200,7 @@ export const AuthContainer = createContainer(() => {
 	const signUpGoogle = useCallback(
 		async (token: string, username: string) => {
 			if (state !== WebSocket.OPEN) {
-				return null
+				return undefined
 			}
 			try {
 				const resp = await send<RegisterResponse, GoogleSignUpRequest>(HubKey.AuthSignUpGoogle, {
@@ -211,18 +211,18 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
-					setUser(null)
-					return null
+					setUser(undefined)
+					return undefined
 				}
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			return null
+			return undefined
 		},
 		[send, state, sessionID],
 	)
@@ -233,7 +233,7 @@ export const AuthContainer = createContainer(() => {
 	const loginGoogle = useCallback(
 		async (token: string) => {
 			if (state !== WebSocket.OPEN) {
-				return null
+				return undefined
 			}
 			try {
 				const resp = await send<PasswordLoginResponse, GoogleLoginRequest>(HubKey.AuthLoginGoogle, {
@@ -242,8 +242,8 @@ export const AuthContainer = createContainer(() => {
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
-					setUser(null)
-					return null
+					setUser(undefined)
+					return undefined
 				}
 				setUser(resp.user)
 				localStorage.setItem("token", resp.token)
@@ -252,7 +252,7 @@ export const AuthContainer = createContainer(() => {
 				return resp
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
@@ -276,7 +276,7 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
-					setUser(null)
+					setUser(undefined)
 					return
 				}
 				setUser(resp.user)
@@ -284,7 +284,7 @@ export const AuthContainer = createContainer(() => {
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
@@ -309,7 +309,7 @@ export const AuthContainer = createContainer(() => {
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
-					setUser(null)
+					setUser(undefined)
 					return
 				}
 				setUser(resp.user)
@@ -319,7 +319,7 @@ export const AuthContainer = createContainer(() => {
 				return resp
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
@@ -344,7 +344,7 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
-					setUser(null)
+					setUser(undefined)
 					return
 				}
 				setUser(resp.user)
@@ -352,7 +352,7 @@ export const AuthContainer = createContainer(() => {
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
@@ -376,7 +376,7 @@ export const AuthContainer = createContainer(() => {
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
-					setUser(null)
+					setUser(undefined)
 					return
 				}
 				setUser(resp.user)
@@ -386,7 +386,7 @@ export const AuthContainer = createContainer(() => {
 				return resp
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
@@ -411,7 +411,7 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
-					setUser(null)
+					setUser(undefined)
 					return
 				}
 				setUser(resp.user)
@@ -419,7 +419,7 @@ export const AuthContainer = createContainer(() => {
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
@@ -443,7 +443,7 @@ export const AuthContainer = createContainer(() => {
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
-					setUser(null)
+					setUser(undefined)
 					return
 				}
 				setUser(resp.user)
@@ -453,7 +453,7 @@ export const AuthContainer = createContainer(() => {
 				return resp
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
@@ -478,7 +478,7 @@ export const AuthContainer = createContainer(() => {
 				setUser(resp.user)
 				if (!resp || !resp.user) {
 					localStorage.clear()
-					setUser(null)
+					setUser(undefined)
 					return
 				}
 				setUser(resp.user)
@@ -486,7 +486,7 @@ export const AuthContainer = createContainer(() => {
 				setAuthorised(true)
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 			return
@@ -510,7 +510,7 @@ export const AuthContainer = createContainer(() => {
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
-					setUser(null)
+					setUser(undefined)
 					return
 				}
 				setUser(resp.user)
@@ -520,7 +520,7 @@ export const AuthContainer = createContainer(() => {
 				return resp
 			} catch (e) {
 				localStorage.clear()
-				setUser(null)
+				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
@@ -787,7 +787,7 @@ export const AuthContainer = createContainer(() => {
 			}
 
 			localStorage.clear()
-			setUser(null)
+			setUser(undefined)
 
 			setVerifying(true)
 			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/verify?token=${token}${forgotPassword ? "&forgot=true" : ""}`)
@@ -810,23 +810,6 @@ export const AuthContainer = createContainer(() => {
 		},
 		[state],
 	)
-
-	/** Impersonate a User */
-	const impersonateUser = async (user?: User) => {
-		// if (user === undefined || impersonatedUser !== undefined) setImpersonatedUser(undefined)
-		// if (!hasPermission(Perm.ImpersonateUser)) return
-		//
-		// if (!!user && !user.role?.permissions) {
-		// 	// Fetch user with full details
-		// 	const resp = await send<User>(HubKey.UserGet)
-		// 	if (!!resp) {
-		// 		setImpersonatedUser(resp)
-		// 	}
-		// 	return
-		// }
-		//
-		// setImpersonatedUser(user)
-	}
 
 	/** Checks if current user has a permission */
 	const hasPermission = (perm: Perm) => {
@@ -934,7 +917,6 @@ export const AuthContainer = createContainer(() => {
 		hasPermission,
 		user: user,
 		setUser,
-		impersonateUser,
 		isImpersonatingUser: false,
 		loading,
 		verifying,

@@ -1,34 +1,18 @@
-import {
-	Alert,
-	Box,
-	Button,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogTitle,
-	Link as MuiLink,
-	Paper,
-	Skeleton,
-	Snackbar,
-	styled,
-	Typography,
-} from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Skeleton, Snackbar, styled, Typography } from "@mui/material"
 import { Link, useHistory, useParams } from "react-router-dom"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
-import XSYNWordmarkImage from "../../../assets/images/XSYN Wordmark White.png"
 import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
-import { GradientCircleThing } from "../../../components/home/gradientCircleThing"
-import { Navbar } from "../../../components/home/navbar"
 import { AuthContainer } from "../../../containers"
 import { useWebsocket } from "../../../containers/socket"
 import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset } from "../../../types/types"
+import { useCallback, useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { Navbar } from "../../../components/home/navbar"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
@@ -450,62 +434,6 @@ export const AssetPage = () => {
 						</Box>
 					</AssetContainer>
 				</Paper>
-			</Box>
-
-			<Box
-				sx={{
-					overflow: "hidden",
-					position: "relative",
-					display: "flex",
-					flexDirection: "column",
-					minHeight: "100vh",
-					width: "100%",
-					maxWidth: "1700px",
-					margin: "0 auto",
-					padding: "4rem 3rem",
-					paddingBottom: "1rem",
-				}}
-			>
-				<GradientCircleThing
-					innerOpacity={0.6}
-					sx={{
-						zIndex: -1,
-						position: "absolute",
-						left: "50%",
-						bottom: "-30rem",
-						transform: "translate(-50%, 0)",
-					}}
-				/>
-				<Box
-					sx={{
-						flex: 1,
-					}}
-				/>
-				<Box
-					component="img"
-					src={XSYNWordmarkImage}
-					alt="XSYN Wordmark"
-					sx={{
-						alignSelf: "center",
-						marginBottom: "3rem",
-					}}
-				/>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "space-between",
-						width: "100%",
-						maxWidth: "600px",
-						margin: "0 auto",
-					}}
-				>
-					<MuiLink href="/privacy-policy" underline="none" color="white">
-						Privacy Policy
-					</MuiLink>
-					<MuiLink href="/terms-and-conditions" underline="none" color="white">
-						Terms And Conditions
-					</MuiLink>
-				</Box>
 			</Box>
 
 			{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (

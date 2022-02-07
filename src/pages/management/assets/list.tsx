@@ -2,7 +2,6 @@ import { Box, Link, Paper, styled, Tab, TabProps, Tabs, Typography } from "@mui/
 import { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { AssetCard } from "../../../components/assetCard"
-import { Navbar } from "../../../components/home/navbar"
 import { SearchBar } from "../../../components/searchBar"
 import { AuthContainer } from "../../../containers/auth"
 import { SocketState, useWebsocket } from "../../../containers/socket"
@@ -10,6 +9,7 @@ import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset, Collection } from "../../../types/types"
+import { Navbar } from "../../../components/home/navbar"
 
 export const AssetsList = () => {
 	const history = useHistory()

@@ -24,12 +24,12 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 			{...props}
 		>
 			<MenuButton
-				sx={{
-					display: "none",
-					"@media (max-width: 1000px)": {
-						display: "block",
-					},
-				}}
+			// sx={{
+			// 	display: "none",
+			// 	"@media (max-width: 1000px)": {
+			// 		display: "block",
+			// 	},
+			// }}
 			/>
 			<Box
 				sx={{
@@ -149,7 +149,7 @@ const MenuButton: React.FC<MenuButtonProps> = ({ sx }) => {
 	return (
 		<>
 			<LoadingButton
-				onClick={() => setSidebarOpen(true)}
+				onClick={() => setSidebarOpen((prev) => !prev)}
 				sx={{
 					position: "relative",
 					height: "3.3rem",

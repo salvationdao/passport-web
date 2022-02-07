@@ -3,7 +3,7 @@ import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Alert, Box, Button, Divider, Drawer, Snackbar, SxProps, Theme, Typography } from "@mui/material"
+import { Box, Button, Divider, Drawer, SxProps, Theme, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupTokenIcon } from "../assets"
@@ -14,25 +14,27 @@ import HubKey from "../keys"
 import { colors } from "../theme"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
+import { useSidebarState } from "../containers/sidebar"
 
 const drawerWidth = 300
 
 export interface SidebarLayoutProps {
-	open: boolean
 	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
 }
 
-export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ open, onClose, children }) => {
+export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
 	const { user, logout } = useAuth()
 	const { payload } = useSubscription<string>(HubKey.UserSupsSubscibe)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>()
 	const [xsynSups, setXsynSups] = useState<string | undefined>()
+	const { sidebarOpen } = useSidebarState()
 
 	useEffect(() => {
 		if (!payload) return
 		setXsynSups(supFormatter(payload))
 	}, [payload])
+	console.log(sidebarOpen)
 
 	const content = user ? (
 		<Box
@@ -194,11 +196,11 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ open, onClose, chi
 				<NavButton to="/profile" startIcon={<FaceIcon />}>
 					Profile
 				</NavButton>
-				<NavButton to={`${user.username}/collections`} startIcon={<AppsIcon />}>
+				<NavButton to={`/${user.username}/collections`} startIcon={<AppsIcon />}>
 					Collections
 				</NavButton>
-				<NavButton to="/marketplace" startIcon={<StorefrontIcon />}>
-					Marketplace
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
+					Store
 				</NavButton>
 			</Box>
 			<Divider />
@@ -246,8 +248,8 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ open, onClose, chi
 				>
 					Quick Links
 				</Typography>
-				<NavButton to="/marketplace" startIcon={<StorefrontIcon />}>
-					Marketplace
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
+					Store
 				</NavButton>
 			</Box>
 		</Box>
@@ -255,24 +257,6 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ open, onClose, chi
 
 	return (
 		<>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
-				}}
-				open={!!errorMessage}
-				autoHideDuration={6000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage(undefined)
-				}}
-				message={errorMessage}
-			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
 			<Box
 				sx={{
 					display: "flex",
@@ -290,7 +274,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ open, onClose, chi
 					{/* The implementation can be swapped with js to avoid SEO duplication of links. */}
 					<Drawer
 						variant="temporary"
-						open={open}
+						open={sidebarOpen}
 						onClose={onClose}
 						ModalProps={{
 							keepMounted: true, // Better open performance on mobile.
@@ -306,20 +290,43 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ open, onClose, chi
 						{content}
 					</Drawer>
 					<Drawer
-						variant="permanent"
+						variant="persistent"
 						sx={{
+							width: drawerWidth,
 							display: "block",
+							flexShrink: 0,
 							"@media (max-width: 1000px)": {
 								display: "none",
 							},
 							"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
 						}}
-						open
+						open={sidebarOpen}
 					>
 						{content}
 					</Drawer>
 				</Box>
-				<Box component="main" sx={{ flexGrow: 1, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
+				<Box
+					component="main"
+					sx={(theme) => ({
+						flexGrow: 1,
+						transition: theme.transitions.create("margin", {
+							easing: theme.transitions.easing.sharp,
+							duration: theme.transitions.duration.leavingScreen,
+						}),
+						marginLeft: `-${drawerWidth}px`,
+						"@media (max-width: 1000px)": {
+							marginLeft: 0,
+						},
+						...(sidebarOpen && {
+							transition: theme.transitions.create("margin", {
+								easing: theme.transitions.easing.easeOut,
+								duration: theme.transitions.duration.enteringScreen,
+							}),
+							marginLeft: 0,
+						}),
+					})}
+				>
+					{/*<Box component="main" sx={{ display: "flex", flex: 1 }}>*/}
 					{children}
 				</Box>
 			</Box>

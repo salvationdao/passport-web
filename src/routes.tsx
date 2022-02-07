@@ -1,8 +1,7 @@
 import { useEffect } from "react"
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
+import { BrowserRouter, Route, Switch } from "react-router-dom"
 import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { useAuth } from "./containers/auth"
-import { LoginPage } from "./pages/auth/login"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
 import { Home } from "./pages/home"
@@ -11,39 +10,78 @@ import { CollectionsPage } from "./pages/management/collections/collections"
 import { ProfilePage } from "./pages/profile"
 import { Settings } from "./pages/settings"
 import { ViewPage } from "./pages/viewPages"
+import { StorePage } from "./pages/store/store"
+import { LoginPage } from "./pages/auth/login"
+import { useSidebarState } from "./containers/sidebar"
+import { Sidebar } from "./components/sidebar"
 
 export const Routes = () => {
-	const { setSessionID } = useAuth()
+	const { setSessionID, user } = useAuth()
+	const { sidebarOpen, setSidebarOpen } = useSidebarState()
+
 	useEffect(() => {
 		const searchParams = new URLSearchParams(window.location.search)
 		const sessionID = searchParams.get("sessionID")
 		if (sessionID) setSessionID(sessionID)
 	}, [setSessionID])
+
 	return (
 		<>
-			<Router>
-				<Switch>
-					<Route exact path="/" component={Home} />
-					<Route path="/login" component={LoginPage} />
-					<Route path="/signup" component={SignUpPage} />
-					<Route path="/onboarding" component={PassportReady} />
-					<Route path="/profile" component={ProfilePage} />
+			<BrowserRouter>
+				<Sidebar onClose={() => setSidebarOpen(false)}>
+					<Switch>
+						<Route exact path="/">
+							<Home />
+						</Route>
+						<Route path="/login">
+							<LoginPage />
+						</Route>
+						<Route path="/signup">
+							<SignUpPage />
+						</Route>
+						<Route path="/onboarding">
+							<PassportReady />
+						</Route>
 
-					{/* users collections (all) */}
-					<Route path="/:username/collections/:collection_name" component={AssetsList} />
+						<Route path="/privacy-policy">
+							<Home />
+						</Route>
+						<Route path="/terms-and-conditions">
+							<Home />
+						</Route>
 
-					{/* asset view page */}
-					<Route path="/collections/assets/:tokenID" component={ViewPage.Asset} />
+						{/* store */}
+						<Route path="/store/:id">
+							<ViewPage.StoreItem />
+						</Route>
+						<Route path="/store">
+							<StorePage />
+						</Route>
 
-					{/* users collections (filtered) */}
-					<Route path="/:username/collections" component={CollectionsPage} />
-
-					<Route path="/privacy-policy" component={Home} />
-					<Route path="/terms-and-conditions" component={Home} />
-
-					<Route path="/settings" component={Settings} />
-				</Switch>
-			</Router>
+						{user && (
+							<Switch>
+								<Route path="/profile">
+									<ProfilePage />
+								</Route>
+								{/* users collections  */}
+								<Route path="/:username/collections/:collection_name">
+									<AssetsList />
+								</Route>
+								<Route path="/:username/collections">
+									<CollectionsPage />
+								</Route>
+								{/* asset view page */}
+								<Route path="/collections/assets/:tokenID">
+									<ViewPage.Asset />
+								</Route>
+								<Route path="/settings">
+									<Settings />
+								</Route>
+							</Switch>
+						)}
+					</Switch>
+				</Sidebar>
+			</BrowserRouter>
 			<ConnectionLostSnackbar app="admin" />
 		</>
 	)

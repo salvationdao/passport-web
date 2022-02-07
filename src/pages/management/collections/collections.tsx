@@ -3,13 +3,13 @@ import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { AssetCard } from "../../../components/assetCard"
-import { Navbar } from "../../../components/home/navbar"
 import { Loading } from "../../../components/loading"
 import { AuthContainer } from "../../../containers"
 import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { Asset, Collection, User } from "../../../types/types"
+import { Navbar } from "../../../components/home/navbar"
 
 export const CollectionsPage: React.FC = () => {
 	const history = useHistory()

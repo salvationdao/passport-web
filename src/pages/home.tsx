@@ -26,19 +26,16 @@ import BottomRightMatrix from "../assets/images/Bottom right corner matrix accen
 import BottomLeftMatrix from "../assets/images/Left Corner Matrix.png"
 import { FancyButton } from "../components/fancyButton"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
-import { Navbar } from "../components/home/navbar"
-import { SidebarLayout } from "../components/sidebarLayout"
 import { useAuth } from "../containers/auth"
-import { useSidebarState } from "../containers/sidebar"
 import { colors } from "../theme"
+import { Navbar } from "../components/home/navbar"
 
 export const Home = () => {
 	const history = useHistory()
 	const { user } = useAuth()
-	const { sidebarOpen, setSidebarOpen } = useSidebarState()
 
 	return (
-		<SidebarLayout open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
+		<>
 			<Box
 				sx={{
 					overflow: "hidden",
@@ -301,6 +298,6 @@ export const Home = () => {
 					</Link>
 				</Box>
 			</Box>
-		</SidebarLayout>
+		</>
 	)
 }
