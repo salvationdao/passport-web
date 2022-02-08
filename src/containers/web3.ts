@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import { supFormatter } from "../helpers/items"
 import { GetNonceResponse } from "../types/auth"
+import { User } from "../types/types"
+import { useAuth } from "./auth"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -32,10 +34,14 @@ export const Web3Container = createContainer(() => {
 		[provider],
 	)
 
+	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
 	const handleWalletSups = useCallback(
 		async (acc: string) => {
-			// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
+			// SUPS token address
 			const supTokenAddr = "0xED4664f5F37307abf8703dD39Fd6e72F421e7DE2"
+
+			// A Human-Readable ABI; for interacting with the contract, we
+			// must include any fragment we wish to use
 			const abi = [
 				// Read-Only Functions
 				"function balanceOf(address owner) view returns (uint256)",
@@ -53,6 +59,7 @@ export const Web3Container = createContainer(() => {
 
 			console.log("this is ballance", bal)
 			console.log("this is ballance formatted", supFormatter(bal._hex))
+			console.log("this is acc", acc)
 
 			setSupBalance(supFormatter(bal._hex))
 		},
@@ -71,9 +78,11 @@ export const Web3Container = createContainer(() => {
 				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
 				setProvider(provider)
 				const accounts = await provider.listAccounts()
+
 				if (accounts.length !== 0) {
 					const signer = provider.getSigner()
 					const acc = await signer.getAddress()
+
 					setAccount(acc)
 					setMetaMaskState(MetaMaskState.Active)
 				} else {

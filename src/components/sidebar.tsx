@@ -3,19 +3,19 @@ import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Box, Button, Divider, Drawer, SxProps, Theme, Typography } from "@mui/material"
+import { Alert, Box, Button, Divider, Drawer, Snackbar, SxProps, Theme, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupTokenIcon } from "../assets"
 import { useAuth } from "../containers/auth"
+import { useSidebarState } from "../containers/sidebar"
+import { useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
-import useSubscription from "../hooks/useSubscription"
+import { useSecureSubscription } from "../hooks/useSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
-import { useSidebarState } from "../containers/sidebar"
-import { useWeb3, Web3Provider } from "../containers/web3"
 
 const drawerWidth = 300
 
@@ -26,13 +26,20 @@ export interface SidebarLayoutProps {
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
 	const { user, logout } = useAuth()
-	const { supBalance } = useWeb3()
-	const { payload } = useSubscription<string>(HubKey.UserSupsSubscibe)
+	const { supBalance, account } = useWeb3()
+	const { payload } = useSecureSubscription<string>(HubKey.UserSupsSubscibe)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>()
 	const [xsynSups, setXsynSups] = useState<string | undefined>()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
+	const [correctWallet, setCorrectWallet] = useState<boolean>()
 
 	const { sidebarOpen } = useSidebarState()
+
+	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
+		const str1 = userPubAddr.toUpperCase()
+		const str2 = metaMaskAcc.toUpperCase()
+		return str1 === str2
+	}
 
 	useEffect(() => {
 		if (!payload || !user) return
@@ -40,8 +47,10 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [payload, user])
 
 	useEffect(() => {
+		if (!user || !user.publicAddress || !account) return
+		setCorrectWallet(correctWalletCheck(user.publicAddress, account))
 		setWalletSups(supBalance)
-	}, [supBalance])
+	}, [supBalance, account, user])
 
 	const content = user ? (
 		<Box
@@ -91,6 +100,8 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					},
 				}}
 			>
+				{!correctWallet && <Alert severity="error">Incorrect wallet connected</Alert>}
+
 				<Typography
 					sx={{
 						textTransform: "uppercase",
@@ -265,6 +276,24 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	return (
 		<>
+			<Snackbar
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "right",
+				}}
+				open={!!errorMessage}
+				autoHideDuration={6000}
+				onClose={(_, reason) => {
+					if (reason === "clickaway") {
+						return
+					}
+
+					setErrorMessage(undefined)
+				}}
+				message={errorMessage}
+			>
+				<Alert severity="error">{errorMessage}</Alert>
+			</Snackbar>
 			<Box
 				sx={{
 					display: "flex",
