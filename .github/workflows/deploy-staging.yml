@@ -76,4 +76,5 @@ jobs:
       - name: Rsync to server
         if: ${{ !env.ACT }} # if running in local test environment
         run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}}
-
+      - name: Bring new version online
+        run: ssh staging-passport.xsyn.io 'ln -s /usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}} /usr/share/ninja_syndicate/passport-web-online'
