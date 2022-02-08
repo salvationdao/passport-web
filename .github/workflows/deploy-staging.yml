@@ -48,11 +48,9 @@ jobs:
         run: |
           git config --global user.name "Github CI"
           git config --global user.email "team@syndicate.ninja"
-          npm version prerelease --allow-same-version --preid rc
+          npm version prerelease --preid rc
+          git push --tags;
           echo "TAG_NAME=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-
-      - name: check status
-        run: echo 
 
       - name: Build web
         run: CI=false npm run build
@@ -61,8 +59,6 @@ jobs:
       - name: List build dir
         run: find build 
 
-      - name: debug
-        run: echo  passport-web_${{env.TAG_NAME}}.tar.gz
       - name: save artifact
         uses: actions/upload-artifact@v2
         # if: ${{ !env.ACT }} # if running in local test environment
