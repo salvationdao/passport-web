@@ -1,23 +1,22 @@
 import { useEffect } from "react"
 import { BrowserRouter, Route, Switch } from "react-router-dom"
 import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
+import { Sidebar } from "./components/sidebar"
 import { useAuth } from "./containers/auth"
+import { useSidebarState } from "./containers/sidebar"
+import { LoginPage } from "./pages/auth/login"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
 import { Home } from "./pages/home"
 import { AssetsList } from "./pages/management/assets/list"
 import { CollectionsPage } from "./pages/management/collections/collections"
 import { ProfilePage } from "./pages/profile"
-import { Settings } from "./pages/settings"
-import { ViewPage } from "./pages/viewPages"
 import { StorePage } from "./pages/store/store"
-import { LoginPage } from "./pages/auth/login"
-import { useSidebarState } from "./containers/sidebar"
-import { Sidebar } from "./components/sidebar"
+import { ViewPage } from "./pages/viewPages"
 
 export const Routes = () => {
-	const { setSessionID, user } = useAuth()
-	const { sidebarOpen, setSidebarOpen } = useSidebarState()
+	const { setSessionID } = useAuth()
+	const { setSidebarOpen } = useSidebarState()
 
 	useEffect(() => {
 		const searchParams = new URLSearchParams(window.location.search)
@@ -58,27 +57,22 @@ export const Routes = () => {
 							<StorePage />
 						</Route>
 
-						{user && (
-							<Switch>
-								<Route path="/profile">
-									<ProfilePage />
-								</Route>
-								{/* users collections  */}
-								<Route path="/:username/collections/:collection_name">
-									<AssetsList />
-								</Route>
-								<Route path="/:username/collections">
-									<CollectionsPage />
-								</Route>
-								{/* asset view page */}
-								<Route path="/collections/assets/:tokenID">
-									<ViewPage.Asset />
-								</Route>
-								<Route path="/settings">
-									<Settings />
-								</Route>
-							</Switch>
-						)}
+						{/* User-authenticated routes */}
+						{/* profile */}
+						<Route path="/profile">
+							<ProfilePage />
+						</Route>
+						{/* users collections  */}
+						<Route path="/:username/collections/:collection_name">
+							<AssetsList />
+						</Route>
+						<Route path="/:username/collections">
+							<CollectionsPage />
+						</Route>
+						{/* asset view page */}
+						<Route path="/collections/assets/:tokenID">
+							<ViewPage.Asset />
+						</Route>
 					</Switch>
 				</Sidebar>
 			</BrowserRouter>

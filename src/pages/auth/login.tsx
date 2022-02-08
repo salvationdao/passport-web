@@ -136,13 +136,13 @@ export const LoginPage: React.FC = () => {
 		if (!user) return
 
 		const userTimeout = setTimeout(() => {
-			history.push("/")
+			history.push("/profile")
 		}, 2000)
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
 
 	if (user) {
-		return <Loading text="You are already logged in, redirecting to home page..." />
+		return <Loading text="You are already logged in, redirecting to your profile..." />
 	}
 
 	return (
@@ -206,7 +206,7 @@ export const LoginPage: React.FC = () => {
 						textTransform: "uppercase",
 					}}
 				>
-					Welcome Back
+					Sign In
 				</Typography>
 				<Box
 					sx={{
