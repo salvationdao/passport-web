@@ -147,7 +147,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						Wallet SUPs:
 					</Box>
 					<SupTokenIcon />
-					{walletSups || "No sups"}
+					{walletSups}
 				</Typography>
 				<Box
 					sx={{
