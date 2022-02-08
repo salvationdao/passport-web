@@ -56,11 +56,6 @@ export const Web3Container = createContainer(() => {
 			]
 			const erc20 = new ethers.Contract(supTokenAddr, abi, provider)
 			const bal: { _hex: string } = await erc20.balanceOf(acc)
-
-			console.log("this is ballance", bal)
-			console.log("this is ballance formatted", supFormatter(bal._hex))
-			console.log("this is acc", acc)
-
 			setSupBalance(supFormatter(bal._hex))
 		},
 		[provider],

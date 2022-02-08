@@ -28,8 +28,6 @@ function useSubscription<T>(key: HubKey, args?: any) {
 }
 
 export function useSecureSubscription<T>(key: HubKey, args?: any) {
-	console.log("inside secure")
-
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
 
