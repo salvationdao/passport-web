@@ -66,13 +66,13 @@ jobs:
         with:
           name: passport-web_${{env.TAG_NAME}}.tar.gz
           path: ./build/
-      # - name: Setup SSH
-      #   run: |
-      #     mkdir -p ~/.ssh
-      #     echo -e "Host ${{ secrets.STAGING_SSH_HOST }}\n  User ${{ secrets.STAGING_SSH_USER }}\n  Port ${{ secrets.STAGING_SSH_PORT }}" >> ~/.ssh/config
-      #     echo '${{ secrets.STAGING_KNOWN_HOSTS }}' > ~/.ssh/known_hosts
-      #     echo '${{ secrets.STAGING_SSH_PKEY }}' > ~/.ssh/id_ed25519
-      #     chmod 600 ~/.ssh/id_ed25519
-      # - name: Rsync to server
-      #   if: ${{ !env.ACT }} # if running in local test environment
-      #   run: rsync -av build/ ${{ secrets.STAGING_SSH_HOST }}:/usr/share/ninja_syndicate/passport-web_$TAG_NAME
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo -e "Host staging-passport.xsyn.io\n  User ${{ secrets.STAGING_SSH_USER }}\n  Port 22" >> ~/.ssh/config
+          echo '${{ secrets.STAGING_KNOWN_HOSTS }}' > ~/.ssh/known_hosts
+          echo '${{ secrets.STAGING_SSH_PKEY }}' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+      - name: Rsync to server
+        if: ${{ !env.ACT }} # if running in local test environment
+        run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}}
