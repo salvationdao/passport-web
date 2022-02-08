@@ -32,34 +32,37 @@ export const Web3Container = createContainer(() => {
 		[provider],
 	)
 
-	const handleWalletSups = useCallback(async () => {
-		// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
-		if (!account) return
-		const supTokenAddr = "0xED4664f5F37307abf8703dD39Fd6e72F421e7DE2"
-		const abi = [
-			// Read-Only Functions
-			"function balanceOf(address owner) view returns (uint256)",
-			"function decimals() view returns (uint8)",
-			"function symbol() view returns (string)",
+	const handleWalletSups = useCallback(
+		async (acc: string) => {
+			// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
+			const supTokenAddr = "0xED4664f5F37307abf8703dD39Fd6e72F421e7DE2"
+			const abi = [
+				// Read-Only Functions
+				"function balanceOf(address owner) view returns (uint256)",
+				"function decimals() view returns (uint8)",
+				"function symbol() view returns (string)",
 
-			// Authenticated Functions
-			"function transfer(address to, uint amount) returns (bool)",
+				// Authenticated Functions
+				"function transfer(address to, uint amount) returns (bool)",
 
-			// Events
-			"event Transfer(address indexed from, address indexed to, uint amount)",
-		]
-		const erc20 = new ethers.Contract(supTokenAddr, abi, provider)
-		const bal: { _hex: string } = await erc20.balanceOf(account)
+				// Events
+				"event Transfer(address indexed from, address indexed to, uint amount)",
+			]
+			const erc20 = new ethers.Contract(supTokenAddr, abi, provider)
+			const bal: { _hex: string } = await erc20.balanceOf(acc)
 
-		console.log("this is ballance", bal)
-		console.log("this is ballance formatted", supFormatter(bal._hex))
+			console.log("this is ballance", bal)
+			console.log("this is ballance formatted", supFormatter(bal._hex))
 
-		setSupBalance(supFormatter(bal._hex))
-	}, [account])
+			setSupBalance(supFormatter(bal._hex))
+		},
+		[provider],
+	)
 
 	useEffect(() => {
-		handleWalletSups()
-	}, [account])
+		if (!account) return
+		handleWalletSups(account)
+	}, [account, handleWalletSups])
 
 	useEffect(() => {
 		// metamask connected
