@@ -15,6 +15,7 @@ import { useSecureSubscription } from "../hooks/useSubscription"
 import { useWindowDimensions } from "../hooks/useWindowDimensions"
 import HubKey from "../keys"
 import { colors } from "../theme"
+import { WalletData } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 
@@ -29,7 +30,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const { dimensions } = useWindowDimensions()
 	const { user, logout } = useAuth()
 	const { supBalance, account } = useWeb3()
-	const { payload } = useSecureSubscription<string>(HubKey.UserSupsSubscibe)
+	const { payload } = useSecureSubscription<WalletData>(HubKey.UserSupsSubscibe)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>()
 	const [xsynSups, setXsynSups] = useState<string | undefined>()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
@@ -45,7 +46,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	useEffect(() => {
 		if (!payload || !user) return
-		setXsynSups(supFormatter(payload))
+		setXsynSups(supFormatter(payload.onWorldSups))
 	}, [payload, user])
 
 	useEffect(() => {
