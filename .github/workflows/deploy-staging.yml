@@ -1,0 +1,82 @@
+name: build-deploy
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the ci branch
+  push:
+    branches: [nathan/staging_ci]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  # hack to bypass node warning
+  CI: false
+  NINJA_NPM_TOKEN: ${{ secrets.NINJA_NPM_TOKEN }}
+  FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
+  SENTRY_DSN_FRONTEND: 
+  XGRID_LICENSE_KEY: ${{ secrets.XGRID_LICENSE_KEY }}
+  REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME: staging-passport.xsyn.io
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build_and_save:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup nodejs
+        uses: actions/setup-node@v2
+        with:
+            node-version: "14"
+
+      # cache npm dependencies
+      # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/
+      - name: Cache npm
+        if: ${{ !env.ACT }} # if running in local test environment
+        id: cache
+        uses: actions/cache@v2
+        with:
+            path: ./node_modules
+            key: modules-${{ hashFiles('./package-lock.json') }}
+
+      - name: Install npm packages
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Set prerelease tag
+        run: |
+          git config --global user.name "Github CI"
+          git config --global user.email "team@syndicate.ninja"
+          npm version prerelease --allow-same-version --preid rc
+          echo "TAG_NAME=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - name: check status
+        run: echo 
+
+      - name: Build web
+        run: CI=false npm run build
+
+      # list build folder recursively
+      - name: List build dir
+        run: find build 
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ !env.ACT }} # if running in local test environment
+        with:
+          name: passport-web_$TAG_NAME.tar.gz
+          path: ./build/
+  deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo -e "Host ${{ secrets.STAGING_SSH_HOST }}\n  User ${{ secrets.STAGING_SSH_USER }}\n  Port ${{ secrets.STAGING_SSH_PORT }}" >> ~/.ssh/config
+          echo '${{ secrets.STAGING_KNOWN_HOSTS }}' > ~/.ssh/known_hosts
+          echo '${{ secrets.STAGING_SSH_PKEY }}' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      - name: Rsync to server
+        if: ${{ !env.ACT }} # if running in local test environment
+        run: rsync -av build/ ${{ secrets.STAGING_SSH_HOST }}:/usr/share/ninja_syndicate/passport-web_$TAG_NAME
