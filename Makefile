@@ -1,5 +1,18 @@
 BIN = $(CURDIR)/bin
 
+.PHONY: clean
+clean:
+	rm -rf deploy
+
+.PHONY: deploy-prep
+deploy-prep: clean build
+
+.PHONY: build
+build:
+	npm ci
+	npm run build
+
+
 .PHONY: init-linux
 init-linux: install
 	@mkdir -p $(BIN)
