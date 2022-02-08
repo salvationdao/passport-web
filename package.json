@@ -1,6 +1,6 @@
 {
 	"name": "passport-web",
-	"version": "0.0.7-rc.0",
+	"version": "0.0.7-rc.1",
 	"private": true,
 	"dependencies": {
 		"@emotion/react": "^11.4.1",
