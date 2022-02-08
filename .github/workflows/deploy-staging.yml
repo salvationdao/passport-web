@@ -69,7 +69,7 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo -e "Host staging-passport.xsyn.io\n  User ${{ secrets.STAGING_SSH_USER }}\n  Port 22" >> ~/.ssh/config
+          echo -e "Host staging-passport.xsyn.io\n  User ${{ secrets.STAGING_SSH_USER }}\n Port ${{ secrets.STAGING_SSH_PORT }}" >> ~/.ssh/config
           echo '${{ secrets.STAGING_KNOWN_HOSTS }}' > ~/.ssh/known_hosts
           echo '${{ secrets.STAGING_SSH_PKEY }}' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
