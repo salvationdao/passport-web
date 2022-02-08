@@ -13,6 +13,7 @@ import { DiscordLogin } from "../components/discordLogin"
 import { FacebookLogin } from "../components/facebookLogin"
 import { ImageUpload } from "../components/form/imageUpload"
 import { InputField } from "../components/form/inputField"
+import { Navbar } from "../components/home/navbar"
 import { Loading } from "../components/loading"
 import { TwitchLogin } from "../components/twitchLogin"
 import { TwitterLogin } from "../components/twitterLogin"
@@ -23,7 +24,6 @@ import { fetching } from "../fetching"
 import HubKey from "../keys"
 import { Organisation, Role } from "../types/types"
 import { PasswordRequirement } from "./auth/onboarding"
-import { Navbar } from "../components/home/navbar"
 
 export const ProfilePage: React.FC = () => {
 	const history = useHistory()
@@ -77,6 +77,7 @@ export const ProfilePage: React.FC = () => {
 
 interface UserInput {
 	email?: string
+	newUsername?: string
 	firstName?: string
 	lastName?: string
 	newPassword?: string
@@ -135,9 +136,10 @@ const ProfileEdit: React.FC = () => {
 				}
 			}
 
-			const { newPassword, ...input } = data
+			const { newUsername, newPassword, ...input } = data
 			const payload = {
 				...input,
+				newUsername: user.username !== newUsername ? newUsername : undefined,
 				newPassword: changePassword ? newPassword : undefined,
 				avatarID,
 			}
@@ -202,6 +204,7 @@ const ProfileEdit: React.FC = () => {
 
 		reset({
 			email: user.email || "",
+			newUsername: user.username,
 			firstName: user.firstName,
 			lastName: user.lastName,
 			role: user.role,
@@ -300,6 +303,16 @@ const ProfileEdit: React.FC = () => {
 
 				<Section>
 					<Typography variant="subtitle1">User Details</Typography>
+					<InputField
+						label="Username"
+						name="newUsername"
+						control={control}
+						rules={{
+							required: "Username cannot be empty",
+						}}
+						disabled={submitting}
+						fullWidth
+					/>
 					<Box
 						sx={{
 							display: "flex",

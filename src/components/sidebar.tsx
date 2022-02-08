@@ -12,6 +12,7 @@ import { useSidebarState } from "../containers/sidebar"
 import { useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import { useSecureSubscription } from "../hooks/useSubscription"
+import { useWindowDimensions } from "../hooks/useWindowDimensions"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { FancyButton } from "./fancyButton"
@@ -25,6 +26,7 @@ export interface SidebarLayoutProps {
 
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
+	const { dimensions } = useWindowDimensions()
 	const { user, logout } = useAuth()
 	const { supBalance, account } = useWeb3()
 	const { payload } = useSecureSubscription<string>(HubKey.UserSupsSubscibe)
@@ -309,39 +311,33 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						},
 					}}
 				>
-					{/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-					<Drawer
-						variant="temporary"
-						open={sidebarOpen}
-						onClose={onClose}
-						ModalProps={{
-							keepMounted: true, // Better open performance on mobile.
-						}}
-						sx={{
-							display: "none",
-							"@media (max-width: 1000px)": {
-								display: "block",
-							},
-							"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
-						}}
-					>
-						{content}
-					</Drawer>
-					<Drawer
-						variant="persistent"
-						sx={{
-							width: drawerWidth,
-							display: "block",
-							flexShrink: 0,
-							"@media (max-width: 1000px)": {
-								display: "none",
-							},
-							"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
-						}}
-						open={sidebarOpen}
-					>
-						{content}
-					</Drawer>
+					{!!dimensions && dimensions.width < 1000 ? (
+						<Drawer
+							variant="temporary"
+							open={sidebarOpen}
+							onClose={onClose}
+							ModalProps={{
+								keepMounted: true, // Better open performance on mobile.
+							}}
+							sx={{
+								"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+							}}
+						>
+							{content}
+						</Drawer>
+					) : (
+						<Drawer
+							variant="persistent"
+							sx={{
+								width: drawerWidth,
+								flexShrink: 0,
+								"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+							}}
+							open={sidebarOpen}
+						>
+							{content}
+						</Drawer>
+					)}
 				</Box>
 				<Box
 					component="main"

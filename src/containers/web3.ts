@@ -3,8 +3,6 @@ import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import { supFormatter } from "../helpers/items"
 import { GetNonceResponse } from "../types/auth"
-import { User } from "../types/types"
-import { useAuth } from "./auth"
 
 export enum MetaMaskState {
 	NotInstalled,
