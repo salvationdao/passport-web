@@ -144,8 +144,3 @@ export enum Rarity {
 	Epic,
 	Legendary,
 }
-
-export interface WalletData {
-	onChainSups: string
-	onWorldSups: string
-}
