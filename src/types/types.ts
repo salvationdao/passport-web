@@ -8,6 +8,8 @@ export interface User {
 	lastName: string
 	roleID: string
 	avatarID: string
+	factionID: string
+	faction: Faction | undefined
 	verified: boolean
 	createdAt: Date
 	updatedAt: Date
@@ -23,6 +25,22 @@ export interface User {
 	facebookID?: string
 	googleID?: string
 	twitchID?: string
+	twitterID?: string
+	discordID?: string
+}
+
+export interface FactionThemeColor {
+	primary: string
+	secondary: string
+	background: string
+}
+
+export interface Faction {
+	id: string
+	label: string
+	logoUrl: string
+	backgroundUrl: string
+	theme: FactionThemeColor
 }
 
 export interface UserActivity {
@@ -69,15 +87,61 @@ export interface Product {
 	deletedAt: Date | null
 }
 
+export interface Collection {
+	id: string
+	name: string
+	image: string
+	createdAt: Date
+	updatedAt: Date
+	frozenAt?: Date
+	deletedAt?: Date
+}
+
 export interface Asset {
 	tokenID: number
+	userID: string
 	name: string
 	collection: string
 	description: string
 	externalURL: string
 	image: string
-	attributes: string
+	attributes: Attribute[]
 	createdAt: Date
 	updatedAt: Date
-	deletedAt?: any
+	frozenAt?: Date
+	deletedAt?: Date
+}
+
+export interface Attribute {
+	trait_type: string
+	token_id: number
+	value: string | number
+}
+
+
+export interface StoreItem {
+	ID: string
+	name: string
+	factionID: string
+	collectionID: string
+	description: string
+	image: string
+	attributes: Attribute[]
+	usdCentCost: number
+	amountSold: number
+	supCost: string
+	amountAvailable: number
+	soldAfter: Date
+	soldBefore: Date
+	deletedAt: Date
+	createdAt: Date
+	updatedAt: Date
+}
+
+export enum Rarity {
+	Common,
+	Uncommon,
+	Rare,
+	Epic,
+	Legendary
 }

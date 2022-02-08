@@ -23,7 +23,7 @@ export const Loading: React.FC<LoadingProps> = ({ text }) => {
 				}}
 			>
 				<CircularProgress />
-				<Typography variant="h6" sx={{ marginTop: "10px" }}>
+				<Typography variant="h6" sx={{ marginTop: "10px", textAlign: "center" }}>
 					{text || "Loading..."}
 				</Typography>
 			</Box>

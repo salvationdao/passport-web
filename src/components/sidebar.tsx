@@ -1,159 +1,354 @@
-import { Link } from "react-router-dom"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { IconName } from "@fortawesome/fontawesome-svg-core"
-import { AuthContainer } from "../containers"
-import { Perm } from "../types/enums"
-import Logo from "../assets/images/NinjaSoftwareLogo.svg"
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Typography, Box, Hidden } from "@mui/material"
-import { VersionText } from "./version"
+import AppsIcon from "@mui/icons-material/Apps"
+import FaceIcon from "@mui/icons-material/Face"
+import LoginIcon from "@mui/icons-material/Login"
+import LogoutIcon from "@mui/icons-material/Logout"
+import StorefrontIcon from "@mui/icons-material/Storefront"
+import { Box, Button, Divider, Drawer, SxProps, Theme, Typography } from "@mui/material"
+import { useEffect, useState } from "react"
+import { Link as RouterLink, useHistory } from "react-router-dom"
+import { SupTokenIcon } from "../assets"
+import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
+import { supFormatter } from "../helpers/items"
+import useSubscription from "../hooks/useSubscription"
+import { useWindowDimensions } from "../hooks/useWindowDimensions"
+import HubKey from "../keys"
+import { colors } from "../theme"
+import { FancyButton } from "./fancyButton"
+import { ProfileButton } from "./home/navbar"
 
-const drawerWidth = 240
+const drawerWidth = 300
 
-interface SideBarProps {
-	routes: SideBarRoute[]
-	admin?: boolean
+export interface SidebarLayoutProps {
+	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
 }
 
-export const SideBar = ({ routes, admin }: SideBarProps) => {
-	const { hasPermission } = AuthContainer.useContainer()
-	const { sidebarOpen, setSidebarOpen } = useSidebarState()
+export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
+	const history = useHistory()
+	const { dimensions } = useWindowDimensions()
+	const { user, logout } = useAuth()
+	const { payload } = useSubscription<string>(HubKey.UserSupsSubscibe)
+	const [errorMessage, setErrorMessage] = useState<string | undefined>()
+	const [xsynSups, setXsynSups] = useState<string | undefined>()
+	const { sidebarOpen } = useSidebarState()
 
-	const contents = (
-		<>
-			<Box
-				component={Link}
-				to="/"
-				sx={{
-					width: "100%",
-					minHeight: "140px",
-					display: "flex",
-					justifyContent: "center",
-					alignItems: "center",
-				}}
-			>
-				<Box component="img" src={Logo} alt="balloon" sx={{ width: "50%" }} />
-			</Box>
-			{!!admin && (
-				<Typography
-					variant="subtitle1"
-					sx={{
-						color: "black",
-						fontWeight: 600,
-						textAlign: "center",
-						marginTop: "-10px",
-					}}
-				>
-					ADMIN
-				</Typography>
-			)}
+	useEffect(() => {
+		if (!payload) return
+		setXsynSups(supFormatter(payload))
+	}, [payload])
 
-			<List>
-				{routes.map(({ perm, ...rest }, index) => {
-					if (!!perm && !hasPermission(perm)) return null
-					return <SideMenuButton key={`sidebar-button-${index}`} index={index} {...rest} exact />
-				})}
-			</List>
-
-			<VersionText />
-		</>
-	)
-
-	return (
+	const content = user ? (
 		<Box
-			component="nav"
 			sx={{
-				width: {
-					xs: "0px",
-					md: sidebarOpen ? drawerWidth : "0px",
+				display: "flex",
+				flexDirection: "column",
+				height: "100%",
+				padding: "1rem",
+				"& > *:not(:last-child)": {
+					marginBottom: "1rem",
 				},
-				minWidth: {
-					xs: "0px",
-					md: "unset",
-				},
-				transition: "width 225ms ease",
 			}}
 		>
-			<Hidden mdUp implementation={"js"}>
-				<Drawer
-					PaperProps={{
-						elevation: 5,
-						sx: {
-							width: drawerWidth,
-							color: "primary.contrastText",
-							backgroundColor: "primary.main",
-						},
+			<Box
+				sx={{
+					display: "flex",
+					alignItems: "flex-end",
+				}}
+			>
+				<ProfileButton
+					sx={{
+						marginRight: "2rem",
 					}}
-					variant={"temporary"}
-					anchor={"left"}
-					open={sidebarOpen}
-					onClose={() => setSidebarOpen(false)}
-					ModalProps={{
-						keepMounted: true,
+					size="5rem"
+				/>
+				<Box
+					sx={{
+						overflow: "hidden",
+						width: "100%",
+						whiteSpace: "nowrap",
+						textOverflow: "ellipsis",
 					}}
 				>
-					{contents}
-				</Drawer>
-			</Hidden>
-			<Hidden smDown implementation={"js"}>
-				<Drawer
-					PaperProps={{
-						elevation: 5,
-						sx: {
-							width: drawerWidth,
-							color: "primary.contrastText",
-							backgroundColor: "primary.main",
+					<Typography variant="subtitle1">
+						{user.firstName} {user.lastName}
+					</Typography>
+					<Typography variant="h5">{user.username}</Typography>
+				</Box>
+			</Box>
+			<Divider />
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					"& > *:not(:last-child)": {
+						marginBottom: ".5rem",
+					},
+				}}
+			>
+				<Typography
+					sx={{
+						textTransform: "uppercase",
+						fontWeight: 600,
+					}}
+				>
+					SUPS
+				</Typography>
+				<Typography
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						"& svg": {
+							height: ".8rem",
+						},
+						"& > *:not(:last-child)": {
+							marginRight: ".2rem",
 						},
 					}}
-					variant={"persistent"}
-					open={sidebarOpen}
-					onClose={() => setSidebarOpen(false)}
 				>
-					{contents}
-				</Drawer>
-			</Hidden>
+					<Box component="span" fontWeight={500} color={colors.darkGrey}>
+						XSYN SUPs:
+					</Box>
+					<SupTokenIcon />
+					{xsynSups}
+				</Typography>
+				<Typography
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						"& svg": {
+							height: ".8rem",
+						},
+						"& > *:not(:last-child)": {
+							marginRight: ".2rem",
+						},
+					}}
+				>
+					<Box component="span" fontWeight={500} color={colors.darkGrey}>
+						Wallet SUPs:
+					</Box>
+					<SupTokenIcon /> -1
+				</Typography>
+				<Box
+					sx={{
+						display: "flex",
+						"& > *:not(:last-child)": {
+							marginRight: ".2rem",
+						},
+					}}
+				>
+					<FancyButton
+						size="small"
+						borderColor={colors.supremacyGold}
+						sx={{
+							flex: 1,
+						}}
+					>
+						Buy SUPS
+					</FancyButton>
+					<FancyButton
+						size="small"
+						sx={{
+							flex: 1,
+						}}
+						onClick={() => {
+							if (!user.publicAddress) {
+								setErrorMessage(
+									"You must have a MetaMask connection if you want to redeem SUPs. You can connect your MetaMask account in your profile page.",
+								)
+							}
+						}}
+					>
+						Redeem
+					</FancyButton>
+					<FancyButton
+						size="small"
+						borderColor={colors.skyBlue}
+						sx={{
+							flex: 1,
+						}}
+						onClick={() => {
+							if (!user.publicAddress) {
+								setErrorMessage(
+									"You must have a MetaMask connection if you want to withdraw SUPs. You can connect your MetaMask account in your profile page.",
+								)
+							}
+						}}
+					>
+						Withdraw
+					</FancyButton>
+				</Box>
+			</Box>
+			<Divider />
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+				}}
+			>
+				<Typography
+					sx={{
+						marginBottom: ".5rem",
+						textTransform: "uppercase",
+						fontWeight: 600,
+					}}
+				>
+					Quick Links
+				</Typography>
+				<NavButton to="/profile" startIcon={<FaceIcon />}>
+					Profile
+				</NavButton>
+				<NavButton to={`/${user.username}/collections`} startIcon={<AppsIcon />}>
+					Collections
+				</NavButton>
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
+					Store
+				</NavButton>
+			</Box>
+			<Divider />
+			<Box flex="1" />
+			<Button
+				startIcon={<LogoutIcon />}
+				onClick={() => logout()}
+				sx={(theme) => ({
+					":hover": {
+						backgroundColor: theme.palette.error.main,
+					},
+				})}
+			>
+				Logout
+			</Button>
 		</Box>
+	) : (
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				height: "100%",
+				padding: "1rem",
+				"& > *:not(:last-child)": {
+					marginBottom: "1rem",
+				},
+			}}
+		>
+			<FancyButton startIcon={<LoginIcon />} onClick={() => history.push("/login")}>
+				Login
+			</FancyButton>
+			<Divider />
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+				}}
+			>
+				<Typography
+					sx={{
+						marginBottom: ".5rem",
+						textTransform: "uppercase",
+						fontWeight: 600,
+					}}
+				>
+					Quick Links
+				</Typography>
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
+					Store
+				</NavButton>
+			</Box>
+		</Box>
+	)
+
+	return (
+		<>
+			<Box
+				sx={{
+					display: "flex",
+				}}
+			>
+				<Box
+					component="nav"
+					sx={{
+						"@media (min-width: 1000px)": {
+							width: drawerWidth,
+							flexShrink: 0,
+						},
+					}}
+				>
+					{!!dimensions && dimensions.width < 1000 ? (
+						<Drawer
+							variant="temporary"
+							open={sidebarOpen}
+							onClose={onClose}
+							ModalProps={{
+								keepMounted: true, // Better open performance on mobile.
+							}}
+							sx={{
+								"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+							}}
+						>
+							{content}
+						</Drawer>
+					) : (
+						<Drawer
+							variant="persistent"
+							sx={{
+								width: drawerWidth,
+								flexShrink: 0,
+								"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+							}}
+							open={sidebarOpen}
+						>
+							{content}
+						</Drawer>
+					)}
+				</Box>
+				<Box
+					component="main"
+					sx={(theme) => ({
+						flexGrow: 1,
+						transition: theme.transitions.create("margin", {
+							easing: theme.transitions.easing.sharp,
+							duration: theme.transitions.duration.leavingScreen,
+						}),
+						marginLeft: `-${drawerWidth}px`,
+						"@media (max-width: 1000px)": {
+							marginLeft: 0,
+						},
+						...(sidebarOpen && {
+							transition: theme.transitions.create("margin", {
+								easing: theme.transitions.easing.easeOut,
+								duration: theme.transitions.duration.enteringScreen,
+							}),
+							marginLeft: 0,
+						}),
+					})}
+				>
+					{/*<Box component="main" sx={{ display: "flex", flex: 1 }}>*/}
+					{children}
+				</Box>
+			</Box>
+		</>
 	)
 }
 
-interface ButtonProps {
-	index: number
-	label: string
-	icon: IconName
-	url: string
-	exact?: boolean
+interface NavButtonProps {
+	to: string
+	active?: boolean
+	sx?: SxProps<Theme>
+	startIcon?: React.ReactNode
 }
 
-export interface SideBarRoute extends Omit<ButtonProps, "index"> {
-	perm?: Perm
-}
-
-const SideMenuButton = (props: ButtonProps) => {
-	const { label, icon, url, exact } = props
-
-	const selected = exact ? window.location.pathname === url : window.location.pathname.startsWith(url)
-
+const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, children }) => {
 	return (
-		<Box component={Link} to={url} sx={{ textDecoration: "none", color: "inherit" }}>
-			<ListItem
-				button
-				key={label}
-				sx={{
-					backgroundColor: selected ? "rgba(0, 0, 0, 0.25)" : "unset",
-				}}
-			>
-				<ListItemIcon
-					sx={{
-						width: "38px",
-						marginLeft: "10px",
-						textAlign: "center",
-						color: "inherit",
-					}}
-				>
-					<FontAwesomeIcon icon={["fal", icon]} size={"2x"} />
-				</ListItemIcon>
-				<ListItemText primary={label} />
-			</ListItem>
-		</Box>
+		<Button
+			sx={{
+				justifyContent: "start",
+				backgroundColor: active ? colors.lightNavyBlue : undefined,
+				...sx,
+			}}
+			component={RouterLink}
+			to={to}
+			startIcon={startIcon}
+		>
+			{children}
+		</Button>
 	)
 }

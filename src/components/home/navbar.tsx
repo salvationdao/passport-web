@@ -1,10 +1,10 @@
 import { LoadingButton } from "@mui/lab"
-import { Avatar, Box, BoxProps, IconButton, IconButtonProps, Menu, MenuItem, MenuItemProps, MenuList, useTheme } from "@mui/material"
+import { Avatar, Box, BoxProps, IconButton, IconButtonProps, Menu, MenuItem, MenuItemProps, SxProps, Theme, useTheme } from "@mui/material"
 import React, { useState } from "react"
 import { Link, useHistory, useLocation } from "react-router-dom"
-import SupremacyLogo from "../../assets/images/supremacy-logo.svg"
-import XSYNLogoImage from "../../assets/images/XSYN Stack White.svg"
+import { XSYNLogo } from "../../assets"
 import { AuthContainer } from "../../containers"
+import { useSidebarState } from "../../containers/sidebar"
 
 interface NavbarProps extends BoxProps {}
 
@@ -23,25 +23,24 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 			}}
 			{...props}
 		>
-			<Link to="/">
-				<Box component="img" src={XSYNLogoImage} alt="XSYN Logo" />
-			</Link>
+			<MenuButton />
 			<Box
 				sx={{
 					flex: 1,
 				}}
 			/>
-			<ProfileButton
-				sx={{
-					marginRight: "2rem",
-				}}
-			/>
-			<MenuButton />
+			<Link to="/">
+				<XSYNLogo />
+			</Link>
 		</Box>
 	)
 }
 
-const ProfileButton: React.FC<IconButtonProps> = ({ sx, onClick, ...props }) => {
+interface ProfileButtonProps extends Omit<IconButtonProps, "size"> {
+	size?: string
+}
+
+export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx, onClick, ...props }) => {
 	const history = useHistory()
 	const { user } = AuthContainer.useContainer()
 	const token = localStorage.getItem("token")
@@ -109,8 +108,8 @@ const ProfileButton: React.FC<IconButtonProps> = ({ sx, onClick, ...props }) => 
 					sx={(theme) => ({
 						zIndex: -1,
 						position: "absolute",
-						top: ".3rem",
-						left: ".3rem",
+						top: "10%",
+						left: "10%",
 						display: "block",
 						width: "100%",
 						height: "100%",
@@ -123,8 +122,8 @@ const ProfileButton: React.FC<IconButtonProps> = ({ sx, onClick, ...props }) => 
 						className="Avatar"
 						src={user.avatarID ? `/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}` : undefined}
 						sx={{
-							height: "3rem",
-							width: "3rem",
+							height: size,
+							width: size,
 						}}
 					/>
 				)}
@@ -133,71 +132,17 @@ const ProfileButton: React.FC<IconButtonProps> = ({ sx, onClick, ...props }) => 
 	)
 }
 
-const MenuButton: React.FC = () => {
-	const { user, logout } = AuthContainer.useContainer()
-	const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
-	const open = Boolean(anchorEl)
+interface MenuButtonProps {
+	sx?: SxProps<Theme>
+}
 
-	const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-		setAnchorEl(event.currentTarget)
-	}
-	const handleClose = () => {
-		setAnchorEl(null)
-	}
+const MenuButton: React.FC<MenuButtonProps> = ({ sx }) => {
+	const { setSidebarOpen } = useSidebarState()
 
 	return (
 		<>
-			<Menu
-				id="nav-menu"
-				anchorEl={anchorEl}
-				open={open}
-				onClose={handleClose}
-				MenuListProps={{
-					"aria-labelledby": "basic-button",
-				}}
-				PaperProps={{
-					sx: (theme) => ({
-						padding: "1rem",
-						backgroundColor: theme.palette.background.default,
-					}),
-				}}
-			>
-				<MenuList>
-					{!!user ? (
-						[
-							<StyledMenuItem key={0} route="/wallet" label="Wallet" handleClose={handleClose} />,
-							<StyledMenuItem key={1} route="/collections" label="Collections" handleClose={handleClose} />,
-							<StyledMenuItem key={2} onClick={() => logout()} label="Logout" handleClose={handleClose} />,
-						]
-					) : (
-						<StyledMenuItem route="/login" label="Login" handleClose={handleClose} />
-					)}
-				</MenuList>
-				{!!user && [
-					<Box
-						key={0}
-						sx={{
-							marginBottom: ".5rem",
-							fontSize: "1rem",
-							color: "#807f82",
-						}}
-					>
-						My Games
-					</Box>,
-					<a key={1} href="https://supremacy.game">
-						<Box
-							component="img"
-							sx={{
-								width: "100%",
-							}}
-							src={SupremacyLogo}
-							alt="Supremacy Logo"
-						/>
-					</a>,
-				]}
-			</Menu>
 			<LoadingButton
-				onClick={handleClick}
+				onClick={() => setSidebarOpen((prev) => !prev)}
 				sx={{
 					position: "relative",
 					height: "3.3rem",
@@ -226,6 +171,7 @@ const MenuButton: React.FC = () => {
 							transform: "rotate(30deg) translate(-1px, 0)",
 						},
 					},
+					...sx,
 				}}
 			>
 				<Box

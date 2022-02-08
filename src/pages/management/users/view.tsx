@@ -32,8 +32,6 @@ export const UserPage = () => {
 	const [user, setUser] = useState<User>()
 	const [loading, setLoading] = useState<boolean>(true)
 	// Get User
-	// const { loading, error, payload: user, setPayload: setUser } = useQuery<User>(HubKey.UserGet, !isNew, { username })
-
 	useEffect(() => {
 		if (!subscribe || username === "") return
 		return subscribe<User>(

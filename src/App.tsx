@@ -3,6 +3,7 @@ import { ThemeProvider } from "@mui/material/styles"
 import { Action, Client, ClientContextProvider, createClient } from "react-fetching-library"
 import { Themes } from "./containers"
 import { AuthProvider } from "./containers/auth"
+import { SidebarStateProvider } from "./containers/sidebar"
 import { API_ENDPOINT_HOSTNAME, SocketProvider } from "./containers/socket"
 import { Web3Provider } from "./containers/web3"
 import "./fonts.css"
@@ -32,10 +33,12 @@ const AppAdmin = () => {
 			<Web3Provider>
 				<ClientContextProvider client={client}>
 					<AuthProvider>
-						<ThemeProvider theme={currentTheme}>
-							<CssBaseline />
-							<Routes />
-						</ThemeProvider>
+						<SidebarStateProvider>
+							<ThemeProvider theme={currentTheme}>
+								<CssBaseline />
+								<Routes />
+							</ThemeProvider>
+						</SidebarStateProvider>
 					</AuthProvider>
 				</ClientContextProvider>
 			</Web3Provider>

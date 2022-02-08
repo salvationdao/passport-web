@@ -1,4 +1,6 @@
+import { nanoid } from "nanoid"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { API_ENDPOINT_HOSTNAME } from "../containers/socket"
 
 const getParamsFromObject = (params: any) =>
 	"?" +
@@ -6,126 +8,75 @@ const getParamsFromObject = (params: any) =>
 		.map((param) => `${param}=${window.encodeURIComponent(params[param])}`)
 		.join("&")
 
-// const getIsMobile = () => {
-//     let isMobile = false
-//
-//     try {
-//         isMobile = !!(
-//             (window.navigator && (window.navigator as any).standalone === true) ||
-//             window.matchMedia("(display-mode: standalone)").matches ||
-//             navigator.userAgent.match("CriOS") ||
-//             navigator.userAgent.match(/mobile/i)
-//         )
-//     } catch (ex) {
-//         // continue regardless of error
-//     }
-//
-//     return isMobile
-// }
-
 export interface ReactTwitchFailureResponse {
 	status?: string
 }
 
-export interface ReactTwitchLoginInfo {
+export interface ReactTwitchLoginResponse {
 	token: string
 }
 
 export interface ReactTwitchLoginState {
-	isSdkLoaded?: boolean
 	isProcessing?: boolean
 }
 
 interface TwitchLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
-	isDisabled: boolean
 	isProcessing: boolean
 }
 
 interface TwitchLoginProps {
-	clientId: string
-
-	callback(userInfo: ReactTwitchLoginInfo | ReactTwitchFailureResponse): void
-
+	callback(userInfo: ReactTwitchLoginResponse): void
 	onFailure?(response: ReactTwitchFailureResponse): void
-
-	buttonStyle?: React.CSSProperties
-	containerStyle?: React.CSSProperties
-	cssClass?: string
-	icon?: React.ReactNode
-	isDisabled?: boolean
-
-	onClick?(event: React.MouseEvent<HTMLDivElement>): void
-
-	redirectUri?: string
-	scope?: string
-	textButton?: string
-	typeButton?: string
-	tag?: Node | React.Component<any>
-	state?: string
-	responseType?: string
 
 	render?: (props: TwitchLoginButtonRenderProps) => JSX.Element
 }
 
-export const TwitchLogin: React.FC<TwitchLoginProps> = (props) => {
-	const { clientId, callback, onFailure, isDisabled, scope, onClick, responseType, redirectUri, state, render } = props
+export const TwitchLogin: React.FC<TwitchLoginProps> = ({ callback, onFailure, render }) => {
 	const [isProcessing, setIsProcessing] = useState(false)
 	const [twitchOAuthPopup, setTwitchOAuthPopup] = useState<Window | null>(null)
+	const [state, setState] = useState<string>()
 
-	const click = useCallback(
-		async (e) => {
-			if (isProcessing || isDisabled) {
-				return
-			}
+	const click = useCallback(async () => {
+		if (isProcessing) {
+			return
+		}
 
-			setIsProcessing(true)
-			if (typeof onClick === "function") {
-				onClick(e)
-				if (e.defaultPrevented) {
-					setIsProcessing(false)
-					return
-				}
-			}
+		setIsProcessing(true)
 
-			const twitchParams = {
-				client_id: clientId,
-				redirect_uri: redirectUri,
-				response_type: responseType,
-				state,
-				scope: scope ? scope + " openid" : "openid",
+		const currState = nanoid()
+		setState(currState)
+		const twitchParams = {
+			client_id: "1l3xc5yczselbc4yiwdieaw0hr1oap",
+			redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+			response_type: "id_token",
+			state: currState,
+			scope: "openid",
+		}
+		const href = `https://id.twitch.tv/oauth2/authorize${getParamsFromObject(twitchParams)}`
+		// Opens Twitch login page in a new window
+		const width = 500
+		const height = 600
+		const top = window.screenY + (window.outerHeight - height) / 2.5
+		const left = window.screenX + (window.outerWidth - width) / 2
+		const popup = window.open(href, "Connect Twitch to XSYN Passport", `width=${width},height=${height},left=${left},top=${top},popup=1`)
+		if (!popup) {
+			if (onFailure) {
+				onFailure({
+					status: "Failed to open popup window",
+				})
 			}
-			const href = `https://id.twitch.tv/oauth2/authorize${getParamsFromObject(twitchParams)}`
-			// Opens Twitch login page in a new window
-			const width = 500
-			const height = 600
-			const top = window.screenY + (window.outerHeight - height) / 2.5
-			const left = window.screenX + (window.outerWidth - width) / 2
-			const popup = window.open(href, "Connect Twitch to XSYN Passport", `width=${width},height=${height},left=${left},top=${top},popup=1`)
-			if (!popup) {
-				if (onFailure) {
-					onFailure({
-						status: "Failed to open popup window",
-					})
-				}
-				return
-			}
-			setTwitchOAuthPopup(popup)
-			// if (isMobile && !disableMobileRedirect) {
-			//     window.location.href = href
-			// } else {
-			// }
-		},
-		[isProcessing, isDisabled, scope, onClick, responseType, redirectUri, state, clientId, onFailure],
-	)
+			return
+		}
+		setTwitchOAuthPopup(popup)
+	}, [isProcessing, onFailure])
 
 	const propsForRender = useMemo(
 		() => ({
 			onClick: click,
-			isDisabled: !!isDisabled,
 			isProcessing,
 		}),
-		[click, isDisabled, isProcessing],
+		[click, isProcessing],
 	)
 
 	useEffect(() => {
@@ -136,46 +87,61 @@ export const TwitchLogin: React.FC<TwitchLoginProps> = (props) => {
 				return
 			}
 
-			if (twitchOAuthPopup.closed) {
-				popupCheckTimer && clearInterval(popupCheckTimer)
-				setIsProcessing(false)
-				setTwitchOAuthPopup(null)
-				if (onFailure) onFailure({ status: "Twitch window has been closed, aborting connection." })
-			}
+			try {
+				if (twitchOAuthPopup.closed) {
+					throw new Error("Twitch window has been closed, aborting connection.")
+				}
 
-			// Get access token from Twitch
-			const currentUrl = twitchOAuthPopup.location.href
-			if (!currentUrl) return
+				// Get access token from Twitch
+				const currentUrl = twitchOAuthPopup.location.href
+				if (!currentUrl) return
 
-			const fragment = window.location.origin + "?" + twitchOAuthPopup.location.hash.split("#")[1]
-			const searchParams = new URL(fragment).searchParams
-			const token = searchParams.get("id_token")
+				const errorParams = new URL(currentUrl).searchParams
+				if (errorParams.has("error")) {
+					throw new Error("The operation was cancelled.")
+				}
 
-			// Return the access token to the callback function
-			if (token) {
-				twitchOAuthPopup.close()
-				setTwitchOAuthPopup(null)
-				popupCheckTimer && clearInterval(popupCheckTimer)
+				const fragment = window.location.origin + "?" + twitchOAuthPopup.location.hash.split("#")[1]
+				const searchParams = new URL(fragment).searchParams
+				const token = searchParams.get("id_token")
+				const incomingState = searchParams.get("state")
+				// Protect against XSRF attacks
+				if (incomingState !== state) {
+					throw new Error("Something went wrong. Please try again.")
+				}
 
-				callback({
-					token,
-				})
-				setIsProcessing(false)
+				// Return the access token to the callback function
+				if (token) {
+					twitchOAuthPopup.close()
+					setTwitchOAuthPopup(null)
+					popupCheckTimer && clearInterval(popupCheckTimer)
+
+					callback({
+						token,
+					})
+					setIsProcessing(false)
+				}
+			} catch (e) {
+				if (onFailure && e instanceof Error && !(e instanceof DOMException)) {
+					// Close popup window, clear timers etc.
+					if (!twitchOAuthPopup.closed) {
+						twitchOAuthPopup.close()
+					}
+					popupCheckTimer && clearInterval(popupCheckTimer)
+					setIsProcessing(false)
+					setTwitchOAuthPopup(null)
+					// Call the onFailure callback
+					onFailure({ status: e.message })
+				}
 			}
 		}, 1000)
 
 		return () => clearInterval(popupCheckTimer)
-	}, [twitchOAuthPopup, callback, onFailure])
+	}, [twitchOAuthPopup, callback, onFailure, state])
 
 	if (!render) {
 		throw new Error("TwitchLogin requires a render prop to render")
 	}
 
 	return render(propsForRender)
-}
-
-TwitchLogin.defaultProps = {
-	redirectUri: typeof window !== "undefined" ? window.location.href : "/",
-	state: "twitchdirect",
-	responseType: "id_token",
 }

@@ -1,33 +1,33 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import MetaMaskOnboarding from "@metamask/onboarding"
-import EditIcon from "@mui/icons-material/Edit"
-import { Alert, Avatar, Box, BoxProps, Button, IconButton, IconButtonProps, Link, Snackbar, styled, TextField, Typography } from "@mui/material"
+import { LoadingButton } from "@mui/lab"
+import { Alert, Box, Button, Link, Snackbar, styled, TextField, Typography } from "@mui/material"
 import { User } from "@sentry/react"
 import { useCallback, useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
 import GoogleLogin, { GoogleLoginResponse } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link as RouterLink, Route, Switch, useHistory } from "react-router-dom"
-import { ReactComponent as FacebookIcon } from "../assets/images/icons/facebook.svg"
-import { ReactComponent as GoogleIcon } from "../assets/images/icons/google.svg"
-import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
-import { ReactComponent as TwitchIcon } from "../assets/images/icons/twitch.svg"
+import { Link as RouterLink, useHistory } from "react-router-dom"
+import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon } from "../assets"
+import { DiscordLogin } from "../components/discordLogin"
 import { FacebookLogin } from "../components/facebookLogin"
 import { ImageUpload } from "../components/form/imageUpload"
 import { InputField } from "../components/form/inputField"
 import { Navbar } from "../components/home/navbar"
 import { Loading } from "../components/loading"
 import { TwitchLogin } from "../components/twitchLogin"
-import { AuthContainer } from "../containers"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../containers/socket"
+import { TwitterLogin } from "../components/twitterLogin"
+import { useAuth } from "../containers/auth"
+import { useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
 import HubKey from "../keys"
 import { Organisation, Role } from "../types/types"
+import { PasswordRequirement } from "./auth/onboarding"
 
 export const ProfilePage: React.FC = () => {
 	const history = useHistory()
-	const { user } = AuthContainer.useContainer()
+	const { user } = useAuth()
 
 	useEffect(() => {
 		if (user) return
@@ -51,10 +51,7 @@ export const ProfilePage: React.FC = () => {
 			}}
 		>
 			<Navbar />
-			<Switch>
-				<Route exact path="/profile" component={ProfileDetails} />
-				<Route path="/profile/edit" component={ProfileEdit} />
-			</Switch>
+			<ProfileEdit />
 			<Box
 				sx={{
 					display: "flex",
@@ -78,110 +75,9 @@ export const ProfilePage: React.FC = () => {
 	)
 }
 
-const ProfileDetails: React.FC = () => {
-	const history = useHistory()
-	const { user } = AuthContainer.useContainer()
-	const token = localStorage.getItem("token")
-
-	if (!user) return <Loading />
-
-	return (
-		<>
-			<Box
-				sx={{
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					padding: "0 3rem",
-					height: "100%",
-				}}
-			>
-				<Box
-					sx={{
-						position: "relative",
-						width: "fit-content",
-						marginBottom: "3rem",
-					}}
-				>
-					<Box
-						sx={(theme) => ({
-							zIndex: -1,
-							position: "absolute",
-							top: "1rem",
-							left: "1rem",
-							display: "block",
-							width: "100%",
-							height: "100%",
-							borderRadius: "50%",
-							border: `2px solid ${theme.palette.secondary.main}`,
-						})}
-					/>
-					<EditableAvatar
-						avatar={user.avatarID ? `/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}` : undefined}
-						onClick={() => history.push("/profile/edit#profile")}
-					/>
-				</Box>
-				<Button
-					onClick={() => history.push("/profile/edit#profile")}
-					variant="text"
-					sx={{
-						marginBottom: "2rem",
-					}}
-					endIcon={
-						<EditIcon
-							sx={{
-								marginBottom: ".3rem",
-							}}
-						/>
-					}
-				>
-					<Typography variant="h2" component="p">
-						{user.username}
-					</Typography>
-				</Button>
-				<Typography
-					variant="h2"
-					sx={(theme) => ({
-						marginBottom: "2rem",
-						color: theme.palette.primary.main,
-						textTransform: "uppercase",
-					})}
-				>
-					Connected Apps
-				</Typography>
-				<Box
-					sx={{
-						display: "grid",
-						gridTemplateColumns: "repeat(4, 250px)",
-						gap: "4rem",
-						marginBottom: "2rem",
-						"@media (max-width: 1300px)": {
-							gridTemplateColumns: "repeat(4, 200px)",
-						},
-						"@media (max-width: 1100px)": {
-							gridTemplateColumns: "repeat(2, 200px)",
-						},
-						"@media (max-width: 800px)": {
-							gap: "2rem",
-						},
-						"@media (max-width: 600px)": {
-							width: "100%",
-							gridTemplateColumns: "repeat(1, 1fr)",
-						},
-					}}
-				>
-					<ConnectedAppCard type="metamask" label={user.publicAddress || "Not Connected"} isConnected={!!user.publicAddress} />
-					<ConnectedAppCard type="facebook" label={user.facebookID || "Not Connected"} isConnected={!!user.facebookID} />
-					<ConnectedAppCard type="google" label={user.googleID || "Not Connected"} isConnected={!!user.googleID} />
-					<ConnectedAppCard type="twitch" label={user.twitchID || "Not Connected"} isConnected={!!user.twitchID} />
-				</Box>
-			</Box>
-		</>
-	)
-}
-
 interface UserInput {
 	email?: string
+	newUsername?: string
 	firstName?: string
 	lastName?: string
 	newPassword?: string
@@ -199,13 +95,16 @@ interface UserInput {
 
 const ProfileEdit: React.FC = () => {
 	const { metaMaskState, sign, account, connect } = useWeb3()
-	const { user, addFacebook, addGoogle, addTwitch, removeFacebook, removeGoogle, removeTwitch } = AuthContainer.useContainer()
+	const { user, addFacebook, addGoogle, addTwitch, addTwitter, addDiscord, removeFacebook, removeGoogle, removeTwitch, removeTwitter, removeDiscord } =
+		useAuth()
 	const token = localStorage.getItem("token")
 	const { send } = useWebsocket()
 
 	// Setup form
-	const { control, handleSubmit, reset, formState } = useForm<UserInput>()
+	const { control, handleSubmit, reset, watch, formState } = useForm<UserInput>()
 	const { isDirty } = formState
+	const password = watch("newPassword")
+
 	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
 	const [submitting, setSubmitting] = useState(false)
 	const [successMessage, setSuccessMessage] = useState<string>()
@@ -237,9 +136,10 @@ const ProfileEdit: React.FC = () => {
 				}
 			}
 
-			const { newPassword, ...input } = data
+			const { newUsername, newPassword, ...input } = data
 			const payload = {
 				...input,
+				newUsername: user.username !== newUsername ? newUsername : undefined,
 				newPassword: changePassword ? newPassword : undefined,
 				avatarID,
 			}
@@ -253,6 +153,7 @@ const ProfileEdit: React.FC = () => {
 				setSuccessMessage("Profile successfully updated.")
 			}
 			setErrorMessage(undefined)
+			setChangePassword(false)
 		} catch (e) {
 			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
 			setSuccessMessage(undefined)
@@ -297,17 +198,13 @@ const ProfileEdit: React.FC = () => {
 		}
 	}
 
-	// useEffect(() => {
-	//     if (!user) return
-	//     console.log(user)
-	// }, [user])
-
 	// Load defaults
 	useEffect(() => {
 		if (!user) return
 
 		reset({
 			email: user.email || "",
+			newUsername: user.username,
 			firstName: user.firstName,
 			lastName: user.lastName,
 			role: user.role,
@@ -334,6 +231,10 @@ const ProfileEdit: React.FC = () => {
 	return (
 		<>
 			<Snackbar
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "right",
+				}}
 				open={!!successMessage}
 				autoHideDuration={6000}
 				onClose={(_, reason) => {
@@ -347,6 +248,10 @@ const ProfileEdit: React.FC = () => {
 				<Alert severity="success">{successMessage}</Alert>
 			</Snackbar>
 			<Snackbar
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "right",
+				}}
 				open={!!errorMessage}
 				autoHideDuration={6000}
 				onClose={(_, reason) => {
@@ -375,15 +280,6 @@ const ProfileEdit: React.FC = () => {
 					},
 				}}
 			>
-				<Box
-					sx={{
-						marginBottom: "1rem",
-					}}
-				>
-					<Link component={RouterLink} to="/profile">
-						Back to Profile
-					</Link>
-				</Box>
 				<Typography id="profile" variant="h1" component="h2">
 					Edit Profile
 				</Typography>
@@ -407,6 +303,16 @@ const ProfileEdit: React.FC = () => {
 
 				<Section>
 					<Typography variant="subtitle1">User Details</Typography>
+					<InputField
+						label="Username"
+						name="newUsername"
+						control={control}
+						rules={{
+							required: "Username cannot be empty",
+						}}
+						disabled={submitting}
+						fullWidth
+					/>
 					<Box
 						sx={{
 							display: "flex",
@@ -424,6 +330,7 @@ const ProfileEdit: React.FC = () => {
 						type="email"
 						control={control}
 						rules={{
+							required: changePassword && "Email must be provided if you are changing your password.",
 							pattern: {
 								value: /.+@.+\..+/,
 								message: "Invalid email address",
@@ -463,7 +370,32 @@ const ProfileEdit: React.FC = () => {
 								placeholder="Enter a new password"
 								label="New password"
 							/>
-							<Button type="button" variant="contained" onClick={() => setChangePassword(false)}>
+							<Box>
+								Your new password must:
+								<ul>
+									<PasswordRequirement fulfilled={!!password && password.length >= 8}>be 8 or more characters long</PasswordRequirement>
+									<PasswordRequirement fulfilled={!!password && password.toUpperCase() !== password && password.toLowerCase() !== password}>
+										contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
+									</PasswordRequirement>
+									{/* eslint-disable-next-line */}
+									<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
+										contain at least <strong>1 number</strong>
+									</PasswordRequirement>
+									<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)}>
+										contain at least <strong>1 symbol</strong>
+									</PasswordRequirement>
+								</ul>
+							</Box>
+							<Button
+								type="button"
+								variant="contained"
+								onClick={() => {
+									reset(undefined, {
+										keepValues: true,
+									})
+									setChangePassword(false)
+								}}
+							>
 								Cancel Password Change
 							</Button>
 						</>
@@ -481,7 +413,7 @@ const ProfileEdit: React.FC = () => {
 				>
 					<Button
 						type="submit"
-						disabled={(!isDirty && !avatarChanged) || submitting}
+						disabled={(!isDirty && !avatarChanged && !changePassword) || submitting}
 						variant="contained"
 						color="primary"
 						startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}
@@ -564,61 +496,6 @@ const ProfileEdit: React.FC = () => {
 				</Section>
 
 				<Section>
-					<Typography variant="subtitle1">Facebook</Typography>
-					{!!user.facebookID ? (
-						<>
-							<TextField label="Facebook ID" value={user.facebookID} disabled multiline />
-							<Button
-								onClick={async () => {
-									try {
-										await removeFacebook(user.id, user.username)
-									} catch (e) {
-										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
-									}
-								}}
-								variant="contained"
-								color="error"
-							>
-								Remove Facebook
-							</Button>
-						</>
-					) : (
-						<FacebookLogin
-							appId="577913423867745"
-							fields="email"
-							callback={async (response: any) => {
-								try {
-									setErrorMessage(undefined)
-
-									if (!!response && !!response.status) {
-										setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
-										return
-									}
-									await addFacebook(response.accessToken)
-								} catch (e) {
-									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
-								}
-							}}
-							onFailure={(error) => {
-								setErrorMessage(error.status || "Failed to connect account to Facebook.")
-							}}
-							render={(props) => (
-								<Button
-									onClick={async (event) => {
-										props.onClick(event)
-									}}
-									disabled={props.isDisabled || !props.isSdkLoaded || props.isProcessing}
-									startIcon={<FacebookIcon />}
-									variant="contained"
-								>
-									Connect Facebook to account
-								</Button>
-							)}
-						/>
-					)}
-				</Section>
-
-				<Section>
 					<Typography variant="subtitle1">Google</Typography>
 					{!!user.googleID ? (
 						<>
@@ -639,7 +516,7 @@ const ProfileEdit: React.FC = () => {
 						</>
 					) : (
 						<GoogleLogin
-							clientId="593683501366-gk7ab1nnskc1tft14bk8ebsja1bce24v.apps.googleusercontent.com"
+							clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
 							buttonText="Login"
 							onSuccess={async (response) => {
 								try {
@@ -668,6 +545,59 @@ const ProfileEdit: React.FC = () => {
 				</Section>
 
 				<Section>
+					<Typography variant="subtitle1">Facebook</Typography>
+					{!!user.facebookID ? (
+						<>
+							<TextField label="Facebook ID" value={user.facebookID} disabled multiline />
+							<Button
+								onClick={async () => {
+									try {
+										await removeFacebook(user.id, user.username)
+									} catch (e) {
+										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									}
+								}}
+								variant="contained"
+								color="error"
+							>
+								Remove Facebook
+							</Button>
+						</>
+					) : (
+						<FacebookLogin
+							callback={async (response: any) => {
+								try {
+									setErrorMessage(undefined)
+
+									if (!!response && !!response.status) {
+										setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
+										return
+									}
+									await addFacebook(response.accessToken)
+								} catch (e) {
+									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+								}
+							}}
+							onFailure={(error) => {
+								setErrorMessage(error.status || "Failed to connect account to Facebook.")
+							}}
+							render={(props) => (
+								<LoadingButton
+									onClick={async (event) => {
+										props.onClick(event)
+									}}
+									loading={!props.isSdkLoaded || props.isProcessing}
+									startIcon={<FacebookIcon />}
+									variant="contained"
+								>
+									Connect Facebook to account
+								</LoadingButton>
+							)}
+						/>
+					)}
+				</Section>
+
+				<Section>
 					<Typography variant="subtitle1">Twitch</Typography>
 					{!!user.twitchID ? (
 						<>
@@ -688,17 +618,10 @@ const ProfileEdit: React.FC = () => {
 						</>
 					) : (
 						<TwitchLogin
-							clientId="1l3xc5yczselbc4yiwdieaw0hr1oap"
-							redirectUri={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`}
-							callback={async (response: any) => {
+							callback={async (response) => {
 								try {
 									setErrorMessage(undefined)
-
-									if (!!response && !!response.status) {
-										setErrorMessage(`Couldn't connect to Twitch: ${response.status}`)
-										return
-									}
-									await addTwitch(response.token, `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`)
+									await addTwitch(response.token)
 								} catch (e) {
 									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
 								}
@@ -707,16 +630,112 @@ const ProfileEdit: React.FC = () => {
 								setErrorMessage(error.status || "Failed to connect account to Twitch.")
 							}}
 							render={(props) => (
-								<Button
+								<LoadingButton
 									onClick={async (event) => {
 										props.onClick(event)
 									}}
-									disabled={props.isDisabled || props.isProcessing}
+									loading={props.isProcessing}
 									startIcon={<TwitchIcon />}
 									variant="contained"
 								>
 									Connect Twitch to account
-								</Button>
+								</LoadingButton>
+							)}
+						/>
+					)}
+				</Section>
+
+				<Section>
+					<Typography variant="subtitle1">Twitter</Typography>
+					{!!user.twitterID ? (
+						<>
+							<TextField label="Twitter ID" value={user.twitterID} disabled multiline />
+							<Button
+								onClick={async () => {
+									try {
+										await removeTwitter(user.id, user.username)
+									} catch (e) {
+										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									}
+								}}
+								variant="contained"
+								color="error"
+							>
+								Remove Twitter
+							</Button>
+						</>
+					) : (
+						<TwitterLogin
+							callback={async (response) => {
+								try {
+									setErrorMessage(undefined)
+									await addTwitter(response.token, response.verifier)
+								} catch (e) {
+									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
+								}
+							}}
+							onFailure={(error) => {
+								setErrorMessage(error.status || "Failed to connect account to Twitter.")
+							}}
+							render={(props) => (
+								<LoadingButton
+									onClick={async (event) => {
+										props.onClick(event)
+									}}
+									loading={props.isProcessing}
+									startIcon={<TwitterIcon />}
+									variant="contained"
+								>
+									Connect Twitter to account
+								</LoadingButton>
+							)}
+						/>
+					)}
+				</Section>
+
+				<Section>
+					<Typography variant="subtitle1">Discord</Typography>
+					{!!user.discordID ? (
+						<>
+							<TextField label="Discord ID" value={user.discordID} disabled multiline />
+							<Button
+								onClick={async () => {
+									try {
+										await removeDiscord(user.id, user.username)
+									} catch (e) {
+										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									}
+								}}
+								variant="contained"
+								color="error"
+							>
+								Remove Discord
+							</Button>
+						</>
+					) : (
+						<DiscordLogin
+							callback={async (response) => {
+								try {
+									setErrorMessage(undefined)
+									await addDiscord(response.code)
+								} catch (e) {
+									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
+								}
+							}}
+							onFailure={(error) => {
+								setErrorMessage(error.status || "Failed to connect account to Discord.")
+							}}
+							render={(props) => (
+								<LoadingButton
+									onClick={async (event) => {
+										props.onClick(event)
+									}}
+									loading={props.isProcessing}
+									startIcon={<DiscordIcon />}
+									variant="contained"
+								>
+									Connect Discord to account
+								</LoadingButton>
 							)}
 						/>
 					)}
@@ -733,181 +752,3 @@ const Section = styled("div")({
 		marginBottom: ".5rem",
 	},
 })
-
-interface EditableAvatarProps extends Omit<IconButtonProps, "children"> {
-	avatar?: string
-}
-
-const EditableAvatar: React.FC<EditableAvatarProps> = ({ avatar, sx, onClick, onMouseLeave, onFocus, onBlur, ...props }) => {
-	const [isFocused, setIsFocused] = useState(false)
-
-	return (
-		<IconButton
-			onClick={(e) => {
-				if (onClick) onClick(e)
-				setIsFocused((prevIsFocused) => !prevIsFocused)
-			}}
-			onMouseLeave={(e) => {
-				if (onMouseLeave) onMouseLeave(e)
-				setIsFocused(false)
-			}}
-			onFocus={(e) => {
-				if (onFocus) onFocus(e)
-				setIsFocused(true)
-			}}
-			onBlur={(e) => {
-				if (onBlur) onBlur(e)
-				setIsFocused(false)
-			}}
-			sx={{
-				overflow: "hidden",
-				position: "relative",
-				width: "8rem",
-				height: "8rem",
-				padding: 0,
-				borderRadius: "50%",
-				...sx,
-			}}
-			{...props}
-		>
-			<Avatar
-				sx={{
-					width: "100%",
-					height: "100%",
-				}}
-				src={avatar}
-				alt="Avatar Image"
-			/>
-			<Box
-				sx={(theme) => ({
-					zIndex: 1,
-					position: "absolute",
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-					display: "flex",
-					justifyContent: "center",
-					alignItems: "center",
-					backgroundColor: "rgba(0, 0, 0, .6)",
-					color: theme.palette.text.primary,
-					opacity: isFocused ? 1 : 0,
-					transition: "opacity .3s ease-in",
-					"&:hover": {
-						opacity: 1,
-					},
-				})}
-			>
-				<EditIcon />
-			</Box>
-		</IconButton>
-	)
-}
-
-type ConnectionTypes = "metamask" | "facebook" | "google" | "twitch"
-
-interface ConnectedAppCardProps extends BoxProps {
-	type: ConnectionTypes
-	label: string
-	isConnected?: boolean
-}
-
-const ConnectedAppCard: React.FC<ConnectedAppCardProps> = ({ type, label, isConnected }) => {
-	const history = useHistory()
-	const [isFocused, setIsFocused] = useState(false)
-	let connectionIcon: React.ReactNode = null
-
-	switch (type) {
-		case "metamask":
-			connectionIcon = <MetaMaskIcon />
-			break
-		case "facebook":
-			connectionIcon = <FacebookIcon />
-			break
-		case "google":
-			connectionIcon = <GoogleIcon />
-			break
-		case "twitch":
-			connectionIcon = <TwitchIcon />
-			break
-	}
-
-	return (
-		<Box
-			sx={(theme) => ({
-				position: "relative",
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				padding: "2rem",
-				border: `2px solid ${theme.palette.secondary.main}`,
-				cursor: "pointer",
-			})}
-		>
-			<Box
-				sx={{
-					zIndex: 1,
-					position: "absolute",
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					justifyContent: "center",
-					opacity: isFocused ? 1 : 0,
-					backgroundColor: "rgba(0, 0, 0, .8)",
-					transition: "opacity .3s ease-in",
-					"&:hover": {
-						opacity: 1,
-					},
-				}}
-			>
-				<Button
-					variant="text"
-					onClick={() => {
-						setIsFocused((prevIsFocused) => !prevIsFocused)
-						history.push("/profile/edit#connections")
-					}}
-					onMouseLeave={() => setIsFocused(false)}
-					onFocus={() => setIsFocused(true)}
-					onBlur={() => setIsFocused(false)}
-					sx={{
-						height: "100%",
-						width: "100%",
-						borderRadius: 0,
-					}}
-				>
-					{isConnected ? "Manage" : "Connect"}
-				</Button>
-			</Box>
-			<Box
-				sx={{
-					width: "5rem",
-					marginBottom: "1rem",
-					filter: isConnected ? "none" : "grayscale(1)",
-					"& svg": {
-						width: "100%",
-						height: "auto",
-					},
-				}}
-			>
-				{connectionIcon}
-			</Box>
-			<Typography
-				variant="subtitle1"
-				sx={{
-					width: "100%",
-					maxWidth: "180px",
-					overflow: "hidden",
-					whiteSpace: "nowrap",
-					textOverflow: "ellipsis",
-					textAlign: "center",
-				}}
-			>
-				{label}
-			</Typography>
-		</Box>
-	)
-}

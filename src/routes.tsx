@@ -1,42 +1,82 @@
 import { useEffect } from "react"
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
+import { BrowserRouter, Route, Switch } from "react-router-dom"
+import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
+import { Sidebar } from "./components/sidebar"
 import { useAuth } from "./containers/auth"
+import { useSidebarState } from "./containers/sidebar"
+import { LoginPage } from "./pages/auth/login"
+import { PassportReady } from "./pages/auth/onboarding"
+import { SignUpPage } from "./pages/auth/signup"
 import { Home } from "./pages/home"
-import { LoginPage } from "./pages/login"
+import { AssetsList } from "./pages/management/assets/list"
 import { CollectionsPage } from "./pages/management/collections/collections"
-import { Onboarding } from "./pages/onboarding"
 import { ProfilePage } from "./pages/profile"
-import { Settings } from "./pages/settings"
-import { WalletPage } from "./pages/wallet"
+import { StorePage } from "./pages/store/store"
+import { ViewPage } from "./pages/viewPages"
 
 export const Routes = () => {
 	const { setSessionID } = useAuth()
+	const { setSidebarOpen } = useSidebarState()
+
 	useEffect(() => {
 		const searchParams = new URLSearchParams(window.location.search)
 		const sessionID = searchParams.get("sessionID")
 		if (sessionID) setSessionID(sessionID)
 	}, [setSessionID])
+
 	return (
 		<>
-			<Router>
-				<Switch>
-					{/* <Route path="/" component={Portal} /> */}
-					<Route exact path="/" component={Home} />
-					<Route path="/login" component={LoginPage} />
-					<Route path="/onboarding" component={Onboarding} />
-					<Route path="/profile" component={ProfilePage} />
-					<Route path="/wallet" component={WalletPage} />
+			<BrowserRouter>
+				<Sidebar onClose={() => setSidebarOpen(false)}>
+					<Switch>
+						<Route exact path="/">
+							<Home />
+						</Route>
+						<Route path="/login">
+							<LoginPage />
+						</Route>
+						<Route path="/signup">
+							<SignUpPage />
+						</Route>
+						<Route path="/onboarding">
+							<PassportReady />
+						</Route>
 
-					<Route path="/collections" component={CollectionsPage} />
-					<Route path="/collections/assets/:slug" component={CollectionsPage} />
+						<Route path="/privacy-policy">
+							<Home />
+						</Route>
+						<Route path="/terms-and-conditions">
+							<Home />
+						</Route>
 
-					<Route path="/privacy-policy" component={Home} />
-					<Route path="/terms-and-conditions" component={Home} />
+						{/* store */}
+						<Route path="/store/:id">
+							<ViewPage.StoreItem />
+						</Route>
+						<Route path="/store">
+							<StorePage />
+						</Route>
 
-					<Route path="/settings" component={Settings} />
-				</Switch>
-			</Router>
-			{/* <ConnectionLostSnackbar app="admin" /> */}
+						{/* User-authenticated routes */}
+						{/* profile */}
+						<Route path="/profile">
+							<ProfilePage />
+						</Route>
+						{/* users collections  */}
+						<Route path="/:username/collections/:collection_name">
+							<AssetsList />
+						</Route>
+						<Route path="/:username/collections">
+							<CollectionsPage />
+						</Route>
+						{/* asset view page */}
+						<Route path="/collections/assets/:tokenID">
+							<ViewPage.Asset />
+						</Route>
+					</Switch>
+				</Sidebar>
+			</BrowserRouter>
+			<ConnectionLostSnackbar app="admin" />
 		</>
 	)
 }
