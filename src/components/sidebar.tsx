@@ -15,6 +15,7 @@ import { colors } from "../theme"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { useSidebarState } from "../containers/sidebar"
+import { useWeb3, Web3Provider } from "../containers/web3"
 
 const drawerWidth = 300
 
@@ -25,16 +26,22 @@ export interface SidebarLayoutProps {
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
 	const { user, logout } = useAuth()
+	const { supBalance } = useWeb3()
 	const { payload } = useSubscription<string>(HubKey.UserSupsSubscibe)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>()
 	const [xsynSups, setXsynSups] = useState<string | undefined>()
+	const [walletSups, setWalletSups] = useState<string | undefined>()
+
 	const { sidebarOpen } = useSidebarState()
 
 	useEffect(() => {
-		if (!payload) return
+		if (!payload || !user) return
 		setXsynSups(supFormatter(payload))
-	}, [payload])
-	console.log(sidebarOpen)
+	}, [payload, user])
+
+	useEffect(() => {
+		setWalletSups(supBalance)
+	}, [supBalance])
 
 	const content = user ? (
 		<Box
@@ -125,7 +132,8 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					<Box component="span" fontWeight={500} color={colors.darkGrey}>
 						Wallet SUPs:
 					</Box>
-					<SupTokenIcon /> -1
+					<SupTokenIcon />
+					{walletSups || "No sups"}
 				</Typography>
 				<Box
 					sx={{
