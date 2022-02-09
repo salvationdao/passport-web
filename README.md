@@ -4,8 +4,13 @@
 ### Envars
 ```shell
 REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME=
-SENTRY_DSN_FRONTEND=
 XGRID_LICENSE_KEY=
+
+# Not needed for develop
+REACT_APP_SENTRY_DSN_FRONTEND=
+REACT_APP_SENTRY_CURRENT_RELEASE_NAME=syndicate-passport_web@version # client-project@version (snake_case)
+REACT_APP_SENTRY_ENVIRONMENT=
+REACT_APP_SENTRY_SAMPLERATE=
 ```
 
 ### To init
