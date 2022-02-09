@@ -82,4 +82,4 @@ jobs:
 
       - name: Bring new version online
         if: ${{ !env.ACT }} # if running in local test environment
-        run: ssh staging-passport.xsyn.io 'ln -s /usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}} /usr/share/ninja_syndicate/passport-web-online'
+        run: ssh staging-passport.xsyn.io 'ln -Tfsv /usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}} /usr/share/ninja_syndicate/passport-web-online'
