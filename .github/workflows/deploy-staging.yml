@@ -48,7 +48,7 @@ jobs:
         run: |
           git config --global user.name "Github CI"
           git config --global user.email "team@syndicate.ninja"
-          npm version prerelease --preid rc
+          npm version prerelease --allow-same-version --preid rc
           git push
           git push --tags
           echo "TAG_NAME=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
