@@ -1,6 +1,7 @@
 import { ethers } from "ethers"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
+import { supFormatter } from "../helpers/items"
 import { GetNonceResponse } from "../types/auth"
 
 export enum MetaMaskState {
@@ -16,6 +17,7 @@ export const Web3Container = createContainer(() => {
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
 	const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
 	const [account, setAccount] = useState<string>()
+	const [supBalance, setSupBalance] = useState<string>()
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -30,6 +32,38 @@ export const Web3Container = createContainer(() => {
 		[provider],
 	)
 
+	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
+	const handleWalletSups = useCallback(
+		async (acc: string) => {
+			// SUPS token address
+			const supTokenAddr = "0xED4664f5F37307abf8703dD39Fd6e72F421e7DE2"
+
+			// A Human-Readable ABI; for interacting with the contract, we
+			// must include any fragment we wish to use
+			const abi = [
+				// Read-Only Functions
+				"function balanceOf(address owner) view returns (uint256)",
+				"function decimals() view returns (uint8)",
+				"function symbol() view returns (string)",
+
+				// Authenticated Functions
+				"function transfer(address to, uint amount) returns (bool)",
+
+				// Events
+				"event Transfer(address indexed from, address indexed to, uint amount)",
+			]
+			const erc20 = new ethers.Contract(supTokenAddr, abi, provider)
+			const bal: { _hex: string } = await erc20.balanceOf(acc)
+			setSupBalance(supFormatter(bal._hex))
+		},
+		[provider],
+	)
+
+	useEffect(() => {
+		if (!account) return
+		handleWalletSups(account)
+	}, [account, handleWalletSups])
+
 	useEffect(() => {
 		// metamask connected
 		const asyncFn = async () => {
@@ -37,9 +71,11 @@ export const Web3Container = createContainer(() => {
 				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
 				setProvider(provider)
 				const accounts = await provider.listAccounts()
+
 				if (accounts.length !== 0) {
 					const signer = provider.getSigner()
 					const acc = await signer.getAddress()
+
 					setAccount(acc)
 					setMetaMaskState(MetaMaskState.Active)
 				} else {
@@ -120,6 +156,7 @@ export const Web3Container = createContainer(() => {
 		metaMaskState,
 		sign,
 		account,
+		supBalance,
 	}
 })
 

@@ -11,10 +11,19 @@ env:
   # hack to bypass node warning
   CI: false
   NINJA_NPM_TOKEN: ${{ secrets.NINJA_NPM_TOKEN }}
+<<<<<<< HEAD
+  FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }} 
+  XGRID_LICENSE_KEY: ${{ secrets.XGRID_LICENSE_KEY }}
+  REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME: staging-passport.xsyn.io
+  REACT_APP_SENTRY_DSN_FRONTEND: https://f389e257602342899d1639d9c0c7f476@o370480.ingest.sentry.io/6194602
+  REACT_APP_SENTRY_ENVIRONMENT: staging
+  REACT_APP_SENTRY_SAMPLERATE: 1
+=======
   FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
   SENTRY_DSN_FRONTEND: 
   XGRID_LICENSE_KEY: ${{ secrets.XGRID_LICENSE_KEY }}
   REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME: staging-passport.xsyn.io
+>>>>>>> origin/staging
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -50,6 +59,10 @@ jobs:
           git push
           git push --tags
           echo "TAG_NAME=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+<<<<<<< HEAD
+          echo "REACT_APP_SENTRY_CURRENT_RELEASE_NAME=syndicate-passport_web@$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+=======
+>>>>>>> origin/staging
 
       - name: Build web
         run: CI=false npm run build
@@ -60,10 +73,18 @@ jobs:
 
       - name: save artifact
         uses: actions/upload-artifact@v2
+<<<<<<< HEAD
+        if: ${{ !env.ACT }} # if running in local test environment
+        with:
+          name: passport-web_${{env.TAG_NAME}}.tar.gz
+          path: ./build/
+
+=======
         # if: ${{ !env.ACT }} # if running in local test environment
         with:
           name: passport-web_${{env.TAG_NAME}}.tar.gz
           path: ./build/
+>>>>>>> origin/staging
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -71,8 +92,18 @@ jobs:
           echo '${{ secrets.STAGING_KNOWN_HOSTS }}' > ~/.ssh/known_hosts
           echo '${{ secrets.STAGING_SSH_PKEY }}' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+<<<<<<< HEAD
+     
+      - name: Rsync to server
+        if: ${{ !env.ACT }} # if running in local test environment
+        run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}}
+      
+      - name: Bring new version online
+        if: ${{ !env.ACT }} # if running in local test environment
+=======
       - name: Rsync to server
         if: ${{ !env.ACT }} # if running in local test environment
         run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}}
       - name: Bring new version online
+>>>>>>> origin/staging
         run: ssh staging-passport.xsyn.io 'ln -s /usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}} /usr/share/ninja_syndicate/passport-web-online'

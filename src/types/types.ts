@@ -118,7 +118,6 @@ export interface Attribute {
 	value: string | number
 }
 
-
 export interface StoreItem {
 	ID: string
 	name: string
@@ -143,5 +142,5 @@ export enum Rarity {
 	Uncommon,
 	Rare,
 	Epic,
-	Legendary
+	Legendary,
 }
