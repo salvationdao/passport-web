@@ -49,8 +49,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [payload, user])
 
 	useEffect(() => {
-		console.log("this is user", user?.publicAddress === null)
-
 		if (!user || !account) return
 
 		// no wallet connected
