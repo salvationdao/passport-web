@@ -158,3 +158,5 @@ export interface VerifyAccountResponse {
 	token: string
 	user: User
 }
+
+export const NilUUID = "00000000-0000-0000-0000-000000000000"
