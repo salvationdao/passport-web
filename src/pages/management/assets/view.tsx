@@ -9,17 +9,23 @@ import { useWebsocket } from "../../../containers/socket"
 import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
-import { Asset } from "../../../types/types"
+import { Asset, QueuedWarMachine } from "../../../types/types"
 import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Navbar } from "../../../components/home/navbar"
+import { NilUUID } from "../../../types/auth"
+import { useAsset } from "../../../containers/assets"
+import { supFormatter } from "../../../helpers/items"
+import { SupTokenIcon } from "../../../assets"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
-	const { user } = AuthContainer.useContainer()
+	const { userID } = AuthContainer.useContainer()
+	const { queuedWarMachine, queuingContractReward } = useAsset()
 	const history = useHistory()
+	const queueDetail = queuedWarMachine(parseInt(tokenID))
 
-	const { subscribe, send } = useWebsocket()
+	const { subscribe, send, state } = useWebsocket()
 	const [asset, setAsset] = useState<Asset>()
 	const [attributes, setAttributes] = useState<Asset[]>([])
 
@@ -41,7 +47,37 @@ export const AssetPage = () => {
 		if (!tokenID) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetJoinQue, { AssetTokenID: parseInt(tokenID) })
+			await send(HubKey.AssetJoinQue, { assetTokenID: parseInt(tokenID) })
+			setSubmitting(false)
+			setErrorMessage(undefined)
+		} catch (e) {
+			setSubmitting(false)
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+		} finally {
+			setSubmitting(false)
+		}
+	}
+
+	const leaveQueue = async () => {
+		if (!tokenID) return
+		setSubmitting(true)
+		try {
+			await send(HubKey.AssetLeaveQue, { assetTokenID: parseInt(tokenID) })
+			setSubmitting(false)
+			setErrorMessage(undefined)
+		} catch (e) {
+			setSubmitting(false)
+			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+		} finally {
+			setSubmitting(false)
+		}
+	}
+
+	const payInsurance = async () => {
+		if (!tokenID) return
+		setSubmitting(true)
+		try {
+			await send(HubKey.AssetInsurancePay, { assetTokenID: parseInt(tokenID) })
 			setSubmitting(false)
 			setErrorMessage(undefined)
 		} catch (e) {
@@ -54,7 +90,7 @@ export const AssetPage = () => {
 
 	// Effect: get/set asset via token id
 	useEffect(() => {
-		if (!user || !user.id) return
+		if (!userID || userID === NilUUID || !tokenID) return
 		return subscribe<Asset>(
 			HubKey.AssetUpdated,
 			(payload) => {
@@ -65,20 +101,20 @@ export const AssetPage = () => {
 				tokenID: parseInt(tokenID),
 			},
 		)
-	}, [user, subscribe, asset?.tokenID, tokenID])
+	}, [userID, subscribe, tokenID])
 
 	// Effect: get attributes as assets
 	useEffect(() => {
 		setAttributes([])
-		if (!user || !user.id || !asset) return
+		if (!userID || userID === NilUUID || !asset) return
 
 		// get list of token ids from asset's attributes
 		const tokenIDs = asset.attributes.filter((a) => !!a.token_id).map((aa) => aa.token_id)
 		query({
-			userID: user.id,
+			userID,
 			includedTokenIDs: tokenIDs,
 		})
-	}, [user, asset, query, tokenID])
+	}, [userID, asset, query, tokenID])
 
 	// Effect: set attributes
 	useEffect(() => {
@@ -87,13 +123,13 @@ export const AssetPage = () => {
 	}, [payload, loading, error])
 
 	useEffect(() => {
-		if (user) return
+		if (userID) return
 
 		const userTimeout = setTimeout(() => {
 			history.push("/")
 		}, 2000)
 		return () => clearTimeout(userTimeout)
-	}, [user, history])
+	}, [userID, history])
 
 	return (
 		<>
@@ -254,6 +290,7 @@ export const AssetPage = () => {
 										alignItems: "space-between",
 										justifyContent: "flex-start",
 										marginRight: "50px",
+										width: "100%",
 										"@media (max-width: 550px)": {
 											marginRight: 0,
 										},
@@ -290,7 +327,7 @@ export const AssetPage = () => {
 												{asset.name}
 											</Typography>
 											{/* if owner, not frozen and is a war machine */}
-											{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
+											{asset.userID === userID && !asset.frozenAt && isWarMachine() && (
 												<Box
 													sx={{
 														marginLeft: "100px",
@@ -322,30 +359,132 @@ export const AssetPage = () => {
 												</Box>
 											)}
 											{asset.frozenAt && (
-												<Typography
-													variant="h3"
-													color={colors.skyBlue}
+												<Box
 													sx={{
-														textTransform: "uppercase",
-														marginLeft: "1rem",
+														marginLeft: "100px",
+														display: "none",
+														"@media (max-width: 1000px)": {
+															marginTop: "5px",
+															display: "flex",
+															flexDirection: "column",
+															marginLeft: "1rem",
+														},
 													}}
 												>
-													(Frozen)
-												</Typography>
+													<Typography
+														variant="h3"
+														color={colors.skyBlue}
+														sx={{
+															textTransform: "uppercase",
+														}}
+													>
+														(Frozen)
+													</Typography>
+													<FancyButton
+														loading={submitting}
+														onClick={leaveQueue}
+														sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
+														fancy
+													>
+														Leave
+													</FancyButton>
+												</Box>
 											)}
 										</Box>
+
+										{queueDetail ? (
+											<>
+												<Typography
+													sx={{
+														display: "flex",
+														alignItems: "center",
+														width: "fix-content",
+													}}
+												>
+													<Box component="span" fontWeight={500} color={colors.darkGrey}>
+														{queueDetail.position !== -1 ? `Queuing Position: ${queueDetail.position + 1}` : "In Game"}
+													</Box>
+												</Typography>
+												<Typography
+													sx={{
+														display: "flex",
+														alignItems: "center",
+														width: "fix-content",
+														"& svg": {
+															height: ".8rem",
+														},
+														"& > *:not(:last-child)": {
+															marginRight: ".2rem",
+														},
+													}}
+												>
+													<Box component="span" fontWeight={500} color={colors.darkGrey}>
+														Contract Reward:
+													</Box>
+													<SupTokenIcon />
+													{supFormatter(queueDetail.warMachineMetadata.contractReward)}
+												</Typography>
+												{queueDetail.warMachineMetadata.isInsured ? (
+													<Typography
+														sx={{
+															display: "flex",
+															alignItems: "center",
+															width: "fix-content",
+														}}
+													>
+														<Box component="span" fontWeight={500} color={colors.darkGrey}>
+															Insured
+														</Box>
+													</Typography>
+												) : (
+													<>
+														{(!asset.lockedByID || asset.lockedByID === NilUUID) && (
+															<FancyButton
+																loading={submitting}
+																onClick={payInsurance}
+																sx={{ fontSize: "0.65rem", width: "fit-content" }}
+																fancy
+															>
+																Pay Insurance
+															</FancyButton>
+														)}
+													</>
+												)}
+											</>
+										) : (
+											<Typography
+												sx={{
+													display: "flex",
+													alignItems: "center",
+													width: "fix-content",
+													"& svg": {
+														height: ".8rem",
+													},
+													"& > *:not(:last-child)": {
+														marginRight: ".2rem",
+													},
+												}}
+											>
+												<Box component="span" fontWeight={500} color={colors.darkGrey}>
+													Contract Reward:
+												</Box>
+												<SupTokenIcon />
+												{supFormatter(queuingContractReward)}
+											</Typography>
+										)}
 
 										<Typography
 											variant="body1"
 											fontSize={18}
 											sx={{
+												marginTop: "8px",
 												textTransform: "uppercase",
 												"@media (max-width: 550px)": {
 													display: "none",
 												},
 											}}
 										>
-											{asset.description}
+											{asset.description}description
 										</Typography>
 									</Section>
 
@@ -402,33 +541,68 @@ export const AssetPage = () => {
 							)}
 
 							{/* if owner, not frozen and is a war machine */}
-							{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
+							{!!asset && asset.userID === userID && !asset.frozenAt ? (
+								<>
+									{isWarMachine() && (
+										<>
+											<Box
+												sx={{
+													display: "flex",
+													flexDirection: "column",
+													"@media (max-width: 1000px)": {
+														marginLeft: "0px",
+														display: "none",
+													},
+												}}
+											>
+												<FancyButton
+													loading={submitting}
+													onClick={onDeploy}
+													sx={{ fontSize: "1rem", padding: "1rem 2.25rem", marginBottom: "1rem" }}
+													fancy
+												>
+													Deploy
+												</FancyButton>
+												<FancyButton
+													loading={submitting}
+													onClick={() => setUpdateModalOpen(true)}
+													sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
+													fancy
+												>
+													Edit Name
+												</FancyButton>
+											</Box>
+										</>
+									)}
+								</>
+							) : (
 								<Box
 									sx={{
+										marginTop: "5px",
 										display: "flex",
 										flexDirection: "column",
+										marginLeft: "1rem",
 										"@media (max-width: 1000px)": {
-											marginLeft: "0px",
 											display: "none",
+											marginLeft: "0px",
 										},
 									}}
 								>
-									<FancyButton
-										loading={submitting}
-										onClick={onDeploy}
-										sx={{ fontSize: "1rem", padding: "1rem 2.25rem", marginBottom: "1rem" }}
-										fancy
+									<Typography
+										variant="h3"
+										color={colors.skyBlue}
+										sx={{
+											textTransform: "uppercase",
+										}}
 									>
-										Deploy
-									</FancyButton>
-									<FancyButton
-										loading={submitting}
-										onClick={() => setUpdateModalOpen(true)}
-										sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
-										fancy
-									>
-										Edit Name
-									</FancyButton>
+										{!asset?.lockedByID || asset.lockedByID === NilUUID ? "(Frozen)" : "(Locked)"}
+									</Typography>
+									{!asset?.lockedByID ||
+										(asset.lockedByID === NilUUID && (
+											<FancyButton loading={submitting} onClick={leaveQueue} sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }} fancy>
+												Leave
+											</FancyButton>
+										))}
 								</Box>
 							)}
 						</Box>
@@ -436,8 +610,8 @@ export const AssetPage = () => {
 				</Paper>
 			</Box>
 
-			{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
-				<UpdateNameModal isOpen={updateModalOpen} onClose={() => setUpdateModalOpen(false)} asset={asset} userID={user.id} />
+			{!!asset && asset.userID === userID && !asset.frozenAt && isWarMachine() && (
+				<UpdateNameModal isOpen={updateModalOpen} onClose={() => setUpdateModalOpen(false)} asset={asset} userID={userID} />
 			)}
 		</>
 	)

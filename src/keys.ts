@@ -52,7 +52,7 @@ enum HubKey {
 	UserAddTwitter = "USER:ADD_TWITTER",
 	UserRemoveDiscord = "USER:REMOVE_DISCORD",
 	UserAddDiscord = "USER:ADD_DISCORD",
-	UserSupsSubscibe = "USER:SUPS:SUBSCRIBE",
+	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
 
 	RoleGet = "ROLE:GET",
 	RoleList = "ROLE:LIST",
@@ -80,6 +80,7 @@ enum HubKey {
 	UserActivityList = "USER_ACTIVITY:LIST",
 	UserActivityGet = "USER_ACTIVITY:GET",
 	UserActivityCreate = "USER_ACTIVITY:CREATE",
+	UserWarMachineQueuePositionSubscribe = "USER:WAR:MACHINE:QUEUE:POSITION:SUBSCRIBE",
 
 	CollectionList = "COLLECTION:LIST",
 	CollectionUpdated = "COLLECTION:SUBSCRIBE",
@@ -87,11 +88,14 @@ enum HubKey {
 	AssetList = "ASSET:LIST",
 	AssetUpdated = "ASSET:SUBSCRIBE",
 	AssetJoinQue = "ASSET:QUEUE:JOIN",
+	AssetLeaveQue = "ASSET:QUEUE:LEAVE",
 	AssetUpdateName = "ASSET:UPDATE:NAME",
+	AssetInsurancePay = "ASSET:INSURANCE:PAY",
+	AssetQueueContractReward = "ASSET:QUEUE:CONTRACT:REWARD",
 
 	StoreItemSubscribe = "STORE:ITEM",
 	StoreList = "STORE:LIST",
-	StorePurchase = "STORE:PURCHASE"
+	StorePurchase = "STORE:PURCHASE",
 }
 
 export default HubKey

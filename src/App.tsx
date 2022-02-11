@@ -2,6 +2,7 @@ import { CssBaseline } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
 import { Action, Client, ClientContextProvider, createClient } from "react-fetching-library"
 import { Themes } from "./containers"
+import { AssetProvider } from "./containers/assets"
 import { AuthProvider } from "./containers/auth"
 import { SidebarStateProvider } from "./containers/sidebar"
 import { API_ENDPOINT_HOSTNAME, SocketProvider } from "./containers/socket"
@@ -33,12 +34,14 @@ const AppAdmin = () => {
 			<Web3Provider>
 				<ClientContextProvider client={client}>
 					<AuthProvider>
-						<SidebarStateProvider>
-							<ThemeProvider theme={currentTheme}>
-								<CssBaseline />
-								<Routes />
-							</ThemeProvider>
-						</SidebarStateProvider>
+						<AssetProvider>
+							<SidebarStateProvider>
+								<ThemeProvider theme={currentTheme}>
+									<CssBaseline />
+									<Routes />
+								</ThemeProvider>
+							</SidebarStateProvider>
+						</AssetProvider>
 					</AuthProvider>
 				</ClientContextProvider>
 			</Web3Provider>

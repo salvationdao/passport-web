@@ -9,12 +9,14 @@ import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupTokenIcon } from "../assets"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
+import { useWebsocket } from "../containers/socket"
 import { useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import { useSecureSubscription } from "../hooks/useSubscription"
 import { useWindowDimensions } from "../hooks/useWindowDimensions"
 import HubKey from "../keys"
 import { colors } from "../theme"
+import { NilUUID } from "../types/auth"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 
@@ -27,9 +29,10 @@ export interface SidebarLayoutProps {
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
 	const { dimensions } = useWindowDimensions()
-	const { user, logout } = useAuth()
+	const { user, userID, logout } = useAuth()
+	const userPublicAddress = user?.publicAddress
+	const { subscribe } = useWebsocket()
 	const { supBalance, account } = useWeb3()
-	const { payload } = useSecureSubscription<string>(HubKey.UserSupsSubscibe)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>()
 	const [xsynSups, setXsynSups] = useState<string | undefined>()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
@@ -44,16 +47,19 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}
 
 	useEffect(() => {
-		if (!payload || !user) return
-		setXsynSups(supFormatter(payload))
-	}, [payload, user])
+		if (!userID || userID === NilUUID) return
+		return subscribe<string>(HubKey.UserSupsSubscribe, (payload) => {
+			if (!payload) return
+			setXsynSups(supFormatter(payload))
+		})
+	}, [userID, subscribe])
 
 	useEffect(() => {
-		if (!user || !user.publicAddress || !account) return
-		const correctWallet = correctWalletCheck(user.publicAddress, account)
+		if (!userID || userID === NilUUID || !userPublicAddress || !account) return
+		const correctWallet = correctWalletCheck(userPublicAddress, account)
 		setCorrectWallet(correctWallet)
 		setWalletSups(correctWallet ? supBalance : "N/A")
-	}, [supBalance, account, user])
+	}, [supBalance, account, userID, userPublicAddress])
 
 	const content = user ? (
 		<Box

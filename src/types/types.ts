@@ -109,6 +109,7 @@ export interface Asset {
 	createdAt: Date
 	updatedAt: Date
 	frozenAt?: Date
+	lockedByID?: string
 	deletedAt?: Date
 }
 
@@ -135,6 +136,17 @@ export interface StoreItem {
 	deletedAt: Date
 	createdAt: Date
 	updatedAt: Date
+}
+
+export interface QueuedWarMachine {
+	position: number
+	warMachineMetadata: WarMachineMetadata
+}
+
+export interface WarMachineMetadata {
+	tokenID: number
+	isInsured: boolean
+	contractReward: string
 }
 
 export enum Rarity {
