@@ -17,12 +17,13 @@ import { ViewPage } from "./pages/viewPages"
 export const Routes = () => {
 	const { setSessionID } = useAuth()
 	const { setSidebarOpen } = useSidebarState()
+	const searchParams = new URLSearchParams(window.location.search)
+	const sessionID = searchParams.get("sessionID")
+	const omitSideBar = searchParams.get("omitSideBar")
 
 	useEffect(() => {
-		const searchParams = new URLSearchParams(window.location.search)
-		const sessionID = searchParams.get("sessionID")
 		if (sessionID) setSessionID(sessionID)
-	}, [setSessionID])
+	}, [sessionID, setSessionID])
 
 	return (
 		<>

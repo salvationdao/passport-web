@@ -38,6 +38,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [correctWallet, setCorrectWallet] = useState<boolean>()
 
+	const searchParams = new URLSearchParams(window.location.search)
+	const omitSideBar = !!searchParams.get("omitSideBar")
+
 	const { sidebarOpen } = useSidebarState()
 
 	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
@@ -311,6 +314,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<Box
 					component="nav"
 					sx={{
+						display: omitSideBar ? "none" : undefined,
 						"@media (min-width: 1000px)": {
 							width: drawerWidth,
 							flexShrink: 0,
