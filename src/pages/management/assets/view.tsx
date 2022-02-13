@@ -1,36 +1,36 @@
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Skeleton, Snackbar, styled, Typography } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Skeleton, styled, Typography } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 import { Link, useHistory, useParams } from "react-router-dom"
+import { SupTokenIcon } from "../../../assets"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
-import { AuthContainer } from "../../../containers"
+import { Navbar } from "../../../components/home/navbar"
+import { useAsset } from "../../../containers/assets"
+import { useAuth } from "../../../containers/auth"
+import { useSnackbar } from "../../../containers/snackbar"
 import { useWebsocket } from "../../../containers/socket"
+import { supFormatter } from "../../../helpers/items"
 import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
-import { Asset, QueuedWarMachine } from "../../../types/types"
-import { useCallback, useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { Navbar } from "../../../components/home/navbar"
 import { NilUUID } from "../../../types/auth"
-import { useAsset } from "../../../containers/assets"
-import { supFormatter } from "../../../helpers/items"
-import { SupTokenIcon } from "../../../assets"
+import { Asset } from "../../../types/types"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
-	const { userID } = AuthContainer.useContainer()
+	const { userID } = useAuth()
+	const { displayMessage } = useSnackbar()
 	const { queuedWarMachine, queuingContractReward } = useAsset()
 	const history = useHistory()
 	const queueDetail = queuedWarMachine(parseInt(tokenID))
 
-	const { subscribe, send, state } = useWebsocket()
+	const { subscribe, send } = useWebsocket()
 	const [asset, setAsset] = useState<Asset>()
 	const [attributes, setAttributes] = useState<Asset[]>([])
-
 	const [submitting, setSubmitting] = useState(false)
-	const [errorMessage, setErrorMessage] = useState<string>()
 
 	// query asset
 	const { loading, error, payload, query } = useQuery<{ records: Asset[]; total: number }>(HubKey.AssetList, false)
@@ -47,12 +47,11 @@ export const AssetPage = () => {
 		if (!tokenID) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetJoinQue, { assetTokenID: parseInt(tokenID) })
+			await send(HubKey.AssetJoinQueue, { assetTokenID: parseInt(tokenID) })
 			setSubmitting(false)
-			setErrorMessage(undefined)
 		} catch (e) {
 			setSubmitting(false)
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
 			setSubmitting(false)
 		}
@@ -64,10 +63,9 @@ export const AssetPage = () => {
 		try {
 			await send(HubKey.AssetLeaveQue, { assetTokenID: parseInt(tokenID) })
 			setSubmitting(false)
-			setErrorMessage(undefined)
 		} catch (e) {
 			setSubmitting(false)
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
 			setSubmitting(false)
 		}
@@ -79,10 +77,9 @@ export const AssetPage = () => {
 		try {
 			await send(HubKey.AssetInsurancePay, { assetTokenID: parseInt(tokenID) })
 			setSubmitting(false)
-			setErrorMessage(undefined)
 		} catch (e) {
 			setSubmitting(false)
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
 			setSubmitting(false)
 		}
@@ -133,24 +130,6 @@ export const AssetPage = () => {
 
 	return (
 		<>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
-				}}
-				open={!!errorMessage}
-				autoHideDuration={6000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage(undefined)
-				}}
-				message={errorMessage}
-			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
 			<Box
 				sx={{
 					display: "flex",
@@ -393,7 +372,11 @@ export const AssetPage = () => {
 										</Box>
 
 										{queueDetail ? (
-											<>
+											<Box
+												sx={{
+													marginBottom: "1.5rem",
+												}}
+											>
 												<Typography
 													sx={{
 														display: "flex",
@@ -450,7 +433,7 @@ export const AssetPage = () => {
 														)}
 													</>
 												)}
-											</>
+											</Box>
 										) : (
 											<Typography
 												sx={{
@@ -620,10 +603,9 @@ export const AssetPage = () => {
 export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; asset: Asset; userID: string }) => {
 	const { isOpen, onClose, asset, userID } = props
 	const { send } = useWebsocket()
+	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
-	const [success, setSuccess] = useState(false)
 	const [loading, setLoading] = useState(false)
-	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
 	const getName = useCallback(() => {
 		let result = ""
@@ -643,11 +625,10 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; a
 				name,
 			})
 			setLoading(false)
-			setSuccess(true)
+			displayMessage("Asset successfully updated", "success")
 			onClose()
 		} catch (e) {
-			setSuccess(false)
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 			setLoading(false)
 		} finally {
 		}
@@ -659,81 +640,48 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; a
 	}, [getName, setValue])
 
 	return (
-		<>
-			<Snackbar
-				open={!!errorMessage}
-				autoHideDuration={3000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage("")
-				}}
-				message={errorMessage}
-			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
-
-			<Snackbar
-				open={!!success}
-				autoHideDuration={3000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setSuccess(false)
+		<Dialog onClose={() => onClose()} open={isOpen}>
+			<DialogTitle>Update Asset Name</DialogTitle>
+			<DialogContent
+				sx={{
+					backgroundColor: colors.navyBlue,
 				}}
 			>
-				<Alert severity="success">Asset successfully updated</Alert>
-			</Snackbar>
-
-			<Dialog onClose={() => onClose()} open={isOpen}>
-				<DialogTitle>Update Asset Name</DialogTitle>
-				<DialogContent
-					sx={{
-						backgroundColor: colors.navyBlue,
-					}}
-				>
-					<form onSubmit={onSubmit}>
-						<InputField
-							name="name"
-							label="name"
-							type="name"
-							control={control}
-							rules={{
-								required: "Name is required.",
-							}}
-							placeholder="name"
-							style={{ width: "300px" }}
-							autoFocus
-							disabled={loading}
-						/>
-						<DialogActions>
-							<>
-								<Button variant="contained" type="submit" color="primary" disabled={loading}>
-									Save
-								</Button>
-								<Button
-									variant="contained"
-									type="button"
-									color="error"
-									disabled={loading}
-									onClick={() => {
-										onClose()
-										setSuccess(false)
-										setErrorMessage("")
-									}}
-								>
-									Cancel
-								</Button>
-							</>
-						</DialogActions>
-					</form>
-				</DialogContent>
-			</Dialog>
-		</>
+				<form onSubmit={onSubmit}>
+					<InputField
+						name="name"
+						label="name"
+						type="name"
+						control={control}
+						rules={{
+							required: "Name is required.",
+						}}
+						placeholder="name"
+						style={{ width: "300px" }}
+						autoFocus
+						disabled={loading}
+					/>
+					<DialogActions>
+						<>
+							<Button variant="contained" type="submit" color="primary" disabled={loading}>
+								Save
+							</Button>
+							<Button
+								variant="contained"
+								type="button"
+								color="error"
+								disabled={loading}
+								onClick={() => {
+									onClose()
+								}}
+							>
+								Cancel
+							</Button>
+						</>
+					</DialogActions>
+				</form>
+			</DialogContent>
+		</Dialog>
 	)
 }
 

@@ -29,7 +29,20 @@ export interface User {
 	discordID?: string
 }
 
-export interface FactionThemeColor {
+export interface UserFaction {
+	recruitID: string
+	supsEarned: number
+	rank: string
+	spectatedCount: number
+
+	// Faction specific
+	factionID: string
+	theme: FactionTheme
+	logoUrl: string
+	backgroundUrl: string
+}
+
+export interface FactionTheme {
 	primary: string
 	secondary: string
 	background: string
@@ -38,9 +51,21 @@ export interface FactionThemeColor {
 export interface Faction {
 	id: string
 	label: string
-	logoUrl: string
+	logoBlobID: string
 	backgroundUrl: string
-	theme: FactionThemeColor
+	theme: FactionTheme
+}
+
+export interface DetailedFaction extends Faction {
+	description: string
+	velocity: number
+	sharePercent: number
+	recruitNumber: number
+	winCount: number
+	lossCount: number
+	killCount: number
+	deathCount: number
+	mvp: string
 }
 
 export interface UserActivity {
@@ -123,6 +148,7 @@ export interface StoreItem {
 	ID: string
 	name: string
 	factionID: string
+	faction?: Faction
 	collectionID: string
 	description: string
 	image: string

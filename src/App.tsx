@@ -5,6 +5,7 @@ import { Themes } from "./containers"
 import { AssetProvider } from "./containers/assets"
 import { AuthProvider } from "./containers/auth"
 import { SidebarStateProvider } from "./containers/sidebar"
+import { SnackbarProvider } from "./containers/snackbar"
 import { API_ENDPOINT_HOSTNAME, SocketProvider } from "./containers/socket"
 import { Web3Provider } from "./containers/web3"
 import "./fonts.css"
@@ -34,14 +35,16 @@ const AppAdmin = () => {
 			<Web3Provider>
 				<ClientContextProvider client={client}>
 					<AuthProvider>
-						<AssetProvider>
-							<SidebarStateProvider>
-								<ThemeProvider theme={currentTheme}>
-									<CssBaseline />
-									<Routes />
-								</ThemeProvider>
-							</SidebarStateProvider>
-						</AssetProvider>
+						<SidebarStateProvider>
+							<AssetProvider>
+								<SnackbarProvider>
+									<ThemeProvider theme={currentTheme}>
+										<CssBaseline />
+										<Routes />
+									</ThemeProvider>
+								</SnackbarProvider>
+							</AssetProvider>
+						</SidebarStateProvider>
 					</AuthProvider>
 				</ClientContextProvider>
 			</Web3Provider>

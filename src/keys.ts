@@ -87,7 +87,7 @@ enum HubKey {
 
 	AssetList = "ASSET:LIST",
 	AssetUpdated = "ASSET:SUBSCRIBE",
-	AssetJoinQue = "ASSET:QUEUE:JOIN",
+	AssetJoinQueue = "ASSET:QUEUE:JOIN",
 	AssetLeaveQue = "ASSET:QUEUE:LEAVE",
 	AssetUpdateName = "ASSET:UPDATE:NAME",
 	AssetInsurancePay = "ASSET:INSURANCE:PAY",
@@ -96,6 +96,11 @@ enum HubKey {
 	StoreItemSubscribe = "STORE:ITEM",
 	StoreList = "STORE:LIST",
 	StorePurchase = "STORE:PURCHASE",
+
+	GetFactionsDetail = "FACTION:ALL",
+	FactionEnlist = "FACTION:ENLIST",
+	SubscribeUserFaction = "USER:FACTION:SUBSCRIBE",
+	SubscribeFactionDetail = "FACTION:SUBSCRIBE",
 }
 
 export default HubKey

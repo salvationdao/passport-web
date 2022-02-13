@@ -1,4 +1,4 @@
-import { Alert, Box, Snackbar, Typography } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
@@ -8,6 +8,8 @@ import { InputField } from "../../components/form/inputField"
 import { GradientCircleThing } from "../../components/home/gradientCircleThing"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
+import { useSidebarState } from "../../containers/sidebar"
+import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { fonts } from "../../theme"
@@ -26,9 +28,10 @@ export const SignUpPage: React.FC = () => {
 	const history = useHistory()
 	const { send } = useWebsocket()
 	const { setUser, user } = useAuth()
+	const { setSidebarOpen } = useSidebarState()
+	const { displayMessage } = useSnackbar()
 
 	const [loading, setLoading] = useState(false)
-	const [errorMessage, setErrorMessage] = useState<string | undefined>()
 
 	// Form
 	const { control, handleSubmit, watch, trigger } = useForm<SignUpInput>()
@@ -42,7 +45,6 @@ export const SignUpPage: React.FC = () => {
 			onSubmit={handleSubmit(async (input) => {
 				try {
 					setLoading(true)
-					setErrorMessage(undefined)
 
 					const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
 					setUser(resp.user)
@@ -50,7 +52,7 @@ export const SignUpPage: React.FC = () => {
 
 					history.push("/onboarding?skip_username=true")
 				} catch (e) {
-					setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+					displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 				} finally {
 					setLoading(false)
 				}
@@ -182,6 +184,10 @@ export const SignUpPage: React.FC = () => {
 	)
 
 	useEffect(() => {
+		setSidebarOpen(false)
+	}, [setSidebarOpen])
+
+	useEffect(() => {
 		if (!user) return
 
 		const userTimeout = setTimeout(() => {
@@ -195,79 +201,59 @@ export const SignUpPage: React.FC = () => {
 	}
 
 	return (
-		<>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
+		<Box
+			sx={{
+				overflow: "hidden",
+				position: "relative",
+				minHeight: "100vh",
+				display: "flex",
+				justifyContent: "center",
+				alignItems: "center",
+				flexDirection: "column",
+				padding: "3rem",
+			}}
+		>
+			<GradientCircleThing
+				sx={{
+					zIndex: -1,
+					position: "absolute",
+					top: "50%",
+					left: "50%",
+					transform: "translate(-50%, -50%)",
 				}}
-				open={!!errorMessage}
-				autoHideDuration={3000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage(undefined)
+				phase={"small"}
+				disableAnimations
+				hideInner
+			/>
+			<RouterLink to="/">
+				<Box
+					component={XSYNLogo}
+					sx={{
+						width: "100px",
+						marginBottom: "1rem",
+					}}
+				/>
+			</RouterLink>
+			<Typography
+				variant="h1"
+				sx={{
+					marginBottom: "1rem",
+					fontFamily: fonts.bizmobold,
+					fontSize: "3rem",
+					textTransform: "uppercase",
 				}}
-				message={errorMessage}
 			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
+				Sign Up
+			</Typography>
 			<Box
 				sx={{
-					overflow: "hidden",
-					position: "relative",
-					minHeight: "100vh",
-					display: "flex",
-					justifyContent: "center",
-					alignItems: "center",
-					flexDirection: "column",
-					padding: "3rem",
+					width: "100%",
+					maxWidth: "400px",
 				}}
 			>
-				<GradientCircleThing
-					sx={{
-						zIndex: -1,
-						position: "absolute",
-						top: "50%",
-						left: "50%",
-						transform: "translate(-50%, -50%)",
-					}}
-					phase={"small"}
-					disableAnimations
-					hideInner
-				/>
-				<RouterLink to="/">
-					<Box
-						component={XSYNLogo}
-						sx={{
-							width: "100px",
-							marginBottom: "1rem",
-						}}
-					/>
-				</RouterLink>
-				<Typography
-					variant="h1"
-					sx={{
-						marginBottom: "1rem",
-						fontFamily: fonts.bizmobold,
-						fontSize: "3rem",
-						textTransform: "uppercase",
-					}}
-				>
-					Sign Up
-				</Typography>
-				<Box
-					sx={{
-						width: "100%",
-						maxWidth: "400px",
-					}}
-				>
-					{currentStep === 0 && renderStep0()}
-					{currentStep === 1 && renderStep1()}
-				</Box>
+				{currentStep === 0 && renderStep0()}
+				{currentStep === 1 && renderStep1()}
 			</Box>
-		</>
+		</Box>
 	)
 }

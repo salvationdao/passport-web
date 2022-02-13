@@ -1,7 +1,7 @@
-import { useState } from "react"
-import { TextField, TextFieldProps, InputAdornment, IconButton } from "@mui/material"
-import { Control, Controller } from "react-hook-form"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { IconButton, InputAdornment, TextField, TextFieldProps } from "@mui/material"
+import { useState } from "react"
+import { Control, Controller } from "react-hook-form"
 
 interface InputFieldProps {
 	control: Control<any, object>
