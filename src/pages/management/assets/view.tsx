@@ -1,30 +1,36 @@
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Skeleton, Snackbar, styled, Typography } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Skeleton, styled, Typography } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 import { Link, useHistory, useParams } from "react-router-dom"
+import { SupTokenIcon } from "../../../assets"
 import PlaceholderMech from "../../../assets/images/placeholder_mech.png"
 import SupremacyLogo from "../../../assets/images/supremacy-logo.svg"
 import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
-import { AuthContainer } from "../../../containers"
+import { Navbar } from "../../../components/home/navbar"
+import { useAsset } from "../../../containers/assets"
+import { useAuth } from "../../../containers/auth"
+import { useSnackbar } from "../../../containers/snackbar"
 import { useWebsocket } from "../../../containers/socket"
+import { supFormatter } from "../../../helpers/items"
 import { useQuery } from "../../../hooks/useSend"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
+import { NilUUID } from "../../../types/auth"
 import { Asset } from "../../../types/types"
-import { useCallback, useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { Navbar } from "../../../components/home/navbar"
 
 export const AssetPage = () => {
 	const { tokenID } = useParams<{ tokenID: string }>()
-	const { user } = AuthContainer.useContainer()
+	const { userID } = useAuth()
+	const { displayMessage } = useSnackbar()
+	const { queuedWarMachine, queuingContractReward } = useAsset()
 	const history = useHistory()
+	const queueDetail = queuedWarMachine(parseInt(tokenID))
 
 	const { subscribe, send } = useWebsocket()
 	const [asset, setAsset] = useState<Asset>()
 	const [attributes, setAttributes] = useState<Asset[]>([])
-
 	const [submitting, setSubmitting] = useState(false)
-	const [errorMessage, setErrorMessage] = useState<string>()
 
 	// query asset
 	const { loading, error, payload, query } = useQuery<{ records: Asset[]; total: number }>(HubKey.AssetList, false)
@@ -41,12 +47,39 @@ export const AssetPage = () => {
 		if (!tokenID) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetJoinQue, { AssetTokenID: parseInt(tokenID) })
+			await send(HubKey.AssetJoinQueue, { assetTokenID: parseInt(tokenID) })
 			setSubmitting(false)
-			setErrorMessage(undefined)
 		} catch (e) {
 			setSubmitting(false)
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+		} finally {
+			setSubmitting(false)
+		}
+	}
+
+	const leaveQueue = async () => {
+		if (!tokenID) return
+		setSubmitting(true)
+		try {
+			await send(HubKey.AssetLeaveQue, { assetTokenID: parseInt(tokenID) })
+			setSubmitting(false)
+		} catch (e) {
+			setSubmitting(false)
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+		} finally {
+			setSubmitting(false)
+		}
+	}
+
+	const payInsurance = async () => {
+		if (!tokenID) return
+		setSubmitting(true)
+		try {
+			await send(HubKey.AssetInsurancePay, { assetTokenID: parseInt(tokenID) })
+			setSubmitting(false)
+		} catch (e) {
+			setSubmitting(false)
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
 			setSubmitting(false)
 		}
@@ -54,7 +87,7 @@ export const AssetPage = () => {
 
 	// Effect: get/set asset via token id
 	useEffect(() => {
-		if (!user || !user.id) return
+		if (!userID || userID === NilUUID || !tokenID) return
 		return subscribe<Asset>(
 			HubKey.AssetUpdated,
 			(payload) => {
@@ -65,20 +98,20 @@ export const AssetPage = () => {
 				tokenID: parseInt(tokenID),
 			},
 		)
-	}, [user, subscribe, asset?.tokenID, tokenID])
+	}, [userID, subscribe, tokenID])
 
 	// Effect: get attributes as assets
 	useEffect(() => {
 		setAttributes([])
-		if (!user || !user.id || !asset) return
+		if (!userID || userID === NilUUID || !asset) return
 
 		// get list of token ids from asset's attributes
 		const tokenIDs = asset.attributes.filter((a) => !!a.token_id).map((aa) => aa.token_id)
 		query({
-			userID: user.id,
+			userID,
 			includedTokenIDs: tokenIDs,
 		})
-	}, [user, asset, query, tokenID])
+	}, [userID, asset, query, tokenID])
 
 	// Effect: set attributes
 	useEffect(() => {
@@ -87,34 +120,16 @@ export const AssetPage = () => {
 	}, [payload, loading, error])
 
 	useEffect(() => {
-		if (user) return
+		if (userID) return
 
 		const userTimeout = setTimeout(() => {
 			history.push("/")
 		}, 2000)
 		return () => clearTimeout(userTimeout)
-	}, [user, history])
+	}, [userID, history])
 
 	return (
 		<>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
-				}}
-				open={!!errorMessage}
-				autoHideDuration={6000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage(undefined)
-				}}
-				message={errorMessage}
-			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
 			<Box
 				sx={{
 					display: "flex",
@@ -254,6 +269,7 @@ export const AssetPage = () => {
 										alignItems: "space-between",
 										justifyContent: "flex-start",
 										marginRight: "50px",
+										width: "100%",
 										"@media (max-width: 550px)": {
 											marginRight: 0,
 										},
@@ -290,7 +306,7 @@ export const AssetPage = () => {
 												{asset.name}
 											</Typography>
 											{/* if owner, not frozen and is a war machine */}
-											{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
+											{asset.userID === userID && !asset.frozenAt && isWarMachine() && (
 												<Box
 													sx={{
 														marginLeft: "100px",
@@ -322,30 +338,136 @@ export const AssetPage = () => {
 												</Box>
 											)}
 											{asset.frozenAt && (
-												<Typography
-													variant="h3"
-													color={colors.skyBlue}
+												<Box
 													sx={{
-														textTransform: "uppercase",
-														marginLeft: "1rem",
+														marginLeft: "100px",
+														display: "none",
+														"@media (max-width: 1000px)": {
+															marginTop: "5px",
+															display: "flex",
+															flexDirection: "column",
+															marginLeft: "1rem",
+														},
 													}}
 												>
-													(Frozen)
-												</Typography>
+													<Typography
+														variant="h3"
+														color={colors.skyBlue}
+														sx={{
+															textTransform: "uppercase",
+														}}
+													>
+														(Frozen)
+													</Typography>
+													<FancyButton
+														loading={submitting}
+														onClick={leaveQueue}
+														sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
+														fancy
+													>
+														Leave
+													</FancyButton>
+												</Box>
 											)}
 										</Box>
+
+										{queueDetail ? (
+											<Box
+												sx={{
+													marginBottom: "1.5rem",
+												}}
+											>
+												<Typography
+													sx={{
+														display: "flex",
+														alignItems: "center",
+														width: "fix-content",
+													}}
+												>
+													<Box component="span" fontWeight={500} color={colors.darkGrey}>
+														{queueDetail.position !== -1 ? `Queuing Position: ${queueDetail.position + 1}` : "In Game"}
+													</Box>
+												</Typography>
+												<Typography
+													sx={{
+														display: "flex",
+														alignItems: "center",
+														width: "fix-content",
+														"& svg": {
+															height: ".8rem",
+														},
+														"& > *:not(:last-child)": {
+															marginRight: ".2rem",
+														},
+													}}
+												>
+													<Box component="span" fontWeight={500} color={colors.darkGrey}>
+														Contract Reward:
+													</Box>
+													<SupTokenIcon />
+													{supFormatter(queueDetail.warMachineMetadata.contractReward)}
+												</Typography>
+												{queueDetail.warMachineMetadata.isInsured ? (
+													<Typography
+														sx={{
+															display: "flex",
+															alignItems: "center",
+															width: "fix-content",
+														}}
+													>
+														<Box component="span" fontWeight={500} color={colors.darkGrey}>
+															Insured
+														</Box>
+													</Typography>
+												) : (
+													<>
+														{(!asset.lockedByID || asset.lockedByID === NilUUID) && (
+															<FancyButton
+																loading={submitting}
+																onClick={payInsurance}
+																sx={{ fontSize: "0.65rem", width: "fit-content" }}
+																fancy
+															>
+																Pay Insurance
+															</FancyButton>
+														)}
+													</>
+												)}
+											</Box>
+										) : (
+											<Typography
+												sx={{
+													display: "flex",
+													alignItems: "center",
+													width: "fix-content",
+													"& svg": {
+														height: ".8rem",
+													},
+													"& > *:not(:last-child)": {
+														marginRight: ".2rem",
+													},
+												}}
+											>
+												<Box component="span" fontWeight={500} color={colors.darkGrey}>
+													Contract Reward:
+												</Box>
+												<SupTokenIcon />
+												{supFormatter(queuingContractReward)}
+											</Typography>
+										)}
 
 										<Typography
 											variant="body1"
 											fontSize={18}
 											sx={{
+												marginTop: "8px",
 												textTransform: "uppercase",
 												"@media (max-width: 550px)": {
 													display: "none",
 												},
 											}}
 										>
-											{asset.description}
+											{asset.description}description
 										</Typography>
 									</Section>
 
@@ -402,33 +524,68 @@ export const AssetPage = () => {
 							)}
 
 							{/* if owner, not frozen and is a war machine */}
-							{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
+							{!!asset && asset.userID === userID && !asset.frozenAt ? (
+								<>
+									{isWarMachine() && (
+										<>
+											<Box
+												sx={{
+													display: "flex",
+													flexDirection: "column",
+													"@media (max-width: 1000px)": {
+														marginLeft: "0px",
+														display: "none",
+													},
+												}}
+											>
+												<FancyButton
+													loading={submitting}
+													onClick={onDeploy}
+													sx={{ fontSize: "1rem", padding: "1rem 2.25rem", marginBottom: "1rem" }}
+													fancy
+												>
+													Deploy
+												</FancyButton>
+												<FancyButton
+													loading={submitting}
+													onClick={() => setUpdateModalOpen(true)}
+													sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
+													fancy
+												>
+													Edit Name
+												</FancyButton>
+											</Box>
+										</>
+									)}
+								</>
+							) : (
 								<Box
 									sx={{
+										marginTop: "5px",
 										display: "flex",
 										flexDirection: "column",
+										marginLeft: "1rem",
 										"@media (max-width: 1000px)": {
-											marginLeft: "0px",
 											display: "none",
+											marginLeft: "0px",
 										},
 									}}
 								>
-									<FancyButton
-										loading={submitting}
-										onClick={onDeploy}
-										sx={{ fontSize: "1rem", padding: "1rem 2.25rem", marginBottom: "1rem" }}
-										fancy
+									<Typography
+										variant="h3"
+										color={colors.skyBlue}
+										sx={{
+											textTransform: "uppercase",
+										}}
 									>
-										Deploy
-									</FancyButton>
-									<FancyButton
-										loading={submitting}
-										onClick={() => setUpdateModalOpen(true)}
-										sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
-										fancy
-									>
-										Edit Name
-									</FancyButton>
+										{!asset?.lockedByID || asset.lockedByID === NilUUID ? "(Frozen)" : "(Locked)"}
+									</Typography>
+									{!asset?.lockedByID ||
+										(asset.lockedByID === NilUUID && (
+											<FancyButton loading={submitting} onClick={leaveQueue} sx={{ fontSize: "1rem", padding: "1rem 2.25rem" }} fancy>
+												Leave
+											</FancyButton>
+										))}
 								</Box>
 							)}
 						</Box>
@@ -436,8 +593,8 @@ export const AssetPage = () => {
 				</Paper>
 			</Box>
 
-			{!!asset && asset.userID === user?.id && !asset.frozenAt && isWarMachine() && (
-				<UpdateNameModal isOpen={updateModalOpen} onClose={() => setUpdateModalOpen(false)} asset={asset} userID={user.id} />
+			{!!asset && asset.userID === userID && !asset.frozenAt && isWarMachine() && (
+				<UpdateNameModal isOpen={updateModalOpen} onClose={() => setUpdateModalOpen(false)} asset={asset} userID={userID} />
 			)}
 		</>
 	)
@@ -446,10 +603,9 @@ export const AssetPage = () => {
 export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; asset: Asset; userID: string }) => {
 	const { isOpen, onClose, asset, userID } = props
 	const { send } = useWebsocket()
+	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
-	const [success, setSuccess] = useState(false)
 	const [loading, setLoading] = useState(false)
-	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
 	const getName = useCallback(() => {
 		let result = ""
@@ -469,11 +625,10 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; a
 				name,
 			})
 			setLoading(false)
-			setSuccess(true)
+			displayMessage("Asset successfully updated", "success")
 			onClose()
 		} catch (e) {
-			setSuccess(false)
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 			setLoading(false)
 		} finally {
 		}
@@ -485,81 +640,48 @@ export const UpdateNameModal = (props: { isOpen: boolean; onClose: () => void; a
 	}, [getName, setValue])
 
 	return (
-		<>
-			<Snackbar
-				open={!!errorMessage}
-				autoHideDuration={3000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage("")
-				}}
-				message={errorMessage}
-			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
-
-			<Snackbar
-				open={!!success}
-				autoHideDuration={3000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setSuccess(false)
+		<Dialog onClose={() => onClose()} open={isOpen}>
+			<DialogTitle>Update Asset Name</DialogTitle>
+			<DialogContent
+				sx={{
+					backgroundColor: colors.navyBlue,
 				}}
 			>
-				<Alert severity="success">Asset successfully updated</Alert>
-			</Snackbar>
-
-			<Dialog onClose={() => onClose()} open={isOpen}>
-				<DialogTitle>Update Asset Name</DialogTitle>
-				<DialogContent
-					sx={{
-						backgroundColor: colors.navyBlue,
-					}}
-				>
-					<form onSubmit={onSubmit}>
-						<InputField
-							name="name"
-							label="name"
-							type="name"
-							control={control}
-							rules={{
-								required: "Name is required.",
-							}}
-							placeholder="name"
-							style={{ width: "300px" }}
-							autoFocus
-							disabled={loading}
-						/>
-						<DialogActions>
-							<>
-								<Button variant="contained" type="submit" color="primary" disabled={loading}>
-									Save
-								</Button>
-								<Button
-									variant="contained"
-									type="button"
-									color="error"
-									disabled={loading}
-									onClick={() => {
-										onClose()
-										setSuccess(false)
-										setErrorMessage("")
-									}}
-								>
-									Cancel
-								</Button>
-							</>
-						</DialogActions>
-					</form>
-				</DialogContent>
-			</Dialog>
-		</>
+				<form onSubmit={onSubmit}>
+					<InputField
+						name="name"
+						label="name"
+						type="name"
+						control={control}
+						rules={{
+							required: "Name is required.",
+						}}
+						placeholder="name"
+						style={{ width: "300px" }}
+						autoFocus
+						disabled={loading}
+					/>
+					<DialogActions>
+						<>
+							<Button variant="contained" type="submit" color="primary" disabled={loading}>
+								Save
+							</Button>
+							<Button
+								variant="contained"
+								type="button"
+								color="error"
+								disabled={loading}
+								onClick={() => {
+									onClose()
+								}}
+							>
+								Cancel
+							</Button>
+						</>
+					</DialogActions>
+				</form>
+			</DialogContent>
+		</Dialog>
 	)
 }
 

@@ -916,6 +916,8 @@ export const AuthContainer = createContainer(() => {
 		hideVerifyComplete: () => setVerifyCompleteType(undefined),
 		hasPermission,
 		user: user,
+		userID: user?.id,
+		factionID: user?.factionID,
 		setUser,
 		isImpersonatingUser: false,
 		loading,

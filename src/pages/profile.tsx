@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import MetaMaskOnboarding from "@metamask/onboarding"
 import { LoadingButton } from "@mui/lab"
-import { Alert, Box, Button, Link, Snackbar, styled, TextField, Typography } from "@mui/material"
+import { Box, Button, Link, styled, TextField, Typography } from "@mui/material"
 import { User } from "@sentry/react"
 import { useCallback, useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
@@ -18,6 +18,7 @@ import { Loading } from "../components/loading"
 import { TwitchLogin } from "../components/twitchLogin"
 import { TwitterLogin } from "../components/twitterLogin"
 import { useAuth } from "../containers/auth"
+import { useSnackbar } from "../containers/snackbar"
 import { useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { fetching } from "../fetching"
@@ -94,11 +95,12 @@ interface UserInput {
 }
 
 const ProfileEdit: React.FC = () => {
+	const token = localStorage.getItem("token")
 	const { metaMaskState, sign, account, connect } = useWeb3()
 	const { user, addFacebook, addGoogle, addTwitch, addTwitter, addDiscord, removeFacebook, removeGoogle, removeTwitch, removeTwitter, removeDiscord } =
 		useAuth()
-	const token = localStorage.getItem("token")
 	const { send } = useWebsocket()
+	const { displayMessage } = useSnackbar()
 
 	// Setup form
 	const { control, handleSubmit, reset, watch, formState } = useForm<UserInput>()
@@ -107,8 +109,6 @@ const ProfileEdit: React.FC = () => {
 
 	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
 	const [submitting, setSubmitting] = useState(false)
-	const [successMessage, setSuccessMessage] = useState<string>()
-	const [errorMessage, setErrorMessage] = useState<string>()
 	const [changePassword, setChangePassword] = useState(false)
 
 	const [avatar, setAvatar] = useState<File>()
@@ -125,7 +125,7 @@ const ProfileEdit: React.FC = () => {
 					// Upload avatar
 					const r = await upload({ file: avatar, public: true })
 					if (r.error || !r.payload) {
-						setErrorMessage("Failed to upload image, please try again.")
+						displayMessage("Failed to upload image, please try again.", "error")
 						setSubmitting(false)
 						return
 					}
@@ -150,13 +150,11 @@ const ProfileEdit: React.FC = () => {
 			})
 
 			if (resp) {
-				setSuccessMessage("Profile successfully updated.")
+				displayMessage("Profile successfully updated.", "success")
 			}
-			setErrorMessage(undefined)
 			setChangePassword(false)
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
-			setSuccessMessage(undefined)
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
 			setSubmitting(false)
 		}
@@ -168,26 +166,24 @@ const ProfileEdit: React.FC = () => {
 			setSubmitting(true)
 			const sig = await sign(user.id)
 			await send(HubKey.UserAddWallet, { id: user.id, signature: sig, publicAddress: account })
-			setErrorMessage(undefined)
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
 			setSubmitting(false)
 		}
-	}, [account, send, sign, user])
+	}, [account, send, sign, user, displayMessage])
 
 	const removeWalletAddress = useCallback(async () => {
 		if (!user) return
 		try {
 			setSubmitting(true)
 			await send(HubKey.UserRemoveWallet, { id: user.id })
-			setErrorMessage(undefined)
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
 			setSubmitting(false)
 		}
-	}, [user, send])
+	}, [user, send, displayMessage])
 
 	const onAvatarChange = (file?: File) => {
 		if (!avatarChanged) setAvatarChanged(true)
@@ -230,41 +226,6 @@ const ProfileEdit: React.FC = () => {
 
 	return (
 		<>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
-				}}
-				open={!!successMessage}
-				autoHideDuration={6000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setSuccessMessage(undefined)
-				}}
-			>
-				<Alert severity="success">{successMessage}</Alert>
-			</Snackbar>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
-				}}
-				open={!!errorMessage}
-				autoHideDuration={6000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage(undefined)
-				}}
-				message={errorMessage}
-			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
 			<Box
 				component="form"
 				onSubmit={onSaveForm}
@@ -505,7 +466,7 @@ const ProfileEdit: React.FC = () => {
 									try {
 										await removeGoogle(user.id, user.username)
 									} catch (e) {
-										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+										displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 									}
 								}}
 								variant="contained"
@@ -521,18 +482,17 @@ const ProfileEdit: React.FC = () => {
 							onSuccess={async (response) => {
 								try {
 									if (!!response.code) {
-										setErrorMessage(`Couldn't connect to Google: ${response.code}`)
+										displayMessage(`Couldn't connect to Google: ${response.code}`, "error")
 										return
 									}
-									setErrorMessage(undefined)
 									const r = response as GoogleLoginResponse
 									await addGoogle(r.tokenId)
 								} catch (e) {
-									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 								}
 							}}
 							onFailure={(error) => {
-								setErrorMessage(error.message)
+								displayMessage(error.message, "error")
 							}}
 							cookiePolicy={"single_host_origin"}
 							render={(props) => (
@@ -554,7 +514,7 @@ const ProfileEdit: React.FC = () => {
 									try {
 										await removeFacebook(user.id, user.username)
 									} catch (e) {
-										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+										displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 									}
 								}}
 								variant="contained"
@@ -567,19 +527,17 @@ const ProfileEdit: React.FC = () => {
 						<FacebookLogin
 							callback={async (response: any) => {
 								try {
-									setErrorMessage(undefined)
-
 									if (!!response && !!response.status) {
-										setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
+										displayMessage(`Couldn't connect to Facebook: ${response.status}`, "error")
 										return
 									}
 									await addFacebook(response.accessToken)
 								} catch (e) {
-									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 								}
 							}}
 							onFailure={(error) => {
-								setErrorMessage(error.status || "Failed to connect account to Facebook.")
+								displayMessage(error.status || "Failed to connect account to Facebook.", "error")
 							}}
 							render={(props) => (
 								<LoadingButton
@@ -607,7 +565,7 @@ const ProfileEdit: React.FC = () => {
 									try {
 										await removeTwitch(user.id, user.username)
 									} catch (e) {
-										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+										displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 									}
 								}}
 								variant="contained"
@@ -620,14 +578,13 @@ const ProfileEdit: React.FC = () => {
 						<TwitchLogin
 							callback={async (response) => {
 								try {
-									setErrorMessage(undefined)
 									await addTwitch(response.token)
 								} catch (e) {
-									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
+									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again", "error")
 								}
 							}}
 							onFailure={(error) => {
-								setErrorMessage(error.status || "Failed to connect account to Twitch.")
+								displayMessage(error.status || "Failed to connect account to Twitch.", "error")
 							}}
 							render={(props) => (
 								<LoadingButton
@@ -655,7 +612,7 @@ const ProfileEdit: React.FC = () => {
 									try {
 										await removeTwitter(user.id, user.username)
 									} catch (e) {
-										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+										displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 									}
 								}}
 								variant="contained"
@@ -668,14 +625,13 @@ const ProfileEdit: React.FC = () => {
 						<TwitterLogin
 							callback={async (response) => {
 								try {
-									setErrorMessage(undefined)
 									await addTwitter(response.token, response.verifier)
 								} catch (e) {
-									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
+									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again", "error")
 								}
 							}}
 							onFailure={(error) => {
-								setErrorMessage(error.status || "Failed to connect account to Twitter.")
+								displayMessage(error.status || "Failed to connect account to Twitter.", "error")
 							}}
 							render={(props) => (
 								<LoadingButton
@@ -703,7 +659,7 @@ const ProfileEdit: React.FC = () => {
 									try {
 										await removeDiscord(user.id, user.username)
 									} catch (e) {
-										setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+										displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 									}
 								}}
 								variant="contained"
@@ -716,14 +672,13 @@ const ProfileEdit: React.FC = () => {
 						<DiscordLogin
 							callback={async (response) => {
 								try {
-									setErrorMessage(undefined)
 									await addDiscord(response.code)
 								} catch (e) {
-									setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again")
+									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again", "error")
 								}
 							}}
 							onFailure={(error) => {
-								setErrorMessage(error.status || "Failed to connect account to Discord.")
+								displayMessage(error.status || "Failed to connect account to Discord.", "error")
 							}}
 							render={(props) => (
 								<LoadingButton

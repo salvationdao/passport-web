@@ -1,15 +1,14 @@
 import { Box, Skeleton, Typography } from "@mui/material"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
-import { PlaceholderMechImagePath, SupTokenIconPath } from "../../assets"
-import { FancyButton } from "../../components/fancyButton"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../../containers/socket"
-import { getItemAttributeValue, supFormatter } from "../../helpers/items"
-import HubKey from "../../keys"
-import { colors } from "../../theme"
-import { StoreItem } from "../../types/types"
-
-export type Rarity = "Common" | "Rare" | "Legendary"
+import { PlaceholderMechImagePath } from "../../../assets"
+import { FancyButton } from "../../../components/fancyButton"
+import { useWebsocket } from "../../../containers/socket"
+import { getItemAttributeValue } from "../../../helpers/items"
+import HubKey from "../../../keys"
+import { colors } from "../../../theme"
+import { Asset } from "../../../types/types"
+import { Rarity } from "../../store/storeItemCard"
 
 const rarityTextStyles: { [key in Rarity]: any } = {
 	Common: {
@@ -24,29 +23,30 @@ const rarityTextStyles: { [key in Rarity]: any } = {
 	},
 }
 
-interface StoreItemCardProps {
+export interface CollectionItemCardProps {
+	tokenID: number
 	collectionName: string
-	storeItemID: string
+	username: string
 }
 
-export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ collectionName, storeItemID }) => {
+export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ tokenID, collectionName, username }) => {
+	const history = useHistory()
 	const { subscribe } = useWebsocket()
-	const [item, setItem] = useState<StoreItem>()
-	const { push } = useHistory()
+	const [item, setItem] = useState<Asset>()
 
 	useEffect(() => {
 		if (!subscribe) return
-		return subscribe<StoreItem>(
-			HubKey.StoreItemSubscribe,
+		return subscribe<Asset>(
+			HubKey.AssetUpdated,
 			(payload) => {
 				setItem(payload)
 			},
-			{ storeItemID: storeItemID },
+			{ tokenID },
 		)
-	}, [subscribe, storeItemID])
+	}, [subscribe, tokenID])
 
 	if (!item) {
-		return <StoreItemCardSkeleton />
+		return <CollectionItemCardSkeleton />
 	}
 
 	return (
@@ -108,15 +108,6 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 					>
 						{getItemAttributeValue(item.attributes, "Asset Type")}
 					</Typography>
-					<Box
-						component="img"
-						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${item.faction?.logoBlobID}`}
-						alt="Faction Logo"
-						sx={{
-							width: 30,
-							height: 30,
-						}}
-					/>
 				</Box>
 			</Box>
 
@@ -124,44 +115,11 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 				sx={{
 					display: "flex",
 					alignItems: "center",
-					justifyContent: "space-between",
+					justifyContent: "end",
 					width: "100%",
+					marginBottom: ".5rem",
 				}}
 			>
-				<Box
-					sx={{
-						display: "flex",
-						alignItems: "baseline",
-						justifyContent: "space-between",
-					}}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							alignItems: "center",
-						}}
-					>
-						<Box
-							component="img"
-							src={SupTokenIconPath}
-							alt="Currency Logo"
-							sx={{
-								height: "1rem",
-								marginRight: ".3rem",
-							}}
-						/>
-						<Typography
-							variant="subtitle2"
-							sx={{
-								width: "100%",
-								whiteSpace: "nowrap",
-								textOverflow: "ellipsis",
-							}}
-						>
-							{supFormatter(item.supCost)}
-						</Typography>
-					</Box>
-				</Box>
 				<Typography
 					variant="caption"
 					sx={{
@@ -171,30 +129,12 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 					{getItemAttributeValue(item.attributes, "Rarity")}
 				</Typography>
 			</Box>
-			<Typography
-				variant="caption"
-				sx={{
-					alignSelf: "end",
-					marginBottom: ".5rem",
-				}}
-			>
-				{item.amountAvailable - item.amountSold} in stock
-				<Box
-					component="span"
-					sx={{
-						marginLeft: ".2rem",
-						color: colors.darkGrey,
-					}}
-				>
-					(out of {item.amountAvailable})
-				</Box>
-			</Typography>
-			<FancyButton onClick={() => push(`/stores/${collectionName}/${storeItemID}`)}>View Item</FancyButton>
+			<FancyButton onClick={() => history.push(`/collections/${username}/${collectionName}/${tokenID}`)}>View Item</FancyButton>
 		</Box>
 	)
 }
 
-const StoreItemCardSkeleton: React.VoidFunctionComponent = () => {
+const CollectionItemCardSkeleton: React.VoidFunctionComponent = () => {
 	return (
 		<Box
 			sx={{
@@ -243,35 +183,7 @@ const StoreItemCardSkeleton: React.VoidFunctionComponent = () => {
 					}}
 				>
 					<Skeleton variant="text" width={110} height="1rem" />
-					<Skeleton variant="rectangular" width={30} height={30} />
 				</Box>
-			</Box>
-
-			<Box
-				sx={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-					width: "100%",
-				}}
-			>
-				<Box
-					sx={{
-						display: "flex",
-						alignItems: "baseline",
-						justifyContent: "space-between",
-					}}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							alignItems: "center",
-						}}
-					>
-						<Skeleton variant="text" width={90} height=".875rem" />
-					</Box>
-				</Box>
-				<Skeleton variant="text" width={70} height=".75rem" />
 			</Box>
 			<Skeleton
 				variant="text"

@@ -1,4 +1,4 @@
-import { Alert, Box, Link, Snackbar, Typography } from "@mui/material"
+import { Box, Link, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
@@ -14,6 +14,8 @@ import { LoginMetaMask } from "../../components/loginMetaMask"
 import { ReactTwitchFailureResponse, ReactTwitchLoginResponse, TwitchLogin } from "../../components/twitchLogin"
 import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } from "../../components/twitterLogin"
 import { AuthContainer, useAuth } from "../../containers/auth"
+import { useSidebarState } from "../../containers/sidebar"
+import { useSnackbar } from "../../containers/snackbar"
 import { colors, fonts } from "../../theme"
 
 interface LogInInput {
@@ -22,13 +24,14 @@ interface LogInInput {
 }
 
 export const LoginPage: React.FC = () => {
-	const { user } = useAuth()
 	const history = useHistory()
+	const { user } = useAuth()
+	const { setSidebarOpen } = useSidebarState()
+	const { displayMessage } = useSnackbar()
 
 	const { loginGoogle, loginFacebook, loginTwitch, loginTwitter, loginDiscord, loginPassword } = AuthContainer.useContainer()
 
 	const { control, handleSubmit, reset } = useForm<LogInInput>()
-	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [showEmailLogin, setShowEmailLogin] = useState(false)
 
@@ -36,7 +39,7 @@ export const LoginPage: React.FC = () => {
 	const [animationPhase, setAnimationPhase] = useState<PhaseTypes>("default")
 
 	const onMetaMaskLoginFailure = (error: string) => {
-		setErrorMessage(error)
+		displayMessage(error, "error")
 	}
 
 	// Email login
@@ -45,7 +48,7 @@ export const LoginPage: React.FC = () => {
 			setLoading(true)
 			await loginPassword(input.email, input.password)
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Somethign went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
 			setLoading(false)
 		}
@@ -55,82 +58,81 @@ export const LoginPage: React.FC = () => {
 	const onGoogleLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
 		try {
 			if (!!response.code) {
-				setErrorMessage(`Couldn't connect to Google: ${response.code}`)
+				displayMessage(`Couldn't connect to Google: ${response.code}`, "error")
 				return
 			}
-			setErrorMessage(null)
 			const r = response as GoogleLoginResponse
 			const resp = await loginGoogle(r.tokenId)
 			if (!resp || !resp.isNew) return
 			history.push("/onboarding")
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		}
 	}
 	const onGoogleLoginFailure = (error: Error) => {
-		setErrorMessage(error.message)
+		displayMessage(error.message, "error")
 	}
 
 	const onFacebookLogin = async (response: any) => {
 		try {
 			if (!!response && !!response.status) {
-				setErrorMessage(`Couldn't connect to Facebook: ${response.status}`)
+				displayMessage(`Couldn't connect to Facebook: ${response.status}`, "error")
 				return
 			}
-			setErrorMessage(null)
 			const r = response as ReactFacebookLoginInfo
 			const resp = await loginFacebook(r.accessToken)
 			if (!resp || !resp.isNew) return
 			history.push("/onboarding")
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		}
 	}
 	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
-		setErrorMessage(error.status || "Failed to login with Facebook.")
+		displayMessage(error.status || "Failed to login with Facebook.", "error")
 	}
 
 	const onTwitchLogin = async (response: ReactTwitchLoginResponse) => {
 		try {
-			setErrorMessage(null)
 			const resp = await loginTwitch(response.token)
 			if (!resp || !resp.isNew) return
 			history.push("/onboarding")
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		}
 	}
 	const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
-		setErrorMessage(error.status || "Failed to login with Twitch.")
+		displayMessage(error.status || "Failed to login with Twitch.", "error")
 	}
 
 	const onTwitterLogin = async (response: ReactTwitterLoginResponse) => {
 		try {
-			setErrorMessage(null)
 			const resp = await loginTwitter(response.token, response.verifier)
 			if (!resp || !resp.isNew) return
 			history.push("/onboarding")
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		}
 	}
 	const onTwitterLoginFailure = (error: ReactTwitterFailureResponse) => {
-		setErrorMessage(error.status || "Failed to login with Twitter.")
+		displayMessage(error.status || "Failed to login with Twitter.", "error")
 	}
 
 	const onDiscordLogin = async (response: ReactDiscordLoginResponse) => {
 		try {
-			setErrorMessage(null)
 			const resp = await loginDiscord(response.code)
 			if (!resp || !resp.isNew) return
 			history.push("/onboarding")
 		} catch (e) {
-			setErrorMessage(typeof e === "string" ? e : "Something went wrong, please try again.")
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		}
 	}
 	const onDiscordLoginFailure = (error: ReactDiscordFailureResponse) => {
-		setErrorMessage(error.status || "Failed to login with Discord.")
+		displayMessage(error.status || "Failed to login with Discord.", "error")
 	}
+
+	useEffect(() => {
+		setSidebarOpen(false)
+	}, [setSidebarOpen])
 
 	useEffect(() => {
 		if (!user) return
@@ -146,26 +148,7 @@ export const LoginPage: React.FC = () => {
 	}
 
 	return (
-		<>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
-				}}
-				open={!!errorMessage}
-				autoHideDuration={3000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage(null)
-				}}
-				message={errorMessage}
-			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
-			<Box
+		<Box
 				sx={{
 					overflow: "hidden",
 					position: "relative",
@@ -419,6 +402,5 @@ export const LoginPage: React.FC = () => {
 					)}
 				</Box>
 			</Box>
-		</>
 	)
 }

@@ -1,22 +1,20 @@
-import { Box, Link, Paper, Skeleton } from "@mui/material"
+import { Box, Link, Paper, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
-import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { SupremacyLogoImagePath } from "../../../assets"
-import { Navbar } from "../../../components/home/navbar"
-import { Loading } from "../../../components/loading"
-import { useAuth } from "../../../containers/auth"
-import { useSnackbar } from "../../../containers/snackbar"
-import { SocketState, useWebsocket } from "../../../containers/socket"
-import HubKey from "../../../keys"
-import { colors } from "../../../theme"
-import { Collection } from "../../../types/types"
-import { CollectionItemCard } from "./collectionItemCard"
+import { Link as RouterLink } from "react-router-dom"
+import { SupremacyLogoImagePath } from "../../assets"
+import { Navbar } from "../../components/home/navbar"
+import { useAuth } from "../../containers/auth"
+import { useSnackbar } from "../../containers/snackbar"
+import { SocketState, useWebsocket } from "../../containers/socket"
+import HubKey from "../../keys"
+import { colors } from "../../theme"
+import { Collection, Faction } from "../../types/types"
+import { StoreItemCard } from "./storeItemCard"
 
-export const CollectionsPage: React.FC = () => {
-	const { username } = useParams<{ username: string }>()
-	const history = useHistory()
-	const { state, send } = useWebsocket()
+// Displays all stores available to the user
+export const StoresPage = () => {
 	const { user } = useAuth()
+	const { send, state } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
@@ -29,27 +27,14 @@ export const CollectionsPage: React.FC = () => {
 				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
 				setCollections(resp.records)
 			} catch (e) {
-				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
+				displayMessage(typeof e === "string" ? e : "An error occurred while loading store data.", "error", {
 					autoHideDuration: null,
 				})
 			} finally {
 				setLoading(false)
 			}
 		})()
-	}, [send, state, user, displayMessage])
-
-	useEffect(() => {
-		if (user || username) return
-
-		const userTimeout = setTimeout(() => {
-			history.push("/login")
-		}, 2000)
-		return () => clearTimeout(userTimeout)
-	}, [user, history, username])
-
-	if (!user && !username) {
-		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
-	}
+	}, [send, state, displayMessage])
 
 	return (
 		<Box
@@ -76,12 +61,12 @@ export const CollectionsPage: React.FC = () => {
 			>
 				{loading ? (
 					<>
-						<CollectionPreviewSkeleton />
-						<CollectionPreviewSkeleton />
+						<StoreCollectionSkeleton />
+						<StoreCollectionSkeleton />
 					</>
 				) : (
-					collections.map((c, i) => {
-						return <CollectionPreview key={i} collection={c} username={username || user?.username || ""} />
+					collections.map((c) => {
+						return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
 					})
 				)}
 			</Box>
@@ -89,7 +74,7 @@ export const CollectionsPage: React.FC = () => {
 	)
 }
 
-const CollectionPreviewSkeleton: React.VoidFunctionComponent = () => {
+const StoreCollectionSkeleton: React.VoidFunctionComponent = () => {
 	return (
 		<>
 			<Box
@@ -130,21 +115,24 @@ const CollectionPreviewSkeleton: React.VoidFunctionComponent = () => {
 	)
 }
 
-interface CollectionPreviewProps {
+interface StoreCollectionProps {
 	collection: Collection
-	username: string
+	faction?: Faction
 }
 
-const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = ({ collection, username }) => {
-	const { user } = useAuth()
-	const { state, send } = useWebsocket()
-	const [tokenIDs, setTokenIDs] = useState<number[]>([])
+const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ collection, faction }) => {
+	// TODO: handle loading and asset state
+	const { send, state } = useWebsocket()
+	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
+	const [loading, setLoading] = useState(false)
+	const [error, setError] = useState<string>()
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send) return
+		if (state !== SocketState.OPEN || !send || !faction) return
 		;(async () => {
+			setLoading(true)
 			try {
-				const resp = await send<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, {
+				const resp = await send<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, {
 					pageSize: 6,
 					filter: {
 						linkOperator: "and",
@@ -155,19 +143,22 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 								operatorValue: "=",
 								value: collection.id,
 							},
-							// filter by user id
 							{
-								columnField: "username",
+								columnField: "faction_id",
 								operatorValue: "=",
-								value: username,
+								value: faction.id,
 							},
 						],
 					},
 				})
-				setTokenIDs(resp.tokenIDs)
-			} catch {}
+				setStoreItemIDs(resp.storeItemIDs)
+			} catch (e) {
+				setError(typeof e === "string" ? e : "An error occurred while loading items for this store.")
+			} finally {
+				setLoading(false)
+			}
 		})()
-	}, [send, state, collection, username])
+	}, [send, state, collection, faction])
 
 	const renderCollection = () => {
 		return (
@@ -186,8 +177,8 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 					},
 				}}
 			>
-				{tokenIDs.slice(0, 6).map((a) => {
-					return <CollectionItemCard key={a} tokenID={a} collectionName={collection.name} username={username} />
+				{storeItemIDs.slice(0, 5).map((a) => {
+					return <StoreItemCard key={a} collectionName={collection.name} storeItemID={a} />
 				})}
 			</Paper>
 		)
@@ -222,12 +213,12 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 					}}
 					color={colors.white}
 					component={RouterLink}
-					to={`/collections/${username || user?.username}/${collection.name}`}
+					to={`/stores/${collection.name}`}
 				>
-					View Entire Collection
+					View Entire Store
 				</Link>
 			</Box>
-			{tokenIDs.length ? (
+			{storeItemIDs.length ? (
 				renderCollection()
 			) : (
 				<Paper
@@ -236,7 +227,9 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 						padding: "2rem",
 					}}
 				>
-					No owned items from {collection.name}.
+					<Typography variant="subtitle2" color={colors.darkGrey}>
+						{loading ? "Loading store items..." : error ? error : `There are currently no items from ${collection.name} for sale.`}
+					</Typography>
 				</Paper>
 			)}
 		</>
