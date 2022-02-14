@@ -100,7 +100,7 @@ enum HubKey {
 	GetFactionsDetail = "FACTION:ALL",
 	FactionEnlist = "FACTION:ENLIST",
 	SubscribeUserFaction = "USER:FACTION:SUBSCRIBE",
-	SubscribeFactionDetail = "FACTION:SUBSCRIBE",
+	SubscribeFactionStat = "FACTION:STAT:SUBSCRIBE",
 }
 
 export default HubKey

@@ -54,12 +54,11 @@ export interface Faction {
 	logoBlobID: string
 	backgroundUrl: string
 	theme: FactionTheme
+	description: string
 }
 
-export interface DetailedFaction extends Faction {
-	description: string
+export interface DetailedFaction {
 	velocity: number
-	sharePercent: number
 	recruitNumber: number
 	winCount: number
 	lossCount: number

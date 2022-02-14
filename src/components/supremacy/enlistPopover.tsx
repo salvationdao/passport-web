@@ -64,10 +64,11 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 		theme: { primary, secondary },
 		logoBlobID,
 		backgroundUrl,
+		description,
 	} = factionData
 	const logoUrl = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logoBlobID}`
 
-	const { description, velocity, sharePercent, recruitNumber, winCount, lossCount, killCount, deathCount, mvp } = factionDataMore
+	const { velocity, recruitNumber, winCount, lossCount, killCount, deathCount, mvp } = factionDataMore
 
 	return (
 		<Stack
@@ -128,15 +129,14 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 								})}
 								prefixImageUrl={SupTokenIconPath}
 							/>
-							<Stat title="Share Percentage" content={sharePercent} prefixImageUrl={SupTokenIconPath} />
-							<Stat title="Recruits" content={recruitNumber} prefixImageUrl={SupTokenIconPath} />
-							<Stat title="Wins" content={winCount} prefixImageUrl={SupTokenIconPath} />
-							<Stat title="Losses" content={lossCount} prefixImageUrl={SupTokenIconPath} />
-							<Stat title="Win%" content={(winCount / (winCount + lossCount)).toFixed(2)} prefixImageUrl={SupTokenIconPath} />
-							<Stat title="Kills" content={killCount} prefixImageUrl={SupTokenIconPath} />
-							<Stat title="Deaths" content={deathCount} prefixImageUrl={SupTokenIconPath} />
-							<Stat title="K/D" content={(killCount / deathCount).toFixed(2)} prefixImageUrl={SupTokenIconPath} />
-							<Stat title="MVP" content={mvp} prefixImageUrl={SupTokenIconPath} />
+							<Stat title="Recruits" content={recruitNumber} />
+							<Stat title="Wins" content={winCount} />
+							<Stat title="Losses" content={lossCount} />
+							<Stat title="Win Rate" content={winCount + lossCount === 0 ? "0%" : `${((winCount / (winCount + lossCount)) * 100).toFixed(0)}%`} />
+							<Stat title="Kills" content={killCount} />
+							<Stat title="Deaths" content={deathCount} />
+							<Stat title="K/D" content={deathCount === 0 ? "0%" : `${((killCount / deathCount) * 100).toFixed(0)}%`} />
+							<Stat title="MVP" content={mvp} />
 						</Stack>
 					</Fade>
 				)}
@@ -188,7 +188,7 @@ export const EnlistDetailsPopover: React.VoidFunctionComponent<EnlistDetailsProp
 	factionID,
 	factionData,
 }) => {
-	const factionDataMore = useSubscription<DetailedFaction>(HubKey.SubscribeFactionDetail, { factionID }).payload
+	const factionDataMore = useSubscription<DetailedFaction>(HubKey.SubscribeFactionStat, { factionID }).payload
 	const {
 		theme: { primary },
 	} = factionData
