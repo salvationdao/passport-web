@@ -136,7 +136,7 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 							<Stat title="Kills" content={killCount} />
 							<Stat title="Deaths" content={deathCount} />
 							<Stat title="K/D" content={deathCount === 0 ? "0%" : `${((killCount / deathCount) * 100).toFixed(0)}%`} />
-							<Stat title="MVP" content={mvp} />
+							<Stat title="MVP" content={mvp?.username || ""} prefixImageUrl={mvp?.avatarID ? `/api/files/${mvp.avatarID}` : ""} />
 						</Stack>
 					</Fade>
 				)}

@@ -64,7 +64,7 @@ export interface DetailedFaction {
 	lossCount: number
 	killCount: number
 	deathCount: number
-	mvp: string
+	mvp: User
 }
 
 export interface UserActivity {
