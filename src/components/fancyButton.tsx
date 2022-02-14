@@ -1,5 +1,5 @@
 import { LoadingButton, LoadingButtonProps } from "@mui/lab"
-import { useTheme } from "@mui/material"
+import { Box, useTheme } from "@mui/material"
 import { colors } from "../theme"
 
 type ButtonSize = "small" | "medium" | "large"
@@ -33,7 +33,7 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 	return (
 		<LoadingButton
 			sx={{
-				boxSizing: "content-box",
+				boxSizing: "border-box",
 				position: "relative",
 				borderRadius: 0,
 				border: `2px solid ${mainColor}`,
@@ -46,10 +46,7 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 					cursor: "not-allowed",
 					"&:hover": {
 						boxShadow: "none",
-						"&::before": {
-							display: "none",
-						},
-						"&::after": {
+						"& .Button-Border1, & .Button-Border2": {
 							display: "none",
 						},
 					},
@@ -57,17 +54,25 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 				"&:hover": {
 					color: "inherit",
 					boxShadow: `inset 0px 0px 10px ${mainColor},0px 0px 10px ${mainColor}`,
-					"&::before": {
+					"& .Button-Border1": {
 						opacity: 0.4,
 					},
-					"&::after": {
+					"& .Button-Border2": {
 						opacity: 0.2,
 						transitionDelay: ".1s",
 					},
 				},
-				"&::before": fancy
-					? {
-							content: "''",
+				...sizeStyles[size],
+				...sx,
+			}}
+			{...props}
+		>
+			{fancy && (
+				<>
+					<Box
+						className="Button-Border1"
+						component="span"
+						sx={{
 							position: "absolute",
 							top: "3px",
 							left: "3px",
@@ -77,11 +82,13 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 							opacity: 0,
 							transition: "opacity .3s ease-in",
 							pointerEvents: "none",
-					  }
-					: null,
-				"&::after": fancy
-					? {
-							content: "''",
+							boxSizing: "content-box",
+						}}
+					/>
+					<Box
+						className="Button-Border2"
+						component="span"
+						sx={{
 							position: "absolute",
 							top: "8px",
 							left: "8px",
@@ -91,13 +98,11 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 							opacity: 0,
 							transition: "opacity .3s ease-in",
 							pointerEvents: "none",
-					  }
-					: null,
-				...sizeStyles[size],
-				...sx,
-			}}
-			{...props}
-		>
+							boxSizing: "content-box",
+						}}
+					/>
+				</>
+			)}
 			{children}
 		</LoadingButton>
 	)

@@ -1,20 +1,26 @@
-import { useState, useCallback } from "react"
-import { InputBase, CircularProgress } from "@mui/material"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import SearchIcon from "@mui/icons-material/Search"
+import { CircularProgress, InputAdornment, TextField, TextFieldProps } from "@mui/material"
+import { useCallback, useState } from "react"
 import debounce from "../helpers"
-import { Box } from "@mui/material"
 
-interface SearchBarProps {
+interface SearchBarProps extends Omit<TextFieldProps, "onChange"> {
 	value: string
 	onChange: (value: string) => void
-	/** Default "Search..." */
-	placeholder?: string
 	loading?: boolean
 }
 
-export const SearchBar = (props: SearchBarProps) => {
+export const SearchBar: React.VoidFunctionComponent<SearchBarProps> = ({
+	value: initValue,
+	onChange: initOnChange,
+	loading,
+	placeholder,
+	label,
+	variant,
+	InputProps,
+	...props
+}) => {
 	// On search (delay query when typing)
-	const [value, setValue] = useState<string>(props.value)
+	const [value, setValue] = useState<string>(initValue)
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		e.preventDefault()
 		setValue(e.currentTarget.value)
@@ -22,51 +28,32 @@ export const SearchBar = (props: SearchBarProps) => {
 	}
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const delayedQuery = useCallback(
-		debounce((q: string) => props.onChange(q), 100),
+		debounce((q: string) => initOnChange(q), 100),
 		[],
 	)
 
 	return (
-		<Box
-			sx={{
-				position: "relative",
-				borderRadius: 1,
-				border: "1px solid rgba(224, 224, 224, 1)",
-				backgroundColor: "#FFFFFF26",
-				"&:hover": {
-					backgroundColor: "#FFFFFF40",
-				},
-				width: "100%",
-				height: "30px",
-				marginBottom: 1,
+		<TextField
+			label={label || "Search"}
+			variant={variant || "filled"}
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder || "Search..."}
+			InputProps={{
+				"aria-label": "search",
+				endAdornment: loading && (
+					<InputAdornment position="end">
+						<CircularProgress size="1rem" />
+					</InputAdornment>
+				),
+				startAdornment: (
+					<InputAdornment position="start">
+						<SearchIcon />
+					</InputAdornment>
+				),
+				...InputProps,
 			}}
-		>
-			<Box
-				sx={{
-					px: 1,
-					height: "100%",
-					position: "absolute",
-					pointerEvents: "none",
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-				}}
-			>
-				<FontAwesomeIcon icon={["fal", "search"]} />
-			</Box>
-			<InputBase
-				value={value}
-				onChange={onChange}
-				placeholder={props.placeholder || "Search..."}
-				inputProps={{
-					"aria-label": "search",
-				}}
-				sx={{
-					paddingLeft: 4,
-					width: "100%",
-				}}
-				endAdornment={props.loading && <CircularProgress size="18px" sx={{ marginRight: "4px" }} />}
-			/>
-		</Box>
+			{...props}
+		/>
 	)
 }

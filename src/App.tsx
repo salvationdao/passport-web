@@ -2,8 +2,10 @@ import { CssBaseline } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
 import { Action, Client, ClientContextProvider, createClient } from "react-fetching-library"
 import { Themes } from "./containers"
+import { AssetProvider } from "./containers/assets"
 import { AuthProvider } from "./containers/auth"
 import { SidebarStateProvider } from "./containers/sidebar"
+import { SnackbarProvider } from "./containers/snackbar"
 import { API_ENDPOINT_HOSTNAME, SocketProvider } from "./containers/socket"
 import { Web3Provider } from "./containers/web3"
 import "./fonts.css"
@@ -34,10 +36,14 @@ const AppAdmin = () => {
 				<ClientContextProvider client={client}>
 					<AuthProvider>
 						<SidebarStateProvider>
-							<ThemeProvider theme={currentTheme}>
-								<CssBaseline />
-								<Routes />
-							</ThemeProvider>
+							<AssetProvider>
+								<SnackbarProvider>
+									<ThemeProvider theme={currentTheme}>
+										<CssBaseline />
+										<Routes />
+									</ThemeProvider>
+								</SnackbarProvider>
+							</AssetProvider>
 						</SidebarStateProvider>
 					</AuthProvider>
 				</ClientContextProvider>

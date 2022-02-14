@@ -1,9 +1,8 @@
-import { UserPage } from "./management/users/view"
-import { OrganisationPage } from "./management/organisations/view"
-import { RolePage } from "./management/roles/view"
-import { ProductPage } from "./management/products/view"
 import { AssetPage } from "./management/assets/view"
-import { StoreItemPage } from "./store/view"
+import { OrganisationPage } from "./management/organisations/view"
+import { ProductPage } from "./management/products/view"
+import { RolePage } from "./management/roles/view"
+import { UserPage } from "./management/users/view"
 
 export const ViewPage = {
 	Role: RolePage,
@@ -11,5 +10,4 @@ export const ViewPage = {
 	User: UserPage,
 	Product: ProductPage,
 	Asset: AssetPage,
-	StoreItem: StoreItemPage,
 }

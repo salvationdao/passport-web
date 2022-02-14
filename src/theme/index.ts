@@ -18,6 +18,7 @@ declare module "@mui/material/Button" {
 }
 
 export const colors = {
+	errorRed: "#d32f2f",
 	neonPink: "#f72485",
 	skyBlue: "#4CC9F0",
 	lightNavyBlue: "#211E33",
@@ -32,6 +33,31 @@ export const colors = {
 	twitterBlue: "#1DA1F2",
 	discordGrey: "#2c2f33",
 	supremacyGold: "#F3D977",
+	rarity: {
+		common: "#c3c3c3",
+		rare: "#1724d4",
+		legendary: "#d48217",
+	},
+	supremacy: {
+		text: "#FFFFFF",
+		offWhite: "#F8F8F8",
+		red: "#C24242",
+		green: "#30B07D",
+		yellow: "#FFE200",
+
+		neonBlue: "#2BE9FD",
+		darkNeonBlue: "#176969",
+		darkerNeonBlue: "#073339",
+		darkestNeonBlue: "#050c12",
+		darkNavy: "#101019",
+
+		white: "#FFFFFF",
+		grey: "#89898d",
+		darkGrey: "#494949",
+		darkerGrey: "#383838",
+		darkGreyBlue: "#101019",
+		darkNavyBlue: "#070719",
+	},
 }
 
 const fallbackFonts = [
@@ -57,6 +83,12 @@ export const fonts = {
 	bizmosemi_bold: ["bizmosemi_bold", ...fallbackFonts].join(","),
 	bizmothin: ["bizmothin", ...fallbackFonts].join(","),
 	bizmoregular: ["bizmoregular", ...fallbackFonts].join(","),
+	supremacy: {
+		sharetech: ["Share Tech", ...fallbackFonts].join(","),
+		nostromomedium: ["Nostromo Regular Medium", ...fallbackFonts].join(","),
+		nostromoblack: ["Nostromo Regular Black", ...fallbackFonts].join(","),
+		nostromobold: ["Nostromo Regular Bold", ...fallbackFonts].join(","),
+	},
 }
 
 const lightTheme = createTheme({
@@ -77,7 +109,7 @@ const lightTheme = createTheme({
 			main: "#44b700",
 		},
 		error: {
-			main: "#d32f2f",
+			main: colors.errorRed,
 			light: "#ef5350",
 			dark: "#c62828",
 		},

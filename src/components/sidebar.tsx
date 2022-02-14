@@ -3,20 +3,23 @@ import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Alert, Box, Button, Divider, Drawer, Snackbar, SxProps, Theme, Typography } from "@mui/material"
+import { Alert, Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery } from "@mui/material"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupTokenIcon } from "../assets"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
+import { useSnackbar } from "../containers/snackbar"
+import { API_ENDPOINT_HOSTNAME, SocketState, useWebsocket } from "../containers/socket"
 import { useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
-import { useSecureSubscription } from "../hooks/useSubscription"
-import { useWindowDimensions } from "../hooks/useWindowDimensions"
 import HubKey from "../keys"
 import { colors } from "../theme"
+import { NilUUID } from "../types/auth"
+import { Faction, User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
+import { EnlistButton } from "./supremacy/enlistButton"
 
 const drawerWidth = 300
 
@@ -26,16 +29,22 @@ export interface SidebarLayoutProps {
 
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
-	const { dimensions } = useWindowDimensions()
-	const { user, logout } = useAuth()
+	const { send, state } = useWebsocket()
+	const { sidebarOpen, setSidebarOpen } = useSidebarState()
+	const { displayMessage } = useSnackbar()
+	const { user, userID, logout } = useAuth()
+	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
+
+	// Wallet
 	const { supBalance, account } = useWeb3()
-	const { payload } = useSecureSubscription<string>(HubKey.UserSupsSubscibe)
-	const [errorMessage, setErrorMessage] = useState<string | undefined>()
+	const userPublicAddress = user?.publicAddress
+	const { subscribe } = useWebsocket()
 	const [xsynSups, setXsynSups] = useState<string | undefined>()
+
+	// Supremacy
+	const [factionsData, setFactionsData] = useState<Faction[]>()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [correctWallet, setCorrectWallet] = useState<boolean>()
-
-	const { sidebarOpen } = useSidebarState()
 
 	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
 		const str1 = userPubAddr.toUpperCase()
@@ -44,16 +53,33 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}
 
 	useEffect(() => {
-		if (!payload || !user) return
-		setXsynSups(supFormatter(payload))
-	}, [payload, user])
+		if (!userID || userID === NilUUID) return
+		return subscribe<string>(HubKey.UserSupsSubscribe, (payload) => {
+			if (!payload) return
+			setXsynSups(supFormatter(payload))
+		})
+	}, [userID, subscribe])
 
 	useEffect(() => {
-		if (!user || !user.publicAddress || !account) return
-		const correctWallet = correctWalletCheck(user.publicAddress, account)
+		if (!userID || userID === NilUUID || !userPublicAddress || !account) return
+		const correctWallet = correctWalletCheck(userPublicAddress, account)
 		setCorrectWallet(correctWallet)
 		setWalletSups(correctWallet ? supBalance : "N/A")
-	}, [supBalance, account, user])
+	}, [supBalance, account, userID, userPublicAddress])
+
+	useEffect(() => {
+		// let unmounted = false
+		if (state !== SocketState.OPEN) return
+		;(async () => {
+			try {
+				const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
+
+				setFactionsData(resp)
+			} catch (e) {
+				setFactionsData(undefined)
+			}
+		})()
+	}, [send, state])
 
 	const content = user ? (
 		<Box
@@ -173,8 +199,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						}}
 						onClick={() => {
 							if (!user.publicAddress) {
-								setErrorMessage(
+								displayMessage(
 									"You must have a MetaMask connection if you want to redeem SUPs. You can connect your MetaMask account in your profile page.",
+									"error",
 								)
 							}
 						}}
@@ -189,8 +216,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						}}
 						onClick={() => {
 							if (!user.publicAddress) {
-								setErrorMessage(
+								displayMessage(
 									"You must have a MetaMask connection if you want to withdraw SUPs. You can connect your MetaMask account in your profile page.",
+									"error",
 								)
 							}
 						}}
@@ -198,6 +226,27 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						Withdraw
 					</FancyButton>
 				</Box>
+			</Box>
+			<Divider />
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					"& > *:not(:last-child)": {
+						marginBottom: ".5rem",
+					},
+				}}
+			>
+				<Typography
+					sx={{
+						marginBottom: ".5rem",
+						textTransform: "uppercase",
+						fontWeight: 600,
+					}}
+				>
+					Supremacy - Enlist
+				</Typography>
+				<RenderEnlist factionsData={factionsData} user={user} />
 			</Box>
 			<Divider />
 			<Box
@@ -215,14 +264,14 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				>
 					Quick Links
 				</Typography>
-				<NavButton to="/profile" startIcon={<FaceIcon />}>
+				<NavButton onClick={() => setSidebarOpen(false)} to="/profile" startIcon={<FaceIcon />}>
 					Profile
 				</NavButton>
-				<NavButton to={`/${user.username}/collections`} startIcon={<AppsIcon />}>
+				<NavButton onClick={() => setSidebarOpen(false)} to={`/collections`} startIcon={<AppsIcon />}>
 					Collections
 				</NavButton>
-				<NavButton to="/store" startIcon={<StorefrontIcon />}>
-					Store
+				<NavButton onClick={() => setSidebarOpen(false)} to="/stores" startIcon={<StorefrontIcon />}>
+					Stores
 				</NavButton>
 			</Box>
 			<Divider />
@@ -270,101 +319,81 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				>
 					Quick Links
 				</Typography>
-				<NavButton to="/store" startIcon={<StorefrontIcon />}>
-					Store
+				<NavButton onClick={() => setSidebarOpen(false)} to="/stores" startIcon={<StorefrontIcon />}>
+					Stores
 				</NavButton>
 			</Box>
 		</Box>
 	)
 
 	return (
-		<>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
-				}}
-				open={!!errorMessage}
-				autoHideDuration={6000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") {
-						return
-					}
-
-					setErrorMessage(undefined)
-				}}
-				message={errorMessage}
-			>
-				<Alert severity="error">{errorMessage}</Alert>
-			</Snackbar>
+		<Box
+			sx={{
+				display: "flex",
+			}}
+		>
 			<Box
+				component="nav"
 				sx={{
-					display: "flex",
+					"@media (min-width: 1000px)": {
+						width: drawerWidth,
+						flexShrink: 0,
+					},
 				}}
 			>
-				<Box
-					component="nav"
-					sx={{
-						"@media (min-width: 1000px)": {
+				{isWiderThan1000px ? (
+					<Drawer
+						variant="persistent"
+						sx={{
 							width: drawerWidth,
 							flexShrink: 0,
-						},
-					}}
-				>
-					{!!dimensions && dimensions.width < 1000 ? (
-						<Drawer
-							variant="temporary"
-							open={sidebarOpen}
-							onClose={onClose}
-							ModalProps={{
-								keepMounted: true, // Better open performance on mobile.
-							}}
-							sx={{
-								"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
-							}}
-						>
-							{content}
-						</Drawer>
-					) : (
-						<Drawer
-							variant="persistent"
-							sx={{
-								width: drawerWidth,
-								flexShrink: 0,
-								"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
-							}}
-							open={sidebarOpen}
-						>
-							{content}
-						</Drawer>
-					)}
-				</Box>
-				<Box
-					component="main"
-					sx={(theme) => ({
-						flexGrow: 1,
-						transition: theme.transitions.create("margin", {
-							easing: theme.transitions.easing.sharp,
-							duration: theme.transitions.duration.leavingScreen,
-						}),
-						marginLeft: `-${drawerWidth}px`,
-						"@media (max-width: 1000px)": {
-							marginLeft: 0,
-						},
-						...(sidebarOpen && {
-							transition: theme.transitions.create("margin", {
-								easing: theme.transitions.easing.easeOut,
-								duration: theme.transitions.duration.enteringScreen,
-							}),
-							marginLeft: 0,
-						}),
-					})}
-				>
-					{/*<Box component="main" sx={{ display: "flex", flex: 1 }}>*/}
-					{children}
-				</Box>
+							"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+						}}
+						open={sidebarOpen}
+					>
+						{content}
+					</Drawer>
+				) : (
+					<Drawer
+						variant="temporary"
+						open={sidebarOpen}
+						onClose={onClose}
+						ModalProps={{
+							keepMounted: true, // Better open performance on mobile.
+						}}
+						sx={{
+							"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+						}}
+					>
+						{content}
+					</Drawer>
+				)}
 			</Box>
-		</>
+			<Box
+				component="main"
+				sx={(theme) => ({
+					overflowX: "auto",
+					flexGrow: 1,
+					transition: theme.transitions.create("margin", {
+						easing: theme.transitions.easing.sharp,
+						duration: theme.transitions.duration.leavingScreen,
+					}),
+					marginLeft: `-${drawerWidth}px`,
+					"@media (max-width: 1000px)": {
+						marginLeft: 0,
+					},
+					...(sidebarOpen && {
+						transition: theme.transitions.create("margin", {
+							easing: theme.transitions.easing.easeOut,
+							duration: theme.transitions.duration.enteringScreen,
+						}),
+						marginLeft: 0,
+					}),
+				})}
+			>
+				{children}
+			</Box>
+		</Box>
 	)
 }
 
@@ -373,9 +402,10 @@ interface NavButtonProps {
 	active?: boolean
 	sx?: SxProps<Theme>
 	startIcon?: React.ReactNode
+	onClick?: React.MouseEventHandler<HTMLAnchorElement>
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, children }) => {
+const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClick, children }) => {
 	return (
 		<Button
 			sx={{
@@ -386,8 +416,60 @@ const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, childr
 			component={RouterLink}
 			to={to}
 			startIcon={startIcon}
+			onClick={onClick}
 		>
 			{children}
 		</Button>
 	)
+}
+
+interface EnlistButtonGroupProps {
+	factionsData: Faction[]
+}
+
+const EnlistButtonGroup: React.VoidFunctionComponent<EnlistButtonGroupProps> = ({ factionsData }) => {
+	if (!factionsData) return <Box>Loading...</Box>
+
+	return (
+		<Box
+			sx={{
+				display: "flex",
+				"& > *:not(:last-child)": {
+					marginRight: ".2rem",
+				},
+			}}
+		>
+			{factionsData.map((f) => (
+				<EnlistButton key={f.id} faction={f} />
+			))}
+		</Box>
+	)
+}
+
+const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?: User }) => {
+	if (!factionsData) return <Box>Loadiaang...</Box>
+	if (user?.faction) {
+		return (
+			<>
+				<Typography
+					sx={{
+						display: "flex",
+						alignItems: "start",
+					}}
+				>
+					<Box
+						component="img"
+						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID}`}
+						alt="Faction Logo"
+						sx={{
+							height: "2rem",
+							marginRight: ".5rem",
+						}}
+					/>
+					<span>{user.faction.label}</span>
+				</Typography>
+			</>
+		)
+	}
+	return <EnlistButtonGroup factionsData={factionsData} />
 }

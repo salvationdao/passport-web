@@ -1,42 +1,34 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import { Box, Link, Paper, styled, Tab, TabProps, Tabs, Typography } from "@mui/material"
-import { useEffect, useState } from "react"
-import { Link as RouterLink, useParams } from "react-router-dom"
-import { SupremacyLogoImagePath } from "../../assets"
-import { Navbar } from "../../components/home/navbar"
-import { SearchBar } from "../../components/searchBar"
-import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
-import { useQuery } from "../../hooks/useSend"
-import HubKey from "../../keys"
-import { colors } from "../../theme"
-import { Collection } from "../../types/types"
-import { StoreItemCard } from "./storeItemCard"
+import React, { useEffect, useState } from "react"
+import { useHistory, useParams } from "react-router-dom"
+import { SupremacyLogoImagePath } from "../../../assets"
+import { Navbar } from "../../../components/home/navbar"
+import { SearchBar } from "../../../components/searchBar"
+import { useAuth } from "../../../containers/auth"
+import { SocketState, useWebsocket } from "../../../containers/socket"
+import { useQuery } from "../../../hooks/useSend"
+import HubKey from "../../../keys"
+import { colors } from "../../../theme"
+import { Collection } from "../../../types/types"
+import { CollectionItemCard } from "./collectionItemCard"
 
-export const StorePage: React.FC = () => {
-	const { collection_name } = useParams<{ collection_name: string }>()
+export const CollectionPage: React.VoidFunctionComponent = () => {
+	const { username, collection_name } = useParams<{ username: string; collection_name: string }>()
+	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
 
-	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
+	const [tokenIDs, setTokenIDs] = useState<number[]>([])
 	const [collection, setCollection] = useState<Collection>()
-	const { loading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
+	const { loading, error, payload, query } = useQuery<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, false)
 
 	// search and filter
 	const [search, setSearch] = useState("")
-	const [querySearch, setQuerySearch] = useState("")
 	const [currentTab, setCurrentTab] = useState<string>("All")
 
 	useEffect(() => {
-		const t = setTimeout(() => {
-			setQuerySearch(search)
-		}, 350)
-		return () => clearTimeout(t)
-	}, [search])
-
-	// Effect: gets collection
-	useEffect(() => {
-		if (!collection_name || state !== SocketState.OPEN) return
+		if (state !== SocketState.OPEN || !collection_name) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -49,11 +41,17 @@ export const StorePage: React.FC = () => {
 		)
 	}, [collection_name, subscribe, state])
 
-	// Effect: get store items, apply filters
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 
-		const filtersItems: any[] = []
+		const filtersItems: any[] = [
+			// filter by user id
+			{
+				columnField: "username",
+				operatorValue: "=",
+				value: username || user?.username,
+			},
+		]
 
 		if (collection && collection.id) {
 			filtersItems.push({
@@ -64,14 +62,8 @@ export const StorePage: React.FC = () => {
 			})
 		}
 
-		filtersItems.push({
-			columnField: "faction_id",
-			operatorValue: "=",
-			value: user?.factionID,
-		})
-
 		query({
-			search: querySearch,
+			search,
 			assetType: currentTab === "All" ? "" : currentTab,
 			filter: {
 				linkOperator: "and",
@@ -79,12 +71,12 @@ export const StorePage: React.FC = () => {
 				items: filtersItems,
 			},
 		})
-	}, [user, query, collection, state, currentTab, querySearch])
+	}, [user, query, collection, state, currentTab, search, username])
 
 	// Effect: set users assets
 	useEffect(() => {
 		if (!payload || loading || error) return
-		setStoreItemIDs(payload.storeItemIDs)
+		setTokenIDs(payload.tokenIDs)
 	}, [payload, loading, error])
 
 	return (
@@ -146,7 +138,7 @@ export const StorePage: React.FC = () => {
 						alignSelf: "center",
 						width: "100%",
 						maxWidth: "600px",
-						marginBottom: "1rem",
+						marginBottom: "2rem",
 					}}
 				>
 					<SearchBar
@@ -166,15 +158,15 @@ export const StorePage: React.FC = () => {
 						alignSelf: "start",
 						display: "flex",
 						alignItems: "center",
-						marginBottom: "2rem",
+						marginBottom: "1rem",
 						textTransform: "uppercase",
 					}}
 					color={colors.white}
-					component={RouterLink}
-					to={`/stores`}
+					component={"button"}
+					onClick={() => history.goBack()}
 				>
 					<ChevronLeftIcon />
-					Back to store list
+					Go Back
 				</Link>
 
 				{/* Filter tabs */}
@@ -196,7 +188,7 @@ export const StorePage: React.FC = () => {
 					<StyledTab value="War Machine" label="War Machine" />
 					<StyledTab value="Weapon" label="Weapons" />
 				</Tabs>
-				{storeItemIDs.length ? (
+				{tokenIDs.length ? (
 					<Paper
 						sx={{
 							flex: 1,
@@ -207,8 +199,8 @@ export const StorePage: React.FC = () => {
 							padding: "2rem",
 						}}
 					>
-						{storeItemIDs.map((a) => {
-							return <StoreItemCard key={a} collectionName={collection_name} storeItemID={a} />
+						{tokenIDs.map((a) => {
+							return <CollectionItemCard key={a} tokenID={a} collectionName={collection_name} username={username} />
 						})}
 					</Paper>
 				) : (
@@ -223,7 +215,7 @@ export const StorePage: React.FC = () => {
 						}}
 					>
 						<Typography variant="subtitle2" color={colors.darkGrey}>
-							{loading ? "Loading store items..." : error ? "An error occurred while loading store items." : "No results found."}
+							{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
 						</Typography>
 					</Paper>
 				)}
