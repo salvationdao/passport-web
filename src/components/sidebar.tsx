@@ -189,6 +189,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						sx={{
 							flex: 1,
 						}}
+						onClick={() => {
+							history.push("/buy")
+						}}
 					>
 						Buy SUPS
 					</FancyButton>

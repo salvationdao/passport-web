@@ -224,6 +224,10 @@ const lightTheme = createTheme({
 					"&&::before": {
 						borderColor: colors.darkGrey,
 					},
+					"& input::-webkit-clear-button, & input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+						display: "none",
+						margin: 80,
+					},
 				},
 			},
 		},
