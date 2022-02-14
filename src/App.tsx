@@ -32,22 +32,22 @@ const AppAdmin = () => {
 
 	return (
 		<SocketProvider>
-			<Web3Provider>
-				<ClientContextProvider client={client}>
-					<AuthProvider>
-						<SidebarStateProvider>
-							<AssetProvider>
-								<SnackbarProvider>
+			<SnackbarProvider>
+				<Web3Provider>
+					<ClientContextProvider client={client}>
+						<AuthProvider>
+							<SidebarStateProvider>
+								<AssetProvider>
 									<ThemeProvider theme={currentTheme}>
 										<CssBaseline />
 										<Routes />
 									</ThemeProvider>
-								</SnackbarProvider>
-							</AssetProvider>
-						</SidebarStateProvider>
-					</AuthProvider>
-				</ClientContextProvider>
-			</Web3Provider>
+								</AssetProvider>
+							</SidebarStateProvider>
+						</AuthProvider>
+					</ClientContextProvider>
+				</Web3Provider>
+			</SnackbarProvider>
 		</SocketProvider>
 	)
 }
