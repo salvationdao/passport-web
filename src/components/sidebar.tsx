@@ -49,6 +49,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
 		const str1 = userPubAddr.toUpperCase()
 		const str2 = metaMaskAcc.toUpperCase()
+
+		console.log("str1", str1)
+		console.log("str2", str2)
 		return str1 === str2
 	}
 
@@ -61,6 +64,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [userID, subscribe])
 
 	useEffect(() => {
+		console.log("this be user", user)
+		console.log("this be user", account)
+
 		if (!user || !account) {
 			setCorrectWallet(true)
 			setWalletSups("N/A")
@@ -73,6 +79,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			setWalletSups("N/A")
 			return
 		}
+
+		console.log("herrrrrrreeeeeeeeeeeeeeeeeee")
+		console.log("herrrrrrreeeeeeeeeeeeeeeeeee")
+		console.log("herrrrrrreeeeeeeeeeeeeeeeeee")
+		console.log("herrrrrrreeeeeeeeeeeeeeeeeee")
+
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setCorrectWallet(correctWallet)
 		setWalletSups(correctWallet ? supBalance : "N/A")
