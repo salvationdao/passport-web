@@ -61,8 +61,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [userID, subscribe])
 
 	useEffect(() => {
-		console.log("user pub", user?.publicAddress)
-
 		if (!user || !account) {
 			setCorrectWallet(true)
 			setWalletSups("N/A")
