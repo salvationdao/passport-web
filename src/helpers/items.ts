@@ -1,7 +1,6 @@
 import { Attribute } from "../types/types"
 import BigNumber from "bignumber.js"
 
-
 const fmt = {
 	prefix: "",
 	decimalSeparator: ".",

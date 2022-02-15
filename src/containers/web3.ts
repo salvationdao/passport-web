@@ -1,8 +1,12 @@
-import { ethers } from "ethers"
+import { AlertColor } from "@mui/material/Alert"
+import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import { supFormatter } from "../helpers/items"
 import { GetNonceResponse } from "../types/auth"
+import { genericABI } from "./web3GenericABI"
+import { REACT_APP_PURCHASE_ADDRESS } from "../config"
+import { useSnackbar } from "../containers/snackbar"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -10,14 +14,41 @@ export enum MetaMaskState {
 	Active,
 }
 
+interface AddEthereumChainParameter {
+	chainId: string // A 0x-prefixed hexadecimal string
+	chainName: string
+	nativeCurrency: {
+		name: string
+		symbol: string // 2-6 characters long
+		decimals: 18
+	}
+	rpcUrls: string[]
+	blockExplorerUrls?: string[]
+	iconUrls?: string[] // Currently ignored.
+}
+
 /**
  * A Container that handles Web3
  */
 export const Web3Container = createContainer(() => {
+	const { displayMessage } = useSnackbar()
+
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
 	const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
 	const [account, setAccount] = useState<string>()
+	const [currentChainId, setCurrentChainId] = useState<null | number>(null)
 	const [supBalance, setSupBalance] = useState<string>()
+
+	enum web3Constants {
+		ethereumChainId = 1,
+		binanceChainId = 56,
+		goerliChainId = 5,
+		bscTestNetChainId = 97,
+		supsToUsdConversion = 0.12,
+		ethToUsdConversion = 2500,
+		bnbToUsdConversion = 375,
+		totalSaleSups = 217000000,
+	}
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -31,6 +62,10 @@ export const Web3Container = createContainer(() => {
 		},
 		[provider],
 	)
+
+	const handleChainChange = useCallback((chainId: string) => {
+		setCurrentChainId(parseInt(chainId))
+	}, [])
 
 	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
 	const handleWalletSups = useCallback(
@@ -81,7 +116,15 @@ export const Web3Container = createContainer(() => {
 				} else {
 					setMetaMaskState(MetaMaskState.NotLoggedIn)
 				}
-				if ((window as any).ethereum) (window as any).ethereum.on("accountsChanged", handleAccountChange)
+				if ((window as any).ethereum) {
+					;(window as any).ethereum.on("accountsChanged", handleAccountChange)
+					;(window as any).ethereum.on("chainChanged", handleChainChange)
+				}
+				if (provider && currentChainId === null) {
+					const response = await provider.getNetwork()
+					let chainId = response.chainId
+					setCurrentChainId(chainId)
+				}
 			} else {
 				setMetaMaskState(MetaMaskState.NotInstalled)
 			}
@@ -93,7 +136,7 @@ export const Web3Container = createContainer(() => {
 		return () => {
 			if ((window as any).ethereum) (window as any).ethereum.removeAllListeners()
 		}
-	}, [provider, handleAccountChange])
+	}, [provider, handleAccountChange, handleChainChange])
 
 	const connect = async () => {
 		if (provider) {
@@ -103,11 +146,57 @@ export const Web3Container = createContainer(() => {
 				const acc = await signer.getAddress()
 				setAccount(acc)
 			} catch (error) {
-				console.error(error)
+				displayMessage("Something went wrong, please try again.", "error")
 			}
-		} else {
-			return
 		}
+	}
+
+	const ETHEREUM_NETWORK: AddEthereumChainParameter = {
+		chainId: "0x01",
+		chainName: "Ethereum Mainnet",
+		nativeCurrency: {
+			name: "Ethereum",
+			symbol: "ETH",
+			decimals: 18,
+		},
+		rpcUrls: ["https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"],
+		blockExplorerUrls: ["https://etherscan.io"],
+	}
+
+	const BINANCE_NETWORK: AddEthereumChainParameter = {
+		chainId: "0x38",
+		chainName: "Binance Smart Chain Mainnet",
+		nativeCurrency: {
+			name: "Binance Coin",
+			symbol: "BNB",
+			decimals: 18,
+		},
+		rpcUrls: ["https://bsc-dataseed1.ninicoin.io"],
+		blockExplorerUrls: ["https://bscscan.com/"],
+	}
+
+	const BINANCE_TEST_NETWORK: AddEthereumChainParameter = {
+		chainId: "0x61",
+		chainName: "BSC Testnet",
+		nativeCurrency: {
+			name: "Binance Coin",
+			symbol: "BNB",
+			decimals: 18,
+		},
+		rpcUrls: ["https://data-seed-prebsc-1-s1.binance.org:8545"],
+		blockExplorerUrls: ["https://explorer.binance.org/smart-testnet"],
+	}
+
+	const GOERLI_TEST_NETWORK: AddEthereumChainParameter = {
+		chainId: "0x5",
+		chainName: "Goerli Test Network",
+		nativeCurrency: {
+			name: "Ethereum",
+			symbol: "ETH",
+			decimals: 18,
+		},
+		rpcUrls: ["https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"],
+		blockExplorerUrls: ["https://goerli.etherscan.io"],
 	}
 
 	const getNonce = useCallback(async (publicAddress: string): Promise<string> => {
@@ -151,11 +240,101 @@ export const Web3Container = createContainer(() => {
 		[provider, getNonce, getNonceFromID],
 	)
 
+	const changeChain = async (chain: number) => {
+		if (!!(window as any).ethereum) {
+			try {
+				await (window as any).ethereum.request({
+					method: "wallet_switchEthereumChain",
+					params: [{ chainId: `0x${chain.toString(16)}` }],
+				})
+			} catch (error) {
+				let chainParams: AddEthereumChainParameter
+				switch (chain) {
+					case web3Constants.binanceChainId:
+						chainParams = BINANCE_NETWORK
+						break
+					case web3Constants.bscTestNetChainId:
+						chainParams = BINANCE_TEST_NETWORK
+						break
+					case web3Constants.ethereumChainId:
+						chainParams = ETHEREUM_NETWORK
+						break
+					case web3Constants.goerliChainId:
+						chainParams = GOERLI_TEST_NETWORK
+						break
+
+					default:
+						displayMessage("Bad chain selected.", "error")
+						return
+				}
+				await (window as any).ethereum.request({
+					method: "wallet_addEthereumChain",
+					params: [chainParams],
+				})
+			}
+		} else {
+			displayMessage("MetaMask is not installed. Please install MetaMask.", "warning")
+		}
+	}
+
+	const getBalance = useCallback(
+		async (contractAddress: string) => {
+			try {
+				if (!provider || !account || contractAddress === "") return
+
+				const contract = new ethers.Contract(contractAddress, genericABI, provider)
+
+				const bigNumBalance: BigNumber = await contract.balanceOf(account)
+				const decimals = await contract.decimals()
+
+				const userBalance = ethers.utils.formatUnits(bigNumBalance, decimals)
+
+				return userBalance
+			} catch (error) {
+				console.log(error)
+				displayMessage("Couldn't get contract balance, please try again.", "error")
+			}
+		},
+		[genericABI, provider, account],
+	)
+
+	async function sendTransfer(contractAddress: string, value: number) {
+		try {
+			if (!provider || !account) {
+				displayMessage("Wallet is not connected.", "error")
+				return
+			}
+			const signer = provider.getSigner()
+			const contract = new ethers.Contract(contractAddress, genericABI, signer)
+			const decimals = await contract.decimals()
+
+			const units = ethers.utils.parseUnits(value.toString(), decimals)
+			const hasSufficientFunds = await contract.callStatic.transfer(signer.getAddress(), units)
+
+			if (hasSufficientFunds) {
+				const tx = await contract.transfer(REACT_APP_PURCHASE_ADDRESS, units)
+				return tx
+			} else {
+				displayMessage("Wallet does not have sufficient funds.", "error")
+				return
+			}
+		} catch (error) {
+			displayMessage("Something went wrong, please try again.", "error")
+			throw error
+		}
+	}
+
 	return {
 		connect,
 		metaMaskState,
 		sign,
 		account,
+		changeChain,
+		currentChainId,
+		provider,
+		web3Constants,
+		getBalance,
+		sendTransfer,
 		supBalance,
 	}
 })

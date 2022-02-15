@@ -1,6 +1,7 @@
 import { Alert, Snackbar } from "@mui/material"
 import { useEffect } from "react"
 import { BrowserRouter, Route, Switch } from "react-router-dom"
+import { BlockConfirmationSnackList } from "./components/blockConfirmationSnackList"
 import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { Sidebar } from "./components/sidebar"
 import { useAuth } from "./containers/auth"
@@ -9,12 +10,15 @@ import { useSnackbar } from "./containers/snackbar"
 import { LoginPage } from "./pages/auth/login"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
+import { BuyPage } from "./pages/buy"
 import { Home } from "./pages/home"
+import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { AssetsList } from "./pages/management/assets/list"
 import { CollectionPage } from "./pages/management/collections/collection"
 import { CollectionItemPage } from "./pages/management/collections/collectionItem"
 import { CollectionsPage } from "./pages/management/collections/collections"
 import { ProfilePage } from "./pages/profile"
+import { Settings } from "./pages/settings"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
@@ -81,6 +85,12 @@ export const Routes = () => {
 						<Route path="/profile">
 							<ProfilePage />
 						</Route>
+						<Route path="/buy">
+							<BuyPage />
+						</Route>
+						<Route path="/if-buy">
+							<IFrameBuyPage />
+						</Route>
 
 						{/* stores */}
 						<Switch>
@@ -111,6 +121,7 @@ export const Routes = () => {
 				</Switch>
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="admin" />
+			<BlockConfirmationSnackList />
 		</>
 	)
 }
