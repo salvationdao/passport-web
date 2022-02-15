@@ -1,5 +1,8 @@
 # Passport-Web
 
+[![Staging Deployment](https://github.com/ninja-syndicate/passport-web/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/ninja-syndicate/passport-web/actions/workflows/deploy-staging.yml)
+
+[CD Docs](.github/workflows/README.md)
 
 ### Envars
 ```shell
