@@ -44,14 +44,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	// Supremacy
 	const [factionsData, setFactionsData] = useState<Faction[]>()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
-	const [correctWallet, setCorrectWallet] = useState<boolean>()
+	const [walletMsg, setWalletMsg] = useState<string>()
 
 	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
 		const str1 = userPubAddr.toUpperCase()
 		const str2 = metaMaskAcc.toUpperCase()
 
-		console.log("str1", str1)
-		console.log("str2", str2)
 		return str1 === str2
 	}
 
@@ -64,29 +62,22 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [userID, subscribe])
 
 	useEffect(() => {
-		console.log("this be user", user)
-		console.log("this be user", account)
-
+		// not logged in
 		if (!user || !account) {
-			setCorrectWallet(true)
+			setWalletMsg("")
 			setWalletSups("N/A")
 			return
 		}
 
 		// no wallet connected
 		if (!user.publicAddress || user.publicAddress === null) {
-			setCorrectWallet(true)
+			setWalletMsg("Wallet not connected")
 			setWalletSups("N/A")
 			return
 		}
 
-		console.log("herrrrrrreeeeeeeeeeeeeeeeeee")
-		console.log("herrrrrrreeeeeeeeeeeeeeeeeee")
-		console.log("herrrrrrreeeeeeeeeeeeeeeeeee")
-		console.log("herrrrrrreeeeeeeeeeeeeeeeeee")
-
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
-		setCorrectWallet(correctWallet)
+		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
 		setWalletSups(correctWallet ? supBalance : "N/A")
 	}, [supBalance, account, userID, userPublicAddress])
 
@@ -152,7 +143,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					},
 				}}
 			>
-				{!correctWallet && <Alert severity="error">Incorrect wallet connected</Alert>}
+				{!!walletMsg && <Alert severity="error">{walletMsg}</Alert>}
 
 				<Typography
 					sx={{

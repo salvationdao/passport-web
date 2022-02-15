@@ -94,7 +94,7 @@ export const Web3Container = createContainer(() => {
 			try {
 				bal = await erc20.balanceOf(acc)
 			} catch (e) {
-				console.error(e)
+				console.log(e)
 				bal = { _hex: "0" }
 			}
 
