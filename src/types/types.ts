@@ -58,7 +58,9 @@ export interface Faction {
 }
 
 export interface DetailedFaction {
-	velocity: number
+	description: string
+	velocity?: number
+	sharePercent: number
 	recruitNumber: number
 	winCount: number
 	lossCount: number
@@ -124,8 +126,9 @@ export interface Collection {
 export interface Asset {
 	tokenID: number
 	userID: string
+	username: string
 	name: string
-	collection: string
+	collection: Collection
 	description: string
 	externalURL: string
 	image: string
@@ -138,8 +141,9 @@ export interface Asset {
 }
 
 export interface Attribute {
+	display_type?: "number"
 	trait_type: string
-	token_id: number
+	token_id?: number
 	value: string | number
 }
 

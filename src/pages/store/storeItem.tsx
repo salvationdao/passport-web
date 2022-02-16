@@ -6,20 +6,29 @@ import { PlaceholderMechImagePath, SupremacyLogoImagePath, SupTokenIconPath } fr
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
-import { supFormatter } from "../../helpers/items"
+import { getItemAttributeValue, supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
-import { StoreItem } from "../../types/types"
+import { Attribute, StoreItem } from "../../types/types"
+import { AssetBox, PercentageDisplay } from "../collections/collectionItem"
+import { Rarity, rarityTextStyles } from "./storeItemCard"
 
 export const StoreItemPage = () => {
 	const { store_item_id: id } = useParams<{ store_item_id: string }>()
 	const history = useHistory()
 	const { displayMessage } = useSnackbar()
+	const { user } = useAuth()
 
 	const { subscribe, send, state } = useWebsocket()
 	const [storeItem, setStoreItem] = useState<StoreItem>()
+
+	// Attributes
+	const [regularAttributes, setRegularAttributes] = useState<Attribute[]>()
+	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>()
+	const [assetAttributes, setAssetAttributes] = useState<Attribute[]>()
 
 	// Purchase asset
 	const [submitting, setSubmitting] = useState(false)
@@ -39,16 +48,35 @@ export const StoreItemPage = () => {
 	}, [send, id, state, storeItem?.name, displayMessage])
 
 	useEffect(() => {
-		if (!subscribe || state !== SocketState.OPEN) return
+		if (!subscribe || state !== SocketState.OPEN || !user) return
 
 		return subscribe<StoreItem>(
 			HubKey.StoreItemSubscribe,
 			(payload) => {
+				if (!payload) return
+				let assetAttributes = new Array<Attribute>()
+				let numberAttributes = new Array<Attribute>()
+				let regularAttributes = new Array<Attribute>()
+				payload.attributes.forEach((a) => {
+					if (a.token_id) {
+						// If is an asset attribute
+						assetAttributes.push(a)
+					} else if (a.display_type === "number") {
+						// If is a number attribute
+						numberAttributes.push(a)
+					} else {
+						// Is a regular attribute
+						regularAttributes.push(a)
+					}
+				})
+				setAssetAttributes(assetAttributes.length > 0 ? assetAttributes : undefined)
+				setNumberAttributes(numberAttributes.length > 0 ? numberAttributes : undefined)
+				setRegularAttributes(regularAttributes.length > 0 ? regularAttributes : undefined)
 				setStoreItem(payload)
 			},
 			{ storeItemID: id },
 		)
-	}, [subscribe, id, state])
+	}, [subscribe, id, state, user])
 
 	if (!storeItem) {
 		return <Loading />
@@ -187,6 +215,15 @@ export const StoreItemPage = () => {
 							>
 								{storeItem.name}
 							</Typography>
+							<Typography
+								variant="h6"
+								component="p"
+								sx={{
+									...rarityTextStyles[getItemAttributeValue(storeItem.attributes, "Rarity") as Rarity],
+								}}
+							>
+								{getItemAttributeValue(storeItem.attributes, "Rarity")}
+							</Typography>
 							<Typography variant="body1">{storeItem.description}</Typography>
 						</Box>
 
@@ -210,19 +247,100 @@ export const StoreItemPage = () => {
 							<Box
 								sx={{
 									display: "grid",
-									gridTemplateColumns: "repeat(3, 1fr)",
-									gap: "1.5rem",
-									"@media (max-width: 600px)": {
-										gridTemplateColumns: "repeat(2, 1fr)",
-									},
+									gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+									gap: "1rem",
 								}}
 							>
-								{storeItem.attributes.map((attr, i) => {
-									return <TextField key={`${attr.trait_type}-${attr.value}-${i}`} label={attr.trait_type} value={attr.value} disabled />
-								})}
+								{regularAttributes &&
+									regularAttributes.map((attr, i) => {
+										return (
+											<TextField
+												key={`${attr.trait_type}-${attr.value}-${i}`}
+												label={attr.trait_type}
+												value={attr.value}
+												InputProps={{
+													sx: {
+														borderRadius: 0,
+													},
+												}}
+												disabled
+											/>
+										)
+									})}
 							</Box>
 						</Box>
+
+						<Box
+							sx={{
+								marginBottom: "1.5rem",
+							}}
+						>
+							<Typography
+								variant="h6"
+								component="p"
+								color={colors.darkGrey}
+								sx={{
+									marginBottom: "1rem",
+									textTransform: "uppercase",
+								}}
+							>
+								Stats
+							</Typography>
+
+							<Box
+								sx={{
+									display: "grid",
+									gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+									gap: "1rem",
+								}}
+							>
+								{numberAttributes &&
+									numberAttributes.map((attr, i) => {
+										return (
+											<PercentageDisplay
+												key={`${attr.trait_type}-${attr.value}-${i}`}
+												displayValue={`${attr.value}`}
+												label={attr.trait_type}
+											/>
+										)
+									})}
+							</Box>
+						</Box>
+
+						<Box
+							sx={{
+								marginBottom: "1.5rem",
+							}}
+						>
+							<Typography
+								variant="h6"
+								component="p"
+								color={colors.darkGrey}
+								sx={{
+									marginBottom: "1rem",
+									textTransform: "uppercase",
+								}}
+							>
+								Equipment
+							</Typography>
+
+							<Box
+								sx={{
+									display: "grid",
+									gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+									gap: "1rem",
+								}}
+							>
+								{assetAttributes && assetAttributes.map((a) => <AssetBox tokenID={a.token_id!} label={a.trait_type} />)}
+								<AssetBox tokenID={30} label="Shield" />
+								<AssetBox tokenID={30} label="Shield" />
+								<AssetBox tokenID={30} label="Shield" />
+								<AssetBox tokenID={30} label="Shield" />
+							</Box>
+						</Box>
+
 						<Box flex="1" />
+
 						<Box
 							sx={{
 								display: "flex",

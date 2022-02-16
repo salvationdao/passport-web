@@ -1,4 +1,4 @@
-import { Box, useTheme } from "@mui/material"
+import { Box } from "@mui/material"
 import React from "react"
 import { BuyTokens } from "../components/buyTokens"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
