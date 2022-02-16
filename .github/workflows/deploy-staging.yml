@@ -22,6 +22,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-20.04
+    outputs:
+      artifact_filename: ${{ steps.artifact.outputs.filename }}
+      version: ${{ steps.version.outputs.v }}
     steps:
       - uses: actions/checkout@v2
 
@@ -63,12 +66,20 @@ jobs:
       - name: List build dir
         run: find build
 
+      - id: artifact
+        run: echo "::set-output name=filename::passport-api_${{env.GITVERSION}}.tar"
+      - id: version
+        run: echo "::set-output name=v::${{env.GITVERSION}}"
+
+      - name: tar deploy directory
+        run: tar -cvf ${{ steps.artifact.outputs.filename }} ./deploy
+      
       - name: save artifact
         uses: actions/upload-artifact@v2
         if: ${{ !env.ACT }} # if running in local test environment
         with:
-          name: passport-web_${{env.TAG_NAME}}.tar.gz
-          path: ./build/
+          name: ${{ steps.artifact.outputs.filename }}
+          path: ${{ steps.artifact.outputs.filename }}
   deploy:
     needs: [build]
     runs-on: ubuntu-20.04
@@ -76,8 +87,10 @@ jobs:
       - uses: actions/download-artifact@v2
         if: ${{ !env.ACT }} # if running in local test environment
         with:
-          name: passport-web_${{env.TAG_NAME}}.tar.gz
-          path: ./deploy
+          name: ${{ needs.build.outputs.artifact_filename }}
+
+      - name: untar deploy directory
+        run: tar -xvf ${{ needs.build.outputs.artifact_filename }}
 
       - name: Setup SSH
         run: |
@@ -89,8 +102,8 @@ jobs:
 
       - name: Rsync to server
         if: ${{ !env.ACT }} # if running in local test environment
-        run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}}
+        run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{ needs.build.outputs.version }}
 
       - name: Bring new version online
         if: ${{ !env.ACT }} # if running in local test environment
-        run: ssh staging-passport.xsyn.io 'ln -Tfsv /usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}} /usr/share/ninja_syndicate/passport-web_online'
+        run: ssh staging-passport.xsyn.io 'ln -Tfsv /usr/share/ninja_syndicate/passport-web_${{ needs.build.outputs.version }} /usr/share/ninja_syndicate/passport-web_online'
