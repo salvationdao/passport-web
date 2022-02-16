@@ -87,8 +87,17 @@ export const Web3Container = createContainer(() => {
 				// Events
 				"event Transfer(address indexed from, address indexed to, uint amount)",
 			]
+
 			const erc20 = new ethers.Contract(supTokenAddr, abi, provider)
-			const bal: { _hex: string } = await erc20.balanceOf(acc)
+			let bal: { _hex: string } = { _hex: "" }
+
+			try {
+				bal = await erc20.balanceOf(acc)
+			} catch (e) {
+				console.log(e)
+				bal = { _hex: "0" }
+			}
+
 			setSupBalance(supFormatter(bal._hex))
 		},
 		[provider],

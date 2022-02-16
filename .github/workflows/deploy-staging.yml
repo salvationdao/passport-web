@@ -1,4 +1,4 @@
-name: build-deploy
+name: Staging Deployment
 
 # Controls when the workflow will run
 on:
@@ -20,8 +20,11 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build_and_save_push:
+  build:
     runs-on: ubuntu-20.04
+    outputs:
+      artifact_filename: ${{ steps.artifact.outputs.filename }}
+      version: ${{ steps.version.outputs.v }}
     steps:
       - uses: actions/checkout@v2
 
@@ -49,24 +52,45 @@ jobs:
           git config --global user.name "Github CI"
           git config --global user.email "team@syndicate.ninja"
           npm version prerelease --allow-same-version --preid rc
-          git push
-          git push --tags
           echo "TAG_NAME=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
           echo "REACT_APP_SENTRY_CURRENT_RELEASE_NAME=syndicate-passport_web@$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Build web
         run: CI=false npm run build
 
+      - name: Push tags and commit
+        run: |
+          git push
+          git push --tags
       # list build folder recursively
       - name: List build dir
         run: find build
 
+      - id: artifact
+        run: echo "::set-output name=filename::passport-api_${{env.GITVERSION}}.tar"
+      - id: version
+        run: echo "::set-output name=v::${{env.GITVERSION}}"
+
+      - name: tar deploy directory
+        run: tar -cvf ${{ steps.artifact.outputs.filename }} ./deploy
+      
       - name: save artifact
         uses: actions/upload-artifact@v2
         if: ${{ !env.ACT }} # if running in local test environment
         with:
-          name: passport-web_${{env.TAG_NAME}}.tar.gz
-          path: ./build/
+          name: ${{ steps.artifact.outputs.filename }}
+          path: ${{ steps.artifact.outputs.filename }}
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/download-artifact@v2
+        if: ${{ !env.ACT }} # if running in local test environment
+        with:
+          name: ${{ needs.build.outputs.artifact_filename }}
+
+      - name: untar deploy directory
+        run: tar -xvf ${{ needs.build.outputs.artifact_filename }}
 
       - name: Setup SSH
         run: |
@@ -78,8 +102,8 @@ jobs:
 
       - name: Rsync to server
         if: ${{ !env.ACT }} # if running in local test environment
-        run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}}
+        run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{ needs.build.outputs.version }}
 
       - name: Bring new version online
         if: ${{ !env.ACT }} # if running in local test environment
-        run: ssh staging-passport.xsyn.io 'ln -Tfsv /usr/share/ninja_syndicate/passport-web_${{env.TAG_NAME}} /usr/share/ninja_syndicate/passport-web_online'
+        run: ssh staging-passport.xsyn.io 'ln -Tfsv /usr/share/ninja_syndicate/passport-web_${{ needs.build.outputs.version }} /usr/share/ninja_syndicate/passport-web_online'
