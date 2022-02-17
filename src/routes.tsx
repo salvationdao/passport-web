@@ -11,14 +11,12 @@ import { LoginPage } from "./pages/auth/login"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
 import { BuyPage } from "./pages/buy"
+import { CollectionPage } from "./pages/collections/collection"
+import { CollectionItemPage } from "./pages/collections/collectionItem"
+import { CollectionsPage } from "./pages/collections/collections"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
-import { AssetsList } from "./pages/management/assets/list"
-import { CollectionPage } from "./pages/management/collections/collection"
-import { CollectionItemPage } from "./pages/management/collections/collectionItem"
-import { CollectionsPage } from "./pages/management/collections/collections"
 import { ProfilePage } from "./pages/profile"
-import { Settings } from "./pages/settings"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
@@ -56,8 +54,8 @@ export const Routes = () => {
 					<Route path="/nosidebar/login">
 						<LoginPage />
 					</Route>
-					<Route path="/nosidebar/:username/collections/:collection_name">
-						<AssetsList />
+					<Route path="/nosidebar/:username/:collection_name">
+						<CollectionPage />
 					</Route>
 					<Sidebar onClose={() => setSidebarOpen(false)}>
 						<Route exact path="/">

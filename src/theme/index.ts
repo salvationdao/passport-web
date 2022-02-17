@@ -20,11 +20,16 @@ declare module "@mui/material/Button" {
 export const colors = {
 	errorRed: "#d32f2f",
 	neonPink: "#f72485",
+	darkNeonPink: "#c31c69",
+	darkerNeonPink: "#90144d",
 	skyBlue: "#4CC9F0",
+	darkSkyBlue: "#3b9ebd",
+	darkerSkyBlue: "#3388a3",
 	lightNavyBlue: "#211E33",
 	navyBlue: "#0a061f",
 	darkNavyBlue: "#030208",
 	white: "#fff",
+	black: "#000",
 	lightGrey: "#f7f7f7",
 	darkGrey: "#c3c3c3",
 	metamaskOrange: "#F6851B",
@@ -35,8 +40,8 @@ export const colors = {
 	supremacyGold: "#F3D977",
 	rarity: {
 		common: "#c3c3c3",
-		rare: "#1724d4",
-		legendary: "#d48217",
+		rare: "#4d90fa",
+		legendary: "#fabd4d",
 	},
 	supremacy: {
 		text: "#FFFFFF",
@@ -195,6 +200,11 @@ const lightTheme = createTheme({
 				},
 				body: {
 					backgroundColor: colors.darkNavyBlue,
+				},
+				"*, *::after, *::before": {
+					":focus": {
+						boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
+					},
 				},
 			},
 		},

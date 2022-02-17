@@ -54,7 +54,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	const { displayMessage } = useSnackbar()
 
 	// Username form
-	const { control, handleSubmit } = useForm<{
+	const { control, handleSubmit, reset } = useForm<{
 		username: string
 	}>()
 
@@ -140,6 +140,13 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	useEffect(() => {
 		setSidebarOpen(false)
 	}, [setSidebarOpen])
+
+	useEffect(() => {
+		if (!user) return
+		reset({
+			username: user.username,
+		})
+	}, [user, reset])
 
 	useEffect(() => {
 		if (step !== Step.SuccessStep || loading) return
@@ -284,6 +291,8 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 								top: "50%",
 								left: "50%",
 								transform: "translate(-50%, -50%)",
+								display: "flex",
+								flexDirection: "column",
 							}}
 						>
 							<Typography
@@ -300,7 +309,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 							</Typography>
 							<InputField
 								name="username"
-								label="Username"
+								label="Current Username"
 								control={control}
 								rules={{ required: "Username is required" }}
 								disabled={loading}
@@ -311,12 +320,22 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 							<FancyButton
 								sx={{
 									marginTop: "1rem",
+									marginBottom: "1rem",
 								}}
 								type="submit"
 								color="primary"
 							>
-								Next
+								Change Username
 							</FancyButton>
+							<Button
+								onClick={() => setStep(Step.UploadStep)}
+								variant="text"
+								sx={{
+									alignSelf: "center",
+								}}
+							>
+								Skip this step
+							</Button>
 						</FadeTransition>
 						<MiddleText show={loading}>Loading...</MiddleText>
 					</Box>

@@ -68,10 +68,14 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 				<Stack direction="row" flexWrap="wrap" sx={{ pt: 1, px: 1, "& > *": { width: "50%", pb: 1 } }}>
 					<Stat
 						title="SUPS Velocity"
-						content={velocity.toLocaleString("en-US", {
-							minimumFractionDigits: 1,
-							maximumFractionDigits: 4,
-						})}
+						content={
+							velocity
+								? velocity.toLocaleString("en-US", {
+										minimumFractionDigits: 1,
+										maximumFractionDigits: 4,
+								  })
+								: ""
+						}
 						prefixImageUrl={SupTokenIconPath}
 					/>
 					<Stat title="Recruits" content={recruitNumber} />

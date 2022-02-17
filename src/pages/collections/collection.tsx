@@ -1,6 +1,7 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Chip, ChipProps, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
@@ -13,18 +14,17 @@ import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
-import { FilterChip } from "../collections/collection"
-import { StoreItemCard } from "./storeItemCard"
+import { CollectionItemCard } from "./collectionItemCard"
 
-export const StorePage: React.FC = () => {
-	const { collection_name } = useParams<{ collection_name: string }>()
+export const CollectionPage: React.VoidFunctionComponent = () => {
+	const { username, collection_name } = useParams<{ username: string; collection_name: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
 
-	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
+	const [tokenIDs, setTokenIDs] = useState<number[]>([])
 	const [collection, setCollection] = useState<Collection>()
-	const { loading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
+	const { loading, error, payload, query } = useQuery<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, false)
 
 	// search and filter
 	const [search, setSearch] = useState("")
@@ -81,7 +81,14 @@ export const StorePage: React.FC = () => {
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 
-		const filtersItems: any[] = []
+		const filtersItems: any[] = [
+			// filter by user id
+			{
+				columnField: "username",
+				operatorValue: "=",
+				value: username || user?.username,
+			},
+		]
 
 		if (collection && collection.id) {
 			filtersItems.push({
@@ -91,12 +98,6 @@ export const StorePage: React.FC = () => {
 				value: collection.id,
 			})
 		}
-
-		filtersItems.push({
-			columnField: "faction_id",
-			operatorValue: "=",
-			value: user?.factionID,
-		})
 
 		const attributeFilterItems: any[] = []
 		if (assetType && assetType !== "All") {
@@ -132,11 +133,11 @@ export const StorePage: React.FC = () => {
 				items: filtersItems,
 			},
 		})
-	}, [user, query, collection, state, assetType, rarities, brands, search])
+	}, [user, query, collection, state, assetType, rarities, brands, search, username])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
-		setStoreItemIDs(payload.storeItemIDs)
+		setTokenIDs(payload.tokenIDs)
 	}, [payload, loading, error])
 
 	const renderFilters = () => (
@@ -298,7 +299,7 @@ export const StorePage: React.FC = () => {
 							alignSelf: "center",
 							width: "100%",
 							maxWidth: "600px",
-							marginBottom: "1rem",
+							marginBottom: "2rem",
 						}}
 					>
 						<SearchBar
@@ -345,7 +346,7 @@ export const StorePage: React.FC = () => {
 						sx={{
 							display: "flex",
 							width: "100%",
-							marginBottom: "3rem"
+							marginBottom: "3rem",
 						}}
 					>
 						{isWiderThan1000px && (
@@ -399,7 +400,7 @@ export const StorePage: React.FC = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{storeItemIDs.length ? (
+							{tokenIDs.length ? (
 								<Paper
 									sx={{
 										flex: 1,
@@ -410,8 +411,8 @@ export const StorePage: React.FC = () => {
 										padding: "2rem",
 									}}
 								>
-									{storeItemIDs.map((a) => {
-										return <StoreItemCard key={a} collectionName={collection_name} storeItemID={a} />
+									{tokenIDs.map((a) => {
+										return <CollectionItemCard key={a} tokenID={a} collectionName={collection_name} username={username} />
 									})}
 								</Paper>
 							) : (
@@ -426,7 +427,7 @@ export const StorePage: React.FC = () => {
 									}}
 								>
 									<Typography variant="subtitle2" color={colors.darkGrey}>
-										{loading ? "Loading store items..." : error ? "An error occurred while loading store items." : "No results found."}
+										{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
 									</Typography>
 								</Paper>
 							)}
@@ -437,6 +438,29 @@ export const StorePage: React.FC = () => {
 		</>
 	)
 }
+
+interface FilterChipProps extends Omit<ChipProps, "color" | "onDelete"> {
+	color?: string
+	active: boolean
+}
+export const FilterChip = ({ color = colors.white, active, ...props }: FilterChipProps) => (
+	<Chip
+		sx={{
+			color: active ? colors.darkNavyBlue : color,
+			borderColor: color,
+			backgroundColor: active ? color : "transparent",
+			"&&:hover": {
+				color: colors.darkNavyBlue,
+				backgroundColor: color,
+			},
+			"&&:focus": {
+				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
+			},
+		}}
+		onDelete={active ? props.onClick : undefined}
+		{...props}
+	/>
+)
 
 const StyledTab = styled((props: TabProps) => <Tab {...props} />)(({ theme }) => ({
 	textTransform: "uppercase",
