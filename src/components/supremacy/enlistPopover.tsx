@@ -40,11 +40,12 @@ interface EnlistFactionRequest {
 
 interface PopoverContentProps {
 	factionData: Faction
-	factionDataMore: DetailedFaction
 	onClose: () => void
 }
 
-const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ factionData, factionDataMore, onClose }) => {
+const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ factionData, onClose }) => {
+	const factionDataMore = useSubscription<DetailedFaction>(HubKey.SubscribeFactionStat, { factionID: factionData.id }).payload
+
 	const [page, setPage] = useState(0)
 	const { send, state } = useWebsocket()
 	const { displayMessage } = useSnackbar()
@@ -59,6 +60,33 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 		}
 	}, [send, state, factionData, onClose, displayMessage])
 
+	const factionStatDisplay = () => {
+		if (!factionDataMore) return null
+		const { velocity, recruitNumber, winCount, lossCount, killCount, deathCount, mvp } = factionDataMore
+		return (
+			<Fade in={true}>
+				<Stack direction="row" flexWrap="wrap" sx={{ pt: 1, px: 1, "& > *": { width: "50%", pb: 1 } }}>
+					<Stat
+						title="SUPS Velocity"
+						content={velocity.toLocaleString("en-US", {
+							minimumFractionDigits: 1,
+							maximumFractionDigits: 4,
+						})}
+						prefixImageUrl={SupTokenIconPath}
+					/>
+					<Stat title="Recruits" content={recruitNumber} />
+					<Stat title="Wins" content={winCount} />
+					<Stat title="Losses" content={lossCount} />
+					<Stat title="Win Rate" content={winCount + lossCount === 0 ? "0%" : `${((winCount / (winCount + lossCount)) * 100).toFixed(0)}%`} />
+					<Stat title="Kills" content={killCount} />
+					<Stat title="Deaths" content={deathCount} />
+					<Stat title="K/D" content={deathCount === 0 ? "0%" : `${((killCount / deathCount) * 100).toFixed(0)}%`} />
+					<Stat title="MVP" content={mvp?.username || ""} prefixImageUrl={mvp?.avatarID ? `/api/files/${mvp.avatarID}` : ""} />
+				</Stack>
+			</Fade>
+		)
+	}
+
 	const {
 		label,
 		theme: { primary, secondary },
@@ -67,8 +95,6 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 		description,
 	} = factionData
 	const logoUrl = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logoBlobID}`
-
-	const { velocity, recruitNumber, winCount, lossCount, killCount, deathCount, mvp } = factionDataMore
 
 	return (
 		<Stack
@@ -118,28 +144,7 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 					</Fade>
 				)}
 
-				{page === 1 && (
-					<Fade in={true}>
-						<Stack direction="row" flexWrap="wrap" sx={{ pt: 1, px: 1, "& > *": { width: "50%", pb: 1 } }}>
-							<Stat
-								title="SUPS Velocity"
-								content={velocity.toLocaleString("en-US", {
-									minimumFractionDigits: 1,
-									maximumFractionDigits: 4,
-								})}
-								prefixImageUrl={SupTokenIconPath}
-							/>
-							<Stat title="Recruits" content={recruitNumber} />
-							<Stat title="Wins" content={winCount} />
-							<Stat title="Losses" content={lossCount} />
-							<Stat title="Win Rate" content={winCount + lossCount === 0 ? "0%" : `${((winCount / (winCount + lossCount)) * 100).toFixed(0)}%`} />
-							<Stat title="Kills" content={killCount} />
-							<Stat title="Deaths" content={deathCount} />
-							<Stat title="K/D" content={deathCount === 0 ? "0%" : `${((killCount / deathCount) * 100).toFixed(0)}%`} />
-							<Stat title="MVP" content={mvp?.username || ""} prefixImageUrl={mvp?.avatarID ? `/api/files/${mvp.avatarID}` : ""} />
-						</Stack>
-					</Fade>
-				)}
+				{page === 1 && factionStatDisplay()}
 
 				<Stack
 					direction="row"
@@ -148,12 +153,16 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 					justifyContent="flex-start"
 					sx={{ mt: "auto", pt: 1.6, "& > .Mui-disabled": { color: `${colors.supremacy.darkerGrey} !important` } }}
 				>
-					<IconButton sx={{ color: primary, transform: "rotate(180deg)" }} onClick={() => setPage(0)} disabled={page <= 0}>
-						<ArrowRightAltSharpIcon fontSize="inherit" />
-					</IconButton>
-					<IconButton sx={{ color: primary }} onClick={() => setPage(1)} disabled={page >= 1}>
-						<ArrowRightAltSharpIcon fontSize="inherit" />
-					</IconButton>
+					{factionDataMore && (
+						<>
+							<IconButton sx={{ color: primary, transform: "rotate(180deg)" }} onClick={() => setPage(0)} disabled={page <= 0}>
+								<ArrowRightAltSharpIcon fontSize="inherit" />
+							</IconButton>
+							<IconButton sx={{ color: primary }} onClick={() => setPage(1)} disabled={page >= 1}>
+								<ArrowRightAltSharpIcon fontSize="inherit" />
+							</IconButton>
+						</>
+					)}
 
 					<FancyButton
 						clipSize="7px"
@@ -188,7 +197,6 @@ export const EnlistDetailsPopover: React.VoidFunctionComponent<EnlistDetailsProp
 	factionID,
 	factionData,
 }) => {
-	const factionDataMore = useSubscription<DetailedFaction>(HubKey.SubscribeFactionStat, { factionID }).payload
 	const {
 		theme: { primary },
 	} = factionData
@@ -219,8 +227,8 @@ export const EnlistDetailsPopover: React.VoidFunctionComponent<EnlistDetailsProp
 					}}
 				>
 					<Stack direction="row" sx={{ backgroundColor: colors.supremacy.darkGreyBlue }}>
-						{factionDataMore ? (
-							<PopoverContent factionData={factionData} factionDataMore={factionDataMore} onClose={() => togglePopoverOpen(false)} />
+						{factionData ? (
+							<PopoverContent factionData={factionData} onClose={() => togglePopoverOpen(false)} />
 						) : (
 							<Box sx={{ px: 3, py: 1.5 }}>
 								<Typography variant="caption" sx={{ color: colors.supremacy.grey }}>
