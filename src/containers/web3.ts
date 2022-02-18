@@ -6,6 +6,7 @@ import { GetNonceResponse } from "../types/auth"
 import { genericABI } from "./web3GenericABI"
 import { BINANCE_CHAIN_ID, PURCHASE_ADDRESS, SUPS_CONTRACT_ADDRESS } from "../config"
 import { useSnackbar } from "./snackbar"
+import WalletConnectProvider from "@walletconnect/web3-provider"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -131,7 +132,20 @@ export const Web3Container = createContainer(() => {
 				const response = await provider.getNetwork()
 				setCurrentChainId(response.chainId)
 			} else {
-				setMetaMaskState(MetaMaskState.NotInstalled)
+				// setMetaMaskState(MetaMaskState.NotInstalled)
+
+				//  Create WalletConnect Provider
+				const instance = new WalletConnectProvider({
+					rpc: {
+						97: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/bsc/testnet",
+					},
+				})
+
+				//  Wrap with Web3Provider from ethers.js
+				const web3Provider = new ethers.providers.Web3Provider(instance)
+				setProvider(web3Provider)
+				//  Enable session (triggers QR Code modal)
+				await instance.enable()
 			}
 		})()
 
