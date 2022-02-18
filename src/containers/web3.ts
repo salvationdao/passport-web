@@ -135,17 +135,41 @@ export const Web3Container = createContainer(() => {
 				// setMetaMaskState(MetaMaskState.NotInstalled)
 
 				//  Create WalletConnect Provider
-				const instance = new WalletConnectProvider({
+				const wcProvidor = new WalletConnectProvider({
 					rpc: {
+						1: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/mainnet",
+						5: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/goerli",
 						97: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/bsc/testnet",
 					},
 				})
 
 				//  Wrap with Web3Provider from ethers.js
-				const web3Provider = new ethers.providers.Web3Provider(instance)
+				const web3Provider = new ethers.providers.Web3Provider(wcProvidor)
 				setProvider(web3Provider)
+				setCurrentChainId(wcProvidor.chainId)
+				console.log(wcProvidor.chainId)
+
 				//  Enable session (triggers QR Code modal)
-				await instance.enable()
+				try {
+					await wcProvidor.enable()
+				} catch (error) {
+					console.log(error)
+				}
+
+				// Subscribe to accounts change
+				wcProvidor.on("accountsChanged", (accounts: string[]) => {
+					console.log(accounts)
+				})
+
+				// Subscribe to chainId change
+				wcProvidor.on("chainChanged", (chainId: number) => {
+					setCurrentChainId(chainId)
+				})
+
+				// Subscribe to session disconnection
+				wcProvidor.on("disconnect", (code: number, reason: string) => {
+					console.log(code, reason)
+				})
 			}
 		})()
 

@@ -33,6 +33,7 @@ import { colors } from "../theme"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { ethers } from "ethers"
+import { MetaMaskIcon } from "../assets"
 
 //styled MUI components at root, where sx can't change them
 const StyledSelect = styled(Select)<SelectProps>(
@@ -430,13 +431,17 @@ export const BuyTokens: React.FC = () => {
 									flexDirection: "column",
 									justifyContent: "center",
 									alignItems: "center",
+									gap: "1em",
 							  }
 					}
 				>
-					<Typography variant="h3" sx={{ textTransform: "uppercase", marginBottom: "2rem" }}>
-						Connect Your MetaMask
+					<Typography variant="h3" sx={{ textTransform: "uppercase" }}>
+						Connect Your Wallet
 					</Typography>
 					<ConnectWallet />
+					<Button title="Wallet Connect" startIcon={<MetaMaskIcon />} variant="contained" fullWidth>
+						Wallet Connect
+					</Button>
 				</Box>
 
 				{/* transferState */}
@@ -535,7 +540,7 @@ export const BuyTokens: React.FC = () => {
 				{/* Purchase Sups Form */}
 				<Box
 					sx={
-						acceptedChainExceptions && currentChainId === selectedChainId && transferState === "none" && metaMaskState === MetaMaskState.Active
+						acceptedChainExceptions && currentChainId === selectedChainId && transferState === "none"
 							? {
 									padding: {
 										xs: "1rem",
