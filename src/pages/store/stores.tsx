@@ -121,7 +121,6 @@ interface StoreCollectionProps {
 }
 
 const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ collection, faction }) => {
-	// TODO: handle loading and asset state
 	const { send, state } = useWebsocket()
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [loading, setLoading] = useState(false)

@@ -1,14 +1,14 @@
 import { Box, Skeleton, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
-import { PlaceholderMechImagePath } from "../../../assets"
-import { FancyButton } from "../../../components/fancyButton"
-import { useWebsocket } from "../../../containers/socket"
-import { getItemAttributeValue } from "../../../helpers/items"
-import HubKey from "../../../keys"
-import { colors } from "../../../theme"
-import { Asset } from "../../../types/types"
-import { Rarity } from "../../store/storeItemCard"
+import { PlaceholderMechImagePath } from "../../assets"
+import { FancyButton } from "../../components/fancyButton"
+import { useWebsocket } from "../../containers/socket"
+import { getItemAttributeValue } from "../../helpers/items"
+import HubKey from "../../keys"
+import { colors } from "../../theme"
+import { Asset } from "../../types/types"
+import { Rarity } from "../store/storeItemCard"
 
 const rarityTextStyles: { [key in Rarity]: any } = {
 	Common: {

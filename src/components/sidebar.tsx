@@ -15,11 +15,12 @@ import { useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { NilUUID } from "../types/auth"
 import { Faction, User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
+import { WithdrawSupsModal } from "./withdrawSupsModal"
+import { useSecureSubscription } from "../hooks/useSecureSubscription"
 
 const drawerWidth = 300
 
@@ -32,19 +33,19 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const { send, state } = useWebsocket()
 	const { sidebarOpen, setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
-	const { user, userID, logout } = useAuth()
+	const { user, logout } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	// Wallet
-	const { supBalance, account } = useWeb3()
 	const userPublicAddress = user?.publicAddress
-	const { subscribe } = useWebsocket()
-	const [xsynSups, setXsynSups] = useState<string | undefined>()
 
 	// Supremacy
-	const [factionsData, setFactionsData] = useState<Faction[]>()
+	const [factionsData, setFactionsData] = useState<Faction[]>([])
+	const { supBalance, account } = useWeb3()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
+	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
+	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
 
 	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
 		const str1 = userPubAddr.toUpperCase()
@@ -52,14 +53,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 		return str1 === str2
 	}
-
-	useEffect(() => {
-		if (!userID || userID === NilUUID) return
-		return subscribe<string>(HubKey.UserSupsSubscribe, (payload) => {
-			if (!payload) return
-			setXsynSups(supFormatter(payload))
-		})
-	}, [userID, subscribe])
 
 	useEffect(() => {
 		// not logged in
@@ -70,7 +63,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		}
 
 		// no wallet connected
-		if (!user.publicAddress || user.publicAddress === null) {
+		if (!user.publicAddress) {
 			setWalletMsg("Wallet not connected")
 			setWalletSups("N/A")
 			return
@@ -79,10 +72,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
 		setWalletSups(correctWallet ? supBalance : "N/A")
-	}, [supBalance, account, userID, userPublicAddress])
+	}, [supBalance, account, user, userPublicAddress])
 
 	useEffect(() => {
-		// let unmounted = false
 		if (state !== SocketState.OPEN) return
 		;(async () => {
 			try {
@@ -90,7 +82,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 				setFactionsData(resp)
 			} catch (e) {
-				setFactionsData(undefined)
+				setFactionsData([])
 			}
 		})()
 	}, [send, state])
@@ -169,7 +161,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						XSYN SUPs:
 					</Box>
 					<SupTokenIcon />
-					{xsynSups}
+					{supFormatter(userSups || "0")}
 				</Typography>
 				<Typography
 					sx={{
@@ -217,7 +209,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						onClick={() => {
 							if (!user.publicAddress) {
 								displayMessage(
-									"You must have a MetaMask connection if you want to redeem SUPs. You can connect your MetaMask account in your profile page.",
+									"You must have a wallet connected to your account if you want to redeem SUPs. You can connect a wallet account in your profile page.",
 									"error",
 								)
 							}
@@ -234,10 +226,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						onClick={() => {
 							if (!user.publicAddress) {
 								displayMessage(
-									"You must have a MetaMask connection if you want to withdraw SUPs. You can connect your MetaMask account in your profile page.",
+									"You must have a wallet connected to your account if you want to redeem SUPs. You can connect a wallet account in your profile page.",
 									"error",
 								)
+								return
 							}
+							setWithdrawDialogOpen(true)
 						}}
 					>
 						Withdraw
@@ -410,6 +404,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				{children}
 			</Box>
+			<WithdrawSupsModal open={withdrawDialogOpen} onClose={() => setWithdrawDialogOpen(false)} />
 		</Box>
 	)
 }

@@ -30,7 +30,12 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 				}}
 			/>
 			<Link to="/">
-				<XSYNLogo />
+				<Box
+					component={XSYNLogo}
+					sx={{
+						width: "3rem",
+					}}
+				/>
 			</Link>
 		</Box>
 	)

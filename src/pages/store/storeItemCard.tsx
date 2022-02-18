@@ -11,7 +11,7 @@ import { StoreItem } from "../../types/types"
 
 export type Rarity = "Common" | "Rare" | "Legendary"
 
-const rarityTextStyles: { [key in Rarity]: any } = {
+export const rarityTextStyles: { [key in Rarity]: any } = {
 	Common: {
 		color: colors.rarity.common,
 	},

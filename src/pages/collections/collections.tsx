@@ -1,15 +1,15 @@
-import { Box, Link, Paper, Skeleton } from "@mui/material"
+import { Box, Link, Paper, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { SupremacyLogoImagePath } from "../../../assets"
-import { Navbar } from "../../../components/home/navbar"
-import { Loading } from "../../../components/loading"
-import { useAuth } from "../../../containers/auth"
-import { useSnackbar } from "../../../containers/snackbar"
-import { SocketState, useWebsocket } from "../../../containers/socket"
-import HubKey from "../../../keys"
-import { colors } from "../../../theme"
-import { Collection } from "../../../types/types"
+import { SupremacyLogoImagePath } from "../../assets"
+import { Navbar } from "../../components/home/navbar"
+import { Loading } from "../../components/loading"
+import { useAuth } from "../../containers/auth"
+import { useSnackbar } from "../../containers/snackbar"
+import { SocketState, useWebsocket } from "../../containers/socket"
+import HubKey from "../../keys"
+import { colors } from "../../theme"
+import { Collection } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
 
 export const CollectionsPage: React.FC = () => {
@@ -139,10 +139,13 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 	const { user } = useAuth()
 	const { state, send } = useWebsocket()
 	const [tokenIDs, setTokenIDs] = useState<number[]>([])
+	const [loading, setLoading] = useState(false)
+	const [error, setError] = useState<string>()
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
 		;(async () => {
+			setLoading(true)
 			try {
 				const resp = await send<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, {
 					pageSize: 6,
@@ -165,7 +168,11 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 					},
 				})
 				setTokenIDs(resp.tokenIDs)
-			} catch {}
+			} catch (e) {
+				setError(typeof e === "string" ? e : "An error occurred while loading items for this store.")
+			} finally {
+				setLoading(false)
+			}
 		})()
 	}, [send, state, collection, username])
 
@@ -236,7 +243,9 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 						padding: "2rem",
 					}}
 				>
-					No owned items from {collection.name}.
+					<Typography variant="subtitle2" color={colors.darkGrey}>
+						{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
+					</Typography>
 				</Paper>
 			)}
 		</>
