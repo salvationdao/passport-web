@@ -51,6 +51,7 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const { state, send, subscribe } = useWebsocket()
+
 	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
 
 	const [sessionID, setSessionID] = useState("")

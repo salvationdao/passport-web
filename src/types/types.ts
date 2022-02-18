@@ -138,6 +138,7 @@ export interface Asset {
 	frozenAt?: Date
 	lockedByID?: string
 	deletedAt?: Date
+	mintingSignature?: string
 }
 
 export interface Attribute {

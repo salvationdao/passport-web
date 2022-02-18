@@ -19,27 +19,20 @@ import {
 	Typography,
 	useTheme,
 } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import SupsToken from "../assets/images/sup-token.svg"
-import {
-	REACT_APP_BUSD_CONTRACT_ADDRESS,
-	REACT_APP_USDC_CONTRACT_ADDRESS,
-	REACT_APP_WBNB_CONTRACT_ADDRESS,
-	REACT_APP_WETH_CONTRACT_ADDRESS,
-	REACT_APP_ETHEREUM_CHAIN_ID,
-	REACT_APP_BINANCE_CHAIN_ID,
-} from "../config"
+import { BUSD_CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS, WBNB_CONTRACT_ADDRESS, WETH_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, BINANCE_CHAIN_ID } from "../config"
 import { SocketState, useWebsocket } from "../containers/socket"
-import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
-import { BigNumber, ethers } from "ethers"
+import { ethers } from "ethers"
 
 //styled MUI components at root, where sx can't change them
 const StyledSelect = styled(Select)<SelectProps>(
@@ -82,10 +75,10 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC = () => {
 	const { subscribe, state } = useWebsocket()
-	const { changeChain, currentChainId, web3Constants, getBalance, sendTransfer, metaMaskState } = useWeb3()
+	const { changeChain, currentChainId, getBalance, sendTransfer, metaMaskState } = useWeb3()
 	const theme = useTheme()
 
-	const [selectedChainId, setSelectedChainId] = useState<number>(parseInt(REACT_APP_ETHEREUM_CHAIN_ID.toString()))
+	const [selectedChainId, setSelectedChainId] = useState<number>(parseInt(ETHEREUM_CHAIN_ID.toString()))
 	const [isNativeToken, setIsNativeToken] = useState<boolean>(true)
 	const [currentToken, setCurrentToken] = useState<tokenName>("weth")
 	const [tokenValue, setTokenValue] = useState<string>("")
@@ -100,7 +93,57 @@ export const BuyTokens: React.FC = () => {
 
 	const [contractAddr, setContractAddr] = useState<string>("")
 
-	let acceptedChainExceptions = currentChainId === REACT_APP_ETHEREUM_CHAIN_ID || currentChainId === REACT_APP_BINANCE_CHAIN_ID
+	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
+
+	const handleConversions = useCallback(
+		(direction: conversionType, value: number) => {
+			if (value.toString() === "") {
+				setTokenValue("")
+				setSupsValue("")
+				return
+			}
+			if (isNativeToken) {
+				switch (currentToken) {
+					case "wbnb":
+						switch (direction) {
+							case "tokensToSups":
+								const sups = ((value * web3Constants.bnbToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
+								setSupsValue(sups)
+								break
+							case "supsToTokens":
+								const tokens = ((value * web3Constants.supsToUsdConversion) / web3Constants.bnbToUsdConversion).toFixed(4).toString()
+								setTokenValue(tokens)
+								break
+						}
+						break
+					default:
+						switch (direction) {
+							case "tokensToSups":
+								const sups = ((value * web3Constants.ethToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
+								setSupsValue(sups)
+								break
+							case "supsToTokens":
+								const tokens = ((value * web3Constants.supsToUsdConversion) / web3Constants.ethToUsdConversion).toFixed(4).toString()
+								setTokenValue(tokens)
+								break
+						}
+						break
+				}
+			} else {
+				switch (direction) {
+					case "tokensToSups":
+						const sups = (value / web3Constants.supsToUsdConversion).toFixed(4).toString()
+						setSupsValue(sups)
+						break
+					case "supsToTokens":
+						const tokens = (value * web3Constants.supsToUsdConversion).toFixed(4).toString()
+						setTokenValue(tokens)
+						break
+				}
+			}
+		},
+		[currentToken, isNativeToken],
+	)
 
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
@@ -116,35 +159,32 @@ export const BuyTokens: React.FC = () => {
 				case web3Constants.goerliChainId:
 					setScanSite("goerli.etherscan.io")
 					break
-				case web3Constants.binanceChainId:
+				case web3Constants.bscTestNetChainId:
 					setScanSite("testnet.bscscan.com")
 					break
 			}
 		} else {
-			setSelectedChainId(parseInt(REACT_APP_ETHEREUM_CHAIN_ID.toString()))
+			setSelectedChainId(parseInt(ETHEREUM_CHAIN_ID))
 		}
-	}, [currentChainId])
+	}, [currentChainId, acceptedChainExceptions])
 
 	useEffect(() => {
 		if (tokenValue !== "") {
-			handleContractAddress()
 			handleConversions("tokensToSups", parseFloat(tokenValue))
-		} else {
-			handleContractAddress()
 		}
-	}, [currentToken])
+	}, [handleConversions, tokenValue])
 
 	//setting current token
 	useEffect(() => {
-		if (currentChainId === REACT_APP_ETHEREUM_CHAIN_ID && !isNativeToken) {
+		if (currentChainId?.toString() === ETHEREUM_CHAIN_ID && !isNativeToken) {
 			setCurrentToken("usdc")
 			return
 		}
-		if (currentChainId === REACT_APP_BINANCE_CHAIN_ID && isNativeToken) {
+		if (currentChainId?.toString() === BINANCE_CHAIN_ID && isNativeToken) {
 			setCurrentToken("wbnb")
 			return
 		}
-		if (currentChainId === REACT_APP_BINANCE_CHAIN_ID && !isNativeToken) {
+		if (currentChainId?.toString() === BINANCE_CHAIN_ID && !isNativeToken) {
 			setCurrentToken("busd")
 			return
 		}
@@ -161,7 +201,7 @@ export const BuyTokens: React.FC = () => {
 				const response = await getBalance(contractAddr)
 				if (response) {
 					const balance = parseFloat(response)
-					if (balance === undefined) return
+					if (!balance) return
 					setUserBalance(balance)
 				}
 			} catch {
@@ -186,76 +226,29 @@ export const BuyTokens: React.FC = () => {
 		setSelectedChainId(value)
 	}
 
-	async function handleNetworkSwitch() {
+	const handleNetworkSwitch = async () => {
 		await changeChain(selectedChainId)
 		setIsNativeToken(true)
 		setTokenValue("")
 		setSupsValue("")
 	}
 
-	function handleContractAddress() {
+	useEffect(() => {
 		switch (currentToken) {
 			case "usdc":
-				setContractAddr(REACT_APP_USDC_CONTRACT_ADDRESS)
-				break
+				setContractAddr(USDC_CONTRACT_ADDRESS)
+				return
 			case "wbnb":
-				setContractAddr(REACT_APP_WBNB_CONTRACT_ADDRESS)
-				break
+				setContractAddr(WBNB_CONTRACT_ADDRESS)
+				return
 			case "busd":
-				setContractAddr(REACT_APP_BUSD_CONTRACT_ADDRESS)
-				break
+				setContractAddr(BUSD_CONTRACT_ADDRESS)
+				return
 			default:
-				setContractAddr(REACT_APP_WETH_CONTRACT_ADDRESS)
-				break
+				setContractAddr(WETH_CONTRACT_ADDRESS)
+				return
 		}
-	}
-
-	function handleConversions(direction: conversionType, value: number) {
-		if (value.toString() === "") {
-			setTokenValue("")
-			setSupsValue("")
-			return
-		}
-		if (isNativeToken) {
-			switch (currentToken) {
-				case "wbnb":
-					switch (direction) {
-						case "tokensToSups":
-							const sups = ((value * web3Constants.bnbToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
-							setSupsValue(sups)
-							break
-						case "supsToTokens":
-							const tokens = ((value * web3Constants.supsToUsdConversion) / web3Constants.bnbToUsdConversion).toFixed(4).toString()
-							setTokenValue(tokens)
-							break
-					}
-					break
-				default:
-					switch (direction) {
-						case "tokensToSups":
-							const sups = ((value * web3Constants.ethToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
-							setSupsValue(sups)
-							break
-						case "supsToTokens":
-							const tokens = ((value * web3Constants.supsToUsdConversion) / web3Constants.ethToUsdConversion).toFixed(4).toString()
-							setTokenValue(tokens)
-							break
-					}
-					break
-			}
-		} else {
-			switch (direction) {
-				case "tokensToSups":
-					const sups = (value / web3Constants.supsToUsdConversion).toFixed(4).toString()
-					setSupsValue(sups)
-					break
-				case "supsToTokens":
-					const tokens = (value * web3Constants.supsToUsdConversion).toFixed(4).toString()
-					setTokenValue(tokens)
-					break
-			}
-		}
-	}
+	}, [currentToken])
 
 	async function handleTransfer() {
 		const value = parseFloat(tokenValue)
@@ -263,13 +256,10 @@ export const BuyTokens: React.FC = () => {
 
 		if (value <= 0 || supsNumValue > amountRemaining) return
 
-		let load = true
 		setLoading(true)
 		setTransferState("waiting")
 		try {
-			if (state !== SocketState.OPEN) {
-				throw "Failed to connect to server."
-			}
+			if (state !== SocketState.OPEN) return
 
 			const tx = await sendTransfer(contractAddr, value)
 
@@ -279,14 +269,11 @@ export const BuyTokens: React.FC = () => {
 			setTokenValue("")
 			setSupsValue("")
 
-			if (load) {
-				await tx.wait()
-			}
+			await tx.wait()
 		} catch (error) {
 			setTransferError(error)
 			setTransferState("error")
 		} finally {
-			load = false
 			setLoading(false)
 		}
 	}
@@ -367,7 +354,7 @@ export const BuyTokens: React.FC = () => {
 				}}
 				SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: "0 32px 0 .5rem" } }}
 			>
-				<MenuItem value={REACT_APP_ETHEREUM_CHAIN_ID}>
+				<MenuItem value={ETHEREUM_CHAIN_ID}>
 					<Box
 						component="img"
 						src={Ethereum}
@@ -377,9 +364,9 @@ export const BuyTokens: React.FC = () => {
 							marginRight: "1rem",
 						}}
 					/>
-					<p>{REACT_APP_ETHEREUM_CHAIN_ID === web3Constants.goerliChainId ? "Goerli" : "Ethereum"}</p>
+					<p>{ETHEREUM_CHAIN_ID === web3Constants.goerliChainId.toString() ? "Goerli" : "Ethereum"}</p>
 				</MenuItem>
-				<MenuItem value={REACT_APP_BINANCE_CHAIN_ID}>
+				<MenuItem value={BINANCE_CHAIN_ID}>
 					<Box
 						component="img"
 						src={BinanceCoin}
@@ -389,7 +376,7 @@ export const BuyTokens: React.FC = () => {
 							marginRight: "1rem",
 						}}
 					/>
-					<p>{REACT_APP_BINANCE_CHAIN_ID === web3Constants.bscTestNetChainId ? "BSC Testnet" : "Binance"}</p>
+					<p>{BINANCE_CHAIN_ID === web3Constants.bscTestNetChainId.toString() ? "BSC Testnet" : "Binance"}</p>
 				</MenuItem>
 			</StyledSelect>
 
@@ -655,7 +642,7 @@ export const BuyTokens: React.FC = () => {
 										width: `${100 - (amountRemaining / web3Constants.totalSaleSups) * 100}%`,
 										height: "2rem",
 									}}
-								></Box>
+								/>
 							</Box>
 							<Box>
 								<Typography
