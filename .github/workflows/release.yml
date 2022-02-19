@@ -1,0 +1,66 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+      - "!*-rc*"
+
+permissions:
+  contents: write
+
+env:
+  NINJA_NPM_TOKEN: ${{ secrets.NINJA_NPM_TOKEN }}
+  FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
+  XGRID_LICENSE_KEY: ${{ secrets.XGRID_LICENSE_KEY }}
+  REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME: passport.xsyn.io
+  REACT_APP_SENTRY_DSN_FRONTEND: https://f389e257602342899d1639d9c0c7f476@o370480.ingest.sentry.io/6194602
+  REACT_APP_SENTRY_ENVIRONMENT: production
+  REACT_APP_SENTRY_SAMPLERATE: 0.2
+
+jobs:
+  Release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup nodejs
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      
+      # cache npm dependencies
+      # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/
+      - name: Cache npm
+        if: ${{ !env.ACT }} # if running in local test environment
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key: modules-${{ hashFiles('./package-lock.json') }}
+
+      - name: Install npm packages
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Collect meta data
+        run: |
+          echo "GITVERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+          echo "REACT_APP_SENTRY_CURRENT_RELEASE_NAME=syndicate-passport_web@$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - name: Build web
+        run: npm run build
+      
+      - name: Tar Gzip
+        run: |
+          mv build passport-web_${{env.GITVERSION}}
+          tar czf passport-web_${{env.GITVERSION}}.tar.gz passport-web_${{env.GITVERSION}}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          prerelease: true
+          files: passport-web_${{env.GITVERSION}}.tar.gz
+          generate_release_notes: true
