@@ -107,8 +107,46 @@ export const Web3Container = createContainer(() => {
 		handleWalletSups(account)
 	}, [account, handleWalletSups])
 
+	const createWcProvider = useCallback(async (showQrCode: boolean = true) => {
+		//  Create WalletConnect Provider
+		const walletConnectProvider = new WalletConnectProvider({
+			rpc: {
+				1: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/mainnet",
+				5: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/goerli",
+				97: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/bsc/testnet",
+			},
+			qrcode: showQrCode,
+		})
+
+		//  Wrap with Web3Provider from ethers.js
+		const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
+		setProvider(web3Provider)
+		setCurrentChainId(walletConnectProvider.chainId)
+		setWcProvider(walletConnectProvider)
+
+		// Subscribe to accounts change
+		walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
+			if (accounts.length > 0) {
+				setAccount(accounts[0])
+				setMetaMaskState(MetaMaskState.Active)
+			}
+		})
+		// Subscribe to chainId change
+		walletConnectProvider.on("chainChanged", (chainId: number) => {
+			setCurrentChainId(chainId)
+		})
+		// Subscribe to session disconnection
+		walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+			setAccount(undefined)
+			setProvider(undefined)
+			setWcProvider(undefined)
+			setMetaMaskState(MetaMaskState.NotInstalled)
+		})
+		return walletConnectProvider
+	}, [])
+
 	useEffect(() => {
-		if (provider) return // metamask connected
+		if (provider) return // wallet connected
 		;(async () => {
 			if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
 				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
@@ -133,37 +171,9 @@ export const Web3Container = createContainer(() => {
 				const response = await provider.getNetwork()
 				setCurrentChainId(response.chainId)
 			} else {
-				// setMetaMaskState(MetaMaskState.NotInstalled)
-
-				//  Create WalletConnect Provider
-				const wcProvidor = new WalletConnectProvider({
-					rpc: {
-						1: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/mainnet",
-						5: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/goerli",
-						97: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/bsc/testnet",
-					},
-				})
-
-				//  Wrap with Web3Provider from ethers.js
-				const web3Provider = new ethers.providers.Web3Provider(wcProvidor)
-				setProvider(web3Provider)
-				setCurrentChainId(wcProvidor.chainId)
-				setWcProvider(wcProvider)
-
-				// Subscribe to accounts change
-				wcProvidor.on("accountsChanged", (accounts: string[]) => {
-					console.log(accounts)
-				})
-
-				// Subscribe to chainId change
-				wcProvidor.on("chainChanged", (chainId: number) => {
-					setCurrentChainId(chainId)
-				})
-
-				// Subscribe to session disconnection
-				wcProvidor.on("disconnect", (code: number, reason: string) => {
-					console.log(code, reason)
-				})
+				const walletConnectProvider = await createWcProvider(false)
+				await walletConnectProvider.enable()
+				return () => walletConnectProvider.removeAllListeners()
 			}
 		})()
 
@@ -187,22 +197,14 @@ export const Web3Container = createContainer(() => {
 	}, [displayMessage, provider, handleAccountChange])
 
 	const wcConnect = useCallback(async () => {
-		if (wcProvider) {
-			// Create a connector
-			const connector = wcProvider.connector
-
-			// Check if connection is already established
-			if (!wcProvider.connected) {
-				// create new session
-				await wcProvider.createSession()
-			}
-			const { accounts } = connector
-			const address = accounts[0]
-			setAccount(address)
-
-			return address
+		let walletConnectProvider
+		try {
+			walletConnectProvider = await createWcProvider()
+			await walletConnectProvider.enable()
+		} catch (error) {
+			await walletConnectProvider?.disconnect()
 		}
-	}, [wcProvider])
+	}, [createWcProvider])
 
 	const ETHEREUM_NETWORK: AddEthereumChainParameter = useMemo(
 		() => ({
@@ -308,28 +310,33 @@ export const Web3Container = createContainer(() => {
 	const changeChain = async (chain: number) => {
 		if (!provider) return
 
-		try {
-			await provider.send("wallet_switchEthereumChain", [{ chainId: `0x${chain.toString(16)}` }])
-		} catch (error) {
-			let chainParams: AddEthereumChainParameter
-			switch (chain) {
-				case web3Constants.binanceChainId:
-					chainParams = BINANCE_NETWORK
-					break
-				case web3Constants.bscTestNetChainId:
-					chainParams = BINANCE_TEST_NETWORK
-					break
-				case web3Constants.ethereumChainId:
-					chainParams = ETHEREUM_NETWORK
-					break
-				case web3Constants.goerliChainId:
-					chainParams = GOERLI_TEST_NETWORK
-					break
-				default:
-					displayMessage("Bad chain selected.", "error")
-					return
+		if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
+			if (wcProvider) await wcProvider.disconnect()
+			await createWcProvider()
+		} else {
+			try {
+				await provider.send("wallet_switchEthereumChain", [{ chainId: `0x${chain.toString(16)}` }])
+			} catch (error) {
+				let chainParams: AddEthereumChainParameter
+				switch (chain) {
+					case web3Constants.binanceChainId:
+						chainParams = BINANCE_NETWORK
+						break
+					case web3Constants.bscTestNetChainId:
+						chainParams = BINANCE_TEST_NETWORK
+						break
+					case web3Constants.ethereumChainId:
+						chainParams = ETHEREUM_NETWORK
+						break
+					case web3Constants.goerliChainId:
+						chainParams = GOERLI_TEST_NETWORK
+						break
+					default:
+						displayMessage("Bad chain selected.", "error")
+						return
+				}
+				await provider.send("wallet_addEthereumChain", [chainParams])
 			}
-			await provider.send("wallet_addEthereumChain", [chainParams])
 		}
 	}
 
@@ -387,7 +394,6 @@ export const Web3Container = createContainer(() => {
 		getBalance,
 		sendTransfer,
 		supBalance,
-		wcProvider,
 		wcConnect,
 	}
 })

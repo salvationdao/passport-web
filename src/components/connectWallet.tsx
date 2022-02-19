@@ -10,24 +10,12 @@ interface ConnectWalletProps {
 }
 
 export const ConnectWallet = ({ addNewWallet }: ConnectWalletProps) => {
-	const { metaMaskState, connect, wcProvider, wcConnect } = useWeb3()
-
-	const enableWalletConnect = useCallback(async () => {
-		if (wcProvider) await wcProvider.enable()
-	}, [wcProvider])
-
-	useEffect(() => {
-		if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
-			if (wcProvider?.connected) {
-				;(async () => enableWalletConnect)()
-			}
-		}
-	}, [wcProvider, enableWalletConnect])
+	const { metaMaskState, connect, wcConnect } = useWeb3()
 
 	return (
 		<Button
 			onClick={async () => {
-				if (metaMaskState === MetaMaskState.NotInstalled) {
+				if (metaMaskState !== MetaMaskState.NotInstalled) {
 					await connect()
 				} else {
 					await wcConnect()
