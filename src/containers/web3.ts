@@ -186,6 +186,24 @@ export const Web3Container = createContainer(() => {
 		}
 	}, [displayMessage, provider, handleAccountChange])
 
+	const wcConnect = useCallback(async () => {
+		if (wcProvider) {
+			// Create a connector
+			const connector = wcProvider.connector
+
+			// Check if connection is already established
+			if (!wcProvider.connected) {
+				// create new session
+				await wcProvider.createSession()
+			}
+			const { accounts } = connector
+			const address = accounts[0]
+			setAccount(address)
+
+			return address
+		}
+	}, [wcProvider])
+
 	const ETHEREUM_NETWORK: AddEthereumChainParameter = useMemo(
 		() => ({
 			chainId: "0x01",
@@ -370,6 +388,7 @@ export const Web3Container = createContainer(() => {
 		sendTransfer,
 		supBalance,
 		wcProvider,
+		wcConnect,
 	}
 })
 

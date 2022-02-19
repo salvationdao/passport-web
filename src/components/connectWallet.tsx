@@ -10,7 +10,7 @@ interface ConnectWalletProps {
 }
 
 export const ConnectWallet = ({ addNewWallet }: ConnectWalletProps) => {
-	const { metaMaskState, connect, wcProvider, account } = useWeb3()
+	const { metaMaskState, connect, wcProvider, wcConnect } = useWeb3()
 
 	const enableWalletConnect = useCallback(async () => {
 		if (wcProvider) await wcProvider.enable()
@@ -18,50 +18,27 @@ export const ConnectWallet = ({ addNewWallet }: ConnectWalletProps) => {
 
 	useEffect(() => {
 		if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
-			if (account) {
+			if (wcProvider?.connected) {
 				;(async () => enableWalletConnect)()
 			}
 		}
-	}, [account, enableWalletConnect])
+	}, [wcProvider, enableWalletConnect])
 
 	return (
 		<Button
 			onClick={async () => {
-				// if metamask not logged in do nothing
-				if (metaMaskState === MetaMaskState.NotLoggedIn) {
-					await connect()
-					return
-				}
-				// if metamask not installed tell take to install page
 				if (metaMaskState === MetaMaskState.NotInstalled) {
-					const onboarding = new MetaMaskOnboarding()
-					onboarding.startOnboarding()
-					return
-				}
-				// if metamask logged in add wallet
-				if (metaMaskState === MetaMaskState.Active) {
-					if (addNewWallet) {
-						await addNewWallet()
-					}
-					return
+					await connect()
+				} else {
+					await wcConnect()
 				}
 			}}
-			title={
-				metaMaskState === MetaMaskState.Active
-					? "Connect Wallet to account"
-					: metaMaskState === MetaMaskState.NotLoggedIn
-					? "Connect and sign in to MetaMask to continue"
-					: "Install MetaMask"
-			}
-			startIcon={<WalletConnectIcon />}
+			title="Connect Wallet to account"
+			startIcon={metaMaskState === MetaMaskState.NotInstalled ? <WalletConnectIcon /> : <MetaMaskIcon />}
 			variant="contained"
 			fullWidth
 		>
-			{metaMaskState === MetaMaskState.NotLoggedIn
-				? "Connect and sign in to MetaMask to continue"
-				: metaMaskState === MetaMaskState.NotInstalled
-				? "Install MetaMask"
-				: "Connect Wallet to account"}
+			Connect Wallet to account
 		</Button>
 	)
 }
