@@ -10,6 +10,7 @@ import { useSnackbar } from "./containers/snackbar"
 import { LoginPage } from "./pages/auth/login"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
+import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
 import { CollectionPage } from "./pages/collections/collection"
 import { CollectionItemPage } from "./pages/collections/collectionItem"
@@ -103,6 +104,12 @@ export const Routes = () => {
 							</Route>
 						</Switch>
 
+						{/*Supremacy*/}
+						<Switch>
+							<Route path="/battle_arena">
+								<BattleArenaPage />
+							</Route>
+						</Switch>
 						{/* collections */}
 						<Switch>
 							<Route path="/collections/:username/:collection_name/:token_id">
