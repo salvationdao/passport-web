@@ -14,7 +14,7 @@ import { ConnectWallet } from "./connectWallet"
 
 BigNumber.config({ EXPONENTIAL_AT: 1e9 })
 
-const UseSignatureMode = false
+const UseSignatureMode = true
 
 interface WithdrawModalProps {
 	open: boolean
