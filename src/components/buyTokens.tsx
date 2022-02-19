@@ -21,6 +21,7 @@ import {
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
+import { MetaMaskIcon } from "../assets"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
@@ -438,9 +439,6 @@ export const BuyTokens: React.FC = () => {
 						Connect Your Wallet
 					</Typography>
 					<ConnectWallet />
-					<Button title="Wallet Connect" startIcon={<MetaMaskIcon />} variant="contained" fullWidth>
-						Wallet Connect
-					</Button>
 				</Box>
 
 				{/* transferState */}

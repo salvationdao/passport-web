@@ -46,6 +46,7 @@ export const Web3Container = createContainer(() => {
 
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
 	const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
+	const [wcProvider, setWcProvider] = useState<WalletConnectProvider | undefined>()
 	const [account, setAccount] = useState<string>()
 	const [currentChainId, setCurrentChainId] = useState<number>()
 	const [supBalance, setSupBalance] = useState<string>()
@@ -147,14 +148,7 @@ export const Web3Container = createContainer(() => {
 				const web3Provider = new ethers.providers.Web3Provider(wcProvidor)
 				setProvider(web3Provider)
 				setCurrentChainId(wcProvidor.chainId)
-				console.log(wcProvidor.chainId)
-
-				//  Enable session (triggers QR Code modal)
-				try {
-					await wcProvidor.enable()
-				} catch (error) {
-					console.log(error)
-				}
+				setWcProvider(wcProvider)
 
 				// Subscribe to accounts change
 				wcProvidor.on("accountsChanged", (accounts: string[]) => {
@@ -375,6 +369,7 @@ export const Web3Container = createContainer(() => {
 		getBalance,
 		sendTransfer,
 		supBalance,
+		wcProvider,
 	}
 })
 

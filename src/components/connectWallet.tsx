@@ -1,7 +1,8 @@
 import MetaMaskOnboarding from "@metamask/onboarding"
 import { Button } from "@mui/material"
-import React from "react"
+import React, { useEffect, useCallback } from "react"
 import { MetaMaskIcon } from "../assets"
+import { WalletConnectIcon } from "../assets"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 
 interface ConnectWalletProps {
@@ -9,7 +10,19 @@ interface ConnectWalletProps {
 }
 
 export const ConnectWallet = ({ addNewWallet }: ConnectWalletProps) => {
-	const { metaMaskState, connect } = useWeb3()
+	const { metaMaskState, connect, wcProvider, account } = useWeb3()
+
+	const enableWalletConnect = useCallback(async () => {
+		if (wcProvider) await wcProvider.enable()
+	}, [wcProvider])
+
+	useEffect(() => {
+		if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
+			if (account) {
+				;(async () => enableWalletConnect)()
+			}
+		}
+	}, [account, enableWalletConnect])
 
 	return (
 		<Button
@@ -40,7 +53,7 @@ export const ConnectWallet = ({ addNewWallet }: ConnectWalletProps) => {
 					? "Connect and sign in to MetaMask to continue"
 					: "Install MetaMask"
 			}
-			startIcon={<MetaMaskIcon />}
+			startIcon={<WalletConnectIcon />}
 			variant="contained"
 			fullWidth
 		>
