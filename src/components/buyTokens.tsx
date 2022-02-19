@@ -17,22 +17,22 @@ import {
 	TextField,
 	TextFieldProps,
 	Typography,
-	useTheme,
+	useTheme
 } from "@mui/material"
+import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import SupsToken from "../assets/images/sup-token.svg"
-import { BUSD_CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS, WBNB_CONTRACT_ADDRESS, WETH_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, BINANCE_CHAIN_ID } from "../config"
+import { BINANCE_CHAIN_ID, BUSD_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, USDC_CONTRACT_ADDRESS, WBNB_CONTRACT_ADDRESS, WETH_CONTRACT_ADDRESS } from "../config"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
-import { ethers } from "ethers"
 
 //styled MUI components at root, where sx can't change them
 const StyledSelect = styled(Select)<SelectProps>(
@@ -315,7 +315,7 @@ export const BuyTokens: React.FC = () => {
 					handleConversions("tokensToSups", parseFloat(value))
 				}}
 				type="number"
-				sx={{ backgroundColor: colors.navyBlue }}
+				sx={{ backgroundColor: colors.darkNavyBlue }}
 				InputProps={{
 					endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
 					startAdornment: (
@@ -602,7 +602,7 @@ export const BuyTokens: React.FC = () => {
 							</Box>
 							<Box sx={{ margin: "1.5rem 0" }}>
 								<StyledTextField
-									sx={{ backgroundColor: colors.navyBlue }}
+									sx={{ backgroundColor: colors.darkNavyBlue }}
 									onChange={(e) => {
 										const value = e.target.value
 										setSupsValue(value)

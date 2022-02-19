@@ -143,12 +143,13 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 			await send(HubKey.SupsWithdraw, { amount: withdrawAmountBigNum })
 
 			setErrorWithdrawing(undefined)
+			onClose()
 		} catch (e) {
 			setErrorWithdrawing(e === "string" ? e : "Issue withdrawing, please try again.")
 		} finally {
 			setLoadingWithdraw(false)
 		}
-	}, [provider, send, state, withdrawAmount, user])
+	}, [provider, send, state, withdrawAmount, user, onClose])
 
 	return (
 		<Dialog open={open} onClose={onClose} maxWidth={"xl"} key={currentChainId}>

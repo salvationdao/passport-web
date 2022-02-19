@@ -13,6 +13,11 @@ build:
 	npm run build
 
 
+.PHONY: init-darwin
+init-darwin: install
+	@mkdir -p $(BIN)
+	cd $(BIN) && curl -L https://github.com/caddyserver/caddy/releases/download/v2.4.6/caddy_2.4.6_mac_arm64.tar.gz  | tar xvz
+
 .PHONY: init-linux
 init-linux: install
 	@mkdir -p $(BIN)

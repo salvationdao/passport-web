@@ -41,13 +41,12 @@ export const SearchBar: React.VoidFunctionComponent<SearchBarProps> = ({
 			placeholder={placeholder || "Search..."}
 			InputProps={{
 				"aria-label": "search",
-				endAdornment: loading && (
+				endAdornment: loading ? (
 					<InputAdornment position="end">
-						<CircularProgress size="1rem" />
+						<CircularProgress />
 					</InputAdornment>
-				),
-				startAdornment: (
-					<InputAdornment position="start">
+				) : (
+					<InputAdornment position="end">
 						<SearchIcon />
 					</InputAdornment>
 				),

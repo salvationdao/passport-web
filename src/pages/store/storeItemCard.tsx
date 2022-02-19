@@ -25,11 +25,10 @@ export const rarityTextStyles: { [key in Rarity]: any } = {
 }
 
 interface StoreItemCardProps {
-	collectionName: string
 	storeItemID: string
 }
 
-export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ collectionName, storeItemID }) => {
+export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ storeItemID }) => {
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<StoreItem>()
 	const { push } = useHistory()
@@ -189,7 +188,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 					(out of {item.amountAvailable})
 				</Box>
 			</Typography>
-			<FancyButton onClick={() => push(`/stores/${collectionName}/${storeItemID}`)}>View Item</FancyButton>
+			<FancyButton onClick={() => push(`/stores/${item.collection.name}/${item.ID}`)}>View Item</FancyButton>
 		</Box>
 	)
 }
