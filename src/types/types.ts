@@ -128,6 +128,7 @@ export interface Asset {
 	userID: string
 	username: string
 	name: string
+	collectionID: string
 	collection: Collection
 	description: string
 	externalURL: string
@@ -154,6 +155,7 @@ export interface StoreItem {
 	factionID: string
 	faction?: Faction
 	collectionID: string
+	collection: Collection
 	description: string
 	image: string
 	attributes: Attribute[]

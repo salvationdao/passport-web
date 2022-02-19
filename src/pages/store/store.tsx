@@ -13,7 +13,7 @@ import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
-import { FilterChip } from "../collections/collection"
+import { FilterChip, SortChip } from "../collections/collection"
 import { StoreItemCard } from "./storeItemCard"
 
 export const StorePage: React.FC = () => {
@@ -28,6 +28,7 @@ export const StorePage: React.FC = () => {
 
 	// search and filter
 	const [search, setSearch] = useState("")
+	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType, setAssetType] = useState<string>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const [brands, setBrand] = useState<Set<string>>(new Set())
@@ -131,8 +132,9 @@ export const StorePage: React.FC = () => {
 				linkOperator: "and",
 				items: filtersItems,
 			},
+			...sort,
 		})
-	}, [user, query, collection, state, assetType, rarities, brands, search])
+	}, [user, query, collection, state, assetType, rarities, brands, search, sort])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
@@ -143,7 +145,91 @@ export const StorePage: React.FC = () => {
 		<>
 			<Box>
 				<Typography
-					variant="subtitle2"
+					variant="subtitle1"
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						marginBottom: ".5rem",
+					}}
+				>
+					Sort By
+				</Typography>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						gap: ".5rem",
+					}}
+				>
+					{(() => {
+						const newSort = {
+							sortBy: "created_at",
+							sortDir: "asc",
+						}
+						return (
+							<SortChip
+								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+								label="Oldest first"
+								variant="outlined"
+								onClick={() => {
+									setSort(newSort)
+								}}
+							/>
+						)
+					})()}
+					{(() => {
+						const newSort = {
+							sortBy: "created_at",
+							sortDir: "desc",
+						}
+						return (
+							<SortChip
+								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+								label="Newest first"
+								variant="outlined"
+								onClick={() => {
+									setSort(newSort)
+								}}
+							/>
+						)
+					})()}
+					{(() => {
+						const newSort = {
+							sortBy: "name",
+							sortDir: "asc",
+						}
+						return (
+							<SortChip
+								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+								label="Name: Alphabetical"
+								variant="outlined"
+								onClick={() => {
+									setSort(newSort)
+								}}
+							/>
+						)
+					})()}
+					{(() => {
+						const newSort = {
+							sortBy: "name",
+							sortDir: "desc",
+						}
+						return (
+							<SortChip
+								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+								label="Name: Alphabetical (reverse)"
+								variant="outlined"
+								onClick={() => {
+									setSort(newSort)
+								}}
+							/>
+						)
+					})()}
+				</Box>
+			</Box>
+			<Box>
+				<Typography
+					variant="subtitle1"
 					sx={{
 						marginBottom: ".5rem",
 					}}
@@ -176,7 +262,7 @@ export const StorePage: React.FC = () => {
 			</Box>
 			<Box>
 				<Typography
-					variant="subtitle2"
+					variant="subtitle1"
 					sx={{
 						marginBottom: ".5rem",
 					}}
@@ -345,7 +431,7 @@ export const StorePage: React.FC = () => {
 						sx={{
 							display: "flex",
 							width: "100%",
-							marginBottom: "3rem"
+							marginBottom: "3rem",
 						}}
 					>
 						{isWiderThan1000px && (
@@ -411,7 +497,7 @@ export const StorePage: React.FC = () => {
 									}}
 								>
 									{storeItemIDs.map((a) => {
-										return <StoreItemCard key={a} collectionName={collection_name} storeItemID={a} />
+										return <StoreItemCard key={a} storeItemID={a} />
 									})}
 								</Paper>
 							) : (

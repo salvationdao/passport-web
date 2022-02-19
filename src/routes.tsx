@@ -16,7 +16,8 @@ import { CollectionItemPage } from "./pages/collections/collectionItem"
 import { CollectionsPage } from "./pages/collections/collections"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
-import { ProfilePage } from "./pages/profile"
+import { ProfilePage } from "./pages/profile/profile"
+import { ProfileEditPage } from "./pages/profile/profileEdit"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
@@ -80,9 +81,16 @@ export const Routes = () => {
 
 						{/* User-authenticated routes */}
 						{/* profile */}
+						<Switch>
+						<Route path="/profile/edit">
+							<ProfileEditPage />
+						</Route>
 						<Route path="/profile">
 							<ProfilePage />
 						</Route>
+						</Switch>
+
+
 						<Route path="/buy">
 							<BuyPage />
 						</Route>

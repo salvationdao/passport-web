@@ -109,7 +109,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					sx={{
 						marginRight: "2rem",
 					}}
-					size="5rem"
+					size="4rem"
 				/>
 				<Box
 					sx={{

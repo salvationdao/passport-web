@@ -41,8 +41,8 @@ export const BlockConfirmationSnackbar = ({ currentConfirmation, handleFilter }:
 				severity={currentConfirmation?.confirmationAmount === 6 ? "success" : "info"}
 				sx={
 					currentConfirmation?.confirmationAmount === 6
-						? { backgroundColor: colors.navyBlue, border: `${theme.palette.success.main} 1px solid`, borderRadius: "0" }
-						: { backgroundColor: colors.navyBlue, border: `${colors.skyBlue} 1px solid`, borderRadius: "0" }
+						? { backgroundColor: colors.darkNavyBlue, border: `${theme.palette.success.main} 1px solid`, borderRadius: "0" }
+						: { backgroundColor: colors.darkNavyBlue, border: `${colors.skyBlue} 1px solid`, borderRadius: "0" }
 				}
 			>
 				<Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: ".5rem", minWidth: "170px" }}>
