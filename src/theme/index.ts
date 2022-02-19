@@ -26,8 +26,10 @@ export const colors = {
 	darkSkyBlue: "#3b9ebd",
 	darkerSkyBlue: "#3388a3",
 	lightNavyBlue: "#211E33",
-	navyBlue: "#0a061f",
-	darkNavyBlue: "#030208",
+	navyBlue: "#402F98",
+	darkNavyBlue: "#0a061f",
+	darkerNavyBlue: "#030208",
+	purple: "#351EBA",
 	white: "#fff",
 	black: "#000",
 	lightGrey: "#f7f7f7",
@@ -107,7 +109,7 @@ const lightTheme = createTheme({
 			contrastText: colors.white,
 		},
 		neutral: {
-			main: colors.navyBlue,
+			main: colors.darkNavyBlue,
 			contrastText: colors.white,
 		},
 		success: {
@@ -119,8 +121,8 @@ const lightTheme = createTheme({
 			dark: "#c62828",
 		},
 		background: {
-			default: colors.darkNavyBlue,
-			paper: colors.navyBlue,
+			default: colors.darkerNavyBlue,
+			paper: colors.darkNavyBlue,
 		},
 		text: {
 			primary: colors.white,
@@ -184,7 +186,12 @@ const lightTheme = createTheme({
 			fontSize: 14,
 		},
 		subtitle1: {
-			fontFamily: fonts.bizmoregular,
+			fontFamily: fonts.bizmobold,
+			fontWeight: 400,
+		},
+		subtitle2: {
+			fontFamily: fonts.bizmosemi_bold,
+			fontWeight: 400,
 		},
 		button: {
 			textTransform: "none",
@@ -199,12 +206,19 @@ const lightTheme = createTheme({
 					},
 				},
 				body: {
-					backgroundColor: colors.darkNavyBlue,
+					backgroundColor: colors.darkerNavyBlue,
 				},
 				"*, *::after, *::before": {
 					":focus": {
 						boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
 					},
+				},
+			},
+		},
+		MuiPaper: {
+			styleOverrides: {
+				root: {
+					borderRadius: 0,
 				},
 			},
 		},
@@ -222,6 +236,7 @@ const lightTheme = createTheme({
 			styleOverrides: {
 				root: {
 					color: "inherit",
+					borderRadius: ".5rem",
 				},
 			},
 		},
@@ -244,7 +259,7 @@ const lightTheme = createTheme({
 		MuiFilledInput: {
 			styleOverrides: {
 				root: {
-					borderRadius: 0,
+					borderRadius: ".5rem",
 					backgroundColor: colors.lightNavyBlue,
 					"&&::before": {
 						borderColor: "transparent",

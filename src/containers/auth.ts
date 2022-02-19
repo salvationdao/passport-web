@@ -191,6 +191,7 @@ export const AuthContainer = createContainer(() => {
 		} catch (e) {
 			localStorage.clear()
 			setUser(undefined)
+			console.error(e)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
 	}, [send, state, account, metaMaskState, sign, sessionID])
