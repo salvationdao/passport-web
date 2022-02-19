@@ -146,6 +146,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					SUPS
 				</Typography>
 				<Typography
+					key={`usersups-${userSups}`}
 					sx={{
 						display: "flex",
 						alignItems: "center",
