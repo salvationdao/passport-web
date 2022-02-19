@@ -50,7 +50,7 @@ jobs:
           echo "REACT_APP_SENTRY_CURRENT_RELEASE_NAME=syndicate-passport_web@$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Build web
-        run: npm run build
+        run: CI=false npm run build
       
       - name: Tar Gzip
         run: |
