@@ -194,3 +194,12 @@ export interface ExchangeRates {
 	BNBtoUSD: number
 	SUPtoUSD: number
 }
+
+export interface tokenSelect {
+	name: string
+	networkName: string
+	chainId: number
+	tokenSrc: string
+	chainSrc: string
+	isNative: boolean
+}
