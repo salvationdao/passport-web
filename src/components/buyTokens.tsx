@@ -34,6 +34,7 @@ import { colors } from "../theme"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { ExchangeRates } from "../types/types"
+import { TokenSelect } from "./tokenSelect"
 
 //styled MUI components at root, where sx can't change them
 const StyledSelect = styled(Select)<SelectProps>(
