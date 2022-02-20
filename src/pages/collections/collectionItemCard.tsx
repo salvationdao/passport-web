@@ -1,12 +1,11 @@
-import { Box, Skeleton, Typography } from "@mui/material"
+import SearchIcon from "@mui/icons-material/Search"
+import { Box, ButtonProps, ButtonUnstyled, Skeleton, styled, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
-import { PlaceholderMechImagePath } from "../../assets"
-import { FancyButton } from "../../components/fancyButton"
 import { useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
-import { colors } from "../../theme"
+import { colors, fonts } from "../../theme"
 import { Asset } from "../../types/types"
 import { Rarity } from "../store/storeItemCard"
 
@@ -25,11 +24,10 @@ const rarityTextStyles: { [key in Rarity]: any } = {
 
 export interface CollectionItemCardProps {
 	tokenID: number
-	collectionName: string
 	username: string
 }
 
-export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ tokenID, collectionName, username }) => {
+export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ tokenID, username }) => {
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<Asset>()
@@ -57,81 +55,91 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 				flexDirection: "column",
 				justifyContent: "space-between",
 				padding: "1rem",
-				border: `1px solid ${colors.white}`,
+				textAlign: "center",
 			}}
 		>
 			<Typography
 				variant="h5"
 				component="p"
 				sx={{
-					marginBottom: "1rem",
-					textAlign: "center",
+					marginBottom: ".5",
 					textTransform: "uppercase",
 				}}
 			>
 				{item.name}
 			</Typography>
 
+			{/* image */}
 			<Box
+				component="img"
+				src={item.image}
+				alt="Mech image"
 				sx={{
 					width: "100%",
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					marginBottom: ".5rem",
+					marginBottom: ".3rem",
 				}}
-			>
-				{/* image */}
-				<Box
-					component="img"
-					src={PlaceholderMechImagePath}
-					alt="Mech image"
-					sx={{
-						width: "100%",
-					}}
-				/>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "space-between",
-						alignItems: "center",
-						width: "100%",
-						backgroundColor: "black",
-						padding: "10px",
-					}}
-				>
-					<Typography
-						variant="body1"
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						{getItemAttributeValue(item.attributes, "Asset Type")}
-					</Typography>
-				</Box>
-			</Box>
-
-			<Box
+			/>
+			<Typography
+				variant="body1"
 				sx={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "end",
-					width: "100%",
-					marginBottom: ".5rem",
+					textTransform: "uppercase",
 				}}
 			>
-				<Typography
-					variant="caption"
-					sx={{
-						...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
-					}}
-				>
-					{getItemAttributeValue(item.attributes, "Rarity")}
-				</Typography>
-			</Box>
-			<FancyButton onClick={() => history.push(`/collections/${username}/${collectionName}/${tokenID}`)}>View Item</FancyButton>
+				{getItemAttributeValue(item.attributes, "Asset Type")}
+			</Typography>
+			<Typography
+				variant="h4"
+				sx={{
+					fontFamily: fonts.bizmoblack,
+					fontStyle: "italic",
+					letterSpacing: "2px",
+					textTransform: "uppercase",
+					...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
+				}}
+			>
+				{getItemAttributeValue(item.attributes, "Rarity")}
+			</Typography>
+			<CustomButton onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}>
+				<SearchIcon />
+			</CustomButton>
 		</Box>
 	)
+}
+
+const CustomButtonBase = styled("button")({
+	position: "absolute",
+	right: 0,
+	bottom: 0,
+	display: "inline-flex",
+	alignItems: "center",
+	justifyContent: "center",
+	height: "2.6rem",
+	width: "2.6rem",
+	backgroundColor: "transparent",
+	border: `1px solid ${colors.purple}`,
+	color: "inherit",
+	font: "inherit",
+	transform: "rotate(45deg)",
+	transition: "transform .2s ease-out, border-radius .2s ease-out, background-color .2s ease-out",
+	cursor: "pointer",
+	"& > *": {
+		transition: "transform .2s ease-out",
+		transform: "rotate(-45deg)",
+	},
+	":hover, :focus": {
+		borderRadius: "50%",
+		backgroundColor: colors.purple,
+		transform: "scale(1.6)",
+		"& > *": {
+			transform: "rotate(0deg)",
+		},
+	},
+})
+
+interface CustomButtonProps extends ButtonProps {}
+
+const CustomButton = ({ ...props }: CustomButtonProps) => {
+	return <ButtonUnstyled {...props} component={CustomButtonBase} />
 }
 
 const CollectionItemCardSkeleton: React.VoidFunctionComponent = () => {

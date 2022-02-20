@@ -25,6 +25,6 @@ export const getItemAttributeValue = (attributes: Attribute[], traitToGet: strin
 
 export const supFormatter = (num: string): string => {
 	const supTokens = new BigNumber(num)
-	if (supTokens.isZero()) return supTokens.toFixed()
-	return supTokens.shiftedBy(-18).toFormat()
+	if (supTokens.isZero()) return supTokens.toFixed(2)
+	return supTokens.shiftedBy(-18).toFormat(2)
 }

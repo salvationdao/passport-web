@@ -129,16 +129,20 @@ export interface Asset {
 	username: string
 	name: string
 	collection: Collection
+	game_object?: any
 	description: string
 	externalURL: string
 	image: string
+	animation_url: string
 	attributes: Attribute[]
+	additional_metadata?: any
 	createdAt: Date
 	updatedAt: Date
 	frozenAt?: Date
 	lockedByID?: string
 	deletedAt?: Date
 	mintingSignature?: string
+	txHistory: any[]
 }
 
 export interface Attribute {
@@ -154,6 +158,7 @@ export interface StoreItem {
 	factionID: string
 	faction?: Faction
 	collectionID: string
+	collection: Collection
 	description: string
 	image: string
 	attributes: Attribute[]

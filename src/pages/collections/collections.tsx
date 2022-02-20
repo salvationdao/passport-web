@@ -194,7 +194,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				}}
 			>
 				{tokenIDs.slice(0, 6).map((a) => {
-					return <CollectionItemCard key={a} tokenID={a} collectionName={collection.name} username={username} />
+					return <CollectionItemCard key={a} tokenID={a} username={username} />
 				})}
 			</Paper>
 		)
@@ -231,7 +231,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 					component={RouterLink}
 					to={`/collections/${username || user?.username}/${collection.name}`}
 				>
-					View Entire Collection
+					View Collection
 				</Link>
 			</Box>
 			{tokenIDs.length ? (

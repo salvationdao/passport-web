@@ -1,5 +1,6 @@
 import AppsIcon from "@mui/icons-material/Apps"
 import FaceIcon from "@mui/icons-material/Face"
+import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
 import StorefrontIcon from "@mui/icons-material/Storefront"
@@ -86,7 +87,14 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			}
 		})()
 	}, [send, state])
-
+	let truncatedUsername = ""
+	if (user) {
+		const maxLength = 8
+		truncatedUsername = user.username
+		if (truncatedUsername.length > maxLength) {
+			truncatedUsername = `${user.username.substring(0, maxLength)}...`
+		}
+	}
 	const content = user ? (
 		<Box
 			sx={{
@@ -109,8 +117,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					sx={{
 						marginRight: "2rem",
 					}}
-					size="5rem"
+					size="4rem"
 				/>
+
 				<Box
 					sx={{
 						overflow: "hidden",
@@ -122,9 +131,10 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					<Typography variant="subtitle1">
 						{user.firstName} {user.lastName}
 					</Typography>
-					<Typography variant="h5">{user.username}</Typography>
+					<Typography variant="h5">{truncatedUsername}</Typography>
 				</Box>
 			</Box>
+
 			<Divider />
 			<Box
 				sx={{
@@ -143,7 +153,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						fontWeight: 600,
 					}}
 				>
-					SUPS
+					My Wallet
 				</Typography>
 				<Typography
 					key={`usersups-${userSups}`}
@@ -159,7 +169,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					}}
 				>
 					<Box component="span" fontWeight={500} color={colors.darkGrey}>
-						XSYN SUPs:
+						XSYN Balance:
 					</Box>
 					<SupTokenIcon />
 					{supFormatter(userSups || "0")}
@@ -177,10 +187,10 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					}}
 				>
 					<Box component="span" fontWeight={500} color={colors.darkGrey}>
-						Wallet SUPs:
+						Wallet Balance:
 					</Box>
 					<SupTokenIcon />
-					{walletSups}
+					{walletSups ? walletSups : "___"}
 				</Typography>
 				<Box
 					sx={{
@@ -202,7 +212,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					>
 						Buy SUPS
 					</FancyButton>
-					<FancyButton
+					{/* <FancyButton
 						size="small"
 						sx={{
 							flex: 1,
@@ -217,7 +227,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						}}
 					>
 						Redeem
-					</FancyButton>
+					</FancyButton> */}
 					<FancyButton
 						size="small"
 						borderColor={colors.skyBlue}
@@ -256,49 +266,44 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						fontWeight: 600,
 					}}
 				>
-					Supremacy - Enlist
+					Supremacy
 				</Typography>
+				<Divider />
 				<RenderEnlist factionsData={factionsData} user={user} />
-			</Box>
-			<Divider />
-			<Box
-				sx={{
-					display: "flex",
-					flexDirection: "column",
-				}}
-			>
-				<Typography
-					sx={{
-						marginBottom: ".5rem",
-						textTransform: "uppercase",
-						fontWeight: 600,
-					}}
-				>
-					Quick Links
-				</Typography>
-				<NavButton onClick={() => setSidebarOpen(false)} to="/profile" startIcon={<FaceIcon />}>
-					Profile
+				<Divider />
+				<NavButton to={`/battle_arena`} startIcon={<SportsKabaddiIcon />}>
+					Battle Arena
 				</NavButton>
-				<NavButton onClick={() => setSidebarOpen(false)} to={`/collections`} startIcon={<AppsIcon />}>
-					Collections
+				<Divider />
+				<a></a>
+				<NavButton to={`/collections`} startIcon={<AppsIcon />}>
+					My Inventory
 				</NavButton>
-				<NavButton onClick={() => setSidebarOpen(false)} to="/stores" startIcon={<StorefrontIcon />}>
-					Stores
+				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
+					Purchase Assets
 				</NavButton>
 			</Box>
+
 			<Divider />
 			<Box flex="1" />
-			<Button
-				startIcon={<LogoutIcon />}
-				onClick={() => logout()}
-				sx={(theme) => ({
-					":hover": {
-						backgroundColor: theme.palette.error.main,
-					},
-				})}
-			>
-				Logout
-			</Button>
+			<NavButton sx={{ alignSelf: "start", width: "100%" }} to="/profile" startIcon={<FaceIcon />}>
+				Edit Profile
+			</NavButton>
+			<Box>
+				<Button
+					startIcon={<LogoutIcon />}
+					onClick={() => logout()}
+					sx={(theme) => ({
+						justifyContent: "flex-start",
+						width: "100%",
+						":hover": {
+							backgroundColor: theme.palette.error.main,
+						},
+					})}
+				>
+					Logout
+				</Button>
+			</Box>
 		</Box>
 	) : (
 		<Box
@@ -331,7 +336,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				>
 					Quick Links
 				</Typography>
-				<NavButton onClick={() => setSidebarOpen(false)} to="/stores" startIcon={<StorefrontIcon />}>
+				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
 					Stores
 				</NavButton>
 			</Box>

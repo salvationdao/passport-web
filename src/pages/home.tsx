@@ -20,15 +20,15 @@ import {
 	StarAtlasLogoImagePath,
 	SteemSteemLogoImagePath,
 	TheSandboxSandLogoImagePath,
-	XSYNWordmarkImagePath,
+	XSYNWordmarkImagePath
 } from "../assets"
 import BottomRightMatrix from "../assets/images/Bottom right corner matrix accent.png"
 import BottomLeftMatrix from "../assets/images/Left Corner Matrix.png"
 import { FancyButton } from "../components/fancyButton"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
+import { Navbar } from "../components/home/navbar"
 import { useAuth } from "../containers/auth"
 import { colors } from "../theme"
-import { Navbar } from "../components/home/navbar"
 
 export const Home = () => {
 	const history = useHistory()
@@ -100,7 +100,7 @@ export const Home = () => {
 				sx={(theme) => ({
 					position: "relative",
 					padding: "4rem 3rem",
-					backgroundColor: colors.navyBlue,
+					backgroundColor: colors.darkNavyBlue,
 					borderBottom: `1px solid ${theme.palette.secondary.main}`,
 				})}
 			>

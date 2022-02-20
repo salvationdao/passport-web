@@ -14,7 +14,7 @@ import { ConnectWallet } from "./connectWallet"
 
 BigNumber.config({ EXPONENTIAL_AT: 1e9 })
 
-const UseSignatureMode = false
+const UseSignatureMode = true
 
 interface WithdrawModalProps {
 	open: boolean
@@ -23,6 +23,7 @@ interface WithdrawModalProps {
 
 interface GetSignatureResponse {
 	messageSignature: string
+	expiry: number
 }
 
 export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
@@ -115,7 +116,7 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 
 			// A Human-Readable ABI; for interacting with the contract,
 			// we must include any fragment we wish to use
-			const abi = ["function nonces(address user) view returns (uint256)", "function withdrawSUPS(uint256, bytes signature)"]
+			const abi = ["function nonces(address user) view returns (uint256)", "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
 			const signer = provider.getSigner()
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
@@ -123,7 +124,7 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 			const resp = await fetch(`/api/withdraw/${account}/${nonce}/${withdrawAmountBigNum}`)
 			const respJson: GetSignatureResponse = await resp.json()
 
-			await withdrawContract.withdrawSUPS(withdrawAmountBigNum, respJson.messageSignature)
+			await withdrawContract.withdrawSUPS(withdrawAmountBigNum, respJson.messageSignature, respJson.expiry)
 			setErrorWithdrawing(undefined)
 		} catch (e) {
 			setErrorWithdrawing(e === "string" ? e : "Issue withdrawing, please try again.")
@@ -173,13 +174,13 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 							{currentChainId?.toString() === BINANCE_CHAIN_ID && (
 								<>
 									<Box sx={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
-										<Typography>Available SUPS: </Typography>
+										<Typography>XSYN Balance: </Typography>
 										<Typography>{supFormatter(userSups || "0")} </Typography>
 									</Box>
 									{loadingWalletBalance && <Skeleton />}
 									{!loadingWalletBalance && (
 										<Box sx={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
-											<Typography>Withdraw Contract Balance: </Typography>
+											<Typography>Available Withdraw Pool: </Typography>
 											<Typography>{supFormatter(withdrawContractAmount?.toString() || "0")}</Typography>
 										</Box>
 									)}

@@ -31,6 +31,14 @@ export const formatBytes = (bytes: number, decimals: number = 2) => {
 /** Takes a camel cased string and inserts spaces between the words (`camelCaseString` -> `camel Case String`) */
 export const splitCamelCase = (str: string) => str.replace(/([a-z])([A-Z])/g, "$1 $2")
 
+/** Takes a long string and truncates it with a middle-positioned ellipsis */
+export const middleTruncate = (str: string, length?: number, startOffset?: number, endOffset?: number) => {
+	if (length ? str.length > length : str.length > 16) {
+		return str.substring(0, startOffset || 12) + "..." + str.substring(str.length - (endOffset || 4), str.length)
+	}
+	return str
+}
+
 export default function debounce<T extends Function>(cb: T, wait = 20) {
 	let h: number
 	let callable = (...args: any) => {

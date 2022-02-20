@@ -593,7 +593,7 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 						right: 0,
 						bottom: 0,
 						borderRadius: "50%",
-						backgroundColor: colors.darkNavyBlue,
+						backgroundColor: colors.darkerNavyBlue,
 					}}
 				/>
 				<Box

@@ -10,13 +10,15 @@ import { useSnackbar } from "./containers/snackbar"
 import { LoginPage } from "./pages/auth/login"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
+import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
 import { CollectionPage } from "./pages/collections/collection"
 import { CollectionItemPage } from "./pages/collections/collectionItem"
 import { CollectionsPage } from "./pages/collections/collections"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
-import { ProfilePage } from "./pages/profile"
+import { ProfilePage } from "./pages/profile/profile"
+import { ProfileEditPage } from "./pages/profile/profileEdit"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
@@ -80,9 +82,21 @@ export const Routes = () => {
 
 						{/* User-authenticated routes */}
 						{/* profile */}
-						<Route path="/profile">
-							<ProfilePage />
-						</Route>
+						<Switch>
+							<Route path="/profile/:username/asset/:token_id">
+								<ProfilePage />
+							</Route>
+							<Route path="/profile/:username/edit">
+								<ProfileEditPage />
+							</Route>
+							<Route path="/profile/:username">
+								<ProfilePage />
+							</Route>
+							<Route path="/profile">
+								<ProfilePage />
+							</Route>
+						</Switch>
+
 						<Route path="/buy">
 							<BuyPage />
 						</Route>
@@ -100,6 +114,13 @@ export const Routes = () => {
 							</Route>
 							<Route path="/stores">
 								<StoresPage />
+							</Route>
+						</Switch>
+
+						{/* Supremacy */}
+						<Switch>
+							<Route path="/battle_arena">
+								<BattleArenaPage />
 							</Route>
 						</Switch>
 

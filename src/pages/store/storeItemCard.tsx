@@ -1,7 +1,7 @@
 import { Box, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
-import { PlaceholderMechImagePath, SupTokenIconPath } from "../../assets"
+import { SupTokenIconPath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue, supFormatter } from "../../helpers/items"
@@ -25,11 +25,10 @@ export const rarityTextStyles: { [key in Rarity]: any } = {
 }
 
 interface StoreItemCardProps {
-	collectionName: string
 	storeItemID: string
 }
 
-export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ collectionName, storeItemID }) => {
+export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ storeItemID }) => {
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<StoreItem>()
 	const { push } = useHistory()
@@ -84,7 +83,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 				{/* image */}
 				<Box
 					component="img"
-					src={PlaceholderMechImagePath}
+					src={item.image}
 					alt="Mech image"
 					sx={{
 						width: "100%",
@@ -189,7 +188,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 					(out of {item.amountAvailable})
 				</Box>
 			</Typography>
-			<FancyButton onClick={() => push(`/stores/${collectionName}/${storeItemID}`)}>View Item</FancyButton>
+			<FancyButton onClick={() => push(`/stores/${item.collection.name}/${item.ID}`)}>View Item</FancyButton>
 		</Box>
 	)
 }
