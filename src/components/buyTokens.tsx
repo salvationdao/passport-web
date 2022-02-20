@@ -21,6 +21,7 @@ import {
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
+import { MetaMaskIcon } from "../assets"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
@@ -440,11 +441,12 @@ export const BuyTokens: React.FC = () => {
 									flexDirection: "column",
 									justifyContent: "center",
 									alignItems: "center",
+									gap: "1em",
 							  }
 					}
 				>
-					<Typography variant="h3" sx={{ textTransform: "uppercase", marginBottom: "2rem" }}>
-						Connect Your MetaMask
+					<Typography variant="h3" sx={{ textTransform: "uppercase" }}>
+						Connect Your Wallet
 					</Typography>
 					<ConnectWallet />
 				</Box>
@@ -545,7 +547,7 @@ export const BuyTokens: React.FC = () => {
 				{/* Purchase Sups Form */}
 				<Box
 					sx={
-						acceptedChainExceptions && currentChainId === selectedChainId && transferState === "none" && metaMaskState === MetaMaskState.Active
+						acceptedChainExceptions && currentChainId === selectedChainId && transferState === "none"
 							? {
 									padding: {
 										xs: "1rem",
