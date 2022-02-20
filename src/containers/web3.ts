@@ -294,7 +294,6 @@ export const Web3Container = createContainer(() => {
 	// Returns an empty string if user does not exist
 	const sign = useCallback(
 		async (userID?: string): Promise<string> => {
-			await wcConnect()
 			if (!provider) return ""
 			await provider.send("eth_requestAccounts", [])
 			const signer = provider.getSigner()
