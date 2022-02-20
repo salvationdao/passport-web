@@ -1,4 +1,4 @@
-import { Box, MenuItem, Select, Typography } from "@mui/material"
+import { Box, MenuItem, outlinedInputClasses, Select, SelectProps, styled, Typography } from "@mui/material"
 import React, { useState } from "react"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
@@ -48,6 +48,7 @@ export const TokenSelect: React.FC = () => {
 
 	return (
 		<Select
+			variant="filled"
 			sx={{
 				marginBottom: "1rem",
 				marginLeft: "auto",
@@ -59,7 +60,7 @@ export const TokenSelect: React.FC = () => {
 		>
 			{tokenOptions.map((x) => {
 				return (
-					<MenuItem sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", justifyItems: "center" }} value={`${x}`}>
+					<MenuItem key={x.name} sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", justifyItems: "center" }} value={`${x}`}>
 						<Box
 							component="img"
 							src={x.chainSrc}

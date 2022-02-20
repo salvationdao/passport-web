@@ -3,11 +3,9 @@ import ErrorIcon from "@mui/icons-material/Error"
 import {
 	Box,
 	Button,
-	ButtonGroup,
 	InputAdornment,
 	LinearProgress,
 	Link,
-	MenuItem,
 	outlinedInputClasses,
 	Select,
 	SelectChangeEvent,
@@ -21,35 +19,35 @@ import {
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
-import { MetaMaskIcon } from "../assets"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import SupsToken from "../assets/images/sup-token.svg"
+import Arrow from "../assets/images/arrow.png"
 import { BINANCE_CHAIN_ID, BUSD_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, USDC_CONTRACT_ADDRESS, WBNB_CONTRACT_ADDRESS, WETH_CONTRACT_ADDRESS } from "../config"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
 import HubKey from "../keys"
 import { colors } from "../theme"
+import { ExchangeRates } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
-import { ExchangeRates } from "../types/types"
 import { TokenSelect } from "./tokenSelect"
 
 //styled MUI components at root, where sx can't change them
 const StyledSelect = styled(Select)<SelectProps>(
 	({ theme }) =>
 		`& .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.dark};
+		border-color: ${theme.palette.secondary.dark};
 		border-width: 2px;
 	  }
 	  &:hover .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.light};
+		border-color: ${theme.palette.secondary.light};
 		border-width: 2px;
 	  }
 	  &.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.main};
+		border-color: ${theme.palette.secondary.main};
 		border-width: 2px;
 	  }
 	  `,
@@ -58,15 +56,15 @@ const StyledTextField = styled(TextField)<TextFieldProps>(
 	({ theme }) =>
 		`
 	& .${outlinedInputClasses.root} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.dark};
+		border-color: ${theme.palette.secondary.dark};
 		border-radius: 0;
 	}
 	&:hover .${outlinedInputClasses.root} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.light};
+		border-color: ${theme.palette.secondary.light};
 		border-radius: 0;
 	}
 	& .${outlinedInputClasses.root}.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.main};
+		border-color: ${theme.palette.secondary.main};
 		border-radius: 0;
 	}
 	`,
@@ -328,7 +326,11 @@ export const BuyTokens: React.FC = () => {
 				type="number"
 				sx={{ backgroundColor: colors.darkNavyBlue }}
 				InputProps={{
-					endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
+					endAdornment: (
+						<InputAdornment position="end">
+							<TokenSelect />
+						</InputAdornment>
+					),
 					startAdornment: (
 						<InputAdornment position="start">
 							<Box
@@ -350,8 +352,19 @@ export const BuyTokens: React.FC = () => {
 
 	return (
 		<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "500px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+			<Typography
+				variant="h2"
+				align="center"
+				sx={{
+					textTransform: "uppercase",
+					paddingBottom: "1rem",
+				}}
+			>
+				Purchase $SUPS
+			</Typography>
+
 			{/* Network Select Component */}
-			<StyledSelect
+			{/* <StyledSelect
 				disabled={transferState !== "none" || metaMaskState !== MetaMaskState.Active}
 				value={selectedChainId.toString()}
 				onChange={(e) => handleSelectChange(e)}
@@ -389,12 +402,12 @@ export const BuyTokens: React.FC = () => {
 					/>
 					<p>{BINANCE_CHAIN_ID === web3Constants.bscTestNetChainId.toString() ? "BSC Testnet" : "Binance"}</p>
 				</MenuItem>
-			</StyledSelect>
+			</StyledSelect> */}
 
 			<Box
 				sx={{
 					border: {
-						xs: `2px solid ${theme.palette.primary.main}`,
+						xs: `2px solid ${theme.palette.secondary.main}`,
 						md: "none",
 					},
 					position: "relative",
@@ -466,7 +479,7 @@ export const BuyTokens: React.FC = () => {
 								: { display: "none" }
 						}
 					>
-						<CheckCircleIcon sx={{ fontSize: "50px", color: theme.palette.primary.main }} />
+						<CheckCircleIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
 						<Typography variant="h3" sx={{ margin: "2rem 0 0 0", textTransform: "uppercase" }}>
 							Success
 						</Typography>
@@ -498,7 +511,7 @@ export const BuyTokens: React.FC = () => {
 								: { display: "none" }
 						}
 					>
-						<ErrorIcon sx={{ fontSize: "50px", color: theme.palette.primary.main }} />
+						<ErrorIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
 						<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
 							Error
 						</Typography>
@@ -564,7 +577,7 @@ export const BuyTokens: React.FC = () => {
 					}
 				>
 					{/* Button Group */}
-					<ButtonGroup sx={{ width: "100%", marginBottom: "1rem" }}>
+					{/* <ButtonGroup sx={{ width: "100%", marginBottom: "1rem" }}>
 						<Button
 							disableRipple
 							onClick={(e) => setIsNativeToken(true)}
@@ -591,88 +604,123 @@ export const BuyTokens: React.FC = () => {
 						}}
 					>
 						Purchase SUPS
-					</Typography>
+					</Typography> */}
 
 					{/* Form */}
 					<form onSubmit={handleSubmit}>
-						<Box sx={{ display: "flex", flexDirection: "column", height: "30vh", justifyContent: "space-between" }}>
-							<Box sx={{ display: "flex", flexDirection: "column" }}>
-								{currencyTextField()}
-								<FancyButton
-									disabled={userBalance === 0}
-									sx={{ borderWidth: "1px", marginTop: ".5rem", marginLeft: "auto" }}
-									variant="outlined"
-									onClick={() => {
-										setTokenValue(userBalance.toString())
-										handleConversions("tokensToSups", userBalance)
-									}}
-								>
-									<Typography variant="body1">
-										Max: <b>{userBalance ? userBalance.toFixed(2) : "--"} </b>
-									</Typography>
-								</FancyButton>
+						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between" }}>
+							<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem" }}>
+								<Box sx={{ flexGrow: "2" }}>
+									<Typography>From:</Typography>
+									<TextField
+										fullWidth
+										variant="filled"
+										value={tokenValue}
+										onChange={(e) => {
+											const value = e.target.value
+											setTokenValue(value)
+											handleConversions("tokensToSups", parseFloat(value))
+										}}
+										type="number"
+										sx={{
+											backgroundColor: colors.darkNavyBlue,
+											"& .MuiFilledInput-root": {
+												background: "inherit",
+											},
+											"& .MuiFilledInput-underline:after": {
+												borderBottomColor: colors.skyBlue,
+											},
+										}}
+										inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+									/>
+								</Box>
+								<Box sx={{ width: "11rem" }}>
+									<TokenSelect />
+									<Button
+										disabled={userBalance === 0}
+										sx={{ marginLeft: "auto" }}
+										onClick={() => {
+											setTokenValue(userBalance.toString())
+											handleConversions("tokensToSups", userBalance)
+										}}
+									>
+										<Typography variant="body1">Balance: {userBalance ? userBalance.toFixed(2) : "--"}</Typography>
+									</Button>
+								</Box>
 							</Box>
-							<Box sx={{ margin: "1.5rem 0" }}>
-								<StyledTextField
-									sx={{ backgroundColor: colors.darkNavyBlue }}
-									onChange={(e) => {
-										const value = e.target.value
-										setSupsValue(value)
-										handleConversions("supsToTokens", parseFloat(value))
-									}}
-									value={supsValue}
-									fullWidth
-									type="number"
-									InputProps={{
-										endAdornment: <InputAdornment position="end">SUPS</InputAdornment>,
-										startAdornment: (
-											<InputAdornment position="start">
-												<Box
-													component="img"
-													src={SupsToken}
-													alt="token image"
-													sx={{
-														height: "1.5rem",
-														marginRight: "1rem",
-													}}
-												/>
-											</InputAdornment>
-										),
-									}}
-									inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-								/>
-								<Box sx={{ width: "100%" }}>
-									<Typography variant="body1">1 SUP = 0.12 USD</Typography>
+							<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem" }}>
+								<Box sx={{ flexGrow: "2" }}>
+									<Typography>To:</Typography>
+									<TextField
+										fullWidth
+										variant="filled"
+										value={tokenValue}
+										onChange={(e) => {
+											const value = e.target.value
+											setSupsValue(value)
+											handleConversions("supsToTokens", parseFloat(value))
+										}}
+										type="number"
+										sx={{
+											backgroundColor: colors.darkNavyBlue,
+											"& .MuiFilledInput-root": {
+												background: "inherit",
+											},
+											"& .MuiFilledInput-underline:after": {
+												borderBottomColor: colors.skyBlue,
+											},
+										}}
+										inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+									/>
+								</Box>
+								<Box sx={{ width: "11rem" }}>
+									<Box sx={{ display: "flex" }}>
+										<Box
+											component="img"
+											src={SupsToken}
+											alt="token image"
+											sx={{
+												height: "1rem",
+												marginRight: "1rem",
+											}}
+										/>
+										<Typography variant="body1" sx={{ textTransform: "uppercase" }}>
+											$Sups
+										</Typography>
+									</Box>
+									<Typography variant="body1">
+										Balance:
+										{
+											//userBalance ? userBalance.toFixed(2) : "--"}
+										}
+									</Typography>
 								</Box>
 							</Box>
 
 							{/* Progress Bar */}
-							<Box sx={{ width: "100%", backgroundColor: `${theme.palette.primary.dark}` }}>
+							<Box sx={{ width: "100%", backgroundColor: `${theme.palette.secondary.dark}` }}>
 								<Box
 									sx={{
-										backgroundColor: `${theme.palette.primary.main}`,
+										backgroundColor: `${theme.palette.secondary.main}`,
 										width: `${100 - (amountRemaining / web3Constants.totalSaleSups) * 100}%`,
 										height: "2rem",
-									}}
-								/>
-							</Box>
-							<Box>
-								<Typography
-									variant="body1"
-									sx={{
-										textTransform: "uppercase",
+										overflowX: "visible",
+										display: "flex",
+										alignItems: "center",
 									}}
 								>
-									{(amountRemaining / 10 ** 6).toFixed(2)}m of 217M Tokens remaining
-								</Typography>
-								<Typography
-									variant="body1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									{((amountRemaining / web3Constants.totalSaleSups) * 100).toFixed(2)}% of total supply
-								</Typography>
+									<Typography
+										variant="body1"
+										sx={{
+											textTransform: "uppercase",
+											color: colors.darkNavyBlue,
+											whiteSpace: "nowrap",
+											padding: ".3rem",
+										}}
+									>
+										<b>{(amountRemaining / 10 ** 6).toFixed(2)}m of 217M Tokens remaining</b>
+									</Typography>
+								</Box>
 							</Box>
 							<FancyButton
 								disabled={
