@@ -652,7 +652,9 @@ export const BuyTokens: React.FC = () => {
 								<Box
 									sx={{
 										backgroundColor: `${theme.palette.primary.main}`,
-										width: `${BigNumber.from(100).sub(amountRemaining.div(web3Constants.totalSaleSups).mul(100))}%`,
+										width: `${BigNumber.from(100).sub(
+											amountRemaining.div(parseUnits(web3Constants.totalSaleSups.toString(), 18)).mul(100),
+										)}%`,
 										height: "2rem",
 									}}
 								/>
@@ -664,7 +666,7 @@ export const BuyTokens: React.FC = () => {
 										textTransform: "uppercase",
 									}}
 								>
-									{amountRemaining.div(10 ** 6).toString()}m of 217M Tokens remaining
+									{formatUnits(amountRemaining, 24)}m of 217M Tokens remaining
 								</Typography>
 								<Typography
 									variant="body1"
@@ -672,7 +674,7 @@ export const BuyTokens: React.FC = () => {
 										textTransform: "uppercase",
 									}}
 								>
-									{amountRemaining.div(web3Constants.totalSaleSups).mul(100).toString()}% of total supply
+									{formatUnits(amountRemaining.div(web3Constants.totalSaleSups), 16)}% of total supply
 								</Typography>
 							</Box>
 							<FancyButton
