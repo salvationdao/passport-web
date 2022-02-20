@@ -5,17 +5,17 @@ import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
-import { tokenSelect } from "../types/types"
+import { tokenSelect, tokenName } from "../types/types"
 
 interface TokenSelectProps {
-	currentToken: tokenSelect
+	currentTokenName: tokenName
 	tokenOptions: tokenSelect[]
-	setCurrentToken: React.Dispatch<React.SetStateAction<tokenSelect>>
+	setCurrentTokenName: React.Dispatch<React.SetStateAction<tokenName>>
 }
 
-export const TokenSelect = ({ currentToken, tokenOptions, setCurrentToken }: TokenSelectProps) => {
-	const handleSelectChange = (event: SelectChangeEvent<tokenSelect>) => {
-		//setCurrentToken(event.target.value)
+export const TokenSelect = ({ currentTokenName, tokenOptions, setCurrentTokenName }: TokenSelectProps) => {
+	const handleSelectChange = (e: SelectChangeEvent<tokenName>) => {
+		//setCurrentTokenName(e.target.value)
 	}
 
 	return (
@@ -29,11 +29,11 @@ export const TokenSelect = ({ currentToken, tokenOptions, setCurrentToken }: Tok
 			}}
 			onChange={(e) => handleSelectChange(e)}
 			SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: ".5rem 32px .5rem .5rem" } }}
-			value={currentToken}
+			value={currentTokenName}
 		>
 			{tokenOptions.map((x) => {
 				return (
-					<MenuItem key={x.name} sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", justifyItems: "center" }} value={`${x}`}>
+					<MenuItem key={x.name} sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", justifyItems: "center" }} value={x.name}>
 						<Box
 							component="img"
 							src={x.chainSrc}

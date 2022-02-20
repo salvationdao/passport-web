@@ -25,7 +25,16 @@ import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import SupsToken from "../assets/images/sup-token.svg"
 import Arrow from "../assets/images/arrow.png"
-import { BINANCE_CHAIN_ID, BUSD_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, USDC_CONTRACT_ADDRESS, WBNB_CONTRACT_ADDRESS, WETH_CONTRACT_ADDRESS } from "../config"
+import {
+	BINANCE_CHAIN_ID,
+	BSC_SCAN_SITE,
+	BUSD_CONTRACT_ADDRESS,
+	ETHEREUM_CHAIN_ID,
+	ETH_SCAN_SITE,
+	USDC_CONTRACT_ADDRESS,
+	WBNB_CONTRACT_ADDRESS,
+	WETH_CONTRACT_ADDRESS,
+} from "../config"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
 import HubKey from "../keys"
@@ -34,45 +43,9 @@ import { ExchangeRates } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { TokenSelect } from "./tokenSelect"
-import { tokenSelect } from "../types/types"
-
-//styled MUI components at root, where sx can't change them
-const StyledSelect = styled(Select)<SelectProps>(
-	({ theme }) =>
-		`& .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.secondary.dark};
-		border-width: 2px;
-	  }
-	  &:hover .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.secondary.light};
-		border-width: 2px;
-	  }
-	  &.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.secondary.main};
-		border-width: 2px;
-	  }
-	  `,
-)
-const StyledTextField = styled(TextField)<TextFieldProps>(
-	({ theme }) =>
-		`
-	& .${outlinedInputClasses.root} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.secondary.dark};
-		border-radius: 0;
-	}
-	&:hover .${outlinedInputClasses.root} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.secondary.light};
-		border-radius: 0;
-	}
-	& .${outlinedInputClasses.root}.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.secondary.main};
-		border-radius: 0;
-	}
-	`,
-)
+import { tokenSelect, tokenName } from "../types/types"
 
 type conversionType = "supsToTokens" | "tokensToSups"
-type tokenName = "weth" | "usdc" | "wbnb" | "busd"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC = () => {
@@ -80,22 +53,17 @@ export const BuyTokens: React.FC = () => {
 	const { changeChain, currentChainId, getBalance, sendTransfer, metaMaskState } = useWeb3()
 	const theme = useTheme()
 
-	const [selectedChainId, setSelectedChainId] = useState<number>(parseInt(ETHEREUM_CHAIN_ID.toString()))
-	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[1])
+	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
+	const [currentTokenName, setCurrentTokenName] = useState<tokenName>("eth")
 	const [tokenValue, setTokenValue] = useState<string>("")
 	const [supsValue, setSupsValue] = useState<string>("")
 	const [amountRemaining, setAmountRemaining] = useState<number>(0)
 	const [userBalance, setUserBalance] = useState<number>(0)
 	const [transferState, setTransferState] = useState<transferStateType>("none")
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
-	const [scanSite, setScanSite] = useState<string>("")
 	const [transferError, setTransferError] = useState<any>(null)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
-
-	const [isNativeToken, setIsNativeToken] = useState<boolean>()
-
-	const [contractAddr, setContractAddr] = useState<string>("")
 
 	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
 
@@ -106,9 +74,9 @@ export const BuyTokens: React.FC = () => {
 				setSupsValue("")
 				return
 			}
-			if (isNativeToken) {
-				switch (currentToken) {
-					case "wbnb":
+			if (currentToken.isNative) {
+				switch (currentTokenName) {
+					case "bnb":
 						switch (direction) {
 							case "tokensToSups":
 								const sups = ((value * web3Constants.bnbToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
@@ -146,36 +114,24 @@ export const BuyTokens: React.FC = () => {
 				}
 			}
 		},
-		[currentToken, isNativeToken],
+		[currentToken],
 	)
 
-	useEffect(() => {
-		if (window.document) {
-			const body = window.document.querySelector("body")
-			if (body) body.style.backgroundColor = "transparent"
-		}
-	}, [])
+	// useEffect(() => {
+	// 	if (window.document) {
+	// 		const body = window.document.querySelector("body")
+	// 		if (body) body.style.backgroundColor = "transparent"
+	// 	}
+	// }, [])
 
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
-			setSelectedChainId(currentChainId)
-
-			switch (currentChainId) {
-				case web3Constants.ethereumChainId:
-					setScanSite("etherscan.io")
-					break
-				case web3Constants.binanceChainId:
-					setScanSite("bscscan.com")
-					break
-				case web3Constants.goerliChainId:
-					setScanSite("goerli.etherscan.io")
-					break
-				case web3Constants.bscTestNetChainId:
-					setScanSite("testnet.bscscan.com")
-					break
-			}
+			const filteredArr = tokenOptions.filter((x) => {
+				return x.name === currentTokenName
+			})
+			setCurrentToken(filteredArr[0])
 		} else {
-			setSelectedChainId(parseInt(ETHEREUM_CHAIN_ID))
+			setCurrentToken(tokenOptions[0])
 		}
 	}, [currentChainId, acceptedChainExceptions])
 
@@ -185,31 +141,13 @@ export const BuyTokens: React.FC = () => {
 		}
 	}, [handleConversions, tokenValue])
 
-	//setting current token
-	useEffect(() => {
-		if (currentChainId?.toString() === ETHEREUM_CHAIN_ID && !isNativeToken) {
-			setCurrentToken("usdc")
-			return
-		}
-		if (currentChainId?.toString() === BINANCE_CHAIN_ID && isNativeToken) {
-			setCurrentToken("wbnb")
-			return
-		}
-		if (currentChainId?.toString() === BINANCE_CHAIN_ID && !isNativeToken) {
-			setCurrentToken("busd")
-			return
-		}
-		setCurrentToken("weth")
-		return
-	}, [isNativeToken, currentChainId])
-
 	//getting user balance
 	useEffect(() => {
 		setUserBalance(0)
 		setLoading(true)
 		;(async () => {
 			try {
-				const response = await getBalance(contractAddr)
+				const response = await getBalance(currentToken.contractAddr)
 				if (response) {
 					const balance = parseFloat(response)
 					if (!balance) return
@@ -221,7 +159,7 @@ export const BuyTokens: React.FC = () => {
 				setLoading(false)
 			}
 		})()
-	}, [contractAddr, getBalance])
+	}, [currentToken, getBalance])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -239,34 +177,11 @@ export const BuyTokens: React.FC = () => {
 		})
 	}, [subscribe, state])
 
-	const handleSelectChange = (event: SelectChangeEvent<unknown>) => {
-		const value = parseInt(event.target.value as string)
-		setSelectedChainId(value)
-	}
-
 	const handleNetworkSwitch = async () => {
-		await changeChain(selectedChainId)
-		setIsNativeToken(true)
+		await changeChain(currentToken.chainId)
 		setTokenValue("")
 		setSupsValue("")
 	}
-
-	useEffect(() => {
-		switch (currentToken) {
-			case "usdc":
-				setContractAddr(USDC_CONTRACT_ADDRESS)
-				return
-			case "wbnb":
-				setContractAddr(WBNB_CONTRACT_ADDRESS)
-				return
-			case "busd":
-				setContractAddr(BUSD_CONTRACT_ADDRESS)
-				return
-			default:
-				setContractAddr(WETH_CONTRACT_ADDRESS)
-				return
-		}
-	}, [currentToken])
 
 	async function handleTransfer() {
 		const value = parseFloat(tokenValue)
@@ -279,7 +194,7 @@ export const BuyTokens: React.FC = () => {
 		try {
 			if (state !== SocketState.OPEN) return
 
-			const tx = await sendTransfer(contractAddr, value)
+			const tx = await sendTransfer(currentToken.contractAddr, value)
 
 			setCurrentTransferHash(tx.hash)
 
@@ -301,64 +216,6 @@ export const BuyTokens: React.FC = () => {
 		handleTransfer()
 	}
 
-	const currencyTextField = () => {
-		let path
-		let currency
-		switch (currentToken) {
-			case "usdc":
-				path = Usdc
-				currency = "USDC"
-				break
-			case "wbnb":
-				path = BinanceCoin
-				currency = "wBNB"
-				break
-			case "busd":
-				path = BinanceUSD
-				currency = "BUSD"
-				break
-			default:
-				path = Ethereum
-				currency = "wETH"
-				break
-		}
-
-		return (
-			<StyledTextField
-				fullWidth
-				value={tokenValue}
-				onChange={(e) => {
-					const value = e.target.value
-					setTokenValue(value)
-					handleConversions("tokensToSups", parseFloat(value))
-				}}
-				type="number"
-				sx={{ backgroundColor: colors.darkNavyBlue }}
-				InputProps={{
-					endAdornment: (
-						<InputAdornment position="end">
-							<TokenSelect currentToken={currentToken} tokenOptions={tokenOptions} />
-						</InputAdornment>
-					),
-					startAdornment: (
-						<InputAdornment position="start">
-							<Box
-								component="img"
-								src={path}
-								alt="token image"
-								sx={{
-									height: "1.5rem",
-									marginRight: "1rem",
-								}}
-							/>
-						</InputAdornment>
-					),
-				}}
-				inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-			/>
-		)
-	}
-
 	return (
 		<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "500px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
 			<Typography
@@ -371,48 +228,6 @@ export const BuyTokens: React.FC = () => {
 			>
 				Purchase $SUPS
 			</Typography>
-
-			{/* Network Select Component */}
-			{/* <StyledSelect
-				disabled={transferState !== "none" || metaMaskState !== MetaMaskState.Active}
-				value={selectedChainId.toString()}
-				onChange={(e) => handleSelectChange(e)}
-				displayEmpty={true}
-				sx={{
-					marginBottom: "1rem",
-					borderRadius: "0",
-					marginLeft: "auto",
-					display: "flex",
-					minWidth: "150px",
-				}}
-				SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: "0 32px 0 .5rem" } }}
-			>
-				<MenuItem value={ETHEREUM_CHAIN_ID}>
-					<Box
-						component="img"
-						src={Ethereum}
-						alt="Ethereum token symbol"
-						sx={{
-							height: "1.5rem",
-							marginRight: "1rem",
-						}}
-					/>
-					<p>{ETHEREUM_CHAIN_ID === web3Constants.goerliChainId.toString() ? "Goerli" : "Ethereum"}</p>
-				</MenuItem>
-				<MenuItem value={BINANCE_CHAIN_ID}>
-					<Box
-						component="img"
-						src={BinanceCoin}
-						alt="Binance coin symbol"
-						sx={{
-							height: "1.5rem",
-							marginRight: "1rem",
-						}}
-					/>
-					<p>{BINANCE_CHAIN_ID === web3Constants.bscTestNetChainId.toString() ? "BSC Testnet" : "Binance"}</p>
-				</MenuItem>
-			</StyledSelect> */}
-
 			<Box
 				sx={{
 					border: {
@@ -425,7 +240,7 @@ export const BuyTokens: React.FC = () => {
 				{/* Switch Network Dialog */}
 				<Box
 					sx={
-						(acceptedChainExceptions && currentChainId === selectedChainId) || metaMaskState !== MetaMaskState.Active
+						(acceptedChainExceptions && currentChainId === currentToken.chainId) || metaMaskState !== MetaMaskState.Active
 							? { display: "none" }
 							: {
 									position: "absolute",
@@ -496,7 +311,7 @@ export const BuyTokens: React.FC = () => {
 							Transaction has been submitted
 						</Typography>
 						<Typography variant="body1">
-							<Link href={`https://${scanSite}/tx/${currentTransferHash}`} target="_blank">
+							<Link href={`https://${currentToken.scanSite}/tx/${currentTransferHash}`} target="_blank">
 								View on Explorer
 							</Link>
 						</Typography>
@@ -557,7 +372,7 @@ export const BuyTokens: React.FC = () => {
 						</Typography>
 
 						<Typography variant="body1">
-							Purchasing {supsValue} SUPS with {tokenValue} {currentToken.toUpperCase()}
+							Purchasing {supsValue} SUPS with {tokenValue} {currentTokenName.toUpperCase()}
 						</Typography>
 						<Typography variant="body1">Confirm this transaction in your wallet</Typography>
 						<Box sx={{ width: "100%", marginTop: "1rem" }}>
@@ -569,7 +384,7 @@ export const BuyTokens: React.FC = () => {
 				{/* Purchase Sups Form */}
 				<Box
 					sx={
-						acceptedChainExceptions && currentChainId === selectedChainId && transferState === "none"
+						acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none"
 							? {
 									padding: {
 										xs: "1rem",
@@ -585,37 +400,6 @@ export const BuyTokens: React.FC = () => {
 							  }
 					}
 				>
-					{/* Button Group */}
-					{/* <ButtonGroup sx={{ width: "100%", marginBottom: "1rem" }}>
-						<Button
-							disableRipple
-							onClick={(e) => setIsNativeToken(true)}
-							sx={{ width: "50%", borderRadius: "0" }}
-							variant={isNativeToken ? "contained" : "outlined"}
-						>
-							{currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId ? "WBNB" : "WETH"}
-						</Button>
-						<Button
-							disableRipple
-							onClick={(e) => setIsNativeToken(false)}
-							sx={{ width: "50%", borderRadius: "0" }}
-							variant={isNativeToken ? "outlined" : "contained"}
-						>
-							{currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId ? "BUSD" : "USDC"}
-						</Button>
-					</ButtonGroup>
-					<Typography
-						variant="h2"
-						align="center"
-						sx={{
-							textTransform: "uppercase",
-							paddingBottom: "1rem",
-						}}
-					>
-						Purchase SUPS
-					</Typography> */}
-
-					{/* Form */}
 					<form onSubmit={handleSubmit}>
 						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between" }}>
 							<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem" }}>
@@ -644,7 +428,7 @@ export const BuyTokens: React.FC = () => {
 									/>
 								</Box>
 								<Box sx={{ width: "11rem" }}>
-									<TokenSelect />
+									<TokenSelect currentTokenName={currentTokenName} setCurrentTokenName={setCurrentTokenName} tokenOptions={tokenOptions} />
 									<Button
 										disabled={userBalance === 0}
 										sx={{ marginLeft: "auto" }}
@@ -745,7 +529,7 @@ export const BuyTokens: React.FC = () => {
 							>
 								{(() => {
 									if (parseFloat(tokenValue) > userBalance) {
-										return `Insufficient ${currentToken} Balance`
+										return `Insufficient ${currentToken.name.toUpperCase()} Balance`
 									} else if (parseFloat(supsValue) > amountRemaining) {
 										return `Insufficient Remaining SUPS`
 									} else {
@@ -763,36 +547,44 @@ export const BuyTokens: React.FC = () => {
 
 const tokenOptions: tokenSelect[] = [
 	{
-		name: "Eth",
+		name: "eth",
 		networkName: "Ethereum",
 		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		scanSite: ETH_SCAN_SITE,
 		tokenSrc: Ethereum,
 		chainSrc: Ethereum,
 		isNative: true,
+		contractAddr: WETH_CONTRACT_ADDRESS,
 	},
 	{
-		name: "Usdc",
+		name: "usdc",
 		networkName: "Ethereum",
 		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		scanSite: ETH_SCAN_SITE,
 		tokenSrc: Usdc,
 		chainSrc: Ethereum,
 		isNative: false,
+		contractAddr: USDC_CONTRACT_ADDRESS,
 	},
 	{
-		name: "Bnb",
+		name: "bnb",
 		networkName: "Binance",
 		chainId: parseInt(BINANCE_CHAIN_ID),
+		scanSite: BSC_SCAN_SITE,
 		tokenSrc: BinanceCoin,
 		chainSrc: BinanceCoin,
 		isNative: true,
+		contractAddr: WBNB_CONTRACT_ADDRESS,
 	},
 
 	{
-		name: "Busd",
+		name: "busd",
 		networkName: "Binance",
 		chainId: parseInt(BINANCE_CHAIN_ID),
+		scanSite: BSC_SCAN_SITE,
 		tokenSrc: BinanceUSD,
 		chainSrc: BinanceCoin,
 		isNative: false,
+		contractAddr: BUSD_CONTRACT_ADDRESS,
 	},
 ]

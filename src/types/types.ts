@@ -195,11 +195,14 @@ export interface ExchangeRates {
 	SUPtoUSD: number
 }
 
+export type tokenName = "eth" | "usdc" | "bnb" | "busd"
 export interface tokenSelect {
-	name: string
+	name: tokenName
 	networkName: string
 	chainId: number
 	tokenSrc: string
 	chainSrc: string
 	isNative: boolean
+	contractAddr: string
+	scanSite: string
 }
