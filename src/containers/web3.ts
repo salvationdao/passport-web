@@ -1,12 +1,12 @@
+import WalletConnectProvider from "@walletconnect/web3-provider"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
+import { BINANCE_CHAIN_ID, PURCHASE_ADDRESS, SUPS_CONTRACT_ADDRESS } from "../config"
 import { supFormatter } from "../helpers/items"
 import { GetNonceResponse } from "../types/auth"
-import { genericABI } from "./web3GenericABI"
-import { BINANCE_CHAIN_ID, PURCHASE_ADDRESS, SUPS_CONTRACT_ADDRESS } from "../config"
 import { useSnackbar } from "./snackbar"
-import WalletConnectProvider from "@walletconnect/web3-provider"
+import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -325,7 +325,9 @@ export const Web3Container = createContainer(() => {
 				} else return ""
 				if (nonce === "") return ""
 				const msg = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
-				const convertMsg = ethers.utils.toUtf8Bytes(`${msg}:\n ${nonce}`)
+				const rawMessage = `${msg}:\n ${nonce}`
+				const rawMessageLength = new Blob([rawMessage]).size
+				const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
 				const signMsg = ethers.utils.keccak256(convertMsg)
 				return await connector.signMessage([account, signMsg])
 			} else return ""
