@@ -217,276 +217,296 @@ export const BuyTokens: React.FC = () => {
 	}
 
 	return (
-		<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "500px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-			<Typography
-				variant="h2"
-				align="center"
-				sx={{
-					textTransform: "uppercase",
-					paddingBottom: "1rem",
-				}}
-			>
-				Purchase $SUPS
-			</Typography>
+		<Box
+			sx={{
+				border: {
+					xs: `2px solid ${theme.palette.secondary.main}`,
+					md: "none",
+				},
+				position: "relative",
+			}}
+		>
+			{/* Switch Network Dialog */}
 			<Box
-				sx={{
-					border: {
-						xs: `2px solid ${theme.palette.secondary.main}`,
-						md: "none",
-					},
-					position: "relative",
-				}}
+				sx={
+					(acceptedChainExceptions && currentChainId === currentToken.chainId) || metaMaskState !== MetaMaskState.Active
+						? { display: "none" }
+						: {
+								position: "absolute",
+								zIndex: "5",
+								padding: "1rem",
+								height: "100%",
+								width: "100%",
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+						  }
+				}
 			>
-				{/* Switch Network Dialog */}
-				<Box
-					sx={
-						(acceptedChainExceptions && currentChainId === currentToken.chainId) || metaMaskState !== MetaMaskState.Active
-							? { display: "none" }
-							: {
-									position: "absolute",
-									zIndex: "5",
-									padding: "1rem",
-									height: "100%",
-									width: "100%",
-									display: "flex",
-									flexDirection: "column",
-									justifyContent: "center",
-							  }
-					}
-				>
-					<Typography variant="h2" sx={{ textTransform: "uppercase", textAlign: "center", textDecoration: "underline" }}>
-						Attention!
-					</Typography>
-					<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "1rem" }}>
-						Please switch to a valid network to continue your transaction. Click the button below and follow the prompts.
-					</Typography>
-					<FancyButton onClick={handleNetworkSwitch}>Switch Network</FancyButton>
-				</Box>
+				<Typography variant="h2" sx={{ textTransform: "uppercase", textAlign: "center", textDecoration: "underline" }}>
+					Attention!
+				</Typography>
+				<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "1rem" }}>
+					Please switch to a valid network to continue your transaction. Click the button below and follow the prompts.
+				</Typography>
+				<FancyButton onClick={handleNetworkSwitch}>Switch Network</FancyButton>
+			</Box>
 
-				{/* Metamask Connection */}
-				<Box
-					sx={
-						metaMaskState === MetaMaskState.Active
-							? { display: "none" }
-							: {
-									position: "absolute",
-									zIndex: "5",
-									padding: "1rem",
-									height: "100%",
-									width: "100%",
-									display: "flex",
-									flexDirection: "column",
-									justifyContent: "center",
-									alignItems: "center",
-									gap: "1em",
-							  }
-					}
-				>
-					<Typography variant="h3" sx={{ textTransform: "uppercase" }}>
-						Connect Your Wallet
-					</Typography>
-					<ConnectWallet />
-				</Box>
+			{/* Metamask Connection */}
+			<Box
+				sx={
+					metaMaskState === MetaMaskState.Active
+						? { display: "none" }
+						: {
+								position: "absolute",
+								zIndex: "5",
+								padding: "1rem",
+								height: "100%",
+								width: "100%",
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+								alignItems: "center",
+								gap: "1em",
+						  }
+				}
+			>
+				<Typography variant="h3" sx={{ textTransform: "uppercase" }}>
+					Connect Your Wallet
+				</Typography>
+				<ConnectWallet />
+			</Box>
 
-				{/* transferState */}
+			{/* transferState */}
+			<Box
+				sx={
+					transferState === "none" || metaMaskState !== MetaMaskState.Active
+						? { display: "none" }
+						: { position: "absolute", zIndex: "5", width: "100%", height: "100%" }
+				}
+			>
 				<Box
 					sx={
-						transferState === "none" || metaMaskState !== MetaMaskState.Active
-							? { display: "none" }
-							: { position: "absolute", zIndex: "5", width: "100%", height: "100%" }
+						transferState === "confirm"
+							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							: { display: "none" }
 					}
 				>
-					<Box
-						sx={
-							transferState === "confirm"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
+					<CheckCircleIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
+					<Typography variant="h3" sx={{ margin: "2rem 0 0 0", textTransform: "uppercase" }}>
+						Success
+					</Typography>
+					<Typography variant="h4" sx={{ margin: "1rem 0" }}>
+						Transaction has been submitted
+					</Typography>
+					<Typography variant="body1">
+						<Link href={`https://${currentToken.scanSite}/tx/${currentTransferHash}`} target="_blank">
+							View on Explorer
+						</Link>
+					</Typography>
+					<FancyButton
+						loading={loading}
+						disabled={loading}
+						sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
+						onClick={() => setTransferState("none")}
 					>
-						<CheckCircleIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
-						<Typography variant="h3" sx={{ margin: "2rem 0 0 0", textTransform: "uppercase" }}>
-							Success
-						</Typography>
-						<Typography variant="h4" sx={{ margin: "1rem 0" }}>
-							Transaction has been submitted
-						</Typography>
-						<Typography variant="body1">
-							<Link href={`https://${currentToken.scanSite}/tx/${currentTransferHash}`} target="_blank">
-								View on Explorer
-							</Link>
-						</Typography>
-						<FancyButton
-							loading={loading}
-							disabled={loading}
-							sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
-							onClick={() => setTransferState("none")}
-						>
-							{loading ? " " : "Close"}
+						{loading ? " " : "Close"}
+					</FancyButton>
+					<Typography sx={loading ? { display: "flex", width: "100%", justifyContent: "center" } : { display: "none" }} variant="body1">
+						Please wait, your transaction is pending.
+					</Typography>
+				</Box>
+
+				<Box
+					sx={
+						transferState === "error"
+							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							: { display: "none" }
+					}
+				>
+					<ErrorIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
+					<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
+						Error
+					</Typography>
+					<Typography variant="h4">{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}</Typography>
+					<Typography sx={{ marginTop: "1rem" }} variant="body1">
+						{transferError ? (transferError.code === undefined ? transferError : null) : null}
+					</Typography>
+
+					<Box sx={{ margin: "2rem 0", display: "flex", width: "70%", justifyContent: "space-around" }}>
+						<FancyButton sx={{ minWidth: "7rem" }} onClick={() => setTransferState("none")}>
+							Close
 						</FancyButton>
-						<Typography sx={loading ? { display: "flex", width: "100%", justifyContent: "center" } : { display: "none" }} variant="body1">
-							Please wait, your transaction is pending.
-						</Typography>
+
+						<FancyButton type="submit" sx={{ minWidth: "7rem" }} onClick={handleTransfer}>
+							Retry
+						</FancyButton>
 					</Box>
-
-					<Box
-						sx={
-							transferState === "error"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
-					>
-						<ErrorIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
-						<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
-							Error
-						</Typography>
-						<Typography variant="h4">
-							{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}
-						</Typography>
-						<Typography sx={{ marginTop: "1rem" }} variant="body1">
-							{transferError ? (transferError.code === undefined ? transferError : null) : null}
-						</Typography>
-
-						<Box sx={{ margin: "2rem 0", display: "flex", width: "70%", justifyContent: "space-around" }}>
-							<FancyButton sx={{ minWidth: "7rem" }} onClick={() => setTransferState("none")}>
-								Close
-							</FancyButton>
-
-							<FancyButton type="submit" sx={{ minWidth: "7rem" }} onClick={handleTransfer}>
-								Retry
-							</FancyButton>
-						</Box>
-					</Box>
-
-					<Stack
-						sx={
-							transferState === "waiting"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
-					>
-						<Box sx={{ width: "100%" }}>
-							<LinearProgress />
-						</Box>
-						<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0" }}>
-							Waiting on Confirmation
-						</Typography>
-
-						<Typography variant="body1">
-							Purchasing {supsValue} SUPS with {tokenValue} {currentTokenName.toUpperCase()}
-						</Typography>
-						<Typography variant="body1">Confirm this transaction in your wallet</Typography>
-						<Box sx={{ width: "100%", marginTop: "1rem" }}>
-							<LinearProgress />
-						</Box>
-					</Stack>
 				</Box>
 
-				{/* Purchase Sups Form */}
-				<Box
+				<Stack
 					sx={
-						acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none"
-							? {
-									padding: {
-										xs: "1rem",
-										md: "0",
-									},
-							  }
-							: {
-									filter: "blur(5px) brightness(20%)",
-									padding: {
-										xs: "1rem",
-										md: "0",
-									},
-							  }
+						transferState === "waiting"
+							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							: { display: "none" }
 					}
 				>
+					<Box sx={{ width: "100%" }}>
+						<LinearProgress />
+					</Box>
+					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0" }}>
+						Waiting on Confirmation
+					</Typography>
+
+					<Typography variant="body1">
+						Purchasing {supsValue} SUPS with {tokenValue} {currentTokenName.toUpperCase()}
+					</Typography>
+					<Typography variant="body1">Confirm this transaction in your wallet</Typography>
+					<Box sx={{ width: "100%", marginTop: "1rem" }}>
+						<LinearProgress />
+					</Box>
+				</Stack>
+			</Box>
+
+			{/* Purchase Sups Form */}
+			<Box
+				sx={
+					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none"
+						? {
+								padding: {
+									xs: "1rem",
+									md: "0",
+								},
+						  }
+						: {
+								filter: "blur(5px) brightness(20%)",
+								padding: {
+									xs: "1rem",
+									md: "0",
+								},
+						  }
+				}
+			>
+				<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "500px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+					<Typography
+						variant="h2"
+						align="center"
+						sx={{
+							textTransform: "uppercase",
+							paddingBottom: "1rem",
+						}}
+					>
+						Purchase SUPS
+					</Typography>
 					<form onSubmit={handleSubmit}>
-						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between" }}>
-							<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem" }}>
-								<Box sx={{ flexGrow: "2" }}>
-									<Typography>From:</Typography>
-									<TextField
-										fullWidth
-										variant="filled"
-										value={tokenValue}
-										onChange={(e) => {
-											const value = e.target.value
-											setTokenValue(value)
-											handleConversions("tokensToSups", parseFloat(value))
-										}}
-										type="number"
-										sx={{
-											backgroundColor: colors.darkNavyBlue,
-											"& .MuiFilledInput-root": {
-												background: "inherit",
-											},
-											"& .MuiFilledInput-underline:after": {
-												borderBottomColor: colors.skyBlue,
-											},
-										}}
-										inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-									/>
-								</Box>
-								<Box sx={{ width: "11rem" }}>
-									<TokenSelect currentTokenName={currentTokenName} setCurrentTokenName={setCurrentTokenName} tokenOptions={tokenOptions} />
-									<Button
-										disabled={userBalance === 0}
-										sx={{ marginLeft: "auto" }}
-										onClick={() => {
-											setTokenValue(userBalance.toString())
-											handleConversions("tokensToSups", userBalance)
-										}}
-									>
-										<Typography variant="body1">Balance: {userBalance ? userBalance.toFixed(2) : "--"}</Typography>
-									</Button>
-								</Box>
-							</Box>
-							<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem" }}>
-								<Box sx={{ flexGrow: "2" }}>
-									<Typography>To:</Typography>
-									<TextField
-										fullWidth
-										variant="filled"
-										value={tokenValue}
-										onChange={(e) => {
-											const value = e.target.value
-											setSupsValue(value)
-											handleConversions("supsToTokens", parseFloat(value))
-										}}
-										type="number"
-										sx={{
-											backgroundColor: colors.darkNavyBlue,
-											"& .MuiFilledInput-root": {
-												background: "inherit",
-											},
-											"& .MuiFilledInput-underline:after": {
-												borderBottomColor: colors.skyBlue,
-											},
-										}}
-										inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-									/>
-								</Box>
-								<Box sx={{ width: "11rem" }}>
-									<Box sx={{ display: "flex" }}>
-										<Box
-											component="img"
-											src={SupsToken}
-											alt="token image"
-											sx={{
-												height: "1rem",
-												marginRight: "1rem",
+						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between", alignItems: "center" }}>
+							<Box sx={{ position: "relative", width: "100%" }}>
+								<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem" }}>
+									<Box sx={{ flexGrow: "2" }}>
+										<Typography>From:</Typography>
+										<TextField
+											fullWidth
+											variant="filled"
+											value={tokenValue}
+											onChange={(e) => {
+												const value = e.target.value
+												setTokenValue(value)
+												handleConversions("tokensToSups", parseFloat(value))
 											}}
+											type="number"
+											sx={{
+												backgroundColor: colors.darkNavyBlue,
+												"& .MuiFilledInput-root": {
+													background: "inherit",
+												},
+												"& .MuiFilledInput-underline:after": {
+													borderBottomColor: colors.skyBlue,
+												},
+											}}
+											inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
 										/>
-										<Typography variant="body1" sx={{ textTransform: "uppercase" }}>
-											$Sups
+									</Box>
+
+									<Box sx={{ width: "11rem" }}>
+										<TokenSelect
+											currentTokenName={currentTokenName}
+											setCurrentTokenName={setCurrentTokenName}
+											tokenOptions={tokenOptions}
+										/>
+										<Button
+											disabled={userBalance === 0}
+											sx={{ marginLeft: "auto" }}
+											onClick={() => {
+												setTokenValue(userBalance.toString())
+												handleConversions("tokensToSups", userBalance)
+											}}
+										>
+											<Typography variant="body1">Balance: {userBalance ? userBalance.toFixed(2) : "--"}</Typography>
+										</Button>
+									</Box>
+								</Box>
+								<Box
+									component="img"
+									src={Arrow}
+									alt="token image"
+									sx={{
+										height: "3rem",
+										position: "absolute",
+										top: "0",
+										left: "0",
+										right: "0",
+										bottom: "0",
+										margin: "auto",
+										zIndex: 2,
+									}}
+								/>
+								<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem", marginTop: "1rem" }}>
+									<Box sx={{ flexGrow: "2" }}>
+										<Typography>To:</Typography>
+										<TextField
+											fullWidth
+											variant="filled"
+											value={supsValue}
+											onChange={(e) => {
+												const value = e.target.value
+												setSupsValue(value)
+												handleConversions("supsToTokens", parseFloat(value))
+											}}
+											type="number"
+											sx={{
+												backgroundColor: colors.darkNavyBlue,
+												"& .MuiFilledInput-root": {
+													background: "inherit",
+												},
+												"& .MuiFilledInput-underline:after": {
+													borderBottomColor: colors.skyBlue,
+												},
+											}}
+											inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+										/>
+									</Box>
+									<Box sx={{ width: "11rem" }}>
+										<Box sx={{ display: "flex" }}>
+											<Box
+												component="img"
+												src={SupsToken}
+												alt="token image"
+												sx={{
+													height: "1rem",
+													marginRight: "1rem",
+												}}
+											/>
+											<Typography variant="body1" sx={{ textTransform: "uppercase" }}>
+												Sups
+											</Typography>
+										</Box>
+										<Typography variant="body1">
+											Balance:
+											{
+												//userBalance ? userBalance.toFixed(2) : "--"}
+											}
 										</Typography>
 									</Box>
-									<Typography variant="body1">
-										Balance:
-										{
-											//userBalance ? userBalance.toFixed(2) : "--"}
-										}
-									</Typography>
 								</Box>
 							</Box>
 
