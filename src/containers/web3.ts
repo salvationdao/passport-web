@@ -113,6 +113,7 @@ export const Web3Container = createContainer(() => {
 			rpc: {
 				1: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/mainnet",
 				5: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/goerli",
+				56: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/bsc/mainnet",
 				97: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/bsc/testnet",
 			},
 			qrcode: showQrCode,
