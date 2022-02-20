@@ -19,7 +19,7 @@ interface DepositModalProps {
 	open: boolean
 	onClose: () => void
 	walletBalance: BigNumber
-	xsynBalance: string
+	xsynBalance: BigNumber
 }
 
 interface GetSignatureResponse {

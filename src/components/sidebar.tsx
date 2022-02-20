@@ -51,6 +51,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
+	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 
 	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
 		const str1 = userPubAddr.toUpperCase()
@@ -66,6 +67,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			setWalletSups("N/A")
 			return
 		}
+		if (userSups) {
+			setXsynSups(BigNumber.from(userSups))
+		}
 
 		// no wallet connected
 		if (!user.publicAddress) {
@@ -77,7 +81,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
 		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : "N/A")
-	}, [supBalance, account, user, userPublicAddress])
+	}, [userSups, supBalance, account, user, userPublicAddress])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -161,7 +165,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					My Wallet
 				</Typography>
 				<Typography
-					key={`usersups-${userSups}`}
+					key={`usersups-${xsynSups.toString()}`}
 					sx={{
 						display: "flex",
 						alignItems: "center",
@@ -177,7 +181,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						XSYN Balance:
 					</Box>
 					<SupTokenIcon />
-					{supFormatter(userSups || "0")}
+					{formatUnits(xsynSups, 18)}
 				</Typography>
 				<Typography
 					sx={{
@@ -296,16 +300,16 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<RenderEnlist factionsData={factionsData} user={user} />
 				<Divider />
 				<NavButton
-					sx={{ color: userSups !== "0" ? "" : colors.supremacy.grey, cursor: { color: userSups !== "0" ? "pointer" : "default" } }}
+					sx={{ color: !xsynSups.eq(0) ? "" : colors.supremacy.grey, cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" } }}
 					onClick={() => {
-						if (userSups !== "0") {
+						if (!xsynSups.eq(0)) {
 							window.open("https://staging-watch.supremacy.game", "_blank")?.focus()
 						}
 					}}
 					to={`/profile`}
 					startIcon={<SportsKabaddiIcon />}
 				>
-					{userSups !== "0" ? "Battle Arena" : "Battle Arena (SUPS required)"}
+					{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
 				</NavButton>
 				<Divider />
 				<a></a>
@@ -446,7 +450,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			<WithdrawSupsModal open={withdrawDialogOpen} onClose={() => setWithdrawDialogOpen(false)} />
 			<DepositSupsModal
 				walletBalance={supBalance || BigNumber.from(0)}
-				xsynBalance={userSups || "0"}
+				xsynBalance={xsynSups}
 				open={depositDialogOpen}
 				onClose={() => setDepositDialogOpen(false)}
 			/>
