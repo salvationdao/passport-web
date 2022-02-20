@@ -34,6 +34,7 @@ import { ExchangeRates } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { TokenSelect } from "./tokenSelect"
+import { tokenSelect } from "../types/types"
 
 //styled MUI components at root, where sx can't change them
 const StyledSelect = styled(Select)<SelectProps>(
@@ -80,8 +81,7 @@ export const BuyTokens: React.FC = () => {
 	const theme = useTheme()
 
 	const [selectedChainId, setSelectedChainId] = useState<number>(parseInt(ETHEREUM_CHAIN_ID.toString()))
-	const [isNativeToken, setIsNativeToken] = useState<boolean>(true)
-	const [currentToken, setCurrentToken] = useState<tokenName>("weth")
+	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[1])
 	const [tokenValue, setTokenValue] = useState<string>("")
 	const [supsValue, setSupsValue] = useState<string>("")
 	const [amountRemaining, setAmountRemaining] = useState<number>(0)
@@ -92,6 +92,8 @@ export const BuyTokens: React.FC = () => {
 	const [transferError, setTransferError] = useState<any>(null)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
+
+	const [isNativeToken, setIsNativeToken] = useState<boolean>()
 
 	const [contractAddr, setContractAddr] = useState<string>("")
 
@@ -146,6 +148,13 @@ export const BuyTokens: React.FC = () => {
 		},
 		[currentToken, isNativeToken],
 	)
+
+	useEffect(() => {
+		if (window.document) {
+			const body = window.document.querySelector("body")
+			if (body) body.style.backgroundColor = "transparent"
+		}
+	}, [])
 
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
@@ -328,7 +337,7 @@ export const BuyTokens: React.FC = () => {
 				InputProps={{
 					endAdornment: (
 						<InputAdornment position="end">
-							<TokenSelect />
+							<TokenSelect currentToken={currentToken} tokenOptions={tokenOptions} />
 						</InputAdornment>
 					),
 					startAdornment: (
@@ -751,3 +760,39 @@ export const BuyTokens: React.FC = () => {
 		</Box>
 	)
 }
+
+const tokenOptions: tokenSelect[] = [
+	{
+		name: "Eth",
+		networkName: "Ethereum",
+		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		tokenSrc: Ethereum,
+		chainSrc: Ethereum,
+		isNative: true,
+	},
+	{
+		name: "Usdc",
+		networkName: "Ethereum",
+		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		tokenSrc: Usdc,
+		chainSrc: Ethereum,
+		isNative: false,
+	},
+	{
+		name: "Bnb",
+		networkName: "Binance",
+		chainId: parseInt(BINANCE_CHAIN_ID),
+		tokenSrc: BinanceCoin,
+		chainSrc: BinanceCoin,
+		isNative: true,
+	},
+
+	{
+		name: "Busd",
+		networkName: "Binance",
+		chainId: parseInt(BINANCE_CHAIN_ID),
+		tokenSrc: BinanceUSD,
+		chainSrc: BinanceCoin,
+		isNative: false,
+	},
+]

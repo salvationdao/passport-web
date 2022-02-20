@@ -1,4 +1,4 @@
-import { Box, MenuItem, outlinedInputClasses, Select, SelectProps, styled, Typography } from "@mui/material"
+import { Box, MenuItem, outlinedInputClasses, Select, SelectChangeEvent, SelectProps, styled, Typography } from "@mui/material"
 import React, { useState } from "react"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
@@ -7,44 +7,16 @@ import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
 import { tokenSelect } from "../types/types"
 
-const tokenOptions: tokenSelect[] = [
-	{
-		name: "Eth",
-		networkName: "Ethereum",
-		chainId: parseInt(ETHEREUM_CHAIN_ID),
-		tokenSrc: Ethereum,
-		chainSrc: Ethereum,
-		isNative: true,
-	},
-	{
-		name: "Usdc",
-		networkName: "Ethereum",
-		chainId: parseInt(ETHEREUM_CHAIN_ID),
-		tokenSrc: Usdc,
-		chainSrc: Ethereum,
-		isNative: false,
-	},
-	{
-		name: "Bnb",
-		networkName: "Binance",
-		chainId: parseInt(BINANCE_CHAIN_ID),
-		tokenSrc: BinanceCoin,
-		chainSrc: BinanceCoin,
-		isNative: true,
-	},
+interface TokenSelectProps {
+	currentToken: tokenSelect
+	tokenOptions: tokenSelect[]
+	setCurrentToken: React.Dispatch<React.SetStateAction<tokenSelect>>
+}
 
-	{
-		name: "Busd",
-		networkName: "Binance",
-		chainId: parseInt(BINANCE_CHAIN_ID),
-		tokenSrc: BinanceUSD,
-		chainSrc: BinanceCoin,
-		isNative: false,
-	},
-]
-
-export const TokenSelect: React.FC = () => {
-	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[1])
+export const TokenSelect = ({ currentToken, tokenOptions, setCurrentToken }: TokenSelectProps) => {
+	const handleSelectChange = (event: SelectChangeEvent<tokenSelect>) => {
+		//setCurrentToken(event.target.value)
+	}
 
 	return (
 		<Select
@@ -55,6 +27,7 @@ export const TokenSelect: React.FC = () => {
 				display: "flex",
 				minWidth: "175px",
 			}}
+			onChange={(e) => handleSelectChange(e)}
 			SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: ".5rem 32px .5rem .5rem" } }}
 			value={currentToken}
 		>
