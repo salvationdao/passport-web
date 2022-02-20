@@ -22,6 +22,9 @@ import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
+import { DepositSupsModal } from "./depositSupsModal"
+import { formatUnits } from "ethers/lib/utils"
+import { BigNumber } from "ethers"
 
 const drawerWidth = 300
 
@@ -47,6 +50,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [walletMsg, setWalletMsg] = useState<string>()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
+	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 
 	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
 		const str1 = userPubAddr.toUpperCase()
@@ -72,7 +76,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
-		setWalletSups(correctWallet ? supBalance : "N/A")
+		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : "N/A")
 	}, [supBalance, account, user, userPublicAddress])
 
 	useEffect(() => {
@@ -87,6 +91,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			}
 		})()
 	}, [send, state])
+
 	let truncatedUsername = ""
 	if (user) {
 		const maxLength = 8
@@ -247,6 +252,25 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					>
 						Withdraw
 					</FancyButton>
+					<FancyButton
+						size="small"
+						borderColor={colors.neonPink}
+						sx={{
+							flex: 1,
+						}}
+						onClick={() => {
+							if (!user.publicAddress) {
+								displayMessage(
+									"You must have a wallet connected to your account if you want to redeem SUPs. You can connect a wallet account in your profile page.",
+									"error",
+								)
+								return
+							}
+							setDepositDialogOpen(true)
+						}}
+					>
+						Deposit
+					</FancyButton>
 				</Box>
 			</Box>
 			<Divider />
@@ -271,8 +295,17 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<Divider />
 				<RenderEnlist factionsData={factionsData} user={user} />
 				<Divider />
-				<NavButton to={`/battle_arena`} startIcon={<SportsKabaddiIcon />}>
-					Battle Arena
+				<NavButton
+					sx={{ color: userSups !== "0" ? "" : colors.supremacy.grey, cursor: { color: userSups !== "0" ? "pointer" : "default" } }}
+					onClick={() => {
+						if (userSups !== "0") {
+							window.open("https://staging-watch.supremacy.game", "_blank")?.focus()
+						}
+					}}
+					to={`/profile`}
+					startIcon={<SportsKabaddiIcon />}
+				>
+					{userSups !== "0" ? "Battle Arena" : "Battle Arena (SUPS required)"}
 				</NavButton>
 				<Divider />
 				<a></a>
@@ -411,6 +444,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				{children}
 			</Box>
 			<WithdrawSupsModal open={withdrawDialogOpen} onClose={() => setWithdrawDialogOpen(false)} />
+			<DepositSupsModal
+				walletBalance={supBalance || BigNumber.from(0)}
+				xsynBalance={userSups || "0"}
+				open={depositDialogOpen}
+				onClose={() => setDepositDialogOpen(false)}
+			/>
 		</Box>
 	)
 }

@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from "ethers"
+import { BigNumber, ethers, Transaction } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
 import { supFormatter } from "../helpers/items"
@@ -6,7 +6,7 @@ import { GetNonceResponse } from "../types/auth"
 import { genericABI } from "./web3GenericABI"
 import { BINANCE_CHAIN_ID, PURCHASE_ADDRESS, SUPS_CONTRACT_ADDRESS } from "../config"
 import { useSnackbar } from "./snackbar"
-import { parseEther } from "ethers/lib/utils"
+import { parseEther, TransactionTypes } from "ethers/lib/utils"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -48,7 +48,7 @@ export const Web3Container = createContainer(() => {
 	const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
 	const [account, setAccount] = useState<string>()
 	const [currentChainId, setCurrentChainId] = useState<number>()
-	const [supBalance, setSupBalance] = useState<string>()
+	const [supBalance, setSupBalance] = useState<BigNumber>()
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -91,12 +91,11 @@ export const Web3Container = createContainer(() => {
 			let bal: { _hex: string }
 
 			try {
-				bal = await erc20.balanceOf(acc)
+				const bal = await erc20.balanceOf(acc)
+				setSupBalance(bal)
 			} catch (e) {
-				bal = { _hex: "0" }
+				console.error(e)
 			}
-
-			setSupBalance(supFormatter(bal._hex))
 		},
 		[provider, currentChainId],
 	)
@@ -287,14 +286,9 @@ export const Web3Container = createContainer(() => {
 	const getBalance = useCallback(
 		async (contractAddress: string) => {
 			try {
-				if (!provider || !account || contractAddress === "") return
-
+				if (!provider || !account || contractAddress === "") throw new Error("wallet not connected")
 				const contract = new ethers.Contract(contractAddress, genericABI, provider)
-
-				const bigNumBalance: BigNumber = await contract.balanceOf(account)
-				const decimals = await contract.decimals()
-
-				return ethers.utils.formatUnits(bigNumBalance, decimals)
+				return contract.balanceOf(account)
 			} catch (error) {
 				displayMessage("Couldn't get contract balance, please try again.", "error")
 			}
@@ -321,7 +315,7 @@ export const Web3Container = createContainer(() => {
 			throw error
 		}
 	}
-	async function sendTransfer(contractAddress: string, value: number) {
+	async function sendTransferToPurchaseAddress(contractAddress: string, value: BigNumber) {
 		try {
 			if (!provider || !account) {
 				displayMessage("Wallet is not connected.", "error")
@@ -331,11 +325,10 @@ export const Web3Container = createContainer(() => {
 			const contract = new ethers.Contract(contractAddress, genericABI, signer)
 			const decimals = await contract.decimals()
 
-			const units = ethers.utils.parseUnits(value.toString(), decimals)
-			const hasSufficientFunds = await contract.callStatic.transfer(signer.getAddress(), units)
+			const hasSufficientFunds = await contract.callStatic.transfer(signer.getAddress(), value)
 
 			if (hasSufficientFunds) {
-				return await contract.transfer(PURCHASE_ADDRESS, units)
+				return await contract.transfer(PURCHASE_ADDRESS, value)
 			} else {
 				displayMessage("Wallet does not have sufficient funds.", "error")
 				return
@@ -356,7 +349,7 @@ export const Web3Container = createContainer(() => {
 		provider,
 		getBalance,
 		sendNativeTransfer,
-		sendTransfer,
+		sendTransferToPurchaseAddress,
 		supBalance,
 	}
 })
