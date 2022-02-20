@@ -6,6 +6,7 @@ import { GetNonceResponse } from "../types/auth"
 import { genericABI } from "./web3GenericABI"
 import { BINANCE_CHAIN_ID, PURCHASE_ADDRESS, SUPS_CONTRACT_ADDRESS } from "../config"
 import { useSnackbar } from "./snackbar"
+import { parseEther } from "ethers/lib/utils"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -300,7 +301,26 @@ export const Web3Container = createContainer(() => {
 		},
 		[provider, account, displayMessage],
 	)
-
+	async function sendNativeTransfer(value: number) {
+		try {
+			if (!provider || !account) {
+				displayMessage("Wallet is not connected.", "error")
+				return
+			}
+			const signer = provider.getSigner()
+			const bal = await signer.getBalance()
+			const hasSufficientFunds = bal.gt(value)
+			if (hasSufficientFunds) {
+				return await signer.sendTransaction({ to: PURCHASE_ADDRESS, value: parseEther(value.toString()) })
+			} else {
+				displayMessage("Wallet does not have sufficient funds.", "error")
+				return
+			}
+		} catch (error) {
+			displayMessage("Something went wrong, please try again.", "error")
+			throw error
+		}
+	}
 	async function sendTransfer(contractAddress: string, value: number) {
 		try {
 			if (!provider || !account) {
@@ -335,6 +355,7 @@ export const Web3Container = createContainer(() => {
 		currentChainId,
 		provider,
 		getBalance,
+		sendNativeTransfer,
 		sendTransfer,
 		supBalance,
 	}
