@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
 import GoogleLogin, { GoogleLoginResponse } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link as RouterLink, useHistory } from "react-router-dom"
+import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon } from "../../assets"
 import { DiscordLogin } from "../../components/discordLogin"
 import { FacebookLogin } from "../../components/facebookLogin"
@@ -29,20 +29,34 @@ import { Organisation, Role } from "../../types/types"
 import { PasswordRequirement } from "./../auth/onboarding"
 
 export const ProfileEditPage: React.FC = () => {
+	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
 	const { user } = useAuth()
 
-	useEffect(() => {
-		if (user) return
+	const [loadingText, setLoadingText] = useState<string>()
 
-		const userTimeout = setTimeout(() => {
-			history.push("/login")
-		}, 2000)
-		return () => clearTimeout(userTimeout)
+	useEffect(() => {
+		let userTimeout: NodeJS.Timeout
+		if (!user) {
+			setLoadingText("You need to be logged in to view this page. Redirecting to login page...")
+			userTimeout = setTimeout(() => {
+				history.push("/login")
+			}, 2000)
+		} else if (user.username !== username) {
+			setLoadingText("You do not have permission view this page. Redirecting to profile page...")
+			userTimeout = setTimeout(() => {
+				history.push("/profile")
+			}, 2000)
+		}
+
+		return () => {
+			if (!userTimeout) return
+			clearTimeout(userTimeout)
+		}
 	}, [user, history])
 
-	if (!user) {
-		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+	if (!user || user.username !== username) {
+		return <Loading text={loadingText} />
 	}
 
 	return (

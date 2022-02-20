@@ -34,6 +34,7 @@ export const colors = {
 	black: "#000",
 	lightGrey: "#f7f7f7",
 	darkGrey: "#c3c3c3",
+	darkerGrey: "#909090",
 	metamaskOrange: "#F6851B",
 	facebookBlue: "#3F558C",
 	twitchPurple: "#8551F6",
