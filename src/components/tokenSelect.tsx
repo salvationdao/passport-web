@@ -14,8 +14,8 @@ interface TokenSelectProps {
 }
 
 export const TokenSelect = ({ currentTokenName, tokenOptions, setCurrentTokenName }: TokenSelectProps) => {
-	const handleSelectChange = (e: SelectChangeEvent<tokenName>) => {
-		//setCurrentTokenName(e.target.value)
+	const handleSelectChange = (e: SelectChangeEvent<unknown>) => {
+		setCurrentTokenName(e.target.value as tokenName)
 	}
 
 	return (

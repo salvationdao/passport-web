@@ -1,30 +1,14 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
-import {
-	Box,
-	Button,
-	InputAdornment,
-	LinearProgress,
-	Link,
-	outlinedInputClasses,
-	Select,
-	SelectChangeEvent,
-	SelectProps,
-	Stack,
-	styled,
-	TextField,
-	TextFieldProps,
-	Typography,
-	useTheme,
-} from "@mui/material"
+import { Box, Button, LinearProgress, Link, Stack, TextField, Typography, useTheme } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
+import Arrow from "../assets/images/arrow.png"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import SupsToken from "../assets/images/sup-token.svg"
-import Arrow from "../assets/images/arrow.png"
 import {
 	BINANCE_CHAIN_ID,
 	BSC_SCAN_SITE,
@@ -39,11 +23,10 @@ import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { ExchangeRates } from "../types/types"
+import { ExchangeRates, tokenName, tokenSelect } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { TokenSelect } from "./tokenSelect"
-import { tokenSelect, tokenName } from "../types/types"
 
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
@@ -129,11 +112,12 @@ export const BuyTokens: React.FC = () => {
 			const filteredArr = tokenOptions.filter((x) => {
 				return x.name === currentTokenName
 			})
+
 			setCurrentToken(filteredArr[0])
 		} else {
 			setCurrentToken(tokenOptions[0])
 		}
-	}, [currentChainId, acceptedChainExceptions])
+	}, [currentTokenName, currentChainId])
 
 	useEffect(() => {
 		if (tokenValue !== "") {
@@ -404,7 +388,9 @@ export const BuyTokens: React.FC = () => {
 					<form onSubmit={handleSubmit}>
 						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between", alignItems: "center" }}>
 							<Box sx={{ position: "relative", width: "100%" }}>
-								<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem" }}>
+								<Box
+									sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: "1rem", marginBottom: "1rem" }}
+								>
 									<Box sx={{ flexGrow: "2" }}>
 										<Typography sx={{ color: colors.darkGrey }} variant="h6">
 											From:{" "}
@@ -475,7 +461,7 @@ export const BuyTokens: React.FC = () => {
 										zIndex: 2,
 									}}
 								/>
-								<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: ".5rem", marginTop: "1rem" }}>
+								<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: "1rem", marginTop: "1rem" }}>
 									<Box sx={{ flexGrow: "2" }}>
 										<Typography sx={{ color: colors.darkGrey }} variant="h6">
 											To:
