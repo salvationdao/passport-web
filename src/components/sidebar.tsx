@@ -1,5 +1,6 @@
 import AppsIcon from "@mui/icons-material/Apps"
 import FaceIcon from "@mui/icons-material/Face"
+import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
 import StorefrontIcon from "@mui/icons-material/Storefront"
@@ -15,11 +16,12 @@ import { useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { NilUUID } from "../types/auth"
 import { Faction, User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
+import { WithdrawSupsModal } from "./withdrawSupsModal"
+import { useSecureSubscription } from "../hooks/useSecureSubscription"
 
 const drawerWidth = 300
 
@@ -32,19 +34,19 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const { send, state } = useWebsocket()
 	const { sidebarOpen, setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
-	const { user, userID, logout } = useAuth()
+	const { user, logout } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	// Wallet
-	const { supBalance, account } = useWeb3()
 	const userPublicAddress = user?.publicAddress
-	const { subscribe } = useWebsocket()
-	const [xsynSups, setXsynSups] = useState<string | undefined>()
 
 	// Supremacy
-	const [factionsData, setFactionsData] = useState<Faction[]>()
+	const [factionsData, setFactionsData] = useState<Faction[]>([])
+	const { supBalance, account } = useWeb3()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
+	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
+	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
 
 	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
 		const str1 = userPubAddr.toUpperCase()
@@ -52,14 +54,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 		return str1 === str2
 	}
-
-	useEffect(() => {
-		if (!userID || userID === NilUUID) return
-		return subscribe<string>(HubKey.UserSupsSubscribe, (payload) => {
-			if (!payload) return
-			setXsynSups(supFormatter(payload))
-		})
-	}, [userID, subscribe])
 
 	useEffect(() => {
 		// not logged in
@@ -70,7 +64,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		}
 
 		// no wallet connected
-		if (!user.publicAddress || user.publicAddress === null) {
+		if (!user.publicAddress) {
 			setWalletMsg("Wallet not connected")
 			setWalletSups("N/A")
 			return
@@ -79,10 +73,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
 		setWalletSups(correctWallet ? supBalance : "N/A")
-	}, [supBalance, account, userID, userPublicAddress])
+	}, [supBalance, account, user, userPublicAddress])
 
 	useEffect(() => {
-		// let unmounted = false
 		if (state !== SocketState.OPEN) return
 		;(async () => {
 			try {
@@ -90,10 +83,18 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 				setFactionsData(resp)
 			} catch (e) {
-				setFactionsData(undefined)
+				setFactionsData([])
 			}
 		})()
 	}, [send, state])
+	let truncatedUsername = ""
+	if (user) {
+		const maxLength = 8
+		truncatedUsername = user.username
+		if (truncatedUsername.length > maxLength) {
+			truncatedUsername = `${user.username.substring(0, maxLength)}...`
+		}
+	}
 
 	const content = user ? (
 		<Box
@@ -117,8 +118,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					sx={{
 						marginRight: "2rem",
 					}}
-					size="5rem"
+					size="4rem"
 				/>
+
 				<Box
 					sx={{
 						overflow: "hidden",
@@ -130,9 +132,10 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					<Typography variant="subtitle1">
 						{user.firstName} {user.lastName}
 					</Typography>
-					<Typography variant="h5">{user.username}</Typography>
+					<Typography variant="h5">{truncatedUsername}</Typography>
 				</Box>
 			</Box>
+
 			<Divider />
 			<Box
 				sx={{
@@ -151,7 +154,26 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						fontWeight: 600,
 					}}
 				>
-					SUPS
+					My Wallet
+				</Typography>
+				<Typography
+					key={`usersups-${userSups}`}
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						"& svg": {
+							height: ".8rem",
+						},
+						"& > *:not(:last-child)": {
+							marginRight: ".2rem",
+						},
+					}}
+				>
+					<Box component="span" fontWeight={500} color={colors.darkGrey}>
+						XSYN Balance:
+					</Box>
+					<SupTokenIcon />
+					{supFormatter(userSups || "0")}
 				</Typography>
 				<Typography
 					sx={{
@@ -166,28 +188,10 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					}}
 				>
 					<Box component="span" fontWeight={500} color={colors.darkGrey}>
-						XSYN SUPs:
+						Wallet Balance:
 					</Box>
 					<SupTokenIcon />
-					{xsynSups}
-				</Typography>
-				<Typography
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						"& svg": {
-							height: ".8rem",
-						},
-						"& > *:not(:last-child)": {
-							marginRight: ".2rem",
-						},
-					}}
-				>
-					<Box component="span" fontWeight={500} color={colors.darkGrey}>
-						Wallet SUPs:
-					</Box>
-					<SupTokenIcon />
-					{walletSups}
+					{supFormatter(walletSups || "0")}
 				</Typography>
 				<Box
 					sx={{
@@ -209,7 +213,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					>
 						Buy SUPS
 					</FancyButton>
-					<FancyButton
+					{/* <FancyButton
 						size="small"
 						sx={{
 							flex: 1,
@@ -217,14 +221,14 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						onClick={() => {
 							if (!user.publicAddress) {
 								displayMessage(
-									"You must have a MetaMask connection if you want to redeem SUPs. You can connect your MetaMask account in your profile page.",
+									"You must have a wallet connected to your account if you want to redeem SUPs. You can connect a wallet account in your profile page.",
 									"error",
 								)
 							}
 						}}
 					>
 						Redeem
-					</FancyButton>
+					</FancyButton> */}
 					<FancyButton
 						size="small"
 						borderColor={colors.skyBlue}
@@ -234,10 +238,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						onClick={() => {
 							if (!user.publicAddress) {
 								displayMessage(
-									"You must have a MetaMask connection if you want to withdraw SUPs. You can connect your MetaMask account in your profile page.",
+									"You must have a wallet connected to your account if you want to redeem SUPs. You can connect a wallet account in your profile page.",
 									"error",
 								)
+								return
 							}
+							setWithdrawDialogOpen(true)
 						}}
 					>
 						Withdraw
@@ -261,49 +267,44 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						fontWeight: 600,
 					}}
 				>
-					Supremacy - Enlist
+					Supremacy
 				</Typography>
+				<Divider />
 				<RenderEnlist factionsData={factionsData} user={user} />
-			</Box>
-			<Divider />
-			<Box
-				sx={{
-					display: "flex",
-					flexDirection: "column",
-				}}
-			>
-				<Typography
-					sx={{
-						marginBottom: ".5rem",
-						textTransform: "uppercase",
-						fontWeight: 600,
-					}}
-				>
-					Quick Links
-				</Typography>
-				<NavButton onClick={() => setSidebarOpen(false)} to="/profile" startIcon={<FaceIcon />}>
-					Profile
+				<Divider />
+				<NavButton to={`/battle_arena`} startIcon={<SportsKabaddiIcon />}>
+					Battle Arena
 				</NavButton>
-				<NavButton onClick={() => setSidebarOpen(false)} to={`/collections`} startIcon={<AppsIcon />}>
-					Collections
+				<Divider />
+				<a></a>
+				<NavButton to={`/collections`} startIcon={<AppsIcon />}>
+					My Inventory
 				</NavButton>
-				<NavButton onClick={() => setSidebarOpen(false)} to="/stores" startIcon={<StorefrontIcon />}>
-					Stores
+				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
+					Purchase Assets
 				</NavButton>
 			</Box>
+
 			<Divider />
 			<Box flex="1" />
-			<Button
-				startIcon={<LogoutIcon />}
-				onClick={() => logout()}
-				sx={(theme) => ({
-					":hover": {
-						backgroundColor: theme.palette.error.main,
-					},
-				})}
-			>
-				Logout
-			</Button>
+			<NavButton sx={{ alignSelf: "start", width: "100%" }} to="/profile" startIcon={<FaceIcon />}>
+				Edit Profile
+			</NavButton>
+			<Box>
+				<Button
+					startIcon={<LogoutIcon />}
+					onClick={() => logout()}
+					sx={(theme) => ({
+						justifyContent: "flex-start",
+						width: "100%",
+						":hover": {
+							backgroundColor: theme.palette.error.main,
+						},
+					})}
+				>
+					Logout
+				</Button>
+			</Box>
 		</Box>
 	) : (
 		<Box
@@ -336,7 +337,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				>
 					Quick Links
 				</Typography>
-				<NavButton onClick={() => setSidebarOpen(false)} to="/stores" startIcon={<StorefrontIcon />}>
+				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
 					Stores
 				</NavButton>
 			</Box>
@@ -410,6 +411,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				{children}
 			</Box>
+			<WithdrawSupsModal open={withdrawDialogOpen} onClose={() => setWithdrawDialogOpen(false)} />
 		</Box>
 	)
 }

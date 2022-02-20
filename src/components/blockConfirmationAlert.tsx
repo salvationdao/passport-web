@@ -1,7 +1,7 @@
-import { Box, Fade, IconButton, Link, Typography, useTheme } from "@mui/material"
+import { Box, IconButton, Link, Typography, useTheme } from "@mui/material"
 import Alert from "@mui/material/Alert"
 import { useEffect, useState } from "react"
-import { useWeb3 } from "../containers/web3"
+import { useWeb3, web3Constants } from "../containers/web3"
 import { colors } from "../theme"
 import { ChainConfirmations } from "./blockConfirmationSnackList"
 
@@ -15,7 +15,7 @@ interface BlockConfirmationProps {
 }
 export const BlockConfirmationSnackbar = ({ currentConfirmation, handleFilter }: BlockConfirmationProps) => {
 	const theme = useTheme()
-	const { currentChainId, web3Constants } = useWeb3()
+	const { currentChainId } = useWeb3()
 
 	const [scanSite, setScanSite] = useState<string | undefined>()
 
@@ -41,8 +41,8 @@ export const BlockConfirmationSnackbar = ({ currentConfirmation, handleFilter }:
 				severity={currentConfirmation?.confirmationAmount === 6 ? "success" : "info"}
 				sx={
 					currentConfirmation?.confirmationAmount === 6
-						? { backgroundColor: colors.navyBlue, border: `${theme.palette.success.main} 1px solid`, borderRadius: "0" }
-						: { backgroundColor: colors.navyBlue, border: `${colors.skyBlue} 1px solid`, borderRadius: "0" }
+						? { backgroundColor: colors.darkNavyBlue, border: `${theme.palette.success.main} 1px solid`, borderRadius: "0" }
+						: { backgroundColor: colors.darkNavyBlue, border: `${colors.skyBlue} 1px solid`, borderRadius: "0" }
 				}
 			>
 				<Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: ".5rem", minWidth: "170px" }}>
@@ -62,7 +62,7 @@ export const BlockConfirmationSnackbar = ({ currentConfirmation, handleFilter }:
 				</Box>
 				<Typography color="white">
 					{`Transaction: `}
-					<Link href={currentConfirmation ? `https://${scanSite}/tx/${currentConfirmation.tx}` : "https://${scanSite}/tx/"} target="_blank">
+					<Link href={currentConfirmation ? `https://${scanSite}/tx/${currentConfirmation.tx}` : `https://${scanSite}/tx/`} target="_blank">
 						{currentConfirmation?.tx.substring(0, 12)}...
 					</Link>
 				</Typography>

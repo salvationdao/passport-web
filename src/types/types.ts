@@ -128,6 +128,7 @@ export interface Asset {
 	userID: string
 	username: string
 	name: string
+	collectionID: string
 	collection: Collection
 	description: string
 	externalURL: string
@@ -138,6 +139,7 @@ export interface Asset {
 	frozenAt?: Date
 	lockedByID?: string
 	deletedAt?: Date
+	mintingSignature?: string
 }
 
 export interface Attribute {
@@ -153,6 +155,7 @@ export interface StoreItem {
 	factionID: string
 	faction?: Faction
 	collectionID: string
+	collection: Collection
 	description: string
 	image: string
 	attributes: Attribute[]

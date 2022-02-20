@@ -51,6 +51,7 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const { state, send, subscribe } = useWebsocket()
+
 	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
 
 	const [sessionID, setSessionID] = useState("")
@@ -190,6 +191,7 @@ export const AuthContainer = createContainer(() => {
 		} catch (e) {
 			localStorage.clear()
 			setUser(undefined)
+			console.error(e)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
 	}, [send, state, account, metaMaskState, sign, sessionID])

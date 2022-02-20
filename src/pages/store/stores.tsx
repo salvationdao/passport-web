@@ -177,7 +177,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 				}}
 			>
 				{storeItemIDs.slice(0, 5).map((a) => {
-					return <StoreItemCard key={a} collectionName={collection.name} storeItemID={a} />
+					return <StoreItemCard key={a} storeItemID={a} />
 				})}
 			</Paper>
 		)
@@ -214,7 +214,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 					component={RouterLink}
 					to={`/stores/${collection.name}`}
 				>
-					View Entire Store
+					View Store
 				</Link>
 			</Box>
 			{storeItemIDs.length ? (

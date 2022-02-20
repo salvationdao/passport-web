@@ -28,6 +28,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 	// search and filter
 	const [search, setSearch] = useState("")
+	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType, setAssetType] = useState<string>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const [brands, setBrand] = useState<Set<string>>(new Set())
@@ -132,8 +133,9 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 				linkOperator: "and",
 				items: filtersItems,
 			},
+			...sort,
 		})
-	}, [user, query, collection, state, assetType, rarities, brands, search, username])
+	}, [user, query, collection, state, assetType, rarities, brands, search, username, sort])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
@@ -144,7 +146,91 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		<>
 			<Box>
 				<Typography
-					variant="subtitle2"
+					variant="subtitle1"
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						marginBottom: ".5rem",
+					}}
+				>
+					Sort By
+				</Typography>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						gap: ".5rem",
+					}}
+				>
+					{(() => {
+						const newSort = {
+							sortBy: "created_at",
+							sortDir: "asc",
+						}
+						return (
+							<SortChip
+								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+								label="Oldest first"
+								variant="outlined"
+								onClick={() => {
+									setSort(newSort)
+								}}
+							/>
+						)
+					})()}
+					{(() => {
+						const newSort = {
+							sortBy: "created_at",
+							sortDir: "desc",
+						}
+						return (
+							<SortChip
+								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+								label="Newest first"
+								variant="outlined"
+								onClick={() => {
+									setSort(newSort)
+								}}
+							/>
+						)
+					})()}
+					{(() => {
+						const newSort = {
+							sortBy: "name",
+							sortDir: "asc",
+						}
+						return (
+							<SortChip
+								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+								label="Name: Alphabetical"
+								variant="outlined"
+								onClick={() => {
+									setSort(newSort)
+								}}
+							/>
+						)
+					})()}
+					{(() => {
+						const newSort = {
+							sortBy: "name",
+							sortDir: "desc",
+						}
+						return (
+							<SortChip
+								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+								label="Name: Alphabetical (reverse)"
+								variant="outlined"
+								onClick={() => {
+									setSort(newSort)
+								}}
+							/>
+						)
+					})()}
+				</Box>
+			</Box>
+			<Box>
+				<Typography
+					variant="subtitle1"
 					sx={{
 						marginBottom: ".5rem",
 					}}
@@ -177,7 +263,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 			</Box>
 			<Box>
 				<Typography
-					variant="subtitle2"
+					variant="subtitle1"
 					sx={{
 						marginBottom: ".5rem",
 					}}
@@ -412,7 +498,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 									}}
 								>
 									{tokenIDs.map((a) => {
-										return <CollectionItemCard key={a} tokenID={a} collectionName={collection_name} username={username} />
+										return <CollectionItemCard key={a} tokenID={a} username={username} />
 									})}
 								</Paper>
 							) : (
@@ -439,6 +525,28 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	)
 }
 
+interface SortChipProps extends Omit<ChipProps, "color" | "onDelete"> {
+	color?: string
+	active: boolean
+}
+export const SortChip = ({ color = colors.white, active, ...props }: SortChipProps) => (
+	<Chip
+		sx={{
+			color: active ? colors.darkerNavyBlue : color,
+			borderColor: color,
+			backgroundColor: active ? color : "transparent",
+			"&&:hover": {
+				color: colors.darkerNavyBlue,
+				backgroundColor: color,
+			},
+			"&&:focus": {
+				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
+			},
+		}}
+		{...props}
+	/>
+)
+
 interface FilterChipProps extends Omit<ChipProps, "color" | "onDelete"> {
 	color?: string
 	active: boolean
@@ -446,11 +554,11 @@ interface FilterChipProps extends Omit<ChipProps, "color" | "onDelete"> {
 export const FilterChip = ({ color = colors.white, active, ...props }: FilterChipProps) => (
 	<Chip
 		sx={{
-			color: active ? colors.darkNavyBlue : color,
+			color: active ? colors.darkerNavyBlue : color,
 			borderColor: color,
 			backgroundColor: active ? color : "transparent",
 			"&&:hover": {
-				color: colors.darkNavyBlue,
+				color: colors.darkerNavyBlue,
 				backgroundColor: color,
 			},
 			"&&:focus": {

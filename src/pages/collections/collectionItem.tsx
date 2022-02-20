@@ -16,6 +16,7 @@ import { colors } from "../../theme"
 import { NilUUID } from "../../types/auth"
 import { Asset, Attribute } from "../../types/types"
 import { Rarity, rarityTextStyles } from "../store/storeItemCard"
+import { MintModal } from "../../components/mintModal"
 
 export const CollectionItemPage: React.VoidFunctionComponent = () => {
 	const { token_id: id } = useParams<{ username: string; collection_name: string; token_id: string }>()
@@ -31,6 +32,8 @@ export const CollectionItemPage: React.VoidFunctionComponent = () => {
 	const [regularAttributes, setRegularAttributes] = useState<Attribute[]>()
 	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>()
 	const [assetAttributes, setAssetAttributes] = useState<Attribute[]>()
+
+	const [mintWindowOpen, setMintWindowOpen] = useState<boolean>(false)
 
 	// Queuing war machine
 	const { queuedWarMachine, queuingContractReward } = useAsset()
@@ -270,37 +273,87 @@ export const CollectionItemPage: React.VoidFunctionComponent = () => {
 							<Typography variant="body1">{collectionItem.description}</Typography>
 						</Box>
 
-						<Box
-							sx={{
-								marginBottom: "1.5rem",
-							}}
-						>
-							<Typography
-								variant="h6"
-								component="p"
-								color={colors.darkGrey}
+						{userID === collectionItem.userID && (
+							<Box
 								sx={{
-									marginBottom: ".5rem",
-									textTransform: "uppercase",
+									marginBottom: "1.5rem",
 								}}
 							>
-								Queue Status
-							</Typography>
-							{queueDetail ? (
-								<>
-									<Typography>
-										<Box
-											component="span"
-											fontWeight={500}
-											color={colors.darkGrey}
+								<Typography
+									variant="h6"
+									component="p"
+									color={colors.darkGrey}
+									sx={{
+										marginBottom: ".5rem",
+										textTransform: "uppercase",
+									}}
+								>
+									Queue Status
+								</Typography>
+								{queueDetail ? (
+									<>
+										<Typography>
+											<Box
+												component="span"
+												fontWeight={500}
+												color={colors.darkGrey}
+												sx={{
+													marginRight: ".5rem",
+												}}
+											>
+												Queue Position:
+											</Box>
+											{queueDetail.position !== -1 ? `${queueDetail.position + 1}` : "In Game"}
+										</Typography>
+										<Typography
 											sx={{
-												marginRight: ".5rem",
+												display: "flex",
+												alignItems: "center",
+												"& svg": {
+													height: ".8rem",
+												},
+												"& > *:not(:last-child)": {
+													marginRight: ".2rem",
+												},
 											}}
 										>
-											Queue Position:
-										</Box>
-										{queueDetail.position !== -1 ? `${queueDetail.position + 1}` : "In Game"}
-									</Typography>
+											<Box component="span" fontWeight={500} color={colors.darkGrey}>
+												Contract Reward:
+											</Box>
+											<SupTokenIcon />
+											{supFormatter(queueDetail.warMachineMetadata.contractReward)}
+										</Typography>
+										{queueDetail.warMachineMetadata.isInsured ? (
+											<Typography>
+												<Box
+													component="span"
+													fontWeight={500}
+													color={colors.darkGrey}
+													sx={{
+														marginRight: ".5rem",
+													}}
+												>
+													Insurance Status:
+												</Box>
+												Insured
+											</Typography>
+										) : (
+											<Typography>
+												<Box
+													component="span"
+													fontWeight={500}
+													color={colors.darkGrey}
+													sx={{
+														marginRight: ".5rem",
+													}}
+												>
+													Insurance Status:
+												</Box>
+												Not Insured
+											</Typography>
+										)}
+									</>
+								) : (
 									<Typography
 										sx={{
 											display: "flex",
@@ -317,59 +370,11 @@ export const CollectionItemPage: React.VoidFunctionComponent = () => {
 											Contract Reward:
 										</Box>
 										<SupTokenIcon />
-										{supFormatter(queueDetail.warMachineMetadata.contractReward)}
+										{supFormatter(queuingContractReward)}
 									</Typography>
-									{queueDetail.warMachineMetadata.isInsured ? (
-										<Typography>
-											<Box
-												component="span"
-												fontWeight={500}
-												color={colors.darkGrey}
-												sx={{
-													marginRight: ".5rem",
-												}}
-											>
-												Insurance Status:
-											</Box>
-											Insured
-										</Typography>
-									) : (
-										<Typography>
-											<Box
-												component="span"
-												fontWeight={500}
-												color={colors.darkGrey}
-												sx={{
-													marginRight: ".5rem",
-												}}
-											>
-												Insurance Status:
-											</Box>
-											Not Insured
-										</Typography>
-									)}
-								</>
-							) : (
-								<Typography
-									sx={{
-										display: "flex",
-										alignItems: "center",
-										"& svg": {
-											height: ".8rem",
-										},
-										"& > *:not(:last-child)": {
-											marginRight: ".2rem",
-										},
-									}}
-								>
-									<Box component="span" fontWeight={500} color={colors.darkGrey}>
-										Contract Reward:
-									</Box>
-									<SupTokenIcon />
-									{supFormatter(queuingContractReward)}
-								</Typography>
-							)}
-						</Box>
+								)}
+							</Box>
+						)}
 
 						<Box
 							sx={{
@@ -484,7 +489,7 @@ export const CollectionItemPage: React.VoidFunctionComponent = () => {
 						</Box>
 						<Box flex="1" />
 
-						<Box>
+						<Box key={`${collectionItem?.lockedByID}-${collectionItem?.frozenAt}-${collectionItem?.mintingSignature}`}>
 							<Typography
 								variant="h6"
 								component="p"
@@ -496,35 +501,62 @@ export const CollectionItemPage: React.VoidFunctionComponent = () => {
 							>
 								Actions
 							</Typography>
-							{userID === collectionItem.userID ? (
-								!collectionItem.frozenAt && isWarMachine() ? (
-									<FancyButton onClick={() => onDeploy()} fullWidth>
-										Deploy
-									</FancyButton>
-								) : (
-									<>
-										{!queueDetail?.warMachineMetadata.isInsured && (!collectionItem.lockedByID || collectionItem.lockedByID === NilUUID) && (
-											<FancyButton
-												loading={submitting}
-												onClick={payInsurance}
-												sx={{
-													marginBottom: ".5rem",
-												}}
-												fullWidth
-											>
-												Pay Insurance
-											</FancyButton>
-										)}
-										<FancyButton loading={submitting} onClick={leaveQueue} borderColor={colors.errorRed} fullWidth>
-											Leave
+							<Box sx={{ display: "flex", flexDirection: "column", rowGap: "0.5rem" }}>
+								{userID === collectionItem.userID ? (
+									collectionItem.mintingSignature || collectionItem.mintingSignature !== "" ? (
+										<FancyButton onClick={() => setMintWindowOpen(true)} fullWidth>
+											Continue Transition Off World
 										</FancyButton>
-									</>
-								)
-							) : null}
+									) : !collectionItem.frozenAt && isWarMachine() ? (
+										<>
+											<FancyButton onClick={() => onDeploy()} fullWidth>
+												Deploy
+											</FancyButton>
+											<FancyButton onClick={() => setMintWindowOpen(true)} fullWidth>
+												Transition Off World
+											</FancyButton>
+										</>
+									) : (
+										<>
+											{!queueDetail?.warMachineMetadata.isInsured &&
+												(!collectionItem.lockedByID || collectionItem.lockedByID === NilUUID) && (
+													<FancyButton
+														loading={submitting}
+														onClick={payInsurance}
+														sx={{
+															marginBottom: ".5rem",
+														}}
+														fullWidth
+													>
+														Pay Insurance
+													</FancyButton>
+												)}
+											<FancyButton loading={submitting} onClick={leaveQueue} borderColor={colors.errorRed} fullWidth>
+												Leave
+											</FancyButton>
+										</>
+									)
+								) : null}
+								<FancyButton loading={submitting} borderColor={colors.errorRed} fullWidth>
+									View Battle History Stats
+								</FancyButton>
+								<FancyButton loading={submitting} borderColor={colors.errorRed} fullWidth>
+									View Transaction History
+								</FancyButton>
+								<FancyButton loading={submitting} borderColor={colors.errorRed} fullWidth>
+									View on OpenSea
+								</FancyButton>
+							</Box>
 						</Box>
 					</Box>
 				</Paper>
 			</Box>
+			<MintModal
+				open={mintWindowOpen}
+				onClose={() => setMintWindowOpen(false)}
+				tokenID={collectionItem.tokenID.toString()}
+				mintingSignature={collectionItem?.mintingSignature}
+			/>
 		</Box>
 	)
 }
@@ -561,7 +593,7 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 						right: 0,
 						bottom: 0,
 						borderRadius: "50%",
-						backgroundColor: colors.darkNavyBlue,
+						backgroundColor: colors.darkerNavyBlue,
 					}}
 				/>
 				<Box
