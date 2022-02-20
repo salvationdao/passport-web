@@ -95,7 +95,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			truncatedUsername = `${user.username.substring(0, maxLength)}...`
 		}
 	}
-
 	const content = user ? (
 		<Box
 			sx={{
@@ -191,7 +190,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						Wallet Balance:
 					</Box>
 					<SupTokenIcon />
-					{supFormatter(walletSups || "0")}
+					{walletSups ? walletSups : "___"}
 				</Typography>
 				<Box
 					sx={{

@@ -15,6 +15,7 @@ interface MintModalProps {
 
 interface GetSignatureResponse {
 	messageSignature: string
+	expiry: number
 }
 
 export const MintModal = ({ open, onClose, tokenID, mintingSignature }: MintModalProps) => {
@@ -50,7 +51,7 @@ export const MintModal = ({ open, onClose, tokenID, mintingSignature }: MintModa
 
 			// A Human-Readable ABI; for interacting with the contract,
 			// we must include any fragment we wish to use
-			const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature)"]
+			const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
 			const signer = provider.getSigner()
 			const mintContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
 			if (mintingSignature && mintingSignature !== "") {
@@ -62,7 +63,7 @@ export const MintModal = ({ open, onClose, tokenID, mintingSignature }: MintModa
 			const nonce = await mintContract.nonces(account)
 			const resp = await fetch(`/api/mint-nft/${account}/${nonce}/${tokenID}`)
 			const respJson: GetSignatureResponse = await resp.json()
-			await mintContract.signedMint(tokenID, respJson.messageSignature)
+			await mintContract.signedMint(tokenID, respJson.messageSignature, respJson.expiry)
 			setErrorMinting(undefined)
 			onClose()
 		} catch (e) {
