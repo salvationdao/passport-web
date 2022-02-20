@@ -1,8 +1,5 @@
-import MetaMaskOnboarding from "@metamask/onboarding"
 import { Button } from "@mui/material"
-import React, { useEffect, useCallback } from "react"
-import { MetaMaskIcon } from "../assets"
-import { WalletConnectIcon } from "../assets"
+import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 
 interface ConnectWalletProps {

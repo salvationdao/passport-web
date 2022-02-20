@@ -201,6 +201,10 @@ export const Web3Container = createContainer(() => {
 		try {
 			walletConnectProvider = await createWcProvider()
 			await walletConnectProvider.enable()
+			const connector = await walletConnectProvider.getWalletConnector()
+			const acc = connector.accounts[0]
+			setAccount(acc)
+			return { walletConnectProvider }
 		} catch (error) {
 			await walletConnectProvider?.disconnect()
 		}
@@ -289,6 +293,7 @@ export const Web3Container = createContainer(() => {
 	// Returns an empty string if user does not exist
 	const sign = useCallback(
 		async (userID?: string): Promise<string> => {
+			await wcConnect()
 			if (!provider) return ""
 			await provider.send("eth_requestAccounts", [])
 			const signer = provider.getSigner()
@@ -304,7 +309,28 @@ export const Web3Container = createContainer(() => {
 			const msg = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
 			return await signer.signMessage(`${msg}:\n ${nonce}`)
 		},
-		[provider, getNonce, getNonceFromID],
+		[provider, getNonce, getNonceFromID, wcConnect],
+	)
+
+	const signWalletConnect = useCallback(
+		async (userID?: string): Promise<string> => {
+			await wcConnect()
+			if (wcProvider) {
+				const connector = await wcProvider.getWalletConnector()
+				let nonce: string
+				if (userID) {
+					nonce = await getNonceFromID(userID)
+				} else if (account) {
+					nonce = await getNonce(account)
+				} else return ""
+				if (nonce === "") return ""
+				const msg = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
+				const convertMsg = ethers.utils.toUtf8Bytes(`${msg}:\n ${nonce}`)
+				const signMsg = ethers.utils.keccak256(convertMsg)
+				return await connector.signMessage([account, signMsg])
+			} else return ""
+		},
+		[wcProvider, getNonce, getNonceFromID, account, wcConnect],
 	)
 
 	const changeChain = async (chain: number) => {
@@ -395,6 +421,7 @@ export const Web3Container = createContainer(() => {
 		sendTransfer,
 		supBalance,
 		wcConnect,
+		signWalletConnect,
 	}
 })
 
