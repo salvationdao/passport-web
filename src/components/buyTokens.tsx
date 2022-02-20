@@ -17,7 +17,7 @@ import {
 	TextField,
 	TextFieldProps,
 	Typography,
-	useTheme
+	useTheme,
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
@@ -33,6 +33,7 @@ import HubKey from "../keys"
 import { colors } from "../theme"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
+import { ExchangeRates } from "../types/types"
 
 //styled MUI components at root, where sx can't change them
 const StyledSelect = styled(Select)<SelectProps>(
@@ -90,6 +91,7 @@ export const BuyTokens: React.FC = () => {
 	const [scanSite, setScanSite] = useState<string>("")
 	const [transferError, setTransferError] = useState<any>(null)
 	const [loading, setLoading] = useState<boolean>(false)
+	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
 
 	const [contractAddr, setContractAddr] = useState<string>("")
 
@@ -211,6 +213,13 @@ export const BuyTokens: React.FC = () => {
 			}
 		})()
 	}, [contractAddr, getBalance])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
+			setExchangeRates(rates)
+		})
+	}, [subscribe, state])
 
 	//Setting up websocket to listen to remaining supply
 	useEffect(() => {

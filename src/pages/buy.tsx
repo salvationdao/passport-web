@@ -1,4 +1,5 @@
 import { Box } from "@mui/material"
+import { ethers } from "ethers"
 import React, { useEffect } from "react"
 import { useHistory } from "react-router-dom"
 import { BuyTokens } from "../components/buyTokens"
@@ -6,8 +7,11 @@ import { GradientCircleThing } from "../components/home/gradientCircleThing"
 import { Navbar } from "../components/home/navbar"
 import { Loading } from "../components/loading"
 import { useAuth } from "../containers/auth"
+import { SocketState, useWebsocket } from "../containers/socket"
+import HubKey from "../keys"
 
 export const BuyPage: React.FC = () => {
+	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
 	const history = useHistory()
 
@@ -24,6 +28,7 @@ export const BuyPage: React.FC = () => {
 	if (!user) {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
+
 	return (
 		<>
 			<Box sx={{ position: "relative", minHeight: "100vh" }}>
