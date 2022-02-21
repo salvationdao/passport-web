@@ -35,6 +35,6 @@ export { default as PlaceholderMechImagePath } from "./images/placeholder_mech.p
 export { default as PlaceholderAssetImagePath } from "./images/shield.png"
 export { default as SupTokenIconPath, ReactComponent as SupTokenIcon } from "./images/sup-token.svg"
 export { default as SupremacyLogoImagePath } from "./images/supremacy-logo.svg"
-export { ReactComponent as XSYNLogo } from "./images/XSYN Stack White.svg"
+export { default as XSYNLogoImagePath, ReactComponent as XSYNLogo } from "./images/XSYN Stack White.svg"
 export { default as XSYNWordmarkImagePath } from "./images/XSYN Wordmark White.png"
 export { default as ZaibatsuLogoImagePath } from "./images/Zaibatsu_Logo.svg"

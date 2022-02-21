@@ -1,8 +1,10 @@
-import { Box, Link, Paper, Skeleton, Typography } from "@mui/material"
+import { Box, Divider, Paper, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { Link as RouterLink } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
+import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -65,9 +67,15 @@ export const StoresPage = () => {
 						<StoreCollectionSkeleton />
 					</>
 				) : (
-					collections.map((c) => {
-						return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
-					})
+					<Paper
+						sx={{
+							padding: "2rem",
+						}}
+					>
+						{collections.map((c) => {
+							return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
+						})}
+					</Paper>
 				)}
 			</Box>
 		</Box>
@@ -123,6 +131,7 @@ interface StoreCollectionProps {
 const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ collection, faction }) => {
 	const { send, state } = useWebsocket()
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
+	const [search, setSearch] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
 
@@ -133,6 +142,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 			try {
 				const resp = await send<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, {
 					pageSize: 6,
+					search,
 					filter: {
 						linkOperator: "and",
 						items: [
@@ -157,29 +167,23 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 				setLoading(false)
 			}
 		})()
-	}, [send, state, collection, faction])
+	}, [send, state, collection, faction, search])
 
 	const renderCollection = () => {
 		return (
-			<Paper
+			<Box
 				sx={{
-					overflowX: "auto",
-					display: "flex",
-					padding: "2rem",
+					overflowX: "hidden",
+					display: "grid",
+					gridTemplateColumns: "repeat(6, 240px)",
+					gap: "1rem",
 					maskImage: "linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 100%)",
-					"& > *": {
-						minWidth: "240px",
-						maxWidth: "240px",
-						"&:not(:last-child)": {
-							marginRight: "1rem",
-						},
-					},
 				}}
 			>
 				{storeItemIDs.slice(0, 5).map((a) => {
 					return <StoreItemCard key={a} storeItemID={a} />
 				})}
-			</Paper>
+			</Box>
 		)
 	}
 
@@ -188,9 +192,13 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 			<Box
 				sx={{
 					display: "flex",
-					alignItems: "baseline",
+					alignItems: "center",
 					flexWrap: "wrap",
-					marginBottom: "1rem",
+					marginBottom: ".5rem",
+					"@media (max-width: 630px)": {
+						flexDirection: "column",
+						alignItems: "stretch",
+					},
 				}}
 			>
 				<Box
@@ -202,35 +210,55 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 						marginRight: ".5rem",
 					}}
 				/>
-				<Link
-					variant="h5"
-					underline="hover"
-					sx={{
-						marginTop: "1rem",
-						textTransform: "uppercase",
-						whiteSpace: "nowrap",
+				<Box flex={1} minHeight="1rem" />
+				<SearchBar
+					label="Search store"
+					placeholder="Search store"
+					value={search}
+					size="small"
+					onChange={(value: string) => {
+						setSearch(value)
 					}}
-					color={colors.white}
-					component={RouterLink}
-					to={`/stores/${collection.name}`}
-				>
-					View Store
-				</Link>
+					sx={{
+						flexGrow: 1,
+						minWidth: "200px",
+						maxWidth: "800px",
+					}}
+				/>
+			</Box>
+			<Box
+				sx={{
+					display: "inline-block",
+					marginBottom: "1rem",
+					"@media (max-width: 630px)": {
+						display: "block",
+					},
+				}}
+			>
+				<RouterLink component={StyledFancyButton} to={`/stores/${collection.name}`}>
+					View Entire Store
+				</RouterLink>
 			</Box>
 			{storeItemIDs.length ? (
 				renderCollection()
 			) : (
-				<Paper
-					sx={{
-						marginBottom: "2rem",
-						padding: "2rem",
-					}}
-				>
+				<Box>
 					<Typography variant="subtitle2" color={colors.darkGrey}>
 						{loading ? "Loading store items..." : error ? error : `There are currently no items from ${collection.name} for sale.`}
 					</Typography>
-				</Paper>
+				</Box>
 			)}
+			<Divider
+				sx={{
+					display: "none",
+					margin: "2rem 0",
+					"&:not(:last-child)": {
+						display: "block",
+					},
+				}}
+			/>
 		</>
 	)
 }
+
+const StyledFancyButton = ({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" fullWidth />

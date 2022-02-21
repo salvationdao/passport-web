@@ -1,4 +1,5 @@
 import { Box, IconButton, Link, styled, Typography } from "@mui/material"
+import { blue } from "@mui/material/colors"
 import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
@@ -15,6 +16,7 @@ import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } 
 import { AuthContainer, useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
+import { API_ENDPOINT_HOSTNAME } from "../../containers/socket"
 import { MetaMaskState } from "../../containers/web3"
 import { fonts } from "../../theme"
 
@@ -34,6 +36,7 @@ export const LoginPage: React.FC = () => {
 	const { control, handleSubmit, reset } = useForm<LogInInput>()
 	const [loading, setLoading] = useState(false)
 	const [showEmailLogin, setShowEmailLogin] = useState(false)
+	const [onlyWalletConnection, setOnlyWalletConnection] = useState(true)
 
 	const onMetaMaskLoginFailure = (error: string) => {
 		displayMessage(error, "error")
@@ -139,6 +142,14 @@ export const LoginPage: React.FC = () => {
 		}, 2000)
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
+
+	useEffect(() => {
+		fetch(`/api/whitelist/check`).then((res) => {
+			res.json().then((data) => {
+				setOnlyWalletConnection(data)
+			})
+		})
+	}, [])
 
 	if (user) {
 		return <Loading text="You are already logged in, redirecting to your profile..." />
@@ -297,80 +308,124 @@ export const LoginPage: React.FC = () => {
 								</FancyButton>
 							)}
 						/>
-						<Typography
-							variant="subtitle1"
-							sx={{
-								color: (theme) => theme.palette.primary.main,
-								textAlign: "center",
-								textTransform: "uppercase",
-								fontFamily: fonts.bizmosemi_bold,
-							}}
-						>
-							Or Sign In With
-						</Typography>
 
-						<Box
-							sx={{
-								display: "grid",
-								gridTemplateColumns: "repeat(3, minmax(3rem, 1fr))",
-								gap: "1rem",
-							}}
-						>
-							<StyledIconButton
-								onClick={() => {
-									setShowEmailLogin(true)
-								}}
-							>
-								<MailIcon />
-							</StyledIconButton>
-							<GoogleLogin
-								clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
-								buttonText="Login"
-								onSuccess={onGoogleLogin}
-								onFailure={onGoogleLoginFailure}
-								cookiePolicy={"single_host_origin"}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={props.disabled} title="Login with Google">
-										<GoogleIcon />
+						<Box sx={{ position: onlyWalletConnection ? "relative" : "unset" }}>
+							{onlyWalletConnection && (
+								<Typography
+									variant="subtitle1"
+									sx={{
+										textAlign: "center",
+										position: "absolute",
+										maxWidth: "20rem",
+										width: "100%",
+										margin: "auto",
+										top: "4em",
+										bottom: "0",
+										left: "0",
+										right: "0",
+										color: (theme) => theme.palette.primary.main,
+										textTransform: "uppercase",
+										fontFamily: fonts.bizmosemi_bold,
+										zIndex: 100,
+									}}
+								>
+									Only wallet connections are allowed during the whitelist period
+								</Typography>
+							)}
+							<BlurBox disable={onlyWalletConnection}>
+								<Typography
+									variant="subtitle1"
+									sx={{
+										color: (theme) => theme.palette.primary.main,
+										textAlign: "center",
+										textTransform: "uppercase",
+										fontFamily: fonts.bizmosemi_bold,
+									}}
+								>
+									Or Sign In With
+								</Typography>
+								<Box
+									sx={{
+										display: "grid",
+										gridTemplateColumns: "repeat(3, minmax(3rem, 1fr))",
+										gap: "1rem",
+									}}
+								>
+									<StyledIconButton
+										onClick={() => {
+											setShowEmailLogin(true)
+										}}
+										disabled={onlyWalletConnection}
+									>
+										<MailIcon />
 									</StyledIconButton>
-								)}
-							/>
-							<FacebookLogin
-								callback={onFacebookLogin}
-								onFailure={onFacebookLoginFailure}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={!props.isSdkLoaded || props.isProcessing} title="Login with Facebook">
-										<FacebookIcon />
-									</StyledIconButton>
-								)}
-							/>
-							<TwitchLogin
-								callback={onTwitchLogin}
-								onFailure={onTwitchLoginFailure}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={props.isProcessing} title="Log in with Twitch">
-										<TwitchIcon />
-									</StyledIconButton>
-								)}
-							/>
-							<TwitterLogin
-								callback={onTwitterLogin}
-								onFailure={onTwitterLoginFailure}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={props.isProcessing} title="Log in with Twitter">
-										<TwitterIcon />
-									</StyledIconButton>
-								)}
-							/>
-							<DiscordLogin
-								callback={onDiscordLogin}
-								onFailure={onDiscordLoginFailure}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={props.isProcessing} title="Log in with Discord">
-										<DiscordIcon />
-									</StyledIconButton>
-								)}
-							/>
+									<GoogleLogin
+										clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
+										buttonText="Login"
+										onSuccess={onGoogleLogin}
+										onFailure={onGoogleLoginFailure}
+										cookiePolicy={"single_host_origin"}
+										disabled={onlyWalletConnection}
+										render={(props) => (
+											<StyledIconButton onClick={props.onClick} disabled={onlyWalletConnection} title={"Login with Google"}>
+												<GoogleIcon />
+											</StyledIconButton>
+										)}
+									/>
+									<FacebookLogin
+										callback={onFacebookLogin}
+										onFailure={onFacebookLoginFailure}
+										render={(props) => (
+											<StyledIconButton
+												onClick={props.onClick}
+												disabled={onlyWalletConnection || !props.isSdkLoaded || props.isProcessing}
+												title="Login with Facebook"
+											>
+												<FacebookIcon />
+											</StyledIconButton>
+										)}
+									/>
+									<TwitchLogin
+										callback={onTwitchLogin}
+										onFailure={onTwitchLoginFailure}
+										render={(props) => (
+											<StyledIconButton
+												onClick={props.onClick}
+												disabled={onlyWalletConnection || props.isProcessing}
+												title="Log in with Twitch"
+											>
+												<TwitchIcon />
+											</StyledIconButton>
+										)}
+									/>
+									<TwitterLogin
+										callback={onTwitterLogin}
+										onFailure={onTwitterLoginFailure}
+										render={(props) => (
+											<StyledIconButton
+												onClick={props.onClick}
+												disabled={onlyWalletConnection || props.isProcessing}
+												title="Log in with Twitter"
+											>
+												<TwitterIcon />
+											</StyledIconButton>
+										)}
+									/>
+									<DiscordLogin
+										callback={onDiscordLogin}
+										onFailure={onDiscordLoginFailure}
+										render={(props) => (
+											<StyledIconButton
+												onClick={props.onClick}
+												disabled={onlyWalletConnection || props.isProcessing}
+												title="Log in with Discord"
+											>
+												<DiscordIcon />
+											</StyledIconButton>
+										)}
+									/>
+								</Box>
+							</BlurBox>
 						</Box>
 					</Box>
 				)}
@@ -381,4 +436,12 @@ export const LoginPage: React.FC = () => {
 
 const StyledIconButton = styled(IconButton)({
 	borderRadius: ".5rem",
+	":disabled": {
+		filter: "grayscale(100%)",
+	},
 })
+
+const BlurBox = styled(Box)((props: { disable: boolean }) => ({
+	filter: props.disable ? "blur(5px)" : "blue(0px)",
+	opacity: props.disable ? "30%" : "100%",
+}))

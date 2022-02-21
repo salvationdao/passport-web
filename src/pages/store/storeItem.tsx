@@ -78,7 +78,6 @@ export const StoreItemPage = () => {
 					setRegularAttributes(regularAttributes)
 					setStoreItem(payload)
 					setLoading(false)
-					console.log(payload)
 				},
 				{ storeItemID: id },
 			)
