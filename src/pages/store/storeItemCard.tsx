@@ -1,13 +1,14 @@
+import SearchIcon from "@mui/icons-material/Search"
 import { Box, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
-import { SupTokenIconPath } from "../../assets"
-import { FancyButton } from "../../components/fancyButton"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../../containers/socket"
+import { SupTokenIcon } from "../../assets"
+import { useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue, supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
-import { colors } from "../../theme"
+import { colors, fonts } from "../../theme"
 import { StoreItem } from "../../types/types"
+import { ViewButton } from "../collections/collectionItemCard"
 
 export type Rarity = "Common" | "Rare" | "Legendary"
 
@@ -31,7 +32,7 @@ interface StoreItemCardProps {
 export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ storeItemID }) => {
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<StoreItem>()
-	const { push } = useHistory()
+	const history = useHistory()
 
 	useEffect(() => {
 		if (!subscribe) return
@@ -40,7 +41,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 			(payload) => {
 				setItem(payload)
 			},
-			{ storeItemID: storeItemID },
+			{ storeItemID },
 		)
 	}, [subscribe, storeItemID])
 
@@ -56,139 +57,72 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 				flexDirection: "column",
 				justifyContent: "space-between",
 				padding: "1rem",
-				border: `1px solid ${colors.white}`,
+				textAlign: "center",
 			}}
 		>
 			<Typography
 				variant="h5"
 				component="p"
 				sx={{
-					marginBottom: "1rem",
-					textAlign: "center",
+					marginBottom: ".5",
 					textTransform: "uppercase",
 				}}
 			>
 				{item.name}
 			</Typography>
 
+			{/* image */}
 			<Box
+				component="img"
+				src={item.image}
+				alt="Mech image"
 				sx={{
 					width: "100%",
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					marginBottom: ".5rem",
+					marginBottom: ".3rem",
+				}}
+			/>
+			<Typography
+				variant="body1"
+				sx={{
+					textTransform: "uppercase",
 				}}
 			>
-				{/* image */}
+				{getItemAttributeValue(item.attributes, "Asset Type")}
+			</Typography>
+			<Typography
+				variant="h4"
+				sx={{
+					marginBottom: ".3rem",
+					fontFamily: fonts.bizmoblack,
+					fontStyle: "italic",
+					letterSpacing: "2px",
+					textTransform: "uppercase",
+					...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
+				}}
+			>
+				{getItemAttributeValue(item.attributes, "Rarity")}
+			</Typography>
+			<Typography
+				variant="subtitle1"
+				sx={{
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					letterSpacing: "1px",
+				}}
+			>
 				<Box
-					component="img"
-					src={item.image}
-					alt="Mech image"
+					component={SupTokenIcon}
 					sx={{
-						width: "100%",
+						height: "1rem",
+						marginRight: ".2rem",
 					}}
 				/>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "space-between",
-						alignItems: "center",
-						width: "100%",
-						backgroundColor: "black",
-						padding: "10px",
-					}}
-				>
-					<Typography
-						variant="body1"
-						sx={{
-							textTransform: "uppercase",
-						}}
-					>
-						{getItemAttributeValue(item.attributes, "Asset Type")}
-					</Typography>
-					<Box
-						component="img"
-						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${item.faction?.logoBlobID}`}
-						alt="Faction Logo"
-						sx={{
-							width: 30,
-							height: 30,
-						}}
-					/>
-				</Box>
-			</Box>
-
-			<Box
-				sx={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-					width: "100%",
-				}}
-			>
-				<Box
-					sx={{
-						display: "flex",
-						alignItems: "baseline",
-						justifyContent: "space-between",
-					}}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							alignItems: "center",
-						}}
-					>
-						<Box
-							component="img"
-							src={SupTokenIconPath}
-							alt="Currency Logo"
-							sx={{
-								height: "1rem",
-								marginRight: ".3rem",
-							}}
-						/>
-						<Typography
-							variant="subtitle2"
-							sx={{
-								width: "100%",
-								whiteSpace: "nowrap",
-								textOverflow: "ellipsis",
-							}}
-						>
-							{supFormatter(item.supCost)}
-						</Typography>
-					</Box>
-				</Box>
-				<Typography
-					variant="caption"
-					sx={{
-						...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
-					}}
-				>
-					{getItemAttributeValue(item.attributes, "Rarity")}
-				</Typography>
-			</Box>
-			<Typography
-				variant="caption"
-				sx={{
-					alignSelf: "end",
-					marginBottom: ".5rem",
-				}}
-			>
-				{item.amountAvailable - item.amountSold} in stock
-				<Box
-					component="span"
-					sx={{
-						marginLeft: ".2rem",
-						color: colors.darkGrey,
-					}}
-				>
-					(out of {item.amountAvailable})
-				</Box>
+				{supFormatter(item.supCost)}
 			</Typography>
-			<FancyButton onClick={() => push(`/stores/${item.collection.name}/${item.ID}`)}>View Item</FancyButton>
+			<ViewButton onClick={() => history.push(`/stores/${item.collection.name}/${item.ID}`)}>
+				<SearchIcon />
+			</ViewButton>
 		</Box>
 	)
 }

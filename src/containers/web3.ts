@@ -16,8 +16,8 @@ import {
 	PURCHASE_ADDRESS,
 	SUPS_CONTRACT_ADDRESS,
 	USDC_CONTRACT_ADDRESS,
-	WBNB_CONTRACT_ADDRESS,
-	WETH_CONTRACT_ADDRESS,
+	BNB_CONTRACT_ADDRESS,
+	ETH_CONTRACT_ADDRESS,
 } from "../config"
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
@@ -60,7 +60,7 @@ const tokenOptions: tokenSelect[] = [
 		tokenSrc: Ethereum,
 		chainSrc: Ethereum,
 		isNative: true,
-		contractAddr: WETH_CONTRACT_ADDRESS,
+		contractAddr: ETH_CONTRACT_ADDRESS,
 	},
 	{
 		name: "usdc",
@@ -80,7 +80,7 @@ const tokenOptions: tokenSelect[] = [
 		tokenSrc: BinanceCoin,
 		chainSrc: BinanceCoin,
 		isNative: true,
-		contractAddr: WBNB_CONTRACT_ADDRESS,
+		contractAddr: BNB_CONTRACT_ADDRESS,
 	},
 
 	{
