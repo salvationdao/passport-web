@@ -48,7 +48,6 @@ export const BuyTokens: React.FC = () => {
 				return
 			}
 			if (currentToken.isNative && exchangeRates) {
-				console.log(currentToken)
 				switch (selectedTokenName) {
 					case "bnb":
 						switch (direction) {
@@ -88,10 +87,10 @@ export const BuyTokens: React.FC = () => {
 				}
 			}
 		},
-		[currentToken, exchangeRates],
+		[currentToken, exchangeRates, selectedTokenName],
 	)
 
-	//handles netowrk switch and default network token
+	// handles network switch and default network token name
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
 			const filteredArr = tokenOptions.filter((x) => {
@@ -111,7 +110,7 @@ export const BuyTokens: React.FC = () => {
 		} else {
 			setSelectedTokenName(tokenOptions[0].name)
 		}
-	}, [currentChainId, acceptedChainExceptions])
+	}, [currentChainId, acceptedChainExceptions, selectedTokenName, tokenOptions])
 
 	//handles token switch from drop down
 	useEffect(() => {
@@ -119,7 +118,7 @@ export const BuyTokens: React.FC = () => {
 			return x.name === selectedTokenName
 		})
 		setCurrentToken(filteredArr[0])
-	}, [selectedTokenName])
+	}, [selectedTokenName, setCurrentToken, tokenOptions])
 
 	useEffect(() => {
 		if (tokenValue !== "") {
@@ -133,7 +132,7 @@ export const BuyTokens: React.FC = () => {
 		setLoading(true)
 		;(async () => {
 			try {
-				const response = await getBalance(currentToken.contractAddr)
+				const response = await getBalance(currentToken)
 				if (response) {
 					const balance = parseFloat(ethers.utils.formatUnits(response, 18))
 					if (!balance) return
@@ -361,7 +360,7 @@ export const BuyTokens: React.FC = () => {
 			{/* Purchase Sups Form */}
 			<Box
 				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none"
+					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none" && metaMaskState === MetaMaskState.Active
 						? {
 								padding: {
 									xs: "1rem",
