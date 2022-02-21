@@ -202,7 +202,7 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Wallet Connect public address
 	 */
 	const loginWalletConnect = useCallback(async () => {
-		if (state !== WebSocket.OPEN || !account) return undefined
+		if (state !== WebSocket.OPEN) return undefined
 		try {
 			const signature = await signWalletConnect()
 			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
@@ -226,7 +226,7 @@ export const AuthContainer = createContainer(() => {
 			console.error(e)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
-	}, [send, account, sessionID, signWalletConnect])
+	}, [send, state, account, sessionID, signWalletConnect])
 
 	/**
 	 * Signs a user up using a Google oauth token
