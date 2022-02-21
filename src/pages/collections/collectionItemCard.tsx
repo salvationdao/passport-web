@@ -2,7 +2,6 @@ import SearchIcon from "@mui/icons-material/Search"
 import { Box, ButtonProps, ButtonUnstyled, Skeleton, styled, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
-import { PlaceholderMechImagePath } from "../../assets"
 import { useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
@@ -73,7 +72,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			{/* image */}
 			<Box
 				component="img"
-				src={PlaceholderMechImagePath}
+				src={item.image}
 				alt="Mech image"
 				sx={{
 					width: "100%",
@@ -93,14 +92,16 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 				sx={{
 					fontFamily: fonts.bizmoblack,
 					fontStyle: "italic",
+					letterSpacing: "2px",
+					textTransform: "uppercase",
 					...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
 				}}
 			>
 				{getItemAttributeValue(item.attributes, "Rarity")}
 			</Typography>
-			<CustomButton onClick={() => history.push(`/collections/${username}/${item.collection.name}/${item.tokenID}`)}>
+			<ViewButton onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}>
 				<SearchIcon />
-			</CustomButton>
+			</ViewButton>
 		</Box>
 	)
 }
@@ -125,7 +126,7 @@ const CustomButtonBase = styled("button")({
 		transition: "transform .2s ease-out",
 		transform: "rotate(-45deg)",
 	},
-	":hover": {
+	":hover, :focus": {
 		borderRadius: "50%",
 		backgroundColor: colors.purple,
 		transform: "scale(1.6)",
@@ -137,7 +138,7 @@ const CustomButtonBase = styled("button")({
 
 interface CustomButtonProps extends ButtonProps {}
 
-const CustomButton = ({ ...props }: CustomButtonProps) => {
+export const ViewButton = ({ ...props }: CustomButtonProps) => {
 	return <ButtonUnstyled {...props} component={CustomButtonBase} />
 }
 

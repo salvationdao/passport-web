@@ -97,14 +97,15 @@ enum HubKey {
 	StoreList = "STORE:LIST",
 	StorePurchase = "STORE:PURCHASE",
 
-	SupTotalRemaining = "SUPS:TREASURY",
 	BlockConfirmation = "BLOCK:CONFIRM",
 	GetFactionsDetail = "FACTION:ALL",
 	FactionEnlist = "FACTION:ENLIST",
 	SubscribeUserFaction = "USER:FACTION:SUBSCRIBE",
 	SubscribeFactionStat = "FACTION:STAT:SUBSCRIBE",
 
-	SupsWithdraw = "SUPS:WITHDRAW"
+	SupTotalRemaining = "SUPS:TREASURY",
+	SupExchangeRates = "SUPS:EXCHANGE",
+	SupsWithdraw = "SUPS:WITHDRAW",
 }
 
 export default HubKey

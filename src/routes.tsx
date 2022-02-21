@@ -87,6 +87,15 @@ export const Routes = () => {
 							<Route path="/profile/edit">
 								<ProfileEditPage />
 							</Route>
+							<Route path="/profile/:username/asset/:token_id">
+								<ProfilePage />
+							</Route>
+							<Route path="/profile/:username/edit">
+								<ProfileEditPage />
+							</Route>
+							<Route path="/profile/:username">
+								<ProfilePage />
+							</Route>
 							<Route path="/profile">
 								<ProfilePage />
 							</Route>
@@ -115,12 +124,13 @@ export const Routes = () => {
 							</Route>
 						</Switch>
 
-						{/*Supremacy*/}
+						{/* Supremacy */}
 						<Switch>
 							<Route path="/battle_arena">
 								<BattleArenaPage />
 							</Route>
 						</Switch>
+
 						{/* collections */}
 						<Switch>
 							<Route path="/collections/:username/:collection_name/:token_id">

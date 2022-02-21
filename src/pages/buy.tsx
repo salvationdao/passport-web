@@ -24,6 +24,7 @@ export const BuyPage: React.FC = () => {
 	if (!user) {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
+
 	return (
 		<>
 			<Box sx={{ position: "relative", minHeight: "100vh" }}>

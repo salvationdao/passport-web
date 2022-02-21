@@ -160,7 +160,11 @@ export const WithdrawSups: React.FC = () => {
 			<Typography variant="h2" sx={{ color: "primary", textTransform: "uppercase" }}>
 				Withdraw $SUPS
 			</Typography>
-			{metaMaskState !== MetaMaskState.Active && <ConnectWallet />}
+			{metaMaskState !== MetaMaskState.Active && (
+				<Box>
+					<ConnectWallet />
+				</Box>
+			)}
 			{metaMaskState === MetaMaskState.Active && (
 				<>
 					{currentChainId?.toString() !== BINANCE_CHAIN_ID && (

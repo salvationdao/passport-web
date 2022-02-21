@@ -19,7 +19,8 @@ import {
 	Typography,
 	useTheme,
 } from "@mui/material"
-import { ethers } from "ethers"
+import { BigNumber, ethers } from "ethers"
+import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
@@ -33,6 +34,7 @@ import HubKey from "../keys"
 import { colors } from "../theme"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
+import { ExchangeRates } from "../types/types"
 
 //styled MUI components at root, where sx can't change them
 const StyledSelect = styled(Select)<SelectProps>(
@@ -75,31 +77,32 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC = () => {
 	const { subscribe, state } = useWebsocket()
-	const { changeChain, currentChainId, getBalance, sendTransfer, metaMaskState } = useWeb3()
+	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState } = useWeb3()
 	const theme = useTheme()
 
 	const [selectedChainId, setSelectedChainId] = useState<number>(parseInt(ETHEREUM_CHAIN_ID.toString()))
 	const [isNativeToken, setIsNativeToken] = useState<boolean>(true)
 	const [currentToken, setCurrentToken] = useState<tokenName>("weth")
-	const [tokenValue, setTokenValue] = useState<string>("")
-	const [supsValue, setSupsValue] = useState<string>("")
-	const [amountRemaining, setAmountRemaining] = useState<number>(0)
-	const [userBalance, setUserBalance] = useState<number>(0)
+	const [tokenAmt, setTokenAmt] = useState<BigNumber>(BigNumber.from(0))
+	const [supsAmt, setSupsAmt] = useState<BigNumber>(BigNumber.from(0))
+	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
+	const [userBalance, setUserBalance] = useState<BigNumber>(BigNumber.from(0))
 	const [transferState, setTransferState] = useState<transferStateType>("none")
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 	const [scanSite, setScanSite] = useState<string>("")
 	const [transferError, setTransferError] = useState<any>(null)
 	const [loading, setLoading] = useState<boolean>(false)
+	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
 
 	const [contractAddr, setContractAddr] = useState<string>("")
 
 	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
 
 	const handleConversions = useCallback(
-		(direction: conversionType, value: number) => {
+		(direction: conversionType, value: BigNumber) => {
 			if (value.toString() === "") {
-				setTokenValue("")
-				setSupsValue("")
+				setTokenAmt(BigNumber.from(0))
+				setSupsAmt(BigNumber.from(0))
 				return
 			}
 			if (isNativeToken) {
@@ -107,24 +110,32 @@ export const BuyTokens: React.FC = () => {
 					case "wbnb":
 						switch (direction) {
 							case "tokensToSups":
-								const sups = ((value * web3Constants.bnbToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
-								setSupsValue(sups)
+								const sups = value
+									.mul(parseUnits(web3Constants.bnbToUsdConversion.toString(), 18))
+									.div(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
+								setSupsAmt(BigNumber.from(sups))
 								break
 							case "supsToTokens":
-								const tokens = ((value * web3Constants.supsToUsdConversion) / web3Constants.bnbToUsdConversion).toFixed(4).toString()
-								setTokenValue(tokens)
+								const tokens = value
+									.mul(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
+									.div(parseUnits(web3Constants.bnbToUsdConversion.toString(), 18))
+								setTokenAmt(BigNumber.from(tokens))
 								break
 						}
 						break
 					default:
 						switch (direction) {
 							case "tokensToSups":
-								const sups = ((value * web3Constants.ethToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
-								setSupsValue(sups)
+								const sups = value
+									.mul(parseUnits(web3Constants.ethToUsdConversion.toString(), 18))
+									.div(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
+								setSupsAmt(BigNumber.from(sups))
 								break
 							case "supsToTokens":
-								const tokens = ((value * web3Constants.supsToUsdConversion) / web3Constants.ethToUsdConversion).toFixed(4).toString()
-								setTokenValue(tokens)
+								const tokens = value
+									.mul(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
+									.div(parseUnits(web3Constants.ethToUsdConversion.toString(), 18))
+								setTokenAmt(BigNumber.from(tokens))
 								break
 						}
 						break
@@ -132,12 +143,12 @@ export const BuyTokens: React.FC = () => {
 			} else {
 				switch (direction) {
 					case "tokensToSups":
-						const sups = (value / web3Constants.supsToUsdConversion).toFixed(4).toString()
-						setSupsValue(sups)
+						const sups = value.div(web3Constants.supsToUsdConversion)
+						setSupsAmt(BigNumber.from(sups))
 						break
 					case "supsToTokens":
-						const tokens = (value * web3Constants.supsToUsdConversion).toFixed(4).toString()
-						setTokenValue(tokens)
+						const tokens = value.mul(web3Constants.supsToUsdConversion)
+						setTokenAmt(BigNumber.from(tokens))
 						break
 				}
 			}
@@ -169,10 +180,10 @@ export const BuyTokens: React.FC = () => {
 	}, [currentChainId, acceptedChainExceptions])
 
 	useEffect(() => {
-		if (tokenValue !== "") {
-			handleConversions("tokensToSups", parseFloat(tokenValue))
+		if (tokenAmt && tokenAmt.gt(0)) {
+			handleConversions("tokensToSups", tokenAmt)
 		}
-	}, [handleConversions, tokenValue])
+	}, [handleConversions, tokenAmt])
 
 	//setting current token
 	useEffect(() => {
@@ -194,30 +205,31 @@ export const BuyTokens: React.FC = () => {
 
 	//getting user balance
 	useEffect(() => {
-		setUserBalance(0)
+		setUserBalance(BigNumber.from(0))
 		setLoading(true)
 		;(async () => {
 			try {
-				const response = await getBalance(contractAddr)
-				if (response) {
-					const balance = parseFloat(response)
-					if (!balance) return
-					setUserBalance(balance)
-				}
+				const bal = await getBalance(contractAddr)
+				if (bal) setUserBalance(bal)
 			} catch {
-				setUserBalance(0)
-			} finally {
-				setLoading(false)
+				setUserBalance(BigNumber.from(0))
 			}
+			setLoading(false)
 		})()
 	}, [contractAddr, getBalance])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
+			setExchangeRates(rates)
+		})
+	}, [subscribe, state])
 
 	//Setting up websocket to listen to remaining supply
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
-			const amountSups = parseFloat(ethers.utils.formatUnits(amount, 18)).toFixed(2)
-			setAmountRemaining(parseFloat(amountSups))
+			setAmountRemaining(BigNumber.from(amount))
 		})
 	}, [subscribe, state])
 
@@ -229,8 +241,8 @@ export const BuyTokens: React.FC = () => {
 	const handleNetworkSwitch = async () => {
 		await changeChain(selectedChainId)
 		setIsNativeToken(true)
-		setTokenValue("")
-		setSupsValue("")
+		setTokenAmt(BigNumber.from(0))
+		setSupsAmt(BigNumber.from(0))
 	}
 
 	useEffect(() => {
@@ -251,23 +263,23 @@ export const BuyTokens: React.FC = () => {
 	}, [currentToken])
 
 	async function handleTransfer() {
-		const value = parseFloat(tokenValue)
-		const supsNumValue = parseFloat(supsValue)
-
-		if (value <= 0 || supsNumValue > amountRemaining) return
+		if (!supsAmt) return
+		if (!tokenAmt) return
+		if (tokenAmt.lte(0)) return
+		if (supsAmt.gt(amountRemaining)) return
 
 		setLoading(true)
 		setTransferState("waiting")
 		try {
 			if (state !== SocketState.OPEN) return
 
-			const tx = await sendTransfer(contractAddr, value)
+			const tx = await sendTransferToPurchaseAddress(contractAddr, tokenAmt)
 
 			setCurrentTransferHash(tx.hash)
 
 			setTransferState("confirm")
-			setTokenValue("")
-			setSupsValue("")
+			setTokenAmt(BigNumber.from(0))
+			setSupsAmt(BigNumber.from(0))
 
 			await tx.wait()
 		} catch (error) {
@@ -308,11 +320,16 @@ export const BuyTokens: React.FC = () => {
 		return (
 			<StyledTextField
 				fullWidth
-				value={tokenValue}
+				value={tokenAmt ? tokenAmt.toString() : null}
 				onChange={(e) => {
-					const value = e.target.value
-					setTokenValue(value)
-					handleConversions("tokensToSups", parseFloat(value))
+					try {
+						const value = BigNumber.from(e.target.value)
+						setTokenAmt(value)
+						handleConversions("tokensToSups", value)
+					} catch (e) {
+						setTokenAmt(BigNumber.from(0))
+						console.error(e)
+					}
 				}}
 				type="number"
 				sx={{ backgroundColor: colors.darkNavyBlue }}
@@ -332,7 +349,7 @@ export const BuyTokens: React.FC = () => {
 						</InputAdornment>
 					),
 				}}
-				inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+				// inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
 			/>
 		)
 	}
@@ -523,7 +540,7 @@ export const BuyTokens: React.FC = () => {
 						</Typography>
 
 						<Typography variant="body1">
-							Purchasing {supsValue} SUPS with {tokenValue} {currentToken.toUpperCase()}
+							Purchasing {formatUnits(supsAmt, 18)} SUPS with {formatUnits(tokenAmt, 18)} {currentToken.toUpperCase()}
 						</Typography>
 						<Typography variant="body1">Confirm this transaction in your wallet</Typography>
 						<Box sx={{ width: "100%", marginTop: "1rem" }}>
@@ -587,16 +604,16 @@ export const BuyTokens: React.FC = () => {
 							<Box sx={{ display: "flex", flexDirection: "column" }}>
 								{currencyTextField()}
 								<FancyButton
-									disabled={userBalance === 0}
+									disabled={userBalance.eq(0)}
 									sx={{ borderWidth: "1px", marginTop: ".5rem", marginLeft: "auto" }}
 									variant="outlined"
 									onClick={() => {
-										setTokenValue(userBalance.toString())
+										setTokenAmt(userBalance)
 										handleConversions("tokensToSups", userBalance)
 									}}
 								>
 									<Typography variant="body1">
-										Max: <b>{userBalance ? userBalance.toFixed(2) : "--"} </b>
+										Max: <b>{userBalance ? formatUnits(userBalance, 18) : "--"} </b>
 									</Typography>
 								</FancyButton>
 							</Box>
@@ -604,11 +621,16 @@ export const BuyTokens: React.FC = () => {
 								<StyledTextField
 									sx={{ backgroundColor: colors.darkNavyBlue }}
 									onChange={(e) => {
-										const value = e.target.value
-										setSupsValue(value)
-										handleConversions("supsToTokens", parseFloat(value))
+										try {
+											const value = BigNumber.from(e.target.value)
+											setSupsAmt(value)
+											handleConversions("supsToTokens", value)
+										} catch (e) {
+											setSupsAmt(BigNumber.from(0))
+											console.error(e)
+										}
 									}}
-									value={supsValue}
+									value={supsAmt ? supsAmt.toString() : null}
 									fullWidth
 									type="number"
 									InputProps={{
@@ -639,7 +661,9 @@ export const BuyTokens: React.FC = () => {
 								<Box
 									sx={{
 										backgroundColor: `${theme.palette.primary.main}`,
-										width: `${100 - (amountRemaining / web3Constants.totalSaleSups) * 100}%`,
+										width: `${BigNumber.from(100).sub(
+											amountRemaining.div(parseUnits(web3Constants.totalSaleSups.toString(), 18)).mul(100),
+										)}%`,
 										height: "2rem",
 									}}
 								/>
@@ -651,7 +675,7 @@ export const BuyTokens: React.FC = () => {
 										textTransform: "uppercase",
 									}}
 								>
-									{(amountRemaining / 10 ** 6).toFixed(2)}m of 217M Tokens remaining
+									{formatUnits(amountRemaining, 24)}m of 217M Tokens remaining
 								</Typography>
 								<Typography
 									variant="body1"
@@ -659,25 +683,19 @@ export const BuyTokens: React.FC = () => {
 										textTransform: "uppercase",
 									}}
 								>
-									{((amountRemaining / web3Constants.totalSaleSups) * 100).toFixed(2)}% of total supply
+									{formatUnits(amountRemaining.div(web3Constants.totalSaleSups), 16)}% of total supply
 								</Typography>
 							</Box>
 							<FancyButton
-								disabled={
-									!acceptedChainExceptions ||
-									parseFloat(tokenValue) > userBalance ||
-									tokenValue === "" ||
-									parseFloat(supsValue) > amountRemaining ||
-									loading
-								}
+								disabled={!acceptedChainExceptions || tokenAmt?.gt(userBalance) || tokenAmt?.eq(0) || supsAmt?.gt(amountRemaining) || loading}
 								sx={{ width: "60%", minWidth: "150px", alignSelf: "center", marginTop: "1.5rem" }}
 								type="submit"
 								fancy
 							>
 								{(() => {
-									if (parseFloat(tokenValue) > userBalance) {
+									if (tokenAmt && tokenAmt.gt(userBalance)) {
 										return `Insufficient ${currentToken} Balance`
-									} else if (parseFloat(supsValue) > amountRemaining) {
+									} else if (supsAmt && supsAmt.gt(amountRemaining)) {
 										return `Insufficient Remaining SUPS`
 									} else {
 										return "Purchase Your Sups"

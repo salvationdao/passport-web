@@ -128,18 +128,21 @@ export interface Asset {
 	userID: string
 	username: string
 	name: string
-	collectionID: string
 	collection: Collection
+	game_object?: any
 	description: string
 	externalURL: string
 	image: string
+	animation_url: string
 	attributes: Attribute[]
+	additional_metadata?: any
 	createdAt: Date
 	updatedAt: Date
 	frozenAt?: Date
 	lockedByID?: string
 	deletedAt?: Date
 	mintingSignature?: string
+	txHistory: any[]
 }
 
 export interface Attribute {
@@ -158,6 +161,7 @@ export interface StoreItem {
 	collection: Collection
 	description: string
 	image: string
+	animation_url: string
 	attributes: Attribute[]
 	usdCentCost: number
 	amountSold: number
@@ -187,4 +191,10 @@ export enum Rarity {
 	Rare,
 	Epic,
 	Legendary,
+}
+
+export interface ExchangeRates {
+	ETHtoUSD: number
+	BNBtoUSD: number
+	SUPtoUSD: number
 }
