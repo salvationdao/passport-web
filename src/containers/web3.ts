@@ -1,12 +1,28 @@
+import WalletConnectProvider from "@walletconnect/web3-provider"
 import { BigNumber, ethers } from "ethers"
+import { parseEther } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
-import { supFormatter } from "../helpers/items"
+import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
+import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
+import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
+import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
+import {
+	BINANCE_CHAIN_ID,
+	BSC_SCAN_SITE,
+	BUSD_CONTRACT_ADDRESS,
+	ETHEREUM_CHAIN_ID,
+	ETH_SCAN_SITE,
+	PURCHASE_ADDRESS,
+	SUPS_CONTRACT_ADDRESS,
+	USDC_CONTRACT_ADDRESS,
+	BNB_CONTRACT_ADDRESS,
+	ETH_CONTRACT_ADDRESS,
+} from "../config"
 import { GetNonceResponse } from "../types/auth"
-import { genericABI } from "./web3GenericABI"
-import { BINANCE_CHAIN_ID, PURCHASE_ADDRESS, SUPS_CONTRACT_ADDRESS } from "../config"
+import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
-import { parseEther } from "ethers/lib/utils"
+import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -32,11 +48,52 @@ export enum web3Constants {
 	binanceChainId = 56,
 	goerliChainId = 5,
 	bscTestNetChainId = 97,
-	supsToUsdConversion = 0.12,
-	ethToUsdConversion = 2500,
-	bnbToUsdConversion = 375,
 	totalSaleSups = 217000000,
 }
+
+const tokenOptions: tokenSelect[] = [
+	{
+		name: "eth",
+		networkName: "Ethereum",
+		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		scanSite: ETH_SCAN_SITE,
+		tokenSrc: Ethereum,
+		chainSrc: Ethereum,
+		isNative: true,
+		contractAddr: ETH_CONTRACT_ADDRESS,
+	},
+	{
+		name: "usdc",
+		networkName: "Ethereum",
+		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		scanSite: ETH_SCAN_SITE,
+		tokenSrc: Usdc,
+		chainSrc: Ethereum,
+		isNative: false,
+		contractAddr: USDC_CONTRACT_ADDRESS,
+	},
+	{
+		name: "bnb",
+		networkName: "Binance",
+		chainId: parseInt(BINANCE_CHAIN_ID),
+		scanSite: BSC_SCAN_SITE,
+		tokenSrc: BinanceCoin,
+		chainSrc: BinanceCoin,
+		isNative: true,
+		contractAddr: BNB_CONTRACT_ADDRESS,
+	},
+
+	{
+		name: "busd",
+		networkName: "Binance",
+		chainId: parseInt(BINANCE_CHAIN_ID),
+		scanSite: BSC_SCAN_SITE,
+		tokenSrc: BinanceUSD,
+		chainSrc: BinanceCoin,
+		isNative: false,
+		contractAddr: BUSD_CONTRACT_ADDRESS,
+	},
+]
 
 /**
  * A Container that handles Web3
@@ -46,9 +103,11 @@ export const Web3Container = createContainer(() => {
 
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
 	const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
+	const [wcProvider, setWcProvider] = useState<WalletConnectProvider | undefined>()
 	const [account, setAccount] = useState<string>()
 	const [currentChainId, setCurrentChainId] = useState<number>()
-	const [supBalance, setSupBalance] = useState<string>()
+	const [supBalance, setSupBalance] = useState<BigNumber>()
+	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -91,12 +150,11 @@ export const Web3Container = createContainer(() => {
 			let bal: { _hex: string }
 
 			try {
-				bal = await erc20.balanceOf(acc)
+				const bal = await erc20.balanceOf(acc)
+				setSupBalance(bal)
 			} catch (e) {
-				bal = { _hex: "0" }
+				console.error(e)
 			}
-
-			setSupBalance(supFormatter(bal._hex))
 		},
 		[provider, currentChainId],
 	)
@@ -106,8 +164,50 @@ export const Web3Container = createContainer(() => {
 		handleWalletSups(account)
 	}, [account, handleWalletSups])
 
+	const createWcProvider = useCallback(
+		async (showQrCode: boolean = true) => {
+			//  Create WalletConnect Provider
+			const walletConnectProvider = new WalletConnectProvider({
+				rpc: {
+					1: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/mainnet`,
+					5: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/goerli`,
+					56: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/mainnet`,
+					97: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/testnet`,
+				},
+				qrcode: showQrCode,
+			})
+
+			//  Wrap with Web3Provider from ethers.js
+			const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
+			setProvider(web3Provider)
+			setCurrentChainId(walletConnectProvider.chainId)
+			setWcProvider(walletConnectProvider)
+
+			// Subscribe to accounts change
+			walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
+				if (accounts.length > 0) {
+					setAccount(accounts[0])
+					setMetaMaskState(MetaMaskState.Active)
+				}
+			})
+			// Subscribe to chainId change
+			walletConnectProvider.on("chainChanged", (chainId: number) => {
+				setCurrentChainId(chainId)
+			})
+			// Subscribe to session disconnection
+			walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+				setAccount(undefined)
+				setProvider(undefined)
+				setWcProvider(undefined)
+				setMetaMaskState(MetaMaskState.NotInstalled)
+			})
+			return walletConnectProvider
+		},
+		[MetaMaskState],
+	)
+
 	useEffect(() => {
-		if (provider) return // metamask connected
+		if (provider) return // wallet connected
 		;(async () => {
 			if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
 				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
@@ -132,7 +232,9 @@ export const Web3Container = createContainer(() => {
 				const response = await provider.getNetwork()
 				setCurrentChainId(response.chainId)
 			} else {
-				setMetaMaskState(MetaMaskState.NotInstalled)
+				const walletConnectProvider = await createWcProvider(false)
+				await walletConnectProvider.enable()
+				return () => walletConnectProvider.removeAllListeners()
 			}
 		})()
 
@@ -154,6 +256,20 @@ export const Web3Container = createContainer(() => {
 			}
 		}
 	}, [displayMessage, provider, handleAccountChange])
+
+	const wcConnect = useCallback(async () => {
+		let walletConnectProvider
+		try {
+			walletConnectProvider = await createWcProvider()
+			await walletConnectProvider.enable()
+			const connector = await walletConnectProvider.getWalletConnector()
+			const acc = connector.accounts[0]
+			setAccount(acc)
+			return { walletConnectProvider }
+		} catch (error) {
+			await walletConnectProvider?.disconnect()
+		}
+	}, [createWcProvider])
 
 	const ETHEREUM_NETWORK: AddEthereumChainParameter = useMemo(
 		() => ({
@@ -253,34 +369,62 @@ export const Web3Container = createContainer(() => {
 			const msg = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
 			return await signer.signMessage(`${msg}:\n ${nonce}`)
 		},
-		[provider, getNonce, getNonceFromID],
+		[provider, getNonce, getNonceFromID, wcConnect],
+	)
+
+	const signWalletConnect = useCallback(
+		async (userID?: string): Promise<string> => {
+			await wcConnect()
+			if (wcProvider) {
+				const connector = await wcProvider.getWalletConnector()
+				let nonce: string
+				if (userID) {
+					nonce = await getNonceFromID(userID)
+				} else if (account) {
+					nonce = await getNonce(account)
+				} else return ""
+				if (nonce === "") return ""
+				const msg = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
+				const rawMessage = `${msg}:\n ${nonce}`
+				const rawMessageLength = new Blob([rawMessage]).size
+				const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
+				const signMsg = ethers.utils.keccak256(convertMsg)
+				return await connector.signMessage([account, signMsg])
+			} else return ""
+		},
+		[wcProvider, getNonce, getNonceFromID, account, wcConnect],
 	)
 
 	const changeChain = async (chain: number) => {
 		if (!provider) return
 
-		try {
-			await provider.send("wallet_switchEthereumChain", [{ chainId: `0x${chain.toString(16)}` }])
-		} catch (error) {
-			let chainParams: AddEthereumChainParameter
-			switch (chain) {
-				case web3Constants.binanceChainId:
-					chainParams = BINANCE_NETWORK
-					break
-				case web3Constants.bscTestNetChainId:
-					chainParams = BINANCE_TEST_NETWORK
-					break
-				case web3Constants.ethereumChainId:
-					chainParams = ETHEREUM_NETWORK
-					break
-				case web3Constants.goerliChainId:
-					chainParams = GOERLI_TEST_NETWORK
-					break
-				default:
-					displayMessage("Bad chain selected.", "error")
-					return
+		if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
+			if (wcProvider) await wcProvider.disconnect()
+			await createWcProvider()
+		} else {
+			try {
+				await provider.send("wallet_switchEthereumChain", [{ chainId: `0x${chain.toString(16)}` }])
+			} catch (error) {
+				let chainParams: AddEthereumChainParameter
+				switch (chain) {
+					case web3Constants.binanceChainId:
+						chainParams = BINANCE_NETWORK
+						break
+					case web3Constants.bscTestNetChainId:
+						chainParams = BINANCE_TEST_NETWORK
+						break
+					case web3Constants.ethereumChainId:
+						chainParams = ETHEREUM_NETWORK
+						break
+					case web3Constants.goerliChainId:
+						chainParams = GOERLI_TEST_NETWORK
+						break
+					default:
+						displayMessage("Bad chain selected.", "error")
+						return
+				}
+				await provider.send("wallet_addEthereumChain", [chainParams])
 			}
-			await provider.send("wallet_addEthereumChain", [chainParams])
 		}
 	}
 
@@ -288,15 +432,11 @@ export const Web3Container = createContainer(() => {
 		async (contractAddress: string) => {
 			try {
 				if (!provider || !account || contractAddress === "") return
-
 				const contract = new ethers.Contract(contractAddress, genericABI, provider)
-
-				const bigNumBalance: BigNumber = await contract.balanceOf(account)
-				const decimals = await contract.decimals()
-
-				return ethers.utils.formatUnits(bigNumBalance, decimals)
+				return contract.balanceOf(account)
 			} catch (error) {
 				displayMessage("Couldn't get contract balance, please try again.", "error")
+				console.log(error)
 			}
 		},
 		[provider, account, displayMessage],
@@ -321,7 +461,7 @@ export const Web3Container = createContainer(() => {
 			throw error
 		}
 	}
-	async function sendTransfer(contractAddress: string, value: number) {
+	async function sendTransferToPurchaseAddress(contractAddress: string, value: BigNumber) {
 		try {
 			if (!provider || !account) {
 				displayMessage("Wallet is not connected.", "error")
@@ -331,11 +471,10 @@ export const Web3Container = createContainer(() => {
 			const contract = new ethers.Contract(contractAddress, genericABI, signer)
 			const decimals = await contract.decimals()
 
-			const units = ethers.utils.parseUnits(value.toString(), decimals)
-			const hasSufficientFunds = await contract.callStatic.transfer(signer.getAddress(), units)
+			const hasSufficientFunds = await contract.callStatic.transfer(signer.getAddress(), value)
 
 			if (hasSufficientFunds) {
-				return await contract.transfer(PURCHASE_ADDRESS, units)
+				return await contract.transfer(PURCHASE_ADDRESS, value)
 			} else {
 				displayMessage("Wallet does not have sufficient funds.", "error")
 				return
@@ -356,8 +495,13 @@ export const Web3Container = createContainer(() => {
 		provider,
 		getBalance,
 		sendNativeTransfer,
-		sendTransfer,
+		sendTransferToPurchaseAddress,
 		supBalance,
+		wcConnect,
+		signWalletConnect,
+		tokenOptions,
+		currentToken,
+		setCurrentToken,
 	}
 })
 

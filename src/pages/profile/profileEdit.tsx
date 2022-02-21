@@ -6,8 +6,8 @@ import { useCallback, useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
 import GoogleLogin, { GoogleLoginResponse } from "react-google-login"
 import { useForm } from "react-hook-form"
+import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon, WalletConnectIcon } from "../../assets"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon } from "../../assets"
 import { DiscordLogin } from "../../components/discordLogin"
 import { FacebookLogin } from "../../components/facebookLogin"
 import { ImageUpload } from "../../components/form/imageUpload"
@@ -445,7 +445,11 @@ const ProfileEdit: React.FC = () => {
 								await removeWalletAddress()
 							}}
 							title="Remove MetaMask"
-							icon={MetaMaskIcon}
+							icon={
+								typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined"
+									? WalletConnectIcon
+									: MetaMaskIcon
+							}
 							value={user.publicAddress}
 							remove
 						/>
@@ -457,14 +461,12 @@ const ProfileEdit: React.FC = () => {
 							render={(props) => (
 								<ConnectionButton
 									onClick={props.onClick}
-									title={
-										props.metaMaskState === MetaMaskState.NotInstalled
-											? "Install MetaMask"
-											: props.metaMaskState === MetaMaskState.NotLoggedIn
-											? "Sign into your MetaMask to continue"
-											: "Login With MetaMask"
+									title="Connect Wallet"
+									icon={
+										typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined"
+											? WalletConnectIcon
+											: MetaMaskIcon
 									}
-									icon={MetaMaskIcon}
 									value={user.publicAddress}
 									disabled={!!user.publicAddress || props.isProcessing}
 									loading={props.isProcessing}

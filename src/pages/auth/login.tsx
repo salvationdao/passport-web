@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, MailIcon, MetaMaskIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../../assets"
+import { DiscordIcon, FacebookIcon, GoogleIcon, MailIcon, MetaMaskIcon, WalletConnectIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../../assets"
 import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../../components/discordLogin"
 import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../../components/facebookLogin"
 import { FancyButton } from "../../components/fancyButton"
@@ -279,25 +279,21 @@ export const LoginPage: React.FC = () => {
 								<FancyButton
 									onClick={props.onClick}
 									loading={props.isProcessing}
-									title={
-										props.metaMaskState === MetaMaskState.NotInstalled
-											? "Install MetaMask"
-											: props.metaMaskState === MetaMaskState.NotLoggedIn
-											? "Sign into your MetaMask to continue"
-											: "Login With MetaMask"
-									}
+									title="Connect Wallet to account"
 									sx={{
 										marginBottom: "1rem",
 										padding: "1rem",
 										borderRadius: ".5rem",
 									}}
-									startIcon={<MetaMaskIcon />}
+									startIcon={
+										typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined" ? (
+											<WalletConnectIcon />
+										) : (
+											<MetaMaskIcon />
+										)
+									}
 								>
-									{props.metaMaskState === MetaMaskState.NotInstalled
-										? "Install MetaMask"
-										: props.metaMaskState === MetaMaskState.NotLoggedIn
-										? "Sign into your MetaMask to continue"
-										: "Login With MetaMask"}
+									Connect Wallet to account
 								</FancyButton>
 							)}
 						/>

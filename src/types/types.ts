@@ -161,6 +161,7 @@ export interface StoreItem {
 	collection: Collection
 	description: string
 	image: string
+	animation_url: string
 	attributes: Attribute[]
 	usdCentCost: number
 	amountSold: number
@@ -190,4 +191,22 @@ export enum Rarity {
 	Rare,
 	Epic,
 	Legendary,
+}
+
+export interface ExchangeRates {
+	ETHtoUSD: number
+	BNBtoUSD: number
+	SUPtoUSD: number
+}
+
+export type tokenName = "eth" | "usdc" | "bnb" | "busd"
+export interface tokenSelect {
+	name: tokenName
+	networkName: string
+	chainId: number
+	tokenSrc: string
+	chainSrc: string
+	isNative: boolean
+	contractAddr: string
+	scanSite: string
 }

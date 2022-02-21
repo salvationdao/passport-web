@@ -1,7 +1,6 @@
 import { Box, IconButton, Link, Typography, useTheme } from "@mui/material"
 import Alert from "@mui/material/Alert"
-import { useEffect, useState } from "react"
-import { useWeb3, web3Constants } from "../containers/web3"
+import { useWeb3 } from "../containers/web3"
 import { colors } from "../theme"
 import { ChainConfirmations } from "./blockConfirmationSnackList"
 
@@ -15,25 +14,7 @@ interface BlockConfirmationProps {
 }
 export const BlockConfirmationSnackbar = ({ currentConfirmation, handleFilter }: BlockConfirmationProps) => {
 	const theme = useTheme()
-	const { currentChainId } = useWeb3()
-
-	const [scanSite, setScanSite] = useState<string | undefined>()
-
-	useEffect(() => {
-		switch (currentChainId) {
-			case web3Constants.ethereumChainId:
-				setScanSite("etherscan.io")
-				break
-			case web3Constants.binanceChainId:
-				setScanSite("bscscan.com")
-				break
-			case web3Constants.goerliChainId:
-				setScanSite("goerli.etherscan.io")
-				break
-			default:
-				setScanSite((prev) => prev)
-		}
-	}, [currentChainId])
+	const { currentToken } = useWeb3()
 
 	return (
 		<Box sx={{ marginTop: "1rem" }}>
@@ -62,7 +43,10 @@ export const BlockConfirmationSnackbar = ({ currentConfirmation, handleFilter }:
 				</Box>
 				<Typography color="white">
 					{`Transaction: `}
-					<Link href={currentConfirmation ? `https://${scanSite}/tx/${currentConfirmation.tx}` : `https://${scanSite}/tx/`} target="_blank">
+					<Link
+						href={currentConfirmation ? `https://${currentToken.scanSite}/tx/${currentConfirmation.tx}` : `https://${currentToken.scanSite}/tx/`}
+						target="_blank"
+					>
 						{currentConfirmation?.tx.substring(0, 12)}...
 					</Link>
 				</Typography>

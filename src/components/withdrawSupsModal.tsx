@@ -175,7 +175,14 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 								<>
 									<Box sx={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
 										<Typography>XSYN Balance: </Typography>
-										<Typography>{supFormatter(userSups || "0")} </Typography>
+										<Typography
+											onClick={() => {
+												if (userSups) setWithdrawAmount(supFormatter(userSups))
+											}}
+											sx={{ cursor: "pointer" }}
+										>
+											{supFormatter(userSups || "0")}{" "}
+										</Typography>
 									</Box>
 									{loadingWalletBalance && <Skeleton />}
 									{!loadingWalletBalance && (
