@@ -1,24 +1,24 @@
 import { Alert, Box, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Skeleton, TextField, Typography } from "@mui/material"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
-import BigNumber from "bignumber.js"
 import React, { useCallback, useEffect, useState } from "react"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
-import { ethers } from "ethers"
+import { BigNumber, ethers } from "ethers"
 import { supFormatter } from "../helpers/items"
 import { FancyButton } from "./fancyButton"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { useAuth } from "../containers/auth"
 import { BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
 import { ConnectWallet } from "./connectWallet"
-
-BigNumber.config({ EXPONENTIAL_AT: 1e9 })
+import { formatUnits, parseUnits } from "@ethersproject/units"
 
 const UseSignatureMode = true
 
 interface WithdrawModalProps {
 	open: boolean
 	onClose: () => void
+	walletBalance: BigNumber
+	xsynBalance: BigNumber
 }
 
 interface GetSignatureResponse {
@@ -26,18 +26,19 @@ interface GetSignatureResponse {
 	expiry: number
 }
 
-export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
+export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }: WithdrawModalProps) => {
 	const { account, provider, currentChainId, metaMaskState, changeChain } = useWeb3()
 	const { send, state } = useWebsocket()
 	const { user } = useAuth()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
-	const [withdrawAmount, setWithdrawAmount] = useState<string>("")
+	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber | null>(null)
+	const [withdrawDisplay, setWithdrawDisplay] = useState<string | null>(null)
 	const [withdrawContractAmount, setWithdrawContractAmount] = useState<BigNumber>()
 	const [loadingWithdraw, setLoadingWithdraw] = useState<boolean>(false)
 	const [loadingWalletBalance, setLoadingWalletBalance] = useState<boolean>(false)
 	const [errorWalletBalance, setErrorWalletBalance] = useState<string>()
-	const [errorWithdrawing, setErrorWithdrawing] = useState<string>()
-	const [errorAmount, setErrorAmount] = useState<string>()
+	const [errorWithdrawing, setErrorWithdrawing] = useState<string | null>(null)
+	const [errorAmount, setErrorAmount] = useState<string | null>(null)
 
 	const changeChainToBSC = useCallback(async () => {
 		if (open && currentChainId?.toString() !== BINANCE_CHAIN_ID) {
@@ -51,13 +52,11 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 
 	// check balance on frontend
 	useEffect(() => {
-		const userAmt = new BigNumber(userSups || "0").shiftedBy(-18)
-		const withAmount = new BigNumber(withdrawAmount)
-		if (withdrawAmount === "") {
-			setErrorAmount(undefined)
+		if (!withdrawAmount) {
+			setErrorAmount(null)
 			return
 		}
-		if (withAmount.comparedTo(userAmt) === 1) {
+		if (withdrawAmount.gt(xsynBalance)) {
 			setErrorAmount("Insufficient SUPS")
 			return
 		}
@@ -65,11 +64,11 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 			setErrorAmount("Unable to check  Withdraw contract balance.")
 			return
 		}
-		if (withAmount.comparedTo(withdrawContractAmount.shiftedBy(-18)) >= 0) {
+		if (withdrawAmount.gt(withdrawContractAmount)) {
 			setErrorAmount("Withdraw Contract balance too low.")
 			return
 		}
-		setErrorAmount(undefined)
+		setErrorAmount(null)
 	}, [withdrawAmount, userSups, withdrawContractAmount])
 
 	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
@@ -90,8 +89,8 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 				// "event Transfer(address indexed from, address indexed to, uint amount)",
 			]
 			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
-			const bal: { _hex: string } = await erc20.balanceOf(UseSignatureMode ? WITHDRAW_ADDRESS : REDEEM_ADDRESS)
-			setWithdrawContractAmount(new BigNumber(bal._hex))
+			const bal: BigNumber = await erc20.balanceOf(UseSignatureMode ? WITHDRAW_ADDRESS : REDEEM_ADDRESS)
+			setWithdrawContractAmount(bal)
 			setErrorWalletBalance(undefined)
 		} catch (e) {
 			setErrorWalletBalance(e === "string" ? e : "Issue getting withdraw contract balance , please try again.")
@@ -107,6 +106,7 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 	const withDrawAttemptSignature = useCallback(async () => {
 		try {
 			if (!provider) return
+			if (!withdrawAmount) return
 			setLoadingWithdraw(true)
 			// get nonce from withdraw contract
 			// send nonce, amount and user wallet addr to server validates they have enough sups
@@ -120,12 +120,11 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 			const signer = provider.getSigner()
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
-			const withdrawAmountBigNum = new BigNumber(withdrawAmount).shiftedBy(18).toString()
-			const resp = await fetch(`/api/withdraw/${account}/${nonce}/${withdrawAmountBigNum}`)
+			const resp = await fetch(`/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
 			const respJson: GetSignatureResponse = await resp.json()
 
-			await withdrawContract.withdrawSUPS(withdrawAmountBigNum, respJson.messageSignature, respJson.expiry)
-			setErrorWithdrawing(undefined)
+			await withdrawContract.withdrawSUPS(withdrawAmount, respJson.messageSignature, respJson.expiry)
+			setErrorWithdrawing(null)
 		} catch (e) {
 			setErrorWithdrawing(e === "string" ? e : "Issue withdrawing, please try again.")
 		} finally {
@@ -138,12 +137,12 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 
 		try {
 			if (!provider) return
+			if (!withdrawAmount) return
 			setLoadingWithdraw(true)
 
-			const withdrawAmountBigNum = new BigNumber(withdrawAmount).shiftedBy(18).toString()
-			await send(HubKey.SupsWithdraw, { amount: withdrawAmountBigNum })
+			await send(HubKey.SupsWithdraw, { amount: withdrawAmount })
 
-			setErrorWithdrawing(undefined)
+			setErrorWithdrawing(null)
 			onClose()
 		} catch (e) {
 			setErrorWithdrawing(e === "string" ? e : "Issue withdrawing, please try again.")
@@ -177,7 +176,10 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 										<Typography>XSYN Balance: </Typography>
 										<Typography
 											onClick={() => {
-												if (userSups) setWithdrawAmount(supFormatter(userSups))
+												if (userSups) {
+													setWithdrawAmount(xsynBalance)
+													setWithdrawDisplay(formatUnits(xsynBalance, 18))
+												}
 											}}
 											sx={{ cursor: "pointer" }}
 										>
@@ -197,16 +199,13 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 										variant={"filled"}
 										label={"Amount"}
 										onChange={(e) => {
-											if (e.target.value === "") setWithdrawAmount("") // if empty allow empty
-											const amt = new BigNumber(e.target.value)
-											if (amt.isNaN()) {
-												// if nan they go away
-												return
-											}
-											if (amt.decimalPlaces() > 18) return // no more than 18 decimals
-											setWithdrawAmount(e.target.value)
+											if (e.target.value === "") setWithdrawDisplay(null) // if empty allow empty
+											const amt = parseUnits(e.target.value, 18)
+											setWithdrawDisplay(e.target.value.toString())
+											setWithdrawAmount(amt)
+											setErrorWithdrawing(null)
 										}}
-										value={withdrawAmount}
+										value={withdrawDisplay || ""}
 										error={!!errorAmount}
 										helperText={errorAmount}
 									/>
@@ -220,7 +219,9 @@ export const WithdrawSupsModal = ({ open, onClose }: WithdrawModalProps) => {
 			{metaMaskState === MetaMaskState.Active && currentChainId?.toString() === BINANCE_CHAIN_ID && (
 				<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}>
 					{!loadingWithdraw && (
-						<FancyButton onClick={() => (UseSignatureMode ? withDrawAttemptSignature() : withDrawAttempt())}>Withdraw</FancyButton>
+						<FancyButton disabled={!!errorAmount} onClick={() => (UseSignatureMode ? withDrawAttemptSignature() : withDrawAttempt())}>
+							Withdraw
+						</FancyButton>
 					)}
 					{loadingWithdraw && <CircularProgress color={"primary"} />}
 					{(errorWalletBalance || errorWithdrawing) && <Alert severity={"error"}>{errorWalletBalance || errorWithdrawing}</Alert>}

@@ -100,7 +100,7 @@ const tokenOptions: tokenSelect[] = [
  */
 export const Web3Container = createContainer(() => {
 	const { displayMessage } = useSnackbar()
-
+	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
 	const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
 	const [wcProvider, setWcProvider] = useState<WalletConnectProvider | undefined>()
@@ -147,9 +147,10 @@ export const Web3Container = createContainer(() => {
 			]
 
 			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
-
 			try {
+				console.log("loading")
 				const bal = await erc20.balanceOf(acc)
+				console.log("loaded")
 				setSupBalance(bal)
 			} catch (e) {
 				console.error(e)
@@ -203,7 +204,17 @@ export const Web3Container = createContainer(() => {
 	}, [])
 
 	useEffect(() => {
-		if (provider) return // wallet connected
+		// Run on every new block
+		if (provider && provider.listeners("block").length == 0) {
+			provider.on("block", function (result) {
+				setBlock(result)
+				if (account) handleWalletSups(account)
+			})
+		}
+	}, [provider])
+
+	useEffect(() => {
+		if (provider) return // metamask connected
 		;(async () => {
 			if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
 				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
@@ -425,11 +436,18 @@ export const Web3Container = createContainer(() => {
 	}
 
 	const getBalance = useCallback(
-		async (currentToken: tokenSelect) => {
+		async (contractAddress: string | null) => {
+			if (!contractAddress) {
+				if (!provider) {
+					return
+				}
+				const signer = provider.getSigner()
+				return signer.getBalance()
+			}
 			try {
 				if (!provider || !account) return
 
-				if (currentToken.isNative){
+				if (currentToken.isNative) {
 					const balance = await provider.getBalance(account)
 					return balance
 				}
@@ -444,7 +462,7 @@ export const Web3Container = createContainer(() => {
 		},
 		[provider, account, displayMessage],
 	)
-	async function sendNativeTransfer(value: number) {
+	async function sendNativeTransfer(value: BigNumber) {
 		try {
 			if (!provider || !account) {
 				displayMessage("Wallet is not connected.", "error")

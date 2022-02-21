@@ -473,7 +473,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				{children}
 			</Box>
-			<WithdrawSupsModal open={withdrawDialogOpen} onClose={() => setWithdrawDialogOpen(false)} />
+			<WithdrawSupsModal
+				walletBalance={supBalance || BigNumber.from(0)}
+				xsynBalance={xsynSups}
+				open={withdrawDialogOpen}
+				onClose={() => setWithdrawDialogOpen(false)}
+			/>
 			<DepositSupsModal
 				walletBalance={supBalance || BigNumber.from(0)}
 				xsynBalance={xsynSups}
