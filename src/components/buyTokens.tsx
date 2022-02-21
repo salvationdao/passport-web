@@ -2,6 +2,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
 import { Box, Button, LinearProgress, Link, Stack, TextField, Typography, useTheme } from "@mui/material"
 import { BigNumber, ethers } from "ethers"
+import { formatUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
 import Arrow from "../assets/images/arrow.png"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
@@ -21,6 +22,7 @@ import {
 } from "../config"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
+import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { ExchangeRates, tokenName, tokenSelect } from "../types/types"
@@ -32,7 +34,7 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC = () => {
 	const { subscribe, state } = useWebsocket()
-	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState } = useWeb3()
+	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState, supBalance } = useWeb3()
 	const theme = useTheme()
 
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
@@ -46,6 +48,7 @@ export const BuyTokens: React.FC = () => {
 	const [transferError, setTransferError] = useState<any>(null)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
+	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 
 	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
 
@@ -523,22 +526,10 @@ export const BuyTokens: React.FC = () => {
 											</Typography>
 										</Box>
 										<Typography sx={{ color: colors.darkGrey }} variant="body1">
-											XSYN Balance:{" "}
-											<b>
-												{
-													//userBalance ? userBalance.toFixed(2) : "--"}
-												}
-												200000
-											</b>
+											XSYN Balance: <b>{userSups ? formatUnits(BigNumber.from(userSups), 18) : "--"}</b>
 										</Typography>
 										<Typography sx={{ color: colors.darkGrey }} variant="body1">
-											Wallet Balance:{" "}
-											<b>
-												{
-													//userBalance ? userBalance.toFixed(2) : "--"}
-												}
-												101000
-											</b>
+											Wallet Balance: <b>{supBalance ? formatUnits(supBalance, 18) : "--"}</b>
 										</Typography>
 									</Box>
 								</Box>
