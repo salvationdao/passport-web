@@ -435,7 +435,8 @@ export const Web3Container = createContainer(() => {
 				const rawMessageLength = new Blob([rawMessage]).size
 				const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
 				const signMsg = ethers.utils.keccak256(convertMsg)
-				return await connector.signMessage([account, signMsg])
+				const signature = await connector.signMessage([account, signMsg])
+				return signature
 			} else return ""
 		},
 		[wcProvider, getNonce, getNonceFromID, account, wcConnect],

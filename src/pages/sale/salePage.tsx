@@ -1,7 +1,6 @@
 import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
-import useMediaQuery from "@mui/material/useMediaQuery"
 import { formatUnits } from "ethers/lib/utils"
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { useContainer } from "unstated-next"
 import BWSupToken from "../../assets/images/BW-sup-token.png"
@@ -15,7 +14,7 @@ import { AppState, useSupremacyApp } from "../../containers/supremacy/app"
 import { useWeb3, web3Constants } from "../../containers/web3"
 import { colors } from "../../theme"
 
-export const TEXT_GAME_LOCATION = "TextGame/TextAdventure.html"
+export const TEXT_GAME_LOCATION = "./TextGame/TextAdventure.html"
 export const IMAGE_FOLDER = "https://afiles.ninja-cdn.com/supremacy/images"
 export const VIDEO_FOLDER = "https://afiles.ninja-cdn.com/supremacy/videos"
 export const NAVBAR_HEIGHT = 100
@@ -27,10 +26,9 @@ export const SalePage = () => {
 	// Game state
 	const [showGame, setShowGame] = useState(false)
 	const contentRef = useRef<HTMLIFrameElement>(null)
-	const history = useHistory()
 	const { showSimulation, setShowSimulation } = useSupremacyApp()
 	const { account, connect, wcConnect } = useWeb3()
-	const { loading, setLoading, saleActive, amountRemaining } = useContainer(AppState)
+	const { loading, setLoading, amountRemaining } = useContainer(AppState)
 
 	const handleJoinBtn = async () => {
 		if (!account) {
@@ -47,6 +45,8 @@ export const SalePage = () => {
 		}
 	}
 
+	//  Fetch time for countdown
+	//  Check when to disable simulation
 	interface WhitelistTime {
 		time: Date
 		next_phase: "whitelist" | "death" | "public"
@@ -66,7 +66,7 @@ export const SalePage = () => {
 		})()
 	}, [fetchTime])
 
-	return showGame ? (
+	return !showGame ? (
 		<>
 			<Box
 				sx={{
@@ -79,9 +79,9 @@ export const SalePage = () => {
 					zIndex: 9999,
 				}}
 			/>
-			<GameFrame src={TEXT_GAME_LOCATION} ref={contentRef}>
+			<iframe title="text game" src={TEXT_GAME_LOCATION} ref={contentRef}>
 				Your browser doesnt support iframes
-			</GameFrame>
+			</iframe>
 		</>
 	) : (
 		<>
@@ -227,8 +227,8 @@ const GameFrame = styled("iframe")({
 	left: 0,
 	bottom: 0,
 	right: 0,
-	width: "100%",
-	height: "100%",
+	width: "100vw",
+	height: "100vh",
 	border: "none",
 	margin: 0,
 	padding: 0,

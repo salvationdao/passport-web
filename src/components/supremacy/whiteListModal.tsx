@@ -138,7 +138,18 @@ export const WhiteListModal = (props: Props) => {
 								},
 							}}
 						>
-							<Typography>Survive to join the whitelist!</Typography>
+							<Typography
+								variant="h2"
+								sx={{
+									fontFamily: "Nostromo Regular Heavy",
+									textAlign: "center",
+									"@media (max-width:425px)": {
+										fontSize: "1.3rem",
+									},
+								}}
+							>
+								Survive to join
+							</Typography>
 							<SupFancyButton
 								onClick={async () => await props.handleJoinBtn()}
 								sx={{

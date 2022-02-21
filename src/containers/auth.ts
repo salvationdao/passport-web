@@ -218,6 +218,14 @@ export const AuthContainer = createContainer(() => {
 		if (state !== WebSocket.OPEN) return undefined
 		try {
 			const signature = await signWalletConnect()
+			if (account) {
+				const allowAccess = await checkWhitelist(account)
+				if (!allowAccess) {
+					setShowSimulation(true)
+					return
+				}
+				setIsWhitelisted(true)
+			}
 			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 				publicAddress: account as string,
 				signature,
