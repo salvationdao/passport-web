@@ -27,7 +27,6 @@ import { ExchangeRates, tokenName, tokenSelect } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { TokenSelect } from "./tokenSelect"
-
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 
@@ -144,6 +143,13 @@ export const BuyTokens: React.FC = () => {
 			}
 		})()
 	}, [currentToken, getBalance])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
+			setExchangeRates(rates)
+		})
+	}, [subscribe, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
