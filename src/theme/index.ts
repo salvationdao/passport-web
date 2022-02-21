@@ -211,7 +211,7 @@ const lightTheme = createTheme({
 		MuiCssBaseline: {
 			styleOverrides: {
 				html: {
-					"@media (max-width: 1000px)": {
+					"@media (max-width: 1080px)": {
 						fontSize: "80%",
 					},
 				},

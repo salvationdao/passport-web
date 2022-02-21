@@ -86,6 +86,7 @@ export const SalePage = () => {
 	) : (
 		<>
 			<Loading loading={loading} setLoading={setLoading} />
+			<SupremacyNavbar />
 			<Box
 				sx={{
 					opacity: loading ? 0 : 1,
@@ -93,13 +94,12 @@ export const SalePage = () => {
 					background: colors.black2Background,
 				}}
 			>
-				<SupremacyNavbar />
 				<Stack
 					sx={{
 						pt: `${NAVBAR_HEIGHT}px`,
 						pb: "2em",
 						justifyContent: "center",
-						height: "100vh",
+						minHeight: "100vh",
 						alignItems: "center",
 						gap: "1em",
 						px: "2em",
@@ -116,8 +116,8 @@ export const SalePage = () => {
 									cursor: "pointer",
 									width: "100%",
 									maxWidth: "40vw",
-									"@media (max-width: 1440px)": {
-										maxWidth: "30rem",
+									"@media (max-width: 1600px)": {
+										maxWidth: "50rem",
 									},
 								}}
 							/>
@@ -132,6 +132,11 @@ export const SalePage = () => {
 							alignItems: "center",
 							justifyContent: "center",
 							gap: "5em",
+							px: "2em",
+							"@media (max-width: 900px)": {
+								flexDirection: "column-reverse",
+								gap: "2em",
+							},
 						}}
 					>
 						<Stack gap="2em" sx={{ maxWidth: "30rem", justifyContent: "center", height: "100%" }}>
@@ -196,16 +201,17 @@ export const SalePage = () => {
 
 const Title = styled("h1")({
 	fontFamily: ["Nostromo Regular Black"].join(","),
+	textAlign: "center",
 	fontSize: "3rem",
 	margin: 0,
 	"@media (max-width:600px)": {
 		fontSize: "2.5rem",
 	},
 	"@media (max-width:559px)": {
-		fontSize: "1.8rem",
+		fontSize: "1.4rem",
 	},
-	"@media (max-width:375px)": {
-		fontSize: "1.6rem",
+	"@media (max-width:400px)": {
+		fontSize: "1.2rem",
 	},
 	"@media (max-width:350px)": {
 		fontSize: "1.4rem",
