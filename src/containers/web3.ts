@@ -429,10 +429,17 @@ export const Web3Container = createContainer(() => {
 	}
 
 	const getBalance = useCallback(
-		async (contractAddress: string) => {
+		async (currentToken: tokenSelect) => {
 			try {
-				if (!provider || !account || contractAddress === "") return
-				const contract = new ethers.Contract(contractAddress, genericABI, provider)
+				if (!provider || !account) return
+
+				if (currentToken.isNative){
+					const balance = await provider.getBalance(account)
+					return balance
+				}
+
+				if (currentToken.contractAddr === "") return
+				const contract = new ethers.Contract(currentToken.contractAddr, genericABI, provider)
 				return contract.balanceOf(account)
 			} catch (error) {
 				displayMessage("Couldn't get contract balance, please try again.", "error")

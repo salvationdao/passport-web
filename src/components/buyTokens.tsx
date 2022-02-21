@@ -91,7 +91,7 @@ export const BuyTokens: React.FC = () => {
 		[currentToken, exchangeRates],
 	)
 
-	//handles netowrk switch and default network token
+	// handles network switch and default network token name
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
 			const filteredArr = tokenOptions.filter((x) => {
@@ -133,7 +133,7 @@ export const BuyTokens: React.FC = () => {
 		setLoading(true)
 		;(async () => {
 			try {
-				const response = await getBalance(currentToken.contractAddr)
+				const response = await getBalance(currentToken)
 				if (response) {
 					const balance = parseFloat(ethers.utils.formatUnits(response, 18))
 					if (!balance) return
