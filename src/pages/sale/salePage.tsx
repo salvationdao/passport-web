@@ -12,6 +12,7 @@ import { AppState, SnackState } from "../../containers/supremacy/app"
 import { colors } from "../../theme"
 import BWSupToken from "../../assets/images/BW-sup-token.png"
 import { useWeb3, web3Constants } from "../../containers/web3"
+import { formatUnits } from "ethers/lib/utils"
 
 export const TEXT_GAME_LOCATION = "TextGame/TextAdventure.html"
 export const IMAGE_FOLDER = "https://afiles.ninja-cdn.com/supremacy/images"
@@ -116,7 +117,7 @@ export const SalePage = () => {
 					<Box sx={{ position: "relative" }}>
 						<FancyLinearProgress
 							variant="determinate"
-							value={100 - (parseInt(amountRemaining.toString()) / web3Constants.totalSaleSups) * 100}
+							value={100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100}
 							aria-label="Tokens sold progressive bar"
 						/>
 						<Box
@@ -124,9 +125,11 @@ export const SalePage = () => {
 								position: "absolute",
 								top: "50%",
 								transform: `translate(-100%,-50%)`,
-								left: `${100 - (parseInt(amountRemaining.toString()) / web3Constants.totalSaleSups) * 100}%`,
+								left: `${100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100}%`,
 								display: "flex",
 								alignItems: "center",
+								pr: ".5em",
+								gap:".5em"
 							}}
 						>
 							<Box
@@ -147,7 +150,7 @@ export const SalePage = () => {
 									fontWeight: "600",
 								}}
 							>
-								{(parseInt(amountRemaining.toString()) / 10 ** 6).toFixed(2)}m $SUPS remaining
+								{(parseInt(formatUnits(amountRemaining, 18)) / 10 ** 6).toFixed(2)}m $SUPS remaining
 							</Typography>
 						</Box>
 					</Box>

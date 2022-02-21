@@ -243,7 +243,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		<Box
 			sx={{
 				border: publicSale
-					? `1px groove ${colors.gold}`
+					? `1px groove ${colors.neonBlue}`
 					: {
 							xs: `2px solid ${theme.palette.secondary.main}`,
 							md: "none",
@@ -410,7 +410,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={{
 						width: "90vw",
-						maxWidth: publicSale ? "400px" : "550px",
+						maxWidth: publicSale ? "38rem" : "550px",
 						p: "1em",
 						display: "flex",
 						flexDirection: "column",
