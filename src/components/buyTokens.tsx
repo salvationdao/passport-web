@@ -1,226 +1,158 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
-import {
-	Box,
-	Button,
-	ButtonGroup,
-	InputAdornment,
-	LinearProgress,
-	Link,
-	MenuItem,
-	outlinedInputClasses,
-	Select,
-	SelectChangeEvent,
-	SelectProps,
-	Stack,
-	styled,
-	TextField,
-	TextFieldProps,
-	Typography,
-	useTheme,
-} from "@mui/material"
+import { Box, Button, LinearProgress, Link, Stack, TextField, Typography, useTheme } from "@mui/material"
 import { BigNumber, ethers } from "ethers"
-import { formatUnits, parseUnits } from "ethers/lib/utils"
+import { formatUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
-import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
-import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
-import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
-import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
+import Arrow from "../assets/images/arrow.png"
+import BWSupToken from "../assets/images/BW-sup-token.png"
 import SupsToken from "../assets/images/sup-token.svg"
-import { BINANCE_CHAIN_ID, BUSD_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, USDC_CONTRACT_ADDRESS, WBNB_CONTRACT_ADDRESS, WETH_CONTRACT_ADDRESS } from "../config"
+import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
+import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
+import { ExchangeRates, tokenName } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
-import { ExchangeRates } from "../types/types"
-
-//styled MUI components at root, where sx can't change them
-const StyledSelect = styled(Select)<SelectProps>(
-	({ theme }) =>
-		`& .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.dark};
-		border-width: 2px;
-	  }
-	  &:hover .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.light};
-		border-width: 2px;
-	  }
-	  &.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.main};
-		border-width: 2px;
-	  }
-	  `,
-)
-const StyledTextField = styled(TextField)<TextFieldProps>(
-	({ theme }) =>
-		`
-	& .${outlinedInputClasses.root} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.dark};
-		border-radius: 0;
-	}
-	&:hover .${outlinedInputClasses.root} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.light};
-		border-radius: 0;
-	}
-	& .${outlinedInputClasses.root}.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.main};
-		border-radius: 0;
-	}
-	`,
-)
-
+import { TokenSelect } from "./tokenSelect"
 type conversionType = "supsToTokens" | "tokensToSups"
-type tokenName = "weth" | "usdc" | "wbnb" | "busd"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC = () => {
 	const { subscribe, state } = useWebsocket()
-	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState } = useWeb3()
+	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState, supBalance, setCurrentToken, currentToken, tokenOptions } =
+		useWeb3()
 	const theme = useTheme()
 
-	const [selectedChainId, setSelectedChainId] = useState<number>(parseInt(ETHEREUM_CHAIN_ID.toString()))
-	const [isNativeToken, setIsNativeToken] = useState<boolean>(true)
-	const [currentToken, setCurrentToken] = useState<tokenName>("weth")
-	const [tokenAmt, setTokenAmt] = useState<BigNumber>(BigNumber.from(0))
-	const [supsAmt, setSupsAmt] = useState<BigNumber>(BigNumber.from(0))
-	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
-	const [userBalance, setUserBalance] = useState<BigNumber>(BigNumber.from(0))
+	const [selectedTokenName, setSelectedTokenName] = useState<tokenName>("eth")
+	const [tokenValue, setTokenValue] = useState<string>("")
+	const [supsValue, setSupsValue] = useState<string>("")
+	const [amountRemaining, setAmountRemaining] = useState<number>(0)
+	const [userBalance, setUserBalance] = useState<number>(0)
 	const [transferState, setTransferState] = useState<transferStateType>("none")
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
-	const [scanSite, setScanSite] = useState<string>("")
 	const [transferError, setTransferError] = useState<any>(null)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
-
-	const [contractAddr, setContractAddr] = useState<string>("")
+	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 
 	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
 
 	const handleConversions = useCallback(
-		(direction: conversionType, value: BigNumber) => {
+		(direction: conversionType, value: number) => {
 			if (value.toString() === "") {
-				setTokenAmt(BigNumber.from(0))
-				setSupsAmt(BigNumber.from(0))
+				setTokenValue("")
+				setSupsValue("")
 				return
 			}
-			if (isNativeToken) {
-				switch (currentToken) {
-					case "wbnb":
+			if (currentToken.isNative && exchangeRates) {
+				console.log(currentToken)
+				switch (selectedTokenName) {
+					case "bnb":
 						switch (direction) {
 							case "tokensToSups":
-								const sups = value
-									.mul(parseUnits(web3Constants.bnbToUsdConversion.toString(), 18))
-									.div(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
-								setSupsAmt(BigNumber.from(sups))
+								const sups = ((value * exchangeRates.BNBtoUSD) / exchangeRates.SUPtoUSD).toFixed(4).toString()
+								setSupsValue(sups)
 								break
 							case "supsToTokens":
-								const tokens = value
-									.mul(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
-									.div(parseUnits(web3Constants.bnbToUsdConversion.toString(), 18))
-								setTokenAmt(BigNumber.from(tokens))
+								const tokens = ((value * exchangeRates.SUPtoUSD) / exchangeRates.BNBtoUSD).toFixed(4).toString()
+								setTokenValue(tokens)
 								break
 						}
 						break
 					default:
 						switch (direction) {
 							case "tokensToSups":
-								const sups = value
-									.mul(parseUnits(web3Constants.ethToUsdConversion.toString(), 18))
-									.div(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
-								setSupsAmt(BigNumber.from(sups))
+								const sups = ((value * exchangeRates.ETHtoUSD) / exchangeRates.SUPtoUSD).toFixed(4).toString()
+								setSupsValue(sups)
 								break
 							case "supsToTokens":
-								const tokens = value
-									.mul(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
-									.div(parseUnits(web3Constants.ethToUsdConversion.toString(), 18))
-								setTokenAmt(BigNumber.from(tokens))
+								const tokens = ((value * exchangeRates.SUPtoUSD) / exchangeRates.ETHtoUSD).toFixed(4).toString()
+								setTokenValue(tokens)
 								break
 						}
 						break
 				}
-			} else {
+			} else if (exchangeRates) {
 				switch (direction) {
 					case "tokensToSups":
-						const sups = value.div(web3Constants.supsToUsdConversion)
-						setSupsAmt(BigNumber.from(sups))
+						const sups = (value / exchangeRates.SUPtoUSD).toFixed(4).toString()
+						setSupsValue(sups)
 						break
 					case "supsToTokens":
-						const tokens = value.mul(web3Constants.supsToUsdConversion)
-						setTokenAmt(BigNumber.from(tokens))
+						const tokens = (value * exchangeRates.SUPtoUSD).toFixed(4).toString()
+						setTokenValue(tokens)
 						break
 				}
 			}
 		},
-		[currentToken, isNativeToken],
+		[currentToken, exchangeRates],
 	)
 
+	//handles netowrk switch and default network token
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
-			setSelectedChainId(currentChainId)
+			const filteredArr = tokenOptions.filter((x) => {
+				return x.chainId === currentChainId
+			})
+			const filteredByName = filteredArr.filter((x) => {
+				return x.name === selectedTokenName
+			})
 
-			switch (currentChainId) {
-				case web3Constants.ethereumChainId:
-					setScanSite("etherscan.io")
-					break
-				case web3Constants.binanceChainId:
-					setScanSite("bscscan.com")
-					break
-				case web3Constants.goerliChainId:
-					setScanSite("goerli.etherscan.io")
-					break
-				case web3Constants.bscTestNetChainId:
-					setScanSite("testnet.bscscan.com")
-					break
+			if (filteredByName.length === 0) {
+				setSelectedTokenName(filteredArr[0].name)
+				return
+			} else {
+				setSelectedTokenName(filteredByName[0].name)
+				return
 			}
 		} else {
-			setSelectedChainId(parseInt(ETHEREUM_CHAIN_ID))
+			setSelectedTokenName(tokenOptions[0].name)
 		}
 	}, [currentChainId, acceptedChainExceptions])
 
+	//handles token switch from drop down
 	useEffect(() => {
-		if (tokenAmt && tokenAmt.gt(0)) {
-			handleConversions("tokensToSups", tokenAmt)
-		}
-	}, [handleConversions, tokenAmt])
+		const filteredArr = tokenOptions.filter((x) => {
+			return x.name === selectedTokenName
+		})
+		setCurrentToken(filteredArr[0])
+	}, [selectedTokenName])
 
-	//setting current token
 	useEffect(() => {
-		if (currentChainId?.toString() === ETHEREUM_CHAIN_ID && !isNativeToken) {
-			setCurrentToken("usdc")
-			return
+		if (tokenValue !== "") {
+			handleConversions("tokensToSups", parseFloat(tokenValue))
 		}
-		if (currentChainId?.toString() === BINANCE_CHAIN_ID && isNativeToken) {
-			setCurrentToken("wbnb")
-			return
-		}
-		if (currentChainId?.toString() === BINANCE_CHAIN_ID && !isNativeToken) {
-			setCurrentToken("busd")
-			return
-		}
-		setCurrentToken("weth")
-		return
-	}, [isNativeToken, currentChainId])
+	}, [handleConversions, tokenValue])
 
 	//getting user balance
 	useEffect(() => {
-		setUserBalance(BigNumber.from(0))
+		setUserBalance(0)
 		setLoading(true)
 		;(async () => {
 			try {
-				const bal = await getBalance(contractAddr)
-				if (bal) setUserBalance(bal)
+				const response = await getBalance(currentToken.contractAddr)
+				if (response) {
+					const balance = parseFloat(ethers.utils.formatUnits(response, 18))
+					if (!balance) return
+					setUserBalance(balance)
+				}
 			} catch {
-				setUserBalance(BigNumber.from(0))
+				setUserBalance(0)
+			} finally {
+				setLoading(false)
 			}
-			setLoading(false)
 		})()
-	}, [contractAddr, getBalance])
+	}, [currentToken, getBalance])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
+			if (rates.BNBtoUSD === 0 || rates.ETHtoUSD === 0 || rates.SUPtoUSD === 0) {
+				return
+			}
 			setExchangeRates(rates)
 		})
 	}, [subscribe, state])
@@ -229,57 +161,33 @@ export const BuyTokens: React.FC = () => {
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
-			setAmountRemaining(BigNumber.from(amount))
+			const amountSups = parseFloat(ethers.utils.formatUnits(amount, 18)).toFixed(2)
+			setAmountRemaining(parseFloat(amountSups))
 		})
 	}, [subscribe, state])
 
-	const handleSelectChange = (event: SelectChangeEvent<unknown>) => {
-		const value = parseInt(event.target.value as string)
-		setSelectedChainId(value)
-	}
-
 	const handleNetworkSwitch = async () => {
-		await changeChain(selectedChainId)
-		setIsNativeToken(true)
-		setTokenAmt(BigNumber.from(0))
-		setSupsAmt(BigNumber.from(0))
+		await changeChain(currentToken.chainId)
 	}
-
-	useEffect(() => {
-		switch (currentToken) {
-			case "usdc":
-				setContractAddr(USDC_CONTRACT_ADDRESS)
-				return
-			case "wbnb":
-				setContractAddr(WBNB_CONTRACT_ADDRESS)
-				return
-			case "busd":
-				setContractAddr(BUSD_CONTRACT_ADDRESS)
-				return
-			default:
-				setContractAddr(WETH_CONTRACT_ADDRESS)
-				return
-		}
-	}, [currentToken])
 
 	async function handleTransfer() {
-		if (!supsAmt) return
-		if (!tokenAmt) return
-		if (tokenAmt.lte(0)) return
-		if (supsAmt.gt(amountRemaining)) return
+		const value = parseFloat(tokenValue)
+		const supsNumValue = parseFloat(supsValue)
+
+		if (value <= 0 || supsNumValue > amountRemaining) return
 
 		setLoading(true)
 		setTransferState("waiting")
 		try {
 			if (state !== SocketState.OPEN) return
 
-			const tx = await sendTransferToPurchaseAddress(contractAddr, tokenAmt)
+			const tx = await sendTransferToPurchaseAddress(currentToken.contractAddr, BigNumber.from(value))
 
 			setCurrentTransferHash(tx.hash)
 
 			setTransferState("confirm")
-			setTokenAmt(BigNumber.from(0))
-			setSupsAmt(BigNumber.from(0))
+			setTokenValue("")
+			setSupsValue("")
 
 			await tx.wait()
 		} catch (error) {
@@ -295,298 +203,181 @@ export const BuyTokens: React.FC = () => {
 		handleTransfer()
 	}
 
-	const currencyTextField = () => {
-		let path
-		let currency
-		switch (currentToken) {
-			case "usdc":
-				path = Usdc
-				currency = "USDC"
-				break
-			case "wbnb":
-				path = BinanceCoin
-				currency = "wBNB"
-				break
-			case "busd":
-				path = BinanceUSD
-				currency = "BUSD"
-				break
-			default:
-				path = Ethereum
-				currency = "wETH"
-				break
-		}
-
-		return (
-			<StyledTextField
-				fullWidth
-				value={tokenAmt ? tokenAmt.toString() : null}
-				onChange={(e) => {
-					try {
-						const value = BigNumber.from(e.target.value)
-						setTokenAmt(value)
-						handleConversions("tokensToSups", value)
-					} catch (e) {
-						setTokenAmt(BigNumber.from(0))
-						console.error(e)
-					}
-				}}
-				type="number"
-				sx={{ backgroundColor: colors.darkNavyBlue }}
-				InputProps={{
-					endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
-					startAdornment: (
-						<InputAdornment position="start">
-							<Box
-								component="img"
-								src={path}
-								alt="token image"
-								sx={{
-									height: "1.5rem",
-									marginRight: "1rem",
-								}}
-							/>
-						</InputAdornment>
-					),
-				}}
-				// inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-			/>
-		)
-	}
-
 	return (
-		<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "500px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-			{/* Network Select Component */}
-			<StyledSelect
-				disabled={transferState !== "none" || metaMaskState !== MetaMaskState.Active}
-				value={selectedChainId.toString()}
-				onChange={(e) => handleSelectChange(e)}
-				displayEmpty={true}
-				sx={{
-					marginBottom: "1rem",
-					borderRadius: "0",
-					marginLeft: "auto",
-					display: "flex",
-					minWidth: "150px",
-				}}
-				SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: "0 32px 0 .5rem" } }}
-			>
-				<MenuItem value={ETHEREUM_CHAIN_ID}>
-					<Box
-						component="img"
-						src={Ethereum}
-						alt="Ethereum token symbol"
-						sx={{
-							height: "1.5rem",
-							marginRight: "1rem",
-						}}
-					/>
-					<p>{ETHEREUM_CHAIN_ID === web3Constants.goerliChainId.toString() ? "Goerli" : "Ethereum"}</p>
-				</MenuItem>
-				<MenuItem value={BINANCE_CHAIN_ID}>
-					<Box
-						component="img"
-						src={BinanceCoin}
-						alt="Binance coin symbol"
-						sx={{
-							height: "1.5rem",
-							marginRight: "1rem",
-						}}
-					/>
-					<p>{BINANCE_CHAIN_ID === web3Constants.bscTestNetChainId.toString() ? "BSC Testnet" : "Binance"}</p>
-				</MenuItem>
-			</StyledSelect>
-
+		<Box
+			sx={{
+				border: {
+					xs: `2px solid ${theme.palette.secondary.main}`,
+					md: "none",
+				},
+				position: "relative",
+			}}
+		>
+			{/* Switch Network Dialog */}
 			<Box
-				sx={{
-					border: {
-						xs: `2px solid ${theme.palette.primary.main}`,
-						md: "none",
-					},
-					position: "relative",
-				}}
+				sx={
+					(acceptedChainExceptions && currentChainId === currentToken.chainId) || metaMaskState !== MetaMaskState.Active
+						? { display: "none" }
+						: {
+								position: "absolute",
+								zIndex: "5",
+								padding: "1rem",
+								height: "100%",
+								width: "100%",
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+						  }
+				}
 			>
-				{/* Switch Network Dialog */}
-				<Box
-					sx={
-						(acceptedChainExceptions && currentChainId === selectedChainId) || metaMaskState !== MetaMaskState.Active
-							? { display: "none" }
-							: {
-									position: "absolute",
-									zIndex: "5",
-									padding: "1rem",
-									height: "100%",
-									width: "100%",
-									display: "flex",
-									flexDirection: "column",
-									justifyContent: "center",
-							  }
-					}
-				>
-					<Typography variant="h2" sx={{ textTransform: "uppercase", textAlign: "center", textDecoration: "underline" }}>
-						Attention!
-					</Typography>
-					<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "1rem" }}>
-						Please switch to a valid network to continue your transaction. Click the button below and follow the prompts.
-					</Typography>
-					<FancyButton onClick={handleNetworkSwitch}>Switch Network</FancyButton>
-				</Box>
+				<Typography variant="h2" sx={{ textTransform: "uppercase", textAlign: "center", textDecoration: "underline" }}>
+					Attention!
+				</Typography>
+				<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "1rem" }}>
+					Please switch to a valid network to continue your transaction. Click the button below and follow the prompts.
+				</Typography>
+				<FancyButton borderColor={colors.skyBlue} onClick={handleNetworkSwitch}>
+					Switch Network
+				</FancyButton>
+			</Box>
 
-				{/* Metamask Connection */}
-				<Box
-					sx={
-						metaMaskState === MetaMaskState.Active
-							? { display: "none" }
-							: {
-									position: "absolute",
-									zIndex: "5",
-									padding: "1rem",
-									height: "100%",
-									width: "100%",
-									display: "flex",
-									flexDirection: "column",
-									justifyContent: "center",
-									alignItems: "center",
-							  }
-					}
-				>
-					<Typography variant="h3" sx={{ textTransform: "uppercase", marginBottom: "2rem" }}>
-						Connect Your MetaMask
-					</Typography>
-					<ConnectWallet />
-				</Box>
+			{/* Metamask Connection */}
+			<Box
+				sx={
+					metaMaskState === MetaMaskState.Active
+						? { display: "none" }
+						: {
+								position: "absolute",
+								zIndex: "5",
+								padding: "1rem",
+								height: "100%",
+								width: "100%",
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+								alignItems: "center",
+								gap: "1em",
+						  }
+				}
+			>
+				<Typography variant="h3" sx={{ textTransform: "uppercase" }}>
+					Connect Your Wallet
+				</Typography>
+				<ConnectWallet />
+			</Box>
 
-				{/* transferState */}
+			{/* transferState */}
+			<Box
+				sx={
+					transferState === "none" || metaMaskState !== MetaMaskState.Active
+						? { display: "none" }
+						: { position: "absolute", zIndex: "5", width: "100%", height: "100%" }
+				}
+			>
 				<Box
 					sx={
-						transferState === "none" || metaMaskState !== MetaMaskState.Active
-							? { display: "none" }
-							: { position: "absolute", zIndex: "5", width: "100%", height: "100%" }
+						transferState === "confirm"
+							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							: { display: "none" }
 					}
 				>
-					<Box
-						sx={
-							transferState === "confirm"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
+					<CheckCircleIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
+					<Typography variant="h3" sx={{ margin: "2rem 0 0 0", textTransform: "uppercase" }}>
+						Success
+					</Typography>
+					<Typography variant="h4" sx={{ margin: "1rem 0" }}>
+						Transaction has been submitted
+					</Typography>
+					<Typography variant="body1">
+						<Link href={`https://${currentToken.scanSite}/tx/${currentTransferHash}`} target="_blank">
+							View on Explorer
+						</Link>
+					</Typography>
+					<FancyButton
+						borderColor={colors.skyBlue}
+						loading={loading}
+						disabled={loading}
+						sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
+						onClick={() => setTransferState("none")}
 					>
-						<CheckCircleIcon sx={{ fontSize: "50px", color: theme.palette.primary.main }} />
-						<Typography variant="h3" sx={{ margin: "2rem 0 0 0", textTransform: "uppercase" }}>
-							Success
-						</Typography>
-						<Typography variant="h4" sx={{ margin: "1rem 0" }}>
-							Transaction has been submitted
-						</Typography>
-						<Typography variant="body1">
-							<Link href={`https://${scanSite}/tx/${currentTransferHash}`} target="_blank">
-								View on Explorer
-							</Link>
-						</Typography>
-						<FancyButton
-							loading={loading}
-							disabled={loading}
-							sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
-							onClick={() => setTransferState("none")}
-						>
-							{loading ? " " : "Close"}
+						{loading ? " " : "Close"}
+					</FancyButton>
+					<Typography sx={loading ? { display: "flex", width: "100%", justifyContent: "center" } : { display: "none" }} variant="body1">
+						Please wait, your transaction is pending.
+					</Typography>
+				</Box>
+
+				<Box
+					sx={
+						transferState === "error"
+							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							: { display: "none" }
+					}
+				>
+					<ErrorIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
+					<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
+						Error
+					</Typography>
+					<Typography variant="h4">{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}</Typography>
+					<Typography sx={{ marginTop: "1rem" }} variant="body1">
+						{transferError ? (transferError.code === undefined ? transferError : null) : null}
+					</Typography>
+
+					<Box sx={{ margin: "2rem 0", display: "flex", width: "70%", justifyContent: "space-around" }}>
+						<FancyButton borderColor={colors.skyBlue} sx={{ minWidth: "7rem" }} onClick={() => setTransferState("none")}>
+							Close
 						</FancyButton>
-						<Typography sx={loading ? { display: "flex", width: "100%", justifyContent: "center" } : { display: "none" }} variant="body1">
-							Please wait, your transaction is pending.
-						</Typography>
+
+						<FancyButton borderColor={colors.skyBlue} type="submit" sx={{ minWidth: "7rem" }} onClick={handleTransfer}>
+							Retry
+						</FancyButton>
 					</Box>
-
-					<Box
-						sx={
-							transferState === "error"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
-					>
-						<ErrorIcon sx={{ fontSize: "50px", color: theme.palette.primary.main }} />
-						<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
-							Error
-						</Typography>
-						<Typography variant="h4">
-							{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}
-						</Typography>
-						<Typography sx={{ marginTop: "1rem" }} variant="body1">
-							{transferError ? (transferError.code === undefined ? transferError : null) : null}
-						</Typography>
-
-						<Box sx={{ margin: "2rem 0", display: "flex", width: "70%", justifyContent: "space-around" }}>
-							<FancyButton sx={{ minWidth: "7rem" }} onClick={() => setTransferState("none")}>
-								Close
-							</FancyButton>
-
-							<FancyButton type="submit" sx={{ minWidth: "7rem" }} onClick={handleTransfer}>
-								Retry
-							</FancyButton>
-						</Box>
-					</Box>
-
-					<Stack
-						sx={
-							transferState === "waiting"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
-					>
-						<Box sx={{ width: "100%" }}>
-							<LinearProgress />
-						</Box>
-						<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0" }}>
-							Waiting on Confirmation
-						</Typography>
-
-						<Typography variant="body1">
-							Purchasing {formatUnits(supsAmt, 18)} SUPS with {formatUnits(tokenAmt, 18)} {currentToken.toUpperCase()}
-						</Typography>
-						<Typography variant="body1">Confirm this transaction in your wallet</Typography>
-						<Box sx={{ width: "100%", marginTop: "1rem" }}>
-							<LinearProgress />
-						</Box>
-					</Stack>
 				</Box>
 
-				{/* Purchase Sups Form */}
-				<Box
+				<Stack
 					sx={
-						acceptedChainExceptions && currentChainId === selectedChainId && transferState === "none" && metaMaskState === MetaMaskState.Active
-							? {
-									padding: {
-										xs: "1rem",
-										md: "0",
-									},
-							  }
-							: {
-									filter: "blur(5px) brightness(20%)",
-									padding: {
-										xs: "1rem",
-										md: "0",
-									},
-							  }
+						transferState === "waiting"
+							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							: { display: "none" }
 					}
 				>
-					{/* Button Group */}
-					<ButtonGroup sx={{ width: "100%", marginBottom: "1rem" }}>
-						<Button
-							disableRipple
-							onClick={(e) => setIsNativeToken(true)}
-							sx={{ width: "50%", borderRadius: "0" }}
-							variant={isNativeToken ? "contained" : "outlined"}
-						>
-							{currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId ? "WBNB" : "WETH"}
-						</Button>
-						<Button
-							disableRipple
-							onClick={(e) => setIsNativeToken(false)}
-							sx={{ width: "50%", borderRadius: "0" }}
-							variant={isNativeToken ? "outlined" : "contained"}
-						>
-							{currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId ? "BUSD" : "USDC"}
-						</Button>
-					</ButtonGroup>
+					<Box sx={{ width: "100%" }}>
+						<LinearProgress color="secondary" />
+					</Box>
+					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0" }}>
+						Waiting on Confirmation
+					</Typography>
+
+					<Typography variant="body1">
+						Purchasing {supsValue} SUPS with {tokenValue} {selectedTokenName.toUpperCase()}
+					</Typography>
+					<Typography variant="body1">Confirm this transaction in your wallet</Typography>
+					<Box sx={{ width: "100%", marginTop: "1rem" }}>
+						<LinearProgress color="secondary" />
+					</Box>
+				</Stack>
+			</Box>
+
+			{/* Purchase Sups Form */}
+			<Box
+				sx={
+					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none"
+						? {
+								padding: {
+									xs: "1rem",
+									md: "0",
+								},
+						  }
+						: {
+								filter: "blur(5px) brightness(20%)",
+								padding: {
+									xs: "1rem",
+									md: "0",
+								},
+						  }
+				}
+			>
+				<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "550px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
 					<Typography
 						variant="h2"
 						align="center"
@@ -597,106 +388,207 @@ export const BuyTokens: React.FC = () => {
 					>
 						Purchase SUPS
 					</Typography>
-
-					{/* Form */}
 					<form onSubmit={handleSubmit}>
-						<Box sx={{ display: "flex", flexDirection: "column", height: "30vh", justifyContent: "space-between" }}>
-							<Box sx={{ display: "flex", flexDirection: "column" }}>
-								{currencyTextField()}
-								<FancyButton
-									disabled={userBalance.eq(0)}
-									sx={{ borderWidth: "1px", marginTop: ".5rem", marginLeft: "auto" }}
-									variant="outlined"
-									onClick={() => {
-										setTokenAmt(userBalance)
-										handleConversions("tokensToSups", userBalance)
-									}}
+						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between", alignItems: "center" }}>
+							<Box sx={{ position: "relative", width: "100%" }}>
+								<Box
+									sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: "1rem", marginBottom: "1rem" }}
 								>
-									<Typography variant="body1">
-										Max: <b>{userBalance ? formatUnits(userBalance, 18) : "--"} </b>
-									</Typography>
-								</FancyButton>
-							</Box>
-							<Box sx={{ margin: "1.5rem 0" }}>
-								<StyledTextField
-									sx={{ backgroundColor: colors.darkNavyBlue }}
-									onChange={(e) => {
-										try {
-											const value = BigNumber.from(e.target.value)
-											setSupsAmt(value)
-											handleConversions("supsToTokens", value)
-										} catch (e) {
-											setSupsAmt(BigNumber.from(0))
-											console.error(e)
-										}
+									<Box sx={{ flexGrow: "2" }}>
+										<Typography sx={{ color: colors.darkGrey }} variant="h6">
+											From:{" "}
+										</Typography>
+										<TextField
+											fullWidth
+											variant="filled"
+											value={tokenValue}
+											onChange={(e) => {
+												const value = e.target.value
+												setTokenValue(value)
+												handleConversions("tokensToSups", parseFloat(value))
+											}}
+											type="number"
+											sx={{
+												backgroundColor: colors.darkNavyBlue,
+												"& .MuiFilledInput-root": {
+													background: "inherit",
+												},
+												"& .MuiFilledInput-underline:after": {
+													borderBottomColor: colors.skyBlue,
+												},
+												input: { color: colors.skyBlue, fontSize: "1.2rem" },
+											}}
+											inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+										/>
+									</Box>
+
+									<Box
+										sx={{
+											display: "flex",
+											flexDirection: "column",
+											justifyContent: "space-between",
+											alignItems: "flex-end",
+										}}
+									>
+										<TokenSelect
+											selectedTokenName={selectedTokenName}
+											setSelectedTokenName={setSelectedTokenName}
+											tokenOptions={tokenOptions}
+										/>
+										<Button
+											disabled={userBalance === 0}
+											sx={{ marginLeft: "auto" }}
+											onClick={() => {
+												setTokenValue(userBalance.toString())
+												handleConversions("tokensToSups", userBalance)
+											}}
+										>
+											<Typography sx={{ color: colors.darkGrey }} variant="body1">
+												Balance: <b>{userBalance ? userBalance.toFixed(2) : "--"}</b>
+											</Typography>
+										</Button>
+									</Box>
+								</Box>
+								<Box
+									component="img"
+									src={Arrow}
+									alt="token image"
+									sx={{
+										height: "3rem",
+										position: "absolute",
+										top: "0",
+										left: "0",
+										right: "0",
+										bottom: "0",
+										margin: "auto",
+										zIndex: 2,
 									}}
-									value={supsAmt ? supsAmt.toString() : null}
-									fullWidth
-									type="number"
-									InputProps={{
-										endAdornment: <InputAdornment position="end">SUPS</InputAdornment>,
-										startAdornment: (
-											<InputAdornment position="start">
-												<Box
-													component="img"
-													src={SupsToken}
-													alt="token image"
-													sx={{
-														height: "1.5rem",
-														marginRight: "1rem",
-													}}
-												/>
-											</InputAdornment>
-										),
-									}}
-									inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
 								/>
-								<Box sx={{ width: "100%" }}>
-									<Typography variant="body1">1 SUP = 0.12 USD</Typography>
+								<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: "1rem", marginTop: "1rem" }}>
+									<Box sx={{ flexGrow: "2" }}>
+										<Typography sx={{ color: colors.darkGrey }} variant="h6">
+											To:
+										</Typography>
+										<TextField
+											fullWidth
+											variant="filled"
+											value={supsValue}
+											onChange={(e) => {
+												const value = e.target.value
+												setSupsValue(value)
+												handleConversions("supsToTokens", parseFloat(value))
+											}}
+											type="number"
+											sx={{
+												backgroundColor: colors.darkNavyBlue,
+												"& .MuiFilledInput-root": {
+													background: "inherit",
+												},
+												"& .MuiFilledInput-underline:after": {
+													borderBottomColor: colors.skyBlue,
+												},
+												input: { color: colors.skyBlue, fontSize: "1.2rem" },
+											}}
+											inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+										/>
+									</Box>
+									<Box
+										sx={{
+											display: "flex",
+											flexDirection: "column",
+											justifyContent: "space-between",
+											alignItems: "flex-end",
+										}}
+									>
+										<Box sx={{ display: "flex", padding: ".5rem" }}>
+											<Box
+												component="img"
+												src={SupsToken}
+												alt="token image"
+												sx={{
+													height: "1rem",
+													marginRight: "1rem",
+												}}
+											/>
+											<Typography variant="body1" sx={{ textTransform: "uppercase" }}>
+												<b>Sups</b>
+											</Typography>
+										</Box>
+										<Typography sx={{ color: colors.darkGrey }} variant="body1">
+											XSYN Balance: <b>{userSups ? parseFloat(formatUnits(BigNumber.from(userSups), 18)).toFixed(2) : "--"}</b>
+										</Typography>
+										<Typography sx={{ color: colors.darkGrey }} variant="body1">
+											Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, 18)).toFixed(2) : "--"}</b>
+										</Typography>
+									</Box>
 								</Box>
 							</Box>
 
 							{/* Progress Bar */}
-							<Box sx={{ width: "100%", backgroundColor: `${theme.palette.primary.dark}` }}>
+							<Box
+								sx={{
+									width: "100%",
+									backgroundColor: `${theme.palette.secondary.dark}`,
+									height: "2.5rem",
+									borderRadius: "5px",
+									marginTop: "2rem",
+								}}
+							>
 								<Box
 									sx={{
-										backgroundColor: `${theme.palette.primary.main}`,
-										width: `${BigNumber.from(100).sub(
-											amountRemaining.div(parseUnits(web3Constants.totalSaleSups.toString(), 18)).mul(100),
-										)}%`,
-										height: "2rem",
-									}}
-								/>
-							</Box>
-							<Box>
-								<Typography
-									variant="body1"
-									sx={{
-										textTransform: "uppercase",
+										backgroundColor: `${theme.palette.secondary.main}`,
+										width: `${100 - (amountRemaining / web3Constants.totalSaleSups) * 100}%`,
+										height: "inherit",
+										overflowX: "visible",
+										display: "flex",
+										alignItems: "center",
+										borderRadius: "5px",
+										paddingLeft: "1rem",
 									}}
 								>
-									{formatUnits(amountRemaining, 24)}m of 217M Tokens remaining
-								</Typography>
-								<Typography
-									variant="body1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									{formatUnits(amountRemaining.div(web3Constants.totalSaleSups), 16)}% of total supply
-								</Typography>
+									<Box
+										component="img"
+										src={BWSupToken}
+										alt="token image"
+										sx={{
+											height: "1.5rem",
+											paddingRight: ".5rem",
+										}}
+									/>
+									<Typography
+										variant="body1"
+										sx={{
+											textTransform: "uppercase",
+											color: colors.darkNavyBlue,
+											whiteSpace: "nowrap",
+											fontWeight: "600",
+										}}
+									>
+										{(amountRemaining / 10 ** 6).toFixed(2)}m of 217M Tokens remaining
+									</Typography>
+								</Box>
 							</Box>
 							<FancyButton
-								disabled={!acceptedChainExceptions || tokenAmt?.gt(userBalance) || tokenAmt?.eq(0) || supsAmt?.gt(amountRemaining) || loading}
+								borderColor={colors.skyBlue}
+								disabled={
+									!acceptedChainExceptions ||
+									parseFloat(tokenValue) > userBalance ||
+									tokenValue === "" ||
+									parseFloat(supsValue) > amountRemaining ||
+									loading ||
+									exchangeRates === undefined
+								}
 								sx={{ width: "60%", minWidth: "150px", alignSelf: "center", marginTop: "1.5rem" }}
 								type="submit"
 								fancy
 							>
 								{(() => {
-									if (tokenAmt && tokenAmt.gt(userBalance)) {
-										return `Insufficient ${currentToken} Balance`
-									} else if (supsAmt && supsAmt.gt(amountRemaining)) {
+									if (parseFloat(tokenValue) > userBalance) {
+										return `Insufficient ${currentToken.name.toUpperCase()} Balance`
+									} else if (parseFloat(supsValue) > amountRemaining) {
 										return `Insufficient Remaining SUPS`
+									} else if (exchangeRates === undefined) {
+										return `Retrieving Exchange Rates`
 									} else {
 										return "Purchase Your Sups"
 									}

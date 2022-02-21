@@ -42,7 +42,7 @@ export enum VerificationType {
  * A Container that handles Authorisation
  */
 export const AuthContainer = createContainer(() => {
-	const { metaMaskState, sign, account } = useWeb3()
+	const { metaMaskState, sign, signWalletConnect, account } = useWeb3()
 	const admin = process.env.REACT_APP_BUILD_TARGET === "ADMIN"
 	const [user, setUser] = useState<User>()
 	const [authorised, setAuthorised] = useState(false)
@@ -195,6 +195,38 @@ export const AuthContainer = createContainer(() => {
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
 	}, [send, state, account, metaMaskState, sign, sessionID])
+
+	/**
+	 * Logs a User in using a Wallet Connect public address
+	 *
+	 * @param token Wallet Connect public address
+	 */
+	const loginWalletConnect = useCallback(async () => {
+		if (state !== WebSocket.OPEN) return undefined
+		try {
+			const signature = await signWalletConnect()
+			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
+				publicAddress: account as string,
+				signature,
+				sessionID,
+			})
+			if (!resp || !resp.user || !resp.token) {
+				localStorage.clear()
+				setUser(undefined)
+				return
+			}
+			setUser(resp.user)
+			localStorage.setItem("token", resp.token)
+			setAuthorised(true)
+
+			return resp
+		} catch (e) {
+			localStorage.clear()
+			setUser(undefined)
+			console.error(e)
+			throw typeof e === "string" ? e : "Something went wrong, please try again."
+		}
+	}, [send, state, account, sessionID, signWalletConnect])
 
 	/**
 	 * Signs a user up using a Google oauth token
@@ -898,6 +930,7 @@ export const AuthContainer = createContainer(() => {
 		signUpTwitter,
 		signUpDiscord,
 		loginMetamask,
+		loginWalletConnect,
 		loginGoogle,
 		loginFacebook,
 		loginTwitch,
