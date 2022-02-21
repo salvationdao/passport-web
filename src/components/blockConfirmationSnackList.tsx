@@ -1,5 +1,5 @@
 import { Box, Snackbar } from "@mui/material"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "../containers/auth"
 import { SocketState, useWebsocket } from "../containers/socket"
 import HubKey from "../keys"
@@ -47,7 +47,16 @@ export const BlockConfirmationSnackList = () => {
 			},
 			{ id: user.id, getInitialData: false },
 		)
-	}, [user, state])
+	}, [user, state, subscribe])
+
+	//put the transaction id in a seperate array that will be filtered out in the above useEffect
+	const handleFilter = useCallback(
+		(txID: string) => {
+			if (filterArr.includes(txID)) return
+			setFilterArr([...filterArr, txID])
+		},
+		[filterArr],
+	)
 
 	//compare the original array to the filtered array and if the id is in the transaction array then filter it out.
 	//if the confirmation has 6+ confirmation blocks, then set a time out to make the alert dissapear
@@ -56,20 +65,16 @@ export const BlockConfirmationSnackList = () => {
 		resultArr = txConfirms.filter((item) => !filterArr.includes(item.tx))
 		resultArr.map((item) => {
 			if (item.confirmationAmount >= 6) {
-				setTimeout(() => {
+				return setTimeout(() => {
 					handleFilter(item.tx)
 				}, 4000)
+			} else {
+				return null
 			}
 		})
 
 		setResults(resultArr)
-	}, [txConfirms, filterArr])
-
-	//put the transaction id in a seperate array that will be filtered out in the above useEffect
-	const handleFilter = (txID: string) => {
-		if (filterArr.includes(txID)) return
-		setFilterArr([...filterArr, txID])
-	}
+	}, [txConfirms, filterArr, handleFilter])
 
 	return (
 		<Snackbar

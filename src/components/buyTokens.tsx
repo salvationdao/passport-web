@@ -48,7 +48,6 @@ export const BuyTokens: React.FC = () => {
 				return
 			}
 			if (currentToken.isNative && exchangeRates) {
-				console.log(currentToken)
 				switch (selectedTokenName) {
 					case "bnb":
 						switch (direction) {
@@ -88,7 +87,7 @@ export const BuyTokens: React.FC = () => {
 				}
 			}
 		},
-		[currentToken, exchangeRates],
+		[currentToken, exchangeRates, selectedTokenName],
 	)
 
 	//handles netowrk switch and default network token
@@ -111,7 +110,7 @@ export const BuyTokens: React.FC = () => {
 		} else {
 			setSelectedTokenName(tokenOptions[0].name)
 		}
-	}, [currentChainId, acceptedChainExceptions])
+	}, [currentChainId, acceptedChainExceptions, selectedTokenName, tokenOptions])
 
 	//handles token switch from drop down
 	useEffect(() => {
@@ -119,7 +118,7 @@ export const BuyTokens: React.FC = () => {
 			return x.name === selectedTokenName
 		})
 		setCurrentToken(filteredArr[0])
-	}, [selectedTokenName])
+	}, [selectedTokenName, setCurrentToken, tokenOptions])
 
 	useEffect(() => {
 		if (tokenValue !== "") {
@@ -361,7 +360,7 @@ export const BuyTokens: React.FC = () => {
 			{/* Purchase Sups Form */}
 			<Box
 				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none"
+					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none" && metaMaskState === MetaMaskState.Active
 						? {
 								padding: {
 									xs: "1rem",

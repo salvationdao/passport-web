@@ -9,15 +9,15 @@ import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import {
 	BINANCE_CHAIN_ID,
+	BNB_CONTRACT_ADDRESS,
 	BSC_SCAN_SITE,
 	BUSD_CONTRACT_ADDRESS,
 	ETHEREUM_CHAIN_ID,
+	ETH_CONTRACT_ADDRESS,
 	ETH_SCAN_SITE,
 	PURCHASE_ADDRESS,
 	SUPS_CONTRACT_ADDRESS,
 	USDC_CONTRACT_ADDRESS,
-	BNB_CONTRACT_ADDRESS,
-	ETH_CONTRACT_ADDRESS,
 } from "../config"
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
@@ -147,7 +147,6 @@ export const Web3Container = createContainer(() => {
 			]
 
 			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
-			let bal: { _hex: string }
 
 			try {
 				const bal = await erc20.balanceOf(acc)
@@ -164,47 +163,44 @@ export const Web3Container = createContainer(() => {
 		handleWalletSups(account)
 	}, [account, handleWalletSups])
 
-	const createWcProvider = useCallback(
-		async (showQrCode: boolean = true) => {
-			//  Create WalletConnect Provider
-			const walletConnectProvider = new WalletConnectProvider({
-				rpc: {
-					1: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/mainnet`,
-					5: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/goerli`,
-					56: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/mainnet`,
-					97: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/testnet`,
-				},
-				qrcode: showQrCode,
-			})
+	const createWcProvider = useCallback(async (showQrCode: boolean = true) => {
+		//  Create WalletConnect Provider
+		const walletConnectProvider = new WalletConnectProvider({
+			rpc: {
+				1: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/mainnet`,
+				5: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/goerli`,
+				56: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/mainnet`,
+				97: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/testnet`,
+			},
+			qrcode: showQrCode,
+		})
 
-			//  Wrap with Web3Provider from ethers.js
-			const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
-			setProvider(web3Provider)
-			setCurrentChainId(walletConnectProvider.chainId)
-			setWcProvider(walletConnectProvider)
+		//  Wrap with Web3Provider from ethers.js
+		const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
+		setProvider(web3Provider)
+		setCurrentChainId(walletConnectProvider.chainId)
+		setWcProvider(walletConnectProvider)
 
-			// Subscribe to accounts change
-			walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
-				if (accounts.length > 0) {
-					setAccount(accounts[0])
-					setMetaMaskState(MetaMaskState.Active)
-				}
-			})
-			// Subscribe to chainId change
-			walletConnectProvider.on("chainChanged", (chainId: number) => {
-				setCurrentChainId(chainId)
-			})
-			// Subscribe to session disconnection
-			walletConnectProvider.on("disconnect", (code: number, reason: string) => {
-				setAccount(undefined)
-				setProvider(undefined)
-				setWcProvider(undefined)
-				setMetaMaskState(MetaMaskState.NotInstalled)
-			})
-			return walletConnectProvider
-		},
-		[MetaMaskState],
-	)
+		// Subscribe to accounts change
+		walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
+			if (accounts.length > 0) {
+				setAccount(accounts[0])
+				setMetaMaskState(MetaMaskState.Active)
+			}
+		})
+		// Subscribe to chainId change
+		walletConnectProvider.on("chainChanged", (chainId: number) => {
+			setCurrentChainId(chainId)
+		})
+		// Subscribe to session disconnection
+		walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+			setAccount(undefined)
+			setProvider(undefined)
+			setWcProvider(undefined)
+			setMetaMaskState(MetaMaskState.NotInstalled)
+		})
+		return walletConnectProvider
+	}, [])
 
 	useEffect(() => {
 		if (provider) return // wallet connected
@@ -241,7 +237,7 @@ export const Web3Container = createContainer(() => {
 		return () => {
 			if ((window as any).ethereum) (window as any).ethereum.removeAllListeners()
 		}
-	}, [provider, handleAccountChange, handleChainChange])
+	}, [provider, handleAccountChange, handleChainChange, createWcProvider])
 
 	const connect = useCallback(async () => {
 		if (provider) {
@@ -369,7 +365,7 @@ export const Web3Container = createContainer(() => {
 			const msg = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
 			return await signer.signMessage(`${msg}:\n ${nonce}`)
 		},
-		[provider, getNonce, getNonceFromID, wcConnect],
+		[provider, getNonce, getNonceFromID],
 	)
 
 	const signWalletConnect = useCallback(
@@ -436,7 +432,7 @@ export const Web3Container = createContainer(() => {
 				return contract.balanceOf(account)
 			} catch (error) {
 				displayMessage("Couldn't get contract balance, please try again.", "error")
-				console.log(error)
+				return
 			}
 		},
 		[provider, account, displayMessage],
@@ -469,7 +465,6 @@ export const Web3Container = createContainer(() => {
 			}
 			const signer = provider.getSigner()
 			const contract = new ethers.Contract(contractAddress, genericABI, signer)
-			const decimals = await contract.decimals()
 
 			const hasSufficientFunds = await contract.callStatic.transfer(signer.getAddress(), value)
 
