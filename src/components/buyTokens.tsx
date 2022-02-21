@@ -1,16 +1,15 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
 import { Box, Button, LinearProgress, Link, Stack, TextField, Typography, useTheme } from "@mui/material"
-import { BigNumber, ethers } from "ethers"
+import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
 import { useContainer } from "unstated-next"
 import Arrow from "../assets/images/arrow.png"
 import SupsToken from "../assets/images/sup-token.svg"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
-import { useAuth } from "../containers/auth"
 import { SocketState, useWebsocket } from "../containers/socket"
-import { AppState } from "../containers/supremacy/app"
+import { AppState, useSupremacyApp } from "../containers/supremacy/app"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
@@ -19,7 +18,6 @@ import { ExchangeRates, tokenName, tokenSelect } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { MetaMaskLogin } from "./loginMetaMask"
-import { SaleConnectWallet } from "./supremacy/saleConnectWallet"
 import { SupFancyButton } from "./supremacy/supFancyButton"
 import { TokenSelect } from "./tokenSelect"
 type conversionType = "supsToTokens" | "tokensToSups"
@@ -27,7 +25,7 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
 	const { subscribe, state } = useWebsocket()
-	const { user } = useAuth()
+	const { isWhitelisted } = useSupremacyApp()
 	const {
 		changeChain,
 		currentChainId,
@@ -288,7 +286,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			{/* Metamask Connection */}
 			<Box
 				sx={
-					publicSale && !user
+					publicSale && !isWhitelisted
 						? {
 								position: "absolute",
 								zIndex: "5",

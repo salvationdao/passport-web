@@ -46,6 +46,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 
 			try {
 				const resp = await loginMetamask()
+				setIsProcessing(false)
 				if (!resp || !resp.isNew) return
 				!publicSale && history.push("/onboarding?skip_username=true")
 			} catch (e) {

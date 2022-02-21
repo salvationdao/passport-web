@@ -51,33 +51,20 @@ const CountdownSectionValue = styled(Box)({
 interface CountdownTimerProps {
 	publicSale?: boolean
 	sx?: SxProps
+	date: Date
 }
 
 export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
-	const { publicSale, sx } = props
+	const { publicSale, sx, date } = props
 	const history = useHistory()
 	// Set the date
 	// const date = new Date(`2022-02-24T00:00:00.000+00:00`)
-	const [date, setDate] = React.useState(new Date())
 	const [remaining, setRemaining] = React.useState({
 		d: 0,
 		h: 0,
 		m: 0,
 		s: 0,
 	})
-
-	const fetchTime = useCallback(async () => {
-		const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
-		const data = await response.clone().json()
-		return new Date(data.time)
-	}, [])
-
-	React.useEffect(() => {
-		;(async () => {
-			const endDate = await fetchTime()
-			setDate(endDate)
-		})()
-	}, [fetchTime])
 
 	useInterval(() => {
 		const seconds = differenceInSeconds(date, Date.now())

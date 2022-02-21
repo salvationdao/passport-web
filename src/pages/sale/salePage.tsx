@@ -1,7 +1,7 @@
 import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
 import useMediaQuery from "@mui/material/useMediaQuery"
 import { formatUnits } from "ethers/lib/utils"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { useHistory } from "react-router-dom"
 import { useContainer } from "unstated-next"
 import BWSupToken from "../../assets/images/BW-sup-token.png"
@@ -10,7 +10,8 @@ import { BackgroundVideo } from "../../components/supremacy/backgroundVideo"
 import { CountdownTimer } from "../../components/supremacy/countdownTimer"
 import { Loading } from "../../components/supremacy/loading"
 import { SupremacyNavbar } from "../../components/supremacy/navbar"
-import { AppState } from "../../containers/supremacy/app"
+import { WhiteListModal } from "../../components/supremacy/whiteListModal"
+import { AppState, useSupremacyApp } from "../../containers/supremacy/app"
 import { useWeb3, web3Constants } from "../../containers/web3"
 import { colors } from "../../theme"
 
@@ -20,23 +21,16 @@ export const VIDEO_FOLDER = "https://afiles.ninja-cdn.com/supremacy/videos"
 export const NAVBAR_HEIGHT = 100
 
 export const SalePage = () => {
-	const smallerScreen = useMediaQuery("(max-width:1300px)")
-	const shorterScreen = useMediaQuery("(max-height:800px)")
-	const [open, setOpen] = useState(false)
-	const [isTouchDevice, setIsTouchDevice] = useState(false)
+	const [disableSimulation, setDisableSimulation] = useState(false)
+	const [countdown, setCountdown] = useState(new Date())
 
 	// Game state
 	const [showGame, setShowGame] = useState(false)
 	const contentRef = useRef<HTMLIFrameElement>(null)
 	const history = useHistory()
-
+	const { showSimulation, setShowSimulation } = useSupremacyApp()
 	const { account, connect, wcConnect } = useWeb3()
 	const { loading, setLoading, saleActive, amountRemaining } = useContainer(AppState)
-
-	useEffect(() => {
-		let check = window.matchMedia("(hover: none), (pointer: coarse)").matches ? true : false
-		setIsTouchDevice(check)
-	}, [])
 
 	const handleJoinBtn = async () => {
 		if (!account) {
@@ -52,6 +46,26 @@ export const SalePage = () => {
 			setShowGame(true)
 		}
 	}
+
+	interface WhitelistTime {
+		time: Date
+		next_phase: "whitelist" | "death" | "public"
+	}
+
+	const fetchTime = useCallback(async () => {
+		const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
+		const data = (await response.clone().json()) as WhitelistTime
+		if (!data.next_phase.includes("whitelist")) setDisableSimulation(true)
+		return new Date(data.time)
+	}, [])
+
+	useEffect(() => {
+		;(async () => {
+			const endDate = await fetchTime()
+			setCountdown(endDate)
+		})()
+	}, [fetchTime])
+
 	return showGame ? (
 		<>
 			<Box
@@ -168,17 +182,9 @@ export const SalePage = () => {
 									</Typography>
 								</Box>
 							</Box>
-							<CountdownTimer publicSale />
+							<CountdownTimer date={countdown} publicSale />
 						</Stack>
-						{/* <WhiteListModal
-							publicSale={saleActive}
-							smallerScreen={smallerScreen}
-							shorterScreen={shorterScreen}
-							open={open}
-							setOpen={setOpen}
-							handleJoinBtn={handleJoinBtn}
-							isTouchDevice={isTouchDevice}
-						/> */}
+						{!disableSimulation && <WhiteListModal open={showSimulation} setOpen={setShowSimulation} handleJoinBtn={handleJoinBtn} />}
 						<BuyTokens publicSale />
 					</Box>
 				</Stack>

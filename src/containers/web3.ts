@@ -100,7 +100,6 @@ const tokenOptions: tokenSelect[] = [
  * A Container that handles Web3
  */
 export const Web3Container = createContainer(() => {
-	const { checkWhitelist, setIsWhitelisted } = useSupremacyApp()
 	const { displayMessage } = useSnackbar()
 	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
@@ -289,20 +288,15 @@ export const Web3Container = createContainer(() => {
 					const signer = provider.getSigner()
 					const acc = await signer.getAddress()
 					// Check if account is whitelisted if not return
-					const allowAccess = await checkWhitelist(acc)
-					if (allowAccess) {
-						setIsWhitelisted(true)
-						setAccount(acc)
-						handleAccountChange([acc])
-					}
-					setIsWhitelisted(false)
+					setAccount(acc)
+					handleAccountChange([acc])
 				} catch (error) {
 					if (error instanceof Error) displayMessage(error.message, "error")
 					else displayMessage("Please authenticate your wallet.", "info")
 				}
 			}
 		},
-		[displayMessage, provider, handleAccountChange, checkWhitelist, setIsWhitelisted],
+		[displayMessage, provider, handleAccountChange],
 	)
 
 	const wcConnect = useCallback(

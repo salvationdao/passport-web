@@ -27,7 +27,7 @@ export const WhiteListModal = (props: Props) => {
 	return (
 		<Modal
 			open={props.open}
-			onClose={() => props.setOpen(false)}
+			onClose={() => props.setOpen(!props.open)}
 			BackdropProps={{
 				style: {
 					backgroundColor: "rgba(0,0,0,0.9)",
@@ -138,6 +138,7 @@ export const WhiteListModal = (props: Props) => {
 								},
 							}}
 						>
+							<Typography>Survive to join the whitelist!</Typography>
 							<SupFancyButton
 								onClick={async () => await props.handleJoinBtn()}
 								sx={{

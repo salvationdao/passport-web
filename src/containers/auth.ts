@@ -32,6 +32,7 @@ import {
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
 import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
+import { useSupremacyApp } from "./supremacy/app"
 import { MetaMaskState, useWeb3 } from "./web3"
 
 export enum VerificationType {
@@ -44,6 +45,7 @@ export enum VerificationType {
  */
 export const AuthContainer = createContainer(() => {
 	const { metaMaskState, sign, signWalletConnect, account, connect } = useWeb3()
+	const { checkWhitelist, setIsWhitelisted, setShowSimulation } = useSupremacyApp()
 	const admin = process.env.REACT_APP_BUILD_TARGET === "ADMIN"
 	const [user, setUser] = useState<User>()
 	const [authorised, setAuthorised] = useState(false)
@@ -174,9 +176,15 @@ export const AuthContainer = createContainer(() => {
 
 		try {
 			let resp: PasswordLoginResponse
-			if (!account) await connect()
+			await connect()
 			const signature = await sign()
 			if (account) {
+				const allowAccess = await checkWhitelist(account)
+				if (!allowAccess) {
+					setShowSimulation(true)
+					return
+				}
+				setIsWhitelisted(true)
 				resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 					publicAddress: account,
 					signature,
@@ -199,7 +207,7 @@ export const AuthContainer = createContainer(() => {
 			console.error(e)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
-	}, [send, state, account, sign, sessionID, connect])
+	}, [send, state, account, sign, sessionID, connect, checkWhitelist, setIsWhitelisted])
 
 	/**
 	 * Logs a User in using a Wallet Connect public address

@@ -14,8 +14,9 @@ function useAppState(initialState = {}) {
 	const [saleActive, setSaleActive] = useState(process.env.REACT_APP_SALE_ACTIVE == "true" ? true : false)
 	const [loading, setLoading] = useState(true)
 	// Check Whitelist
-	const [isWhitelisted, setIsWhitelisted] = useState(true)
+	const [isWhitelisted, setIsWhitelisted] = useState(false)
 	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
+	const [showSimulation, setShowSimulation] = useState(false)
 
 	const checkWhitelist = useCallback(
 		async (account: string): Promise<boolean> => {
@@ -42,6 +43,8 @@ function useAppState(initialState = {}) {
 		setLoading,
 		amountRemaining,
 		setAmountRemaining,
+		showSimulation,
+		setShowSimulation,
 	}
 }
 
