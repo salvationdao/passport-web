@@ -11,10 +11,12 @@ interface TokenSelectProps {
 	selectedTokenName: tokenName
 	tokenOptions: tokenSelect[]
 	setSelectedTokenName: React.Dispatch<React.SetStateAction<tokenName>>
+	cb: () => void
 }
 
-export const TokenSelect = ({ selectedTokenName, tokenOptions, setSelectedTokenName }: TokenSelectProps) => {
+export const TokenSelect = ({ selectedTokenName, tokenOptions, setSelectedTokenName, cb }: TokenSelectProps) => {
 	const handleSelectChange = (e: SelectChangeEvent<unknown>) => {
+		if (cb) cb()
 		setSelectedTokenName(e.target.value as tokenName)
 	}
 
