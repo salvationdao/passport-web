@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
-import { IConnector } from "@walletconnect/types"
 import HubKey from "../keys"
 import {
 	AddDiscordRequest,
@@ -203,8 +202,7 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Wallet Connect public address
 	 */
 	const loginWalletConnect = useCallback(async () => {
-		// if (state !== WebSocket.OPEN || !account) return undefined
-
+		if (state !== WebSocket.OPEN || !account) return undefined
 		try {
 			const signature = await signWalletConnect()
 			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {

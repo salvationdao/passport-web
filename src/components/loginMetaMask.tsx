@@ -1,10 +1,8 @@
-import MetaMaskOnboarding from "@metamask/onboarding"
 import { useCallback, useMemo, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { AuthContainer } from "../containers"
-import { MetaMaskState, useWeb3 } from "../containers/web3"
-import { IConnector } from "@walletconnect/types"
 import { useSnackbar } from "../containers/snackbar"
+import { MetaMaskState, useWeb3 } from "../containers/web3"
 
 interface MetaMaskLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
