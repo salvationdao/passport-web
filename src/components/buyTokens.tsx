@@ -56,16 +56,16 @@ export const BuyTokens: React.FC = () => {
 				setSupsValue("")
 				return
 			}
-			if (currentToken.isNative) {
+			if (currentToken.isNative && exchangeRates) {
 				switch (selectedTokenName) {
 					case "bnb":
 						switch (direction) {
 							case "tokensToSups":
-								const sups = ((value * web3Constants.bnbToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
+								const sups = ((value * exchangeRates.BNBtoUSD) / exchangeRates.SUPtoUSD).toFixed(4).toString()
 								setSupsValue(sups)
 								break
 							case "supsToTokens":
-								const tokens = ((value * web3Constants.supsToUsdConversion) / web3Constants.bnbToUsdConversion).toFixed(4).toString()
+								const tokens = ((value * exchangeRates.SUPtoUSD) / exchangeRates.BNBtoUSD).toFixed(4).toString()
 								setTokenValue(tokens)
 								break
 						}
@@ -73,30 +73,30 @@ export const BuyTokens: React.FC = () => {
 					default:
 						switch (direction) {
 							case "tokensToSups":
-								const sups = ((value * web3Constants.ethToUsdConversion) / web3Constants.supsToUsdConversion).toFixed(4).toString()
+								const sups = ((value * exchangeRates.ETHtoUSD) / exchangeRates.SUPtoUSD).toFixed(4).toString()
 								setSupsValue(sups)
 								break
 							case "supsToTokens":
-								const tokens = ((value * web3Constants.supsToUsdConversion) / web3Constants.ethToUsdConversion).toFixed(4).toString()
+								const tokens = ((value * exchangeRates.SUPtoUSD) / exchangeRates.ETHtoUSD).toFixed(4).toString()
 								setTokenValue(tokens)
 								break
 						}
 						break
 				}
-			} else {
+			} else if (exchangeRates) {
 				switch (direction) {
 					case "tokensToSups":
-						const sups = (value / web3Constants.supsToUsdConversion).toFixed(4).toString()
+						const sups = (value / exchangeRates.SUPtoUSD).toFixed(4).toString()
 						setSupsValue(sups)
 						break
 					case "supsToTokens":
-						const tokens = (value * web3Constants.supsToUsdConversion).toFixed(4).toString()
+						const tokens = (value * exchangeRates.SUPtoUSD).toFixed(4).toString()
 						setTokenValue(tokens)
 						break
 				}
 			}
 		},
-		[currentToken],
+		[currentToken, exchangeRates],
 	)
 
 	//handles netowrk switch and default network token
@@ -123,7 +123,6 @@ export const BuyTokens: React.FC = () => {
 
 	//handles token switch from drop down
 	useEffect(() => {
-		console.log(selectedTokenName)
 		const filteredArr = tokenOptions.filter((x) => {
 			return x.name === selectedTokenName
 		})
@@ -159,6 +158,9 @@ export const BuyTokens: React.FC = () => {
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
+			if (rates.BNBtoUSD === 0 || rates.ETHtoUSD === 0 || rates.SUPtoUSD === 0) {
+				return
+			}
 			setExchangeRates(rates)
 		})
 	}, [subscribe, state])
@@ -174,8 +176,6 @@ export const BuyTokens: React.FC = () => {
 
 	const handleNetworkSwitch = async () => {
 		await changeChain(currentToken.chainId)
-		setTokenValue("")
-		setSupsValue("")
 	}
 
 	async function handleTransfer() {
@@ -577,7 +577,8 @@ export const BuyTokens: React.FC = () => {
 									parseFloat(tokenValue) > userBalance ||
 									tokenValue === "" ||
 									parseFloat(supsValue) > amountRemaining ||
-									loading
+									loading ||
+									exchangeRates === undefined
 								}
 								sx={{ width: "60%", minWidth: "150px", alignSelf: "center", marginTop: "1.5rem" }}
 								type="submit"
@@ -588,6 +589,8 @@ export const BuyTokens: React.FC = () => {
 										return `Insufficient ${currentToken.name.toUpperCase()} Balance`
 									} else if (parseFloat(supsValue) > amountRemaining) {
 										return `Insufficient Remaining SUPS`
+									} else if (exchangeRates === undefined) {
+										return `Retrieving Exchange Rates`
 									} else {
 										return "Purchase Your Sups"
 									}
