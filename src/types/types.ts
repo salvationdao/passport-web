@@ -191,3 +191,9 @@ export enum Rarity {
 	Epic,
 	Legendary,
 }
+
+export interface ExchangeRates {
+	ETHtoUSD: number
+	BNBtoUSD: number
+	SUPtoUSD: number
+}
