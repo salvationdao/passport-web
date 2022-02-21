@@ -5,9 +5,13 @@
 [CD Docs](.github/workflows/README.md)
 
 ### Envars
+
 ```shell
 REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME=
 XGRID_LICENSE_KEY=
+
+# Required for wallet connect
+REACT_APP_WALLET_CONNECT_RPC=
 
 # Not needed for develop
 REACT_APP_SENTRY_DSN_FRONTEND=
@@ -17,6 +21,7 @@ REACT_APP_SENTRY_SAMPLERATE=
 ```
 
 ### To init
+
 ```shell
 make init-linux
 or
@@ -24,6 +29,7 @@ make init-windows
 ```
 
 ### To run
+
 ```shell
 1. Have passport-server running on 8086
 2. make lb
