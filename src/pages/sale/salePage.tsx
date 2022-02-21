@@ -66,7 +66,7 @@ export const SalePage = () => {
 		})()
 	}, [fetchTime])
 
-	return !showGame ? (
+	return showGame ? (
 		<>
 			<Box
 				sx={{
