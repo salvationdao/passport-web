@@ -22,6 +22,7 @@ import { ProfileEditPage } from "./pages/profile/profileEdit"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
+import { WithdrawPage } from "./pages/withdraw"
 
 export const Routes = () => {
 	const { setSessionID } = useAuth()
@@ -83,17 +84,19 @@ export const Routes = () => {
 						{/* User-authenticated routes */}
 						{/* profile */}
 						<Switch>
-						<Route path="/profile/edit">
-							<ProfileEditPage />
-						</Route>
-						<Route path="/profile">
-							<ProfilePage />
-						</Route>
+							<Route path="/profile/edit">
+								<ProfileEditPage />
+							</Route>
+							<Route path="/profile">
+								<ProfilePage />
+							</Route>
 						</Switch>
-
 
 						<Route path="/buy">
 							<BuyPage />
+						</Route>
+						<Route path="/withdraw">
+							<WithdrawPage />
 						</Route>
 						<Route path="/if-buy">
 							<IFrameBuyPage />

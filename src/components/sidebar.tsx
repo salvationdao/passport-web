@@ -1,8 +1,8 @@
 import AppsIcon from "@mui/icons-material/Apps"
 import FaceIcon from "@mui/icons-material/Face"
-import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
+import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
 import StorefrontIcon from "@mui/icons-material/Storefront"
 import { Alert, Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery } from "@mui/material"
 import { useEffect, useState } from "react"
@@ -14,6 +14,7 @@ import { useSnackbar } from "../containers/snackbar"
 import { API_ENDPOINT_HOSTNAME, SocketState, useWebsocket } from "../containers/socket"
 import { useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
+import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { Faction, User } from "../types/types"
@@ -21,7 +22,6 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
 
 const drawerWidth = 300
 
@@ -243,7 +243,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 								)
 								return
 							}
-							setWithdrawDialogOpen(true)
+							history.push("/withdraw")
 						}}
 					>
 						Withdraw
