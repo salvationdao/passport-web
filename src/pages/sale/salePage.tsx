@@ -116,7 +116,7 @@ export const SalePage = () => {
 					<Box sx={{ position: "relative" }}>
 						<FancyLinearProgress
 							variant="determinate"
-							value={100 - (amountRemaining / web3Constants.totalSaleSups) * 100}
+							value={100 - (parseInt(amountRemaining.toString()) / web3Constants.totalSaleSups) * 100}
 							aria-label="Tokens sold progressive bar"
 						/>
 						<Box
@@ -124,7 +124,7 @@ export const SalePage = () => {
 								position: "absolute",
 								top: "50%",
 								transform: `translate(-100%,-50%)`,
-								left: `${100 - (amountRemaining / web3Constants.totalSaleSups) * 100}%`,
+								left: `${100 - (parseInt(amountRemaining.toString()) / web3Constants.totalSaleSups) * 100}%`,
 								display: "flex",
 								alignItems: "center",
 							}}
@@ -147,7 +147,7 @@ export const SalePage = () => {
 									fontWeight: "600",
 								}}
 							>
-								{(amountRemaining / 10 ** 6).toFixed(2)}m $SUPS remaining
+								{(parseInt(amountRemaining.toString()) / 10 ** 6).toFixed(2)}m $SUPS remaining
 							</Typography>
 						</Box>
 					</Box>

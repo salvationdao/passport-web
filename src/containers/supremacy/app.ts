@@ -1,4 +1,5 @@
 import { AlertColor } from "@mui/material/Alert"
+import { BigNumber } from "ethers"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import { useWeb3 } from "../web3"
@@ -18,7 +19,7 @@ function useAppState(initialState = {}) {
 	// Check Whitelist
 	const [isAlphaCitizen, setIsAlphaCitizen] = useState(false)
 	const [isWhitelisted, setIsWhiteListed] = useState(false)
-	const [amountRemaining, setAmountRemaining] = useState<number>(0)
+	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
 	const checkIsWhiteListed = (data: UserDataStoriesApi) => {
 		if (data.Boston > 0 || data.RedM > 0 || data.Zaibat > 0) {
 			setIsAlphaCitizen(true)
