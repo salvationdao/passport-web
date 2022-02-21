@@ -22,6 +22,7 @@ import {
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
+import { useSupremacyApp } from "./supremacy/app"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -250,33 +251,71 @@ export const Web3Container = createContainer(() => {
 		}
 	}, [provider, handleAccountChange, handleChainChange, createWcProvider])
 
-	const connect = useCallback(async () => {
-		if (provider) {
-			try {
-				await provider.send("eth_requestAccounts", [])
-				const signer = provider.getSigner()
-				const acc = await signer.getAddress()
-				setAccount(acc)
-				handleAccountChange([acc])
-			} catch (error) {
-				displayMessage("Something went wrong, please try again.", "error")
+	const checkNeoBalance = useCallback(
+		async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+			const NTABI = ["function balanceOf(address) view returns (uint256)"]
+			if (provider) {
+				const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
+				const bal: BigNumber = await NTContract.balanceOf(addr)
+				if (parseInt(bal.toString()) > 0) {
+					try {
+						await fetch(`https://stories.supremacy.game/api/users/${account}`, {
+							method: "POST",
+						})
+						await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
+							method: "PUT",
+						})
+						if (setShowGame) {
+							setShowGame(true)
+						}
+					} catch (error) {
+						console.error()
+					}
+				} else {
+					if (setShowGame) {
+						setShowGame(true)
+					}
+				}
 			}
-		}
-	}, [displayMessage, provider, handleAccountChange])
+		},
+		[provider],
+	)
+	const connect = useCallback(
+		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+			if (provider) {
+				try {
+					await provider.send("eth_requestAccounts", [])
+					const signer = provider.getSigner()
+					const acc = await signer.getAddress()
+					// Check if account is whitelisted if not return
+					setAccount(acc)
+					handleAccountChange([acc])
+				} catch (error) {
+					if (error instanceof Error) displayMessage(error.message, "error")
+					else displayMessage("Please authenticate your wallet.", "info")
+				}
+			}
+		},
+		[displayMessage, provider, handleAccountChange],
+	)
 
-	const wcConnect = useCallback(async () => {
-		let walletConnectProvider
-		try {
-			walletConnectProvider = await createWcProvider()
-			await walletConnectProvider.enable()
-			const connector = await walletConnectProvider.getWalletConnector()
-			const acc = connector.accounts[0]
-			setAccount(acc)
-			return { walletConnectProvider }
-		} catch (error) {
-			await walletConnectProvider?.disconnect()
-		}
-	}, [createWcProvider])
+	const wcConnect = useCallback(
+		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+			let walletConnectProvider
+			try {
+				walletConnectProvider = await createWcProvider()
+				await walletConnectProvider.enable()
+				const connector = await walletConnectProvider.getWalletConnector()
+				const acc = connector.accounts[0]
+				setAccount(acc)
+				if (setShowGame) setShowGame(true)
+				return { walletConnectProvider }
+			} catch (error) {
+				await walletConnectProvider?.disconnect()
+			}
+		},
+		[createWcProvider],
+	)
 
 	const ETHEREUM_NETWORK: AddEthereumChainParameter = useMemo(
 		() => ({
@@ -396,7 +435,8 @@ export const Web3Container = createContainer(() => {
 				const rawMessageLength = new Blob([rawMessage]).size
 				const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
 				const signMsg = ethers.utils.keccak256(convertMsg)
-				return await connector.signMessage([account, signMsg])
+				const signature = await connector.signMessage([account, signMsg])
+				return signature
 			} else return ""
 		},
 		[wcProvider, getNonce, getNonceFromID, account, wcConnect],
@@ -439,7 +479,7 @@ export const Web3Container = createContainer(() => {
 		async (contractAddress: string | null) => {
 			if (!contractAddress) {
 				if (!provider) {
-					return
+					return BigNumber.from(0)
 				}
 				const signer = provider.getSigner()
 				return signer.getBalance()
@@ -457,7 +497,7 @@ export const Web3Container = createContainer(() => {
 				return contract.balanceOf(account)
 			} catch (error) {
 				displayMessage("Couldn't get contract balance, please try again.", "error")
-				return
+				return BigNumber.from(0)
 			}
 		},
 		[provider, account, displayMessage],
