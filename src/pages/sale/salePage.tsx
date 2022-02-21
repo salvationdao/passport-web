@@ -7,6 +7,7 @@ import { BuyTokens } from "../../components/buyTokens"
 import { BackgroundVideo } from "../../components/supremacy/backgroundVideo"
 import { CountdownTimer } from "../../components/supremacy/countdownTimer"
 import { Loading } from "../../components/supremacy/loading"
+import { SupremacyNavbar } from "../../components/supremacy/navbar"
 import { WhiteListModal } from "../../components/supremacy/whiteListModal"
 import { AppState, SnackState } from "../../containers/supremacy/app"
 import { useWeb3 } from "../../containers/web3"
@@ -15,6 +16,7 @@ import { colors } from "../../theme"
 export const TEXT_GAME_LOCATION = "TextGame/TextAdventure.html"
 export const IMAGE_FOLDER = "https://afiles.ninja-cdn.com/supremacy/images"
 export const VIDEO_FOLDER = "https://afiles.ninja-cdn.com/supremacy/videos"
+export const NAVBAR_HEIGHT = 100
 
 export const SalePage = () => {
 	const smallerScreen = useMediaQuery("(max-width:1300px)")
@@ -75,12 +77,14 @@ export const SalePage = () => {
 				sx={{
 					opacity: loading ? 0 : 1,
 					minHeight: "100vh",
+					background: colors.black2Background,
 				}}
 			>
+				<SupremacyNavbar />
 				<Stack
 					sx={{
+						pt: `${NAVBAR_HEIGHT}px`,
 						pb: "2em",
-						background: colors.black2Background,
 						justifyContent: "center",
 						height: "100vh",
 						alignItems: "center",
@@ -103,7 +107,7 @@ export const SalePage = () => {
 							}}
 							onClick={() => history.push("https://supremacy.game/home")}
 						/>
-						<Title>Game launch and TOKEN SALE</Title>
+						<Title>Game Launch and TOKEN SALE</Title>
 						<SubHeading>PURCHASE $SUPS TO ACCESS THE BATTLE ARENA</SubHeading>
 					</Stack>
 					<CountdownTimer publicSale />

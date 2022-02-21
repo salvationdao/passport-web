@@ -69,6 +69,7 @@ export const WhiteListModal = (props: Props) => {
 			>
 				<Typography
 					sx={{
+						fontFamily: "Share tech",
 						fontSize: "1.2rem",
 						textAlign: "center",
 						"@media (max-width:400px)": {
