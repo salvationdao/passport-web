@@ -120,7 +120,7 @@ export const SalePage = () => {
 							gap: "5em",
 						}}
 					>
-						<WhiteListModal
+						{/* <WhiteListModal
 							publicSale={saleActive}
 							smallerScreen={smallerScreen}
 							shorterScreen={shorterScreen}
@@ -128,8 +128,8 @@ export const SalePage = () => {
 							setOpen={setOpen}
 							handleJoinBtn={handleJoinBtn}
 							isTouchDevice={isTouchDevice}
-						/>
-						<BuyTokens />
+						/> */}
+						<BuyTokens publicSale />
 					</Box>
 				</Stack>
 			</Box>

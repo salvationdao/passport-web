@@ -20,7 +20,7 @@ import { TokenSelect } from "./tokenSelect"
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 
-export const BuyTokens: React.FC = () => {
+export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
 	const { subscribe, state } = useWebsocket()
 	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState, supBalance, setCurrentToken, currentToken, tokenOptions } =
 		useWeb3()
@@ -207,10 +207,12 @@ export const BuyTokens: React.FC = () => {
 	return (
 		<Box
 			sx={{
-				border: {
-					xs: `2px solid ${theme.palette.secondary.main}`,
-					md: "none",
-				},
+				border: publicSale
+					? `1px groove ${colors.gold}`
+					: {
+							xs: `2px solid ${theme.palette.secondary.main}`,
+							md: "none",
+					  },
 				position: "relative",
 			}}
 		>
@@ -258,6 +260,8 @@ export const BuyTokens: React.FC = () => {
 								justifyContent: "center",
 								alignItems: "center",
 								gap: "1em",
+
+								background: publicSale ? colors.darkerNavyBackground : "unset",
 						  }
 				}
 			>
@@ -379,16 +383,18 @@ export const BuyTokens: React.FC = () => {
 				}
 			>
 				<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "550px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-					<Typography
-						variant="h2"
-						align="center"
-						sx={{
-							textTransform: "uppercase",
-							paddingBottom: "1rem",
-						}}
-					>
-						Purchase SUPS
-					</Typography>
+					{!publicSale && (
+						<Typography
+							variant="h2"
+							align="center"
+							sx={{
+								textTransform: "uppercase",
+								paddingBottom: "1rem",
+							}}
+						>
+							Purchase SUPS
+						</Typography>
+					)}
 					<form onSubmit={handleSubmit}>
 						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between", alignItems: "center" }}>
 							<Box sx={{ position: "relative", width: "100%" }}>
