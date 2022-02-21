@@ -6,6 +6,7 @@ import { PlaceholderMechImagePath, SupremacyLogoImagePath, SupTokenIcon } from "
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { MintModal } from "../../components/mintModal"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -16,7 +17,6 @@ import { colors } from "../../theme"
 import { NilUUID } from "../../types/auth"
 import { Asset, Attribute } from "../../types/types"
 import { Rarity, rarityTextStyles } from "../store/storeItemCard"
-import { MintModal } from "../../components/mintModal"
 
 export const CollectionItemPage: React.VoidFunctionComponent = () => {
 	const { token_id: id } = useParams<{ username: string; collection_name: string; token_id: string }>()
@@ -567,7 +567,7 @@ interface PercentageDisplayProps {
 	label: string
 }
 
-export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayProps> = ({ displayValue, percentage, label }) => {
+const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayProps> = ({ displayValue, percentage, label }) => {
 	return (
 		<Box
 			sx={{

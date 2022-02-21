@@ -99,9 +99,9 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			>
 				{getItemAttributeValue(item.attributes, "Rarity")}
 			</Typography>
-			<CustomButton onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}>
+			<ViewButton onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}>
 				<SearchIcon />
-			</CustomButton>
+			</ViewButton>
 		</Box>
 	)
 }
@@ -138,7 +138,7 @@ const CustomButtonBase = styled("button")({
 
 interface CustomButtonProps extends ButtonProps {}
 
-const CustomButton = ({ ...props }: CustomButtonProps) => {
+export const ViewButton = ({ ...props }: CustomButtonProps) => {
 	return <ButtonUnstyled {...props} component={CustomButtonBase} />
 }
 
