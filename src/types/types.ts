@@ -161,6 +161,7 @@ export interface StoreItem {
 	collection: Collection
 	description: string
 	image: string
+	animation_url: string
 	attributes: Attribute[]
 	usdCentCost: number
 	amountSold: number
