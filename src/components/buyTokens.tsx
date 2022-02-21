@@ -4,12 +4,13 @@ import { Box, Button, LinearProgress, Link, Stack, TextField, Typography, useThe
 import { BigNumber, ethers } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
+import { useContainer } from "unstated-next"
 import Arrow from "../assets/images/arrow.png"
-import BWSupToken from "../assets/images/BW-sup-token.png"
 import SupsToken from "../assets/images/sup-token.svg"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
 import { SocketState, useWebsocket } from "../containers/socket"
-import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
+import { AppState } from "../containers/supremacy/app"
+import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
@@ -24,12 +25,13 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 	const { subscribe, state } = useWebsocket()
 	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState, supBalance, setCurrentToken, currentToken, tokenOptions } =
 		useWeb3()
+
 	const theme = useTheme()
+	const { amountRemaining, setAmountRemaining } = useContainer(AppState)
 
 	const [selectedTokenName, setSelectedTokenName] = useState<tokenName>("eth")
 	const [tokenValue, setTokenValue] = useState<string>("")
 	const [supsValue, setSupsValue] = useState<string>("")
-	const [amountRemaining, setAmountRemaining] = useState<number>(0)
 	const [userBalance, setUserBalance] = useState<number>(0)
 	const [transferState, setTransferState] = useState<transferStateType>("none")
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
@@ -365,24 +367,23 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 
 			{/* Purchase Sups Form */}
 			<Box
-				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none"
-						? {
-								padding: {
-									xs: "1rem",
-									md: "0",
-								},
-						  }
-						: {
-								filter: "blur(5px) brightness(20%)",
-								padding: {
-									xs: "1rem",
-									md: "0",
-								},
-						  }
-				}
+				sx={{
+					p: publicSale ? ".5em 1em" : "unset",
+					"@media (max-width:600px)": {
+						p: "1rem",
+					},
+				}}
 			>
-				<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "550px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+				<Box
+					sx={{
+						width: "90vw",
+						maxWidth: publicSale ? "400px" : "550px",
+						p: "1em",
+						display: "flex",
+						flexDirection: "column",
+						justifyContent: "space-between",
+					}}
+				>
 					{!publicSale && (
 						<Typography
 							variant="h2"
@@ -531,50 +532,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 								</Box>
 							</Box>
 
-							{/* Progress Bar */}
-							<Box
-								sx={{
-									width: "100%",
-									backgroundColor: `${theme.palette.secondary.dark}`,
-									height: "2.5rem",
-									borderRadius: "5px",
-									marginTop: "2rem",
-								}}
-							>
-								<Box
-									sx={{
-										backgroundColor: `${theme.palette.secondary.main}`,
-										width: `${100 - (amountRemaining / web3Constants.totalSaleSups) * 100}%`,
-										height: "inherit",
-										overflowX: "visible",
-										display: "flex",
-										alignItems: "center",
-										borderRadius: "5px",
-										paddingLeft: "1rem",
-									}}
-								>
-									<Box
-										component="img"
-										src={BWSupToken}
-										alt="token image"
-										sx={{
-											height: "1.5rem",
-											paddingRight: ".5rem",
-										}}
-									/>
-									<Typography
-										variant="body1"
-										sx={{
-											textTransform: "uppercase",
-											color: colors.darkNavyBlue,
-											whiteSpace: "nowrap",
-											fontWeight: "600",
-										}}
-									>
-										{(amountRemaining / 10 ** 6).toFixed(2)}m of 217M Tokens remaining
-									</Typography>
-								</Box>
-							</Box>
 							<FancyButton
 								borderColor={colors.skyBlue}
 								disabled={

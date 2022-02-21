@@ -66,7 +66,7 @@ export const BackgroundVideo = () => {
 			"loadeddata",
 			() => {
 				setLoading(false)
-				videoRef.current.play()
+				if (videoRef.current) videoRef.current.play()
 			},
 			false,
 		)

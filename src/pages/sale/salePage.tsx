@@ -1,4 +1,4 @@
-import { Box, Stack, styled, Typography } from "@mui/material"
+import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
 import useMediaQuery from "@mui/material/useMediaQuery"
 import { useEffect, useRef, useState } from "react"
 import { useHistory } from "react-router-dom"
@@ -8,10 +8,10 @@ import { BackgroundVideo } from "../../components/supremacy/backgroundVideo"
 import { CountdownTimer } from "../../components/supremacy/countdownTimer"
 import { Loading } from "../../components/supremacy/loading"
 import { SupremacyNavbar } from "../../components/supremacy/navbar"
-import { WhiteListModal } from "../../components/supremacy/whiteListModal"
 import { AppState, SnackState } from "../../containers/supremacy/app"
-import { useWeb3 } from "../../containers/web3"
 import { colors } from "../../theme"
+import BWSupToken from "../../assets/images/BW-sup-token.png"
+import { useWeb3, web3Constants } from "../../containers/web3"
 
 export const TEXT_GAME_LOCATION = "TextGame/TextAdventure.html"
 export const IMAGE_FOLDER = "https://afiles.ninja-cdn.com/supremacy/images"
@@ -30,7 +30,7 @@ export const SalePage = () => {
 	const history = useHistory()
 
 	const { account, connect, wcConnect } = useWeb3()
-	const { loading, setLoading, saleActive } = useContainer(AppState)
+	const { loading, setLoading, saleActive, amountRemaining } = useContainer(AppState)
 	const { setSnackMessage } = useContainer(SnackState)
 
 	useEffect(() => {
@@ -88,7 +88,8 @@ export const SalePage = () => {
 						justifyContent: "center",
 						height: "100vh",
 						alignItems: "center",
-						gap: "3vmin",
+						gap: "1em",
+						px: "2em",
 					}}
 				>
 					<Stack alignItems="center">
@@ -111,6 +112,45 @@ export const SalePage = () => {
 						<SubHeading>PURCHASE $SUPS TO ACCESS THE BATTLE ARENA</SubHeading>
 					</Stack>
 					<CountdownTimer publicSale />
+					{/* Progress Bar */}
+					<Box sx={{ position: "relative" }}>
+						<FancyLinearProgress
+							variant="determinate"
+							value={100 - (amountRemaining / web3Constants.totalSaleSups) * 100}
+							aria-label="Tokens sold progressive bar"
+						/>
+						<Box
+							sx={{
+								position: "absolute",
+								top: "50%",
+								transform: `translate(-100%,-50%)`,
+								left: `${100 - (amountRemaining / web3Constants.totalSaleSups) * 100}%`,
+								display: "flex",
+								alignItems: "center",
+							}}
+						>
+							<Box
+								component="img"
+								src={BWSupToken}
+								alt="token image"
+								sx={{
+									ml: "auto",
+									height: "1.5rem",
+								}}
+							/>
+							<Typography
+								variant="body1"
+								sx={{
+									textTransform: "uppercase",
+									color: colors.darkNavyBlue,
+									whiteSpace: "nowrap",
+									fontWeight: "600",
+								}}
+							>
+								{(amountRemaining / 10 ** 6).toFixed(2)}m $SUPS remaining
+							</Typography>
+						</Box>
+					</Box>
 					<Box
 						sx={{
 							display: "flex",
@@ -176,4 +216,18 @@ const GameFrame = styled("iframe")({
 	padding: 0,
 	overflow: "hidden",
 	zIndex: 9999,
+})
+
+const FancyLinearProgress = styled(LinearProgress)({
+	width: "90vw",
+	maxWidth: "40rem",
+	height: "45px",
+	"@media (max-width:559px)": {
+		height: "40px",
+	},
+	clipPath: `polygon(0 0, calc(100% - 1rem) 0%, 100% 1rem, 100% 100%, 1rem 100%, 0% calc(100% - 1rem))`,
+	backgroundColor: "rgba(0, 136, 136, 0.4)",
+	"&>span": {
+		backgroundColor: colors.neonBlue,
+	},
 })
