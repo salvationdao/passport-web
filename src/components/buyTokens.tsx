@@ -99,18 +99,31 @@ export const BuyTokens: React.FC = () => {
 		[currentToken],
 	)
 
+	//handles netowrk switch and default network token
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
 			const filteredArr = tokenOptions.filter((x) => {
 				return x.chainId === currentChainId
 			})
-			setSelectedTokenName(filteredArr[0].name)
+			const filteredByName = filteredArr.filter((x) => {
+				return x.name === selectedTokenName
+			})
+
+			if (filteredByName.length === 0) {
+				setSelectedTokenName(filteredArr[0].name)
+				return
+			} else {
+				setSelectedTokenName(filteredByName[0].name)
+				return
+			}
 		} else {
 			setSelectedTokenName(tokenOptions[0].name)
 		}
 	}, [currentChainId, acceptedChainExceptions])
 
+	//handles token switch from drop down
 	useEffect(() => {
+		console.log(selectedTokenName)
 		const filteredArr = tokenOptions.filter((x) => {
 			return x.name === selectedTokenName
 		})
@@ -426,8 +439,8 @@ export const BuyTokens: React.FC = () => {
 										}}
 									>
 										<TokenSelect
-											currentTokenName={selectedTokenName}
-											setCurrentTokenName={setSelectedTokenName}
+											selectedTokenName={selectedTokenName}
+											setSelectedTokenName={setSelectedTokenName}
 											tokenOptions={tokenOptions}
 										/>
 										<Button

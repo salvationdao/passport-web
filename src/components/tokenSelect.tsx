@@ -8,14 +8,14 @@ import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
 import { tokenSelect, tokenName } from "../types/types"
 
 interface TokenSelectProps {
-	currentTokenName: tokenName
+	selectedTokenName: tokenName
 	tokenOptions: tokenSelect[]
-	setCurrentTokenName: React.Dispatch<React.SetStateAction<tokenName>>
+	setSelectedTokenName: React.Dispatch<React.SetStateAction<tokenName>>
 }
 
-export const TokenSelect = ({ currentTokenName, tokenOptions, setCurrentTokenName }: TokenSelectProps) => {
+export const TokenSelect = ({ selectedTokenName, tokenOptions, setSelectedTokenName }: TokenSelectProps) => {
 	const handleSelectChange = (e: SelectChangeEvent<unknown>) => {
-		setCurrentTokenName(e.target.value as tokenName)
+		setSelectedTokenName(e.target.value as tokenName)
 	}
 
 	return (
@@ -29,7 +29,7 @@ export const TokenSelect = ({ currentTokenName, tokenOptions, setCurrentTokenNam
 			}}
 			onChange={(e) => handleSelectChange(e)}
 			SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: ".5rem 32px .5rem .5rem" } }}
-			value={currentTokenName}
+			value={selectedTokenName}
 		>
 			{tokenOptions.map((x) => {
 				return (
