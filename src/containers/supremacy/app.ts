@@ -68,4 +68,7 @@ function useSnackState() {
 }
 let SnackState = createContainer(useSnackState)
 
+export const SupremacyAppProvider = AppState.Provider
+export const SupremacySnackProvider = SnackState.Provider
+
 export { SnackState, AppState }

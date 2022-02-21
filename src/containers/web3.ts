@@ -1,14 +1,29 @@
-import { BigNumber, ethers, Transaction } from "ethers"
+import { AlertColor } from "@mui/material"
 import WalletConnectProvider from "@walletconnect/web3-provider"
+import { BigNumber, ethers } from "ethers"
+import { parseEther } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
-import { BINANCE_CHAIN_ID, PURCHASE_ADDRESS, SUPS_CONTRACT_ADDRESS } from "../config"
-import { supFormatter } from "../helpers/items"
+import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
+import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
+import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
+import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
+import {
+	BINANCE_CHAIN_ID,
+	BSC_SCAN_SITE,
+	BUSD_CONTRACT_ADDRESS,
+	ETHEREUM_CHAIN_ID,
+	ETH_SCAN_SITE,
+	PURCHASE_ADDRESS,
+	SUPS_CONTRACT_ADDRESS,
+	USDC_CONTRACT_ADDRESS,
+	BNB_CONTRACT_ADDRESS,
+	ETH_CONTRACT_ADDRESS,
+} from "../config"
 import { GetNonceResponse } from "../types/auth"
+import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { genericABI } from "./web3GenericABI"
-import { parseEther } from "ethers/lib/utils"
-import { AlertColor } from "@mui/material"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -34,11 +49,52 @@ export enum web3Constants {
 	binanceChainId = 56,
 	goerliChainId = 5,
 	bscTestNetChainId = 97,
-	supsToUsdConversion = 0.12,
-	ethToUsdConversion = 2500,
-	bnbToUsdConversion = 375,
 	totalSaleSups = 217000000,
 }
+
+const tokenOptions: tokenSelect[] = [
+	{
+		name: "eth",
+		networkName: "Ethereum",
+		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		scanSite: ETH_SCAN_SITE,
+		tokenSrc: Ethereum,
+		chainSrc: Ethereum,
+		isNative: true,
+		contractAddr: ETH_CONTRACT_ADDRESS,
+	},
+	{
+		name: "usdc",
+		networkName: "Ethereum",
+		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		scanSite: ETH_SCAN_SITE,
+		tokenSrc: Usdc,
+		chainSrc: Ethereum,
+		isNative: false,
+		contractAddr: USDC_CONTRACT_ADDRESS,
+	},
+	{
+		name: "bnb",
+		networkName: "Binance",
+		chainId: parseInt(BINANCE_CHAIN_ID),
+		scanSite: BSC_SCAN_SITE,
+		tokenSrc: BinanceCoin,
+		chainSrc: BinanceCoin,
+		isNative: true,
+		contractAddr: BNB_CONTRACT_ADDRESS,
+	},
+
+	{
+		name: "busd",
+		networkName: "Binance",
+		chainId: parseInt(BINANCE_CHAIN_ID),
+		scanSite: BSC_SCAN_SITE,
+		tokenSrc: BinanceUSD,
+		chainSrc: BinanceCoin,
+		isNative: false,
+		contractAddr: BUSD_CONTRACT_ADDRESS,
+	},
+]
 
 /**
  * A Container that handles Web3
@@ -52,6 +108,7 @@ export const Web3Container = createContainer(() => {
 	const [account, setAccount] = useState<string>()
 	const [currentChainId, setCurrentChainId] = useState<number>()
 	const [supBalance, setSupBalance] = useState<BigNumber>()
+	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -108,44 +165,47 @@ export const Web3Container = createContainer(() => {
 		handleWalletSups(account)
 	}, [account, handleWalletSups])
 
-	const createWcProvider = useCallback(async (showQrCode: boolean = true) => {
-		//  Create WalletConnect Provider
-		const walletConnectProvider = new WalletConnectProvider({
-			rpc: {
-				1: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/mainnet",
-				5: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/eth/goerli",
-				56: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/bsc/mainnet",
-				97: "https://speedy-nodes-nyc.moralis.io/1375aa321ac8ac6cfba6aa9c/bsc/testnet",
-			},
-			qrcode: showQrCode,
-		})
+	const createWcProvider = useCallback(
+		async (showQrCode: boolean = true) => {
+			//  Create WalletConnect Provider
+			const walletConnectProvider = new WalletConnectProvider({
+				rpc: {
+					1: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/mainnet`,
+					5: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/goerli`,
+					56: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/mainnet`,
+					97: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/testnet`,
+				},
+				qrcode: showQrCode,
+			})
 
-		//  Wrap with Web3Provider from ethers.js
-		const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
-		setProvider(web3Provider)
-		setCurrentChainId(walletConnectProvider.chainId)
-		setWcProvider(walletConnectProvider)
+			//  Wrap with Web3Provider from ethers.js
+			const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
+			setProvider(web3Provider)
+			setCurrentChainId(walletConnectProvider.chainId)
+			setWcProvider(walletConnectProvider)
 
-		// Subscribe to accounts change
-		walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
-			if (accounts.length > 0) {
-				setAccount(accounts[0])
-				setMetaMaskState(MetaMaskState.Active)
-			}
-		})
-		// Subscribe to chainId change
-		walletConnectProvider.on("chainChanged", (chainId: number) => {
-			setCurrentChainId(chainId)
-		})
-		// Subscribe to session disconnection
-		walletConnectProvider.on("disconnect", (code: number, reason: string) => {
-			setAccount(undefined)
-			setProvider(undefined)
-			setWcProvider(undefined)
-			setMetaMaskState(MetaMaskState.NotInstalled)
-		})
-		return walletConnectProvider
-	}, [])
+			// Subscribe to accounts change
+			walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
+				if (accounts.length > 0) {
+					setAccount(accounts[0])
+					setMetaMaskState(MetaMaskState.Active)
+				}
+			})
+			// Subscribe to chainId change
+			walletConnectProvider.on("chainChanged", (chainId: number) => {
+				setCurrentChainId(chainId)
+			})
+			// Subscribe to session disconnection
+			walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+				setAccount(undefined)
+				setProvider(undefined)
+				setWcProvider(undefined)
+				setMetaMaskState(MetaMaskState.NotInstalled)
+			})
+			return walletConnectProvider
+		},
+		[MetaMaskState],
+	)
 
 	useEffect(() => {
 		if (provider) return // wallet connected
@@ -183,33 +243,6 @@ export const Web3Container = createContainer(() => {
 			if ((window as any).ethereum) (window as any).ethereum.removeAllListeners()
 		}
 	}, [provider, handleAccountChange, handleChainChange])
-
-	const checkNeoBalance = async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
-		const NTABI = ["function balanceOf(address) view returns (uint256)"]
-		if (provider) {
-			const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
-			const bal: BigNumber = await NTContract.balanceOf(addr)
-			if (parseInt(bal.toString()) > 0) {
-				try {
-					await fetch(`https://stories.supremacy.game/api/users/${account}`, {
-						method: "POST",
-					})
-					await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
-						method: "PUT",
-					})
-					if (setShowGame) {
-						setShowGame(true)
-					}
-				} catch (error) {
-					console.error()
-				}
-			} else {
-				if (setShowGame) {
-					setShowGame(true)
-				}
-			}
-		}
-	}
 
 	const connect = useCallback(
 		async (
@@ -250,6 +283,35 @@ export const Web3Container = createContainer(() => {
 			}
 		},
 		[displayMessage, provider, handleAccountChange],
+	)
+	const checkNeoBalance = useCallback(
+		async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+			const NTABI = ["function balanceOf(address) view returns (uint256)"]
+			if (provider) {
+				const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
+				const bal: BigNumber = await NTContract.balanceOf(addr)
+				if (parseInt(bal.toString()) > 0) {
+					try {
+						await fetch(`https://stories.supremacy.game/api/users/${account}`, {
+							method: "POST",
+						})
+						await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
+							method: "PUT",
+						})
+						if (setShowGame) {
+							setShowGame(true)
+						}
+					} catch (error) {
+						console.error()
+					}
+				} else {
+					if (setShowGame) {
+						setShowGame(true)
+					}
+				}
+			}
+		},
+		[provider],
 	)
 
 	const wcConnect = useCallback(
@@ -430,11 +492,12 @@ export const Web3Container = createContainer(() => {
 	const getBalance = useCallback(
 		async (contractAddress: string) => {
 			try {
-				if (!provider || !account || contractAddress === "") throw new Error("wallet not connected")
+				if (!provider || !account || contractAddress === "") return
 				const contract = new ethers.Contract(contractAddress, genericABI, provider)
 				return contract.balanceOf(account)
 			} catch (error) {
 				displayMessage("Couldn't get contract balance, please try again.", "error")
+				console.log(error)
 			}
 		},
 		[provider, account, displayMessage],
@@ -497,6 +560,9 @@ export const Web3Container = createContainer(() => {
 		supBalance,
 		wcConnect,
 		signWalletConnect,
+		tokenOptions,
+		currentToken,
+		setCurrentToken,
 	}
 })
 
