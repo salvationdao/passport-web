@@ -1,7 +1,7 @@
 import { Box, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
-import { PlaceholderMechImagePath, SupTokenIconPath } from "../../assets"
+import { SupTokenIconPath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue, supFormatter } from "../../helpers/items"
@@ -83,7 +83,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 				{/* image */}
 				<Box
 					component="img"
-					src={PlaceholderMechImagePath}
+					src={item.image}
 					alt="Mech image"
 					sx={{
 						width: "100%",

@@ -1,7 +1,7 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
 import { Box, Button, LinearProgress, Link, Stack, TextField, Typography, useTheme } from "@mui/material"
-import { ethers } from "ethers"
+import { BigNumber, ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
 import Arrow from "../assets/images/arrow.png"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
@@ -33,7 +33,7 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC = () => {
 	const { subscribe, state } = useWebsocket()
-	const { changeChain, currentChainId, getBalance, sendTransfer, metaMaskState } = useWeb3()
+	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState } = useWeb3()
 	const theme = useTheme()
 
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
@@ -178,7 +178,7 @@ export const BuyTokens: React.FC = () => {
 		try {
 			if (state !== SocketState.OPEN) return
 
-			const tx = await sendTransfer(currentToken.contractAddr, value)
+			const tx = await sendTransferToPurchaseAddress(currentToken.contractAddr, BigNumber.from(value))
 
 			setCurrentTransferHash(tx.hash)
 
