@@ -17,6 +17,7 @@ import { colors } from "../theme"
 import { ExchangeRates, tokenName, tokenSelect } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
+import { SaleConnectWallet } from "./supremacy/saleConnectWallet"
 import { TokenSelect } from "./tokenSelect"
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
@@ -160,10 +161,10 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				const response = await getBalance(null)
 				setUserBalance(response)
 				setLoading(false)
-				return
+			} else {
+				const response = await getBalance(token.contractAddr)
+				setUserBalance(response)
 			}
-			const response = await getBalance(token.contractAddr)
-			setUserBalance(response)
 		} catch (e) {
 			console.error(e)
 			setUserBalance(BigNumber.from(0))
@@ -301,9 +302,9 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				}
 			>
 				<Typography variant="h3" sx={{ textTransform: "uppercase" }}>
-					Connect Your Wallet
+					{publicSale ? "Enter Whitelist Sale" : "Connect Your Wallet"}
 				</Typography>
-				<ConnectWallet />
+				{publicSale ? <SaleConnectWallet /> : <ConnectWallet />}
 			</Box>
 
 			{/* transferState */}
@@ -410,7 +411,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={{
 						width: "90vw",
-						maxWidth: publicSale ? "38rem" : "550px",
+						maxWidth: publicSale ? "25rem" : "550px",
 						p: "1em",
 						display: "flex",
 						flexDirection: "column",

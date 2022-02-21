@@ -1,6 +1,7 @@
 import { Button } from "@mui/material"
 import { MetaMaskIcon, WalletConnectIcon } from "../../assets"
 import { MetaMaskState, useWeb3 } from "../../containers/web3"
+import { SupFancyButton } from "./supFancyButton"
 
 interface ConnectWalletProps {
 	addNewWallet?: () => Promise<void>
@@ -10,7 +11,7 @@ export const SaleConnectWallet = () => {
 	const { metaMaskState, connect, wcConnect } = useWeb3()
 
 	return (
-		<Button
+		<SupFancyButton
 			onClick={async () => {
 				if (metaMaskState !== MetaMaskState.NotInstalled) {
 					await connect()
@@ -19,11 +20,10 @@ export const SaleConnectWallet = () => {
 				}
 			}}
 			title="Connect Wallet to account"
-			startIcon={metaMaskState === MetaMaskState.NotInstalled ? <WalletConnectIcon /> : <MetaMaskIcon />}
 			variant="contained"
 			fullWidth
 		>
-			Connect Wallet to account
-		</Button>
+			Connect Wallet
+		</SupFancyButton>
 	)
 }

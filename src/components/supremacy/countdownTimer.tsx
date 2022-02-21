@@ -98,9 +98,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 					justifyContent: "center",
 					gridTemplateColumns: "repeat(4, 3rem)",
 					"& div": {
-						lineHeight: publicSale ? 0.9 : "unset",
-						fontSize: publicSale ? "4vmin" : "unset",
-						background: publicSale ? "none" : colors.darkNavyBackground,
+						fontSize: publicSale ? "3vmin" : "unset",
 					},
 				}}
 			>

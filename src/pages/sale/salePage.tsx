@@ -110,50 +110,8 @@ export const SalePage = () => {
 							onClick={() => history.push("https://supremacy.game/home")}
 						/>
 						<Title>Game Launch and TOKEN SALE</Title>
-						<SubHeading>PURCHASE $SUPS TO ACCESS THE BATTLE ARENA</SubHeading>
 					</Stack>
-					<CountdownTimer publicSale />
-					{/* Progress Bar */}
-					<Box sx={{ position: "relative" }}>
-						<FancyLinearProgress
-							variant="determinate"
-							value={100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100}
-							aria-label="Tokens sold progressive bar"
-						/>
-						<Box
-							sx={{
-								position: "absolute",
-								top: "50%",
-								transform: `translate(-100%,-50%)`,
-								left: `${100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100}%`,
-								display: "flex",
-								alignItems: "center",
-								pr: ".5em",
-								gap:".5em"
-							}}
-						>
-							<Box
-								component="img"
-								src={BWSupToken}
-								alt="token image"
-								sx={{
-									ml: "auto",
-									height: "1.5rem",
-								}}
-							/>
-							<Typography
-								variant="body1"
-								sx={{
-									textTransform: "uppercase",
-									color: colors.darkNavyBlue,
-									whiteSpace: "nowrap",
-									fontWeight: "600",
-								}}
-							>
-								{(parseInt(formatUnits(amountRemaining, 18)) / 10 ** 6).toFixed(2)}m $SUPS remaining
-							</Typography>
-						</Box>
-					</Box>
+
 					<Box
 						sx={{
 							display: "flex",
@@ -163,6 +121,63 @@ export const SalePage = () => {
 							gap: "5em",
 						}}
 					>
+						<Stack gap="2em" sx={{ maxWidth: "30rem", justifyContent: "center", height: "100%" }}>
+							<SubHeading>PURCHASE $SUPS TO ACCESS THE BATTLE ARENA</SubHeading>
+							{/* Progress Bar */}
+							<Box sx={{ position: "relative" }}>
+								<FancyLinearProgress
+									variant="determinate"
+									value={100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100}
+									aria-label="Tokens sold progressive bar"
+								/>
+								<Box
+									sx={{
+										position: "absolute",
+										top: "50%",
+										transform: `translate(-100%,-50%)`,
+										left:
+											100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100 < 40
+												? "75%"
+												: `${100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100}%`,
+										display: "flex",
+										alignItems: "center",
+										pr: ".5em",
+										gap: ".5em",
+									}}
+								>
+									<Box
+										component="img"
+										src={BWSupToken}
+										alt="token image"
+										sx={{
+											filter:
+												100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100 < 30
+													? "brightness(0) invert(0.9)"
+													: "unset",
+											ml: "auto",
+											height: "1.2rem",
+										}}
+									/>
+									<Typography
+										variant="body1"
+										sx={{
+											fontSize: ".8rem",
+											textTransform: "uppercase",
+											color:
+												100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100 < 40
+													? colors.white
+													: colors.black,
+											textShadow: `1px 2px ${colors.black}`,
+											whiteSpace: "nowrap",
+											fontWeight: "600",
+										}}
+									>
+										{(parseInt(formatUnits(amountRemaining, 18)) / 10 ** 6).toFixed(2)}m $SUPS remaining
+									</Typography>
+								</Box>
+							</Box>
+							<CountdownTimer publicSale />
+						</Stack>
 						{/* <WhiteListModal
 							publicSale={saleActive}
 							smallerScreen={smallerScreen}
@@ -200,10 +215,12 @@ const Title = styled("h1")({
 })
 
 const SubHeading = styled("span")({
-	fontFamily: ["Share Tech"].join(","),
-	fontSize: "2rem",
-	color: colors.neonBlue,
+	fontFamily: "Nostromo Regular Heavy",
+	fontSize: "1.5rem",
+	color: colors.gold,
 	textAlign: "center",
+	WebkitTextStrokeWidth: "1px",
+	WebkitTextStrokeColor: colors.black,
 })
 
 const GameFrame = styled("iframe")({
@@ -223,7 +240,7 @@ const GameFrame = styled("iframe")({
 
 const FancyLinearProgress = styled(LinearProgress)({
 	width: "90vw",
-	maxWidth: "40rem",
+	maxWidth: "30rem",
 	height: "45px",
 	"@media (max-width:559px)": {
 		height: "40px",
