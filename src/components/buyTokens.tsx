@@ -5,6 +5,7 @@ import { BigNumber, ethers } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
 import Arrow from "../assets/images/arrow.png"
+import BWSupToken from "../assets/images/BW-sup-token.png"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
@@ -536,7 +537,15 @@ export const BuyTokens: React.FC = () => {
 							</Box>
 
 							{/* Progress Bar */}
-							<Box sx={{ width: "100%", backgroundColor: `${theme.palette.secondary.dark}`, height: "2.5rem", borderRadius: "5px" }}>
+							<Box
+								sx={{
+									width: "100%",
+									backgroundColor: `${theme.palette.secondary.dark}`,
+									height: "2.5rem",
+									borderRadius: "5px",
+									marginTop: "2rem",
+								}}
+							>
 								<Box
 									sx={{
 										backgroundColor: `${theme.palette.secondary.main}`,
@@ -546,18 +555,28 @@ export const BuyTokens: React.FC = () => {
 										display: "flex",
 										alignItems: "center",
 										borderRadius: "5px",
+										paddingLeft: "1rem",
 									}}
 								>
+									<Box
+										component="img"
+										src={BWSupToken}
+										alt="token image"
+										sx={{
+											height: "1.5rem",
+											paddingRight: ".5rem",
+										}}
+									/>
 									<Typography
 										variant="body1"
 										sx={{
 											textTransform: "uppercase",
 											color: colors.darkNavyBlue,
 											whiteSpace: "nowrap",
-											padding: ".3rem",
+											fontWeight: "600",
 										}}
 									>
-										<b>{(amountRemaining / 10 ** 6).toFixed(2)}m of 217M Tokens remaining</b>
+										{(amountRemaining / 10 ** 6).toFixed(2)}m of 217M Tokens remaining
 									</Typography>
 								</Box>
 							</Box>
