@@ -2,7 +2,7 @@ import { LoadingButton } from "@mui/lab"
 import { Avatar, Box, BoxProps, IconButton, IconButtonProps, SxProps, Theme } from "@mui/material"
 import React from "react"
 import { Link, useHistory } from "react-router-dom"
-import { XSYNLogo } from "../../assets"
+import { XSYNLogoImagePath } from "../../assets"
 import { AuthContainer } from "../../containers"
 import { useSidebarState } from "../../containers/sidebar"
 
@@ -31,10 +31,12 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 			/>
 			<Link to="/">
 				<Box
-					component={XSYNLogo}
+					component="img"
 					sx={{
-						width: "3rem",
+						height: "4rem",
 					}}
+					src={XSYNLogoImagePath}
+					alt="XSYN Logo"
 				/>
 			</Link>
 		</Box>

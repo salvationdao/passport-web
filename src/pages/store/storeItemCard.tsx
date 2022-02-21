@@ -51,13 +51,31 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 
 	return (
 		<Box
+			component="button"
+			onClick={() => history.push(`/stores/${item.collection.name}/${item.ID}`)}
 			sx={{
 				position: "relative",
 				display: "flex",
 				flexDirection: "column",
 				justifyContent: "space-between",
 				padding: "1rem",
+				paddingBottom: "2rem",
+				paddingRight: "2rem",
 				textAlign: "center",
+				font: "inherit",
+				color: "inherit",
+				border: "none",
+				outline: "none",
+				backgroundColor: "transparent",
+				cursor: "pointer",
+				"&:hover .ViewButton, &:focus .ViewButton": {
+					borderRadius: "50%",
+					backgroundColor: colors.purple,
+					transform: "scale(1.6)",
+					"& > *": {
+						transform: "rotate(0deg)",
+					},
+				},
 			}}
 		>
 			<Typography
@@ -120,7 +138,13 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 				/>
 				{supFormatter(item.supCost)}
 			</Typography>
-			<ViewButton onClick={() => history.push(`/stores/${item.collection.name}/${item.ID}`)}>
+			<ViewButton
+				sx={{
+					position: "absolute",
+					right: "1rem",
+					bottom: "1rem",
+				}}
+			>
 				<SearchIcon />
 			</ViewButton>
 		</Box>

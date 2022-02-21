@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, ButtonProps, ButtonUnstyled, Skeleton, styled, Typography } from "@mui/material"
+import { Box, BoxProps, Skeleton, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { useWebsocket } from "../../containers/socket"
@@ -49,13 +49,31 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 
 	return (
 		<Box
+			component="button"
+			onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}
 			sx={{
 				position: "relative",
 				display: "flex",
 				flexDirection: "column",
 				justifyContent: "space-between",
 				padding: "1rem",
+				paddingBottom: "2rem",
+				paddingRight: "2rem",
 				textAlign: "center",
+				font: "inherit",
+				color: "inherit",
+				border: "none",
+				outline: "none",
+				backgroundColor: "transparent",
+				cursor: "pointer",
+				"&:hover .ViewButton, &:focus .ViewButton": {
+					borderRadius: "50%",
+					backgroundColor: colors.purple,
+					transform: "scale(1.6)",
+					"& > *": {
+						transform: "rotate(0deg)",
+					},
+				},
 			}}
 		>
 			<Typography
@@ -99,48 +117,43 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			>
 				{getItemAttributeValue(item.attributes, "Rarity")}
 			</Typography>
-			<ViewButton onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}>
+			<ViewButton
+				sx={{
+					position: "absolute",
+					right: "1rem",
+					bottom: "1rem",
+				}}
+			>
 				<SearchIcon />
 			</ViewButton>
 		</Box>
 	)
 }
 
-const CustomButtonBase = styled("button")({
-	position: "absolute",
-	right: 0,
-	bottom: 0,
-	display: "inline-flex",
-	alignItems: "center",
-	justifyContent: "center",
-	height: "2.6rem",
-	width: "2.6rem",
-	backgroundColor: "transparent",
-	border: `1px solid ${colors.purple}`,
-	color: "inherit",
-	font: "inherit",
-	transform: "rotate(45deg)",
-	transition: "transform .2s ease-out, border-radius .2s ease-out, background-color .2s ease-out",
-	cursor: "pointer",
-	"& > *": {
-		transition: "transform .2s ease-out",
-		transform: "rotate(-45deg)",
-	},
-	":hover, :focus": {
-		borderRadius: "50%",
-		backgroundColor: colors.purple,
-		transform: "scale(1.6)",
-		"& > *": {
-			transform: "rotate(0deg)",
-		},
-	},
-})
-
-interface CustomButtonProps extends ButtonProps {}
-
-export const ViewButton = ({ ...props }: CustomButtonProps) => {
-	return <ButtonUnstyled {...props} component={CustomButtonBase} />
-}
+export const ViewButton = (props: BoxProps) => (
+	<Box
+		{...props}
+		className="ViewButton"
+		sx={{
+			display: "inline-flex",
+			alignItems: "center",
+			justifyContent: "center",
+			height: "2.6rem",
+			width: "2.6rem",
+			backgroundColor: "transparent",
+			border: `1px solid ${colors.purple}`,
+			color: "inherit",
+			font: "inherit",
+			transform: "rotate(45deg)",
+			transition: "transform .2s ease-out, border-radius .2s ease-out, background-color .2s ease-out",
+			"& > *": {
+				transition: "transform .2s ease-out",
+				transform: "rotate(-45deg)",
+			},
+			...props.sx,
+		}}
+	/>
+)
 
 const CollectionItemCardSkeleton: React.VoidFunctionComponent = () => {
 	return (

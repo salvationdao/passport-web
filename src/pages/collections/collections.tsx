@@ -1,9 +1,11 @@
-import { Box, Link, Paper, Skeleton, Typography } from "@mui/material"
+import { Box, Divider, Paper, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
+import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -80,9 +82,15 @@ export const CollectionsPage: React.FC = () => {
 						<CollectionPreviewSkeleton />
 					</>
 				) : (
-					collections.map((c, i) => {
-						return <CollectionPreview key={i} collection={c} username={username || user?.username || ""} />
-					})
+					<Paper
+						sx={{
+							padding: "2rem",
+						}}
+					>
+						{collections.map((c, i) => {
+							return <CollectionPreview key={i} collection={c} username={username || user?.username || ""} />
+						})}
+					</Paper>
 				)}
 			</Box>
 		</Box>
@@ -139,6 +147,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 	const { user } = useAuth()
 	const { state, send } = useWebsocket()
 	const [tokenIDs, setTokenIDs] = useState<number[]>([])
+	const [search, setSearch] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
 
@@ -149,6 +158,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 			try {
 				const resp = await send<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, {
 					pageSize: 6,
+					search,
 					filter: {
 						linkOperator: "and",
 						items: [
@@ -174,29 +184,23 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				setLoading(false)
 			}
 		})()
-	}, [send, state, collection, username])
+	}, [send, state, collection, username, search])
 
 	const renderCollection = () => {
 		return (
-			<Paper
+			<Box
 				sx={{
-					overflowX: "auto",
-					display: "flex",
-					padding: "2rem",
+					overflowX: "hidden",
+					display: "grid",
+					gridTemplateColumns: "repeat(6, 240px)",
+					gap: "1rem",
 					maskImage: "linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 100%)",
-					"& > *": {
-						minWidth: "240px",
-						maxWidth: "240px",
-						"&:not(:last-child)": {
-							marginRight: "1rem",
-						},
-					},
 				}}
 			>
 				{tokenIDs.slice(0, 6).map((a) => {
 					return <CollectionItemCard key={a} tokenID={a} username={username} />
 				})}
-			</Paper>
+			</Box>
 		)
 	}
 
@@ -205,9 +209,13 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 			<Box
 				sx={{
 					display: "flex",
-					alignItems: "baseline",
+					alignItems: "center",
 					flexWrap: "wrap",
-					marginBottom: "1rem",
+					marginBottom: ".5rem",
+					"@media (max-width: 630px)": {
+						flexDirection: "column",
+						alignItems: "stretch",
+					},
 				}}
 			>
 				<Box
@@ -216,38 +224,57 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 					alt="Supremacy Logo"
 					sx={{
 						height: "1.6rem",
-						marginRight: ".5rem",
 					}}
 				/>
-				<Link
-					variant="h5"
-					underline="hover"
-					sx={{
-						marginTop: "1rem",
-						textTransform: "uppercase",
-						whiteSpace: "nowrap",
+				<Box flex={1} minHeight="1rem" />
+				<SearchBar
+					label="Search collection"
+					placeholder="Search collection"
+					value={search}
+					size="small"
+					onChange={(value: string) => {
+						setSearch(value)
 					}}
-					color={colors.white}
-					component={RouterLink}
-					to={`/collections/${username || user?.username}/${collection.name}`}
-				>
-					View Collection
-				</Link>
+					sx={{
+						flexGrow: 1,
+						minWidth: "200px",
+						maxWidth: "800px",
+					}}
+				/>
+			</Box>
+			<Box
+				sx={{
+					display: "inline-block",
+					marginBottom: "1rem",
+					"@media (max-width: 630px)": {
+						display: "block",
+					},
+				}}
+			>
+				<RouterLink component={StyledFancyButton} to={`/collections/${username || user?.username}/${collection.name}`}>
+					View Entire Collection
+				</RouterLink>
 			</Box>
 			{tokenIDs.length ? (
 				renderCollection()
 			) : (
-				<Paper
-					sx={{
-						marginBottom: "2rem",
-						padding: "2rem",
-					}}
-				>
+				<Box>
 					<Typography variant="subtitle2" color={colors.darkGrey}>
 						{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
 					</Typography>
-				</Paper>
+				</Box>
 			)}
+			<Divider
+				sx={{
+					display: "none",
+					margin: "2rem 0",
+					"&:not(:last-child)": {
+						display: "block",
+					},
+				}}
+			/>
 		</>
 	)
 }
+
+const StyledFancyButton = ({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" fullWidth />

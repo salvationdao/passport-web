@@ -1,10 +1,12 @@
 import AppsIcon from "@mui/icons-material/Apps"
 import FaceIcon from "@mui/icons-material/Face"
-import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
+import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
 import StorefrontIcon from "@mui/icons-material/Storefront"
 import { Alert, Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery } from "@mui/material"
+import { BigNumber } from "ethers"
+import { formatUnits } from "ethers/lib/utils"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupTokenIcon } from "../assets"
@@ -13,18 +15,15 @@ import { useSidebarState } from "../containers/sidebar"
 import { useSnackbar } from "../containers/snackbar"
 import { API_ENDPOINT_HOSTNAME, SocketState, useWebsocket } from "../containers/socket"
 import { useWeb3 } from "../containers/web3"
-import { supFormatter } from "../helpers/items"
+import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { Faction, User } from "../types/types"
+import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
-import { DepositSupsModal } from "./depositSupsModal"
-import { formatUnits } from "ethers/lib/utils"
-import { BigNumber } from "ethers"
 
 const drawerWidth = 300
 
@@ -299,20 +298,22 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<Divider />
 				<RenderEnlist factionsData={factionsData} user={user} />
 				<Divider />
-				<NavButton
-					sx={{ color: !xsynSups.eq(0) ? "" : colors.supremacy.grey, cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" } }}
+				<Button
+					sx={{
+						justifyContent: "start",
+						color: !xsynSups.eq(0) ? "" : colors.supremacy.grey,
+						cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" },
+					}}
 					onClick={() => {
 						if (!xsynSups.eq(0)) {
 							window.open("https://staging-watch.supremacy.game", "_blank")?.focus()
 						}
 					}}
-					to={`/profile`}
 					startIcon={<SportsKabaddiIcon />}
 				>
 					{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
-				</NavButton>
+				</Button>
 				<Divider />
-				<a></a>
 				<NavButton to={`/collections`} startIcon={<AppsIcon />}>
 					My Inventory
 				</NavButton>
