@@ -36,7 +36,7 @@ export const BuyTokens: React.FC = () => {
 	const theme = useTheme()
 
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
-	const [currentTokenName, setCurrentTokenName] = useState<tokenName>("eth")
+	const [selectedTokenName, setSelectedTokenName] = useState<tokenName>("eth")
 	const [tokenValue, setTokenValue] = useState<string>("")
 	const [supsValue, setSupsValue] = useState<string>("")
 	const [amountRemaining, setAmountRemaining] = useState<number>(0)
@@ -57,7 +57,7 @@ export const BuyTokens: React.FC = () => {
 				return
 			}
 			if (currentToken.isNative) {
-				switch (currentTokenName) {
+				switch (selectedTokenName) {
 					case "bnb":
 						switch (direction) {
 							case "tokensToSups":
@@ -99,24 +99,23 @@ export const BuyTokens: React.FC = () => {
 		[currentToken],
 	)
 
-	// useEffect(() => {
-	// 	if (window.document) {
-	// 		const body = window.document.querySelector("body")
-	// 		if (body) body.style.backgroundColor = "transparent"
-	// 	}
-	// }, [])
-
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
 			const filteredArr = tokenOptions.filter((x) => {
-				return x.name === currentTokenName
+				return x.chainId === currentChainId
 			})
-
-			setCurrentToken(filteredArr[0])
+			setSelectedTokenName(filteredArr[0].name)
 		} else {
-			setCurrentToken(tokenOptions[0])
+			setSelectedTokenName(tokenOptions[0].name)
 		}
-	}, [currentTokenName, currentChainId])
+	}, [currentChainId, acceptedChainExceptions])
+
+	useEffect(() => {
+		const filteredArr = tokenOptions.filter((x) => {
+			return x.name === selectedTokenName
+		})
+		setCurrentToken(filteredArr[0])
+	}, [selectedTokenName])
 
 	useEffect(() => {
 		if (tokenValue !== "") {
@@ -143,13 +142,6 @@ export const BuyTokens: React.FC = () => {
 			}
 		})()
 	}, [currentToken, getBalance])
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
-			setExchangeRates(rates)
-		})
-	}, [subscribe, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -352,7 +344,7 @@ export const BuyTokens: React.FC = () => {
 					</Typography>
 
 					<Typography variant="body1">
-						Purchasing {supsValue} SUPS with {tokenValue} {currentTokenName.toUpperCase()}
+						Purchasing {supsValue} SUPS with {tokenValue} {selectedTokenName.toUpperCase()}
 					</Typography>
 					<Typography variant="body1">Confirm this transaction in your wallet</Typography>
 					<Box sx={{ width: "100%", marginTop: "1rem" }}>
@@ -434,8 +426,8 @@ export const BuyTokens: React.FC = () => {
 										}}
 									>
 										<TokenSelect
-											currentTokenName={currentTokenName}
-											setCurrentTokenName={setCurrentTokenName}
+											currentTokenName={selectedTokenName}
+											setCurrentTokenName={setSelectedTokenName}
 											tokenOptions={tokenOptions}
 										/>
 										<Button
