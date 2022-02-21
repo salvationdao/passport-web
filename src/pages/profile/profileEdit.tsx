@@ -53,7 +53,7 @@ export const ProfileEditPage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [user, history])
+	}, [user, history, username])
 
 	if (!user || user.username !== username) {
 		return <Loading text={loadingText} />

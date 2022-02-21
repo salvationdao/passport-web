@@ -1,20 +1,24 @@
 import AppsIcon from "@mui/icons-material/Apps"
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Alert, Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery } from "@mui/material"
+import { Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
-import { SupTokenIcon } from "../assets"
+import { MetaMaskIcon, WalletConnectIcon } from "../assets"
+import SupsToken from "../assets/images/sup-token.svg"
+import SupsTokenLogo from "../assets/images/sups-token-logo.png"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { useSnackbar } from "../containers/snackbar"
 import { API_ENDPOINT_HOSTNAME, SocketState, useWebsocket } from "../containers/socket"
-import { useWeb3 } from "../containers/web3"
+import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
@@ -24,8 +28,9 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
+import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 
-const drawerWidth = 300
+const drawerWidth = 250
 
 export interface SidebarLayoutProps {
 	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
@@ -44,7 +49,8 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	// Supremacy
 	const [factionsData, setFactionsData] = useState<Faction[]>([])
-	const { supBalance, account } = useWeb3()
+	const { supBalance, account, metaMaskState } = useWeb3()
+	const theme = useTheme()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
@@ -63,7 +69,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		// not logged in
 		if (!user || !account) {
 			setWalletMsg("")
-			setWalletSups("N/A")
+			setWalletSups(undefined)
 			return
 		}
 		if (userSups) {
@@ -73,14 +79,14 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		// no wallet connected
 		if (!user.publicAddress) {
 			setWalletMsg("Wallet not connected")
-			setWalletSups("N/A")
+			setWalletSups(undefined)
 			return
 		}
 
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
-		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : "N/A")
-	}, [userSups, supBalance, account, user, userPublicAddress])
+		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : undefined)
+	}, [userSups, supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -153,56 +159,78 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					},
 				}}
 			>
-				{!!walletMsg && <Alert severity="error">{walletMsg}</Alert>}
+				<Box sx={{ display: "grid", width: "100%", gridTemplateColumns: "1fr 1fr 1fr 1fr", gridTemplateRows: "1fr 1fr" }}>
+					<Box
+						sx={{
+							gridColumnStart: "1",
+							gridColumnEnd: "2",
+							gridRowStart: "1",
+							gridRowEnd: "3",
+							justifySelf: "center",
+							alignSelf: "center",
+							border: `.5px solid ${colors.lightNavyBlue}`,
+							borderRadius: "50%",
+							height: "3.5rem",
+							width: "3.5rem",
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+						}}
+					>
+						<Box component="img" src={SupsTokenLogo} alt="token image" sx={{ height: "2.5rem", margin: ".5rem" }} />
+					</Box>
+					<Box
+						sx={{
+							gridColumnStart: "2",
+							gridColumnEnd: "5",
+							gridRowStart: "1",
+							gridRowEnd: "2",
+						}}
+					>
+						<Box sx={{ display: "flex", alignItems: "center", width: "100%", marginBottom: ".2rem" }}>
+							<SportsEsportsIcon sx={{ fontSize: "1.2rem", color: colors.darkGrey }} />
+							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: " 0 .5rem" }} />
+							<Typography variant="body1">{xsynSups ? parseFloat(formatUnits(xsynSups, 18)).toFixed(2) : "--"}</Typography>
+						</Box>
 
-				<Typography
-					sx={{
-						textTransform: "uppercase",
-						fontWeight: 600,
-					}}
-				>
-					My Wallet
-				</Typography>
-				<Typography
-					key={`usersups-${xsynSups.toString()}`}
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						"& svg": {
-							height: ".8rem",
-						},
-						"& > *:not(:last-child)": {
-							marginRight: ".2rem",
-						},
-					}}
-				>
-					<Box component="span" fontWeight={500} color={colors.darkGrey}>
-						XSYN Balance:
+						<Divider />
 					</Box>
-					<SupTokenIcon />
-					{formatUnits(xsynSups, 18)}
-				</Typography>
-				<Typography
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						"& svg": {
-							height: ".8rem",
-						},
-						"& > *:not(:last-child)": {
-							marginRight: ".2rem",
-						},
-					}}
-				>
-					<Box component="span" fontWeight={500} color={colors.darkGrey}>
-						Wallet Balance:
+					<Box
+						sx={{
+							gridColumnStart: "2",
+							gridColumnEnd: "5",
+							gridRowStart: "2",
+							gridRowEnd: "3",
+						}}
+					>
+						<Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+							{metaMaskState === MetaMaskState.NotInstalled ? (
+								<WalletConnectIcon height={"1.2rem"} width={"1.2rem"} />
+							) : (
+								<MetaMaskIcon height={"1.2rem"} width={"1.2rem"} />
+							)}
+							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: "0 .5rem" }} />
+							<Typography variant="body1">{walletSups ? parseFloat(walletSups).toFixed(2) : "--"}</Typography>
+						</Box>
 					</Box>
-					<SupTokenIcon />
-					{walletSups ? walletSups : "___"}
-				</Typography>
+				</Box>
+				<Box>
+					<FancyButton
+						onClick={() => {
+							window.open("https://sale.supremacy.game", "_blank")?.focus()
+						}}
+						borderColor={colors.skyBlue}
+						sx={{ width: "100%", marginTop: "1rem" }}
+					>
+						<Typography sx={{ textTransform: "uppercase" }}>Token Sale</Typography>
+					</FancyButton>
+				</Box>
+				{
+					//TODO: these buttons to be display: flex after launch
+				}
 				<Box
 					sx={{
-						display: "flex",
+						display: "none",
 						"& > *:not(:last-child)": {
 							marginRight: ".2rem",
 						},
@@ -276,7 +304,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					</FancyButton>
 				</Box>
 			</Box>
-			<Divider />
 			<Box
 				sx={{
 					display: "flex",
@@ -286,17 +313,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					},
 				}}
 			>
-				<Typography
-					sx={{
-						marginBottom: ".5rem",
-						textTransform: "uppercase",
-						fontWeight: 600,
-					}}
-				>
-					Supremacy
-				</Typography>
-				<Divider />
-				<RenderEnlist factionsData={factionsData} user={user} />
+				{/* <RenderEnlist factionsData={factionsData} user={user}  /> */}
 				<Divider />
 				<Button
 					sx={{
@@ -309,7 +326,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 							window.open("https://staging-watch.supremacy.game", "_blank")?.focus()
 						}
 					}}
-					startIcon={<SportsKabaddiIcon />}
+					startIcon={<PlayArrowIcon />}
 				>
 					{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
 				</Button>
@@ -323,6 +340,14 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			</Box>
 
 			<Divider />
+			{!!walletMsg && (
+				<Box sx={{ display: "flex" }}>
+					<ErrorOutlineIcon sx={{ fontSize: "2rem", color: theme.palette.error.light, alignSelf: "center" }} />
+					<Typography variant="body1" sx={{ marginLeft: ".2rem" }}>
+						{walletMsg}
+					</Typography>
+				</Box>
+			)}
 			<Box flex="1" />
 			<NavButton sx={{ alignSelf: "start", width: "100%" }} to="/profile" startIcon={<FaceIcon />}>
 				Edit Profile
@@ -448,7 +473,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				{children}
 			</Box>
-			<WithdrawSupsModal open={withdrawDialogOpen} onClose={() => setWithdrawDialogOpen(false)} />
+			<WithdrawSupsModal
+				walletBalance={supBalance || BigNumber.from(0)}
+				xsynBalance={xsynSups}
+				open={withdrawDialogOpen}
+				onClose={() => setWithdrawDialogOpen(false)}
+			/>
 			<DepositSupsModal
 				walletBalance={supBalance || BigNumber.from(0)}
 				xsynBalance={xsynSups}

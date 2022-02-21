@@ -1,20 +1,17 @@
-import { Box, MenuItem, outlinedInputClasses, Select, SelectChangeEvent, SelectProps, styled, Typography } from "@mui/material"
-import React, { useState } from "react"
-import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
-import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
-import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
-import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
-import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
-import { tokenSelect, tokenName } from "../types/types"
+import { Box, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material"
+import React from "react"
+import { tokenName, tokenSelect } from "../types/types"
 
 interface TokenSelectProps {
 	selectedTokenName: tokenName
 	tokenOptions: tokenSelect[]
 	setSelectedTokenName: React.Dispatch<React.SetStateAction<tokenName>>
+	cb: () => void
 }
 
-export const TokenSelect = ({ selectedTokenName, tokenOptions, setSelectedTokenName }: TokenSelectProps) => {
+export const TokenSelect = ({ selectedTokenName, tokenOptions, setSelectedTokenName, cb }: TokenSelectProps) => {
 	const handleSelectChange = (e: SelectChangeEvent<unknown>) => {
+		if (cb) cb()
 		setSelectedTokenName(e.target.value as tokenName)
 	}
 
