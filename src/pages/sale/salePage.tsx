@@ -3,6 +3,7 @@ import useMediaQuery from "@mui/material/useMediaQuery"
 import { useEffect, useRef, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { useContainer } from "unstated-next"
+import { BuyTokens } from "../../components/buyTokens"
 import { BackgroundVideo } from "../../components/supremacy/backgroundVideo"
 import { CountdownTimer } from "../../components/supremacy/countdownTimer"
 import { Loading } from "../../components/supremacy/loading"
@@ -102,10 +103,8 @@ export const SalePage = () => {
 							}}
 							onClick={() => history.push("https://supremacy.game/home")}
 						/>
-						<Typography variant="h1" sx={{ textAlign: "center" }}>
-							Game launch and TOKEN SALE
-						</Typography>
-						<Typography sx={{ color: colors.neonBlue, fontSize: "2rem" }}>PURCHASE $SUPS TO ACCESS THE BATTLE ARENA</Typography>
+						<Title>Game launch and TOKEN SALE</Title>
+						<SubHeading>PURCHASE $SUPS TO ACCESS THE BATTLE ARENA</SubHeading>
 					</Stack>
 					<CountdownTimer publicSale />
 					<Box
@@ -126,30 +125,39 @@ export const SalePage = () => {
 							handleJoinBtn={handleJoinBtn}
 							isTouchDevice={isTouchDevice}
 						/>
-
-						<Box
-							component="iframe"
-							src={"http://localhost:5003/if-buy"}
-							onLoadedData={() => setLoading(false)}
-							allowTransparency
-							sx={{
-								mt: "-10%",
-								width: "100%",
-								maxWidth: "30rem",
-								height: "100%",
-								minHeight: "40rem",
-								overflow: "hidden",
-								border: "none",
-							}}
-						/>
+						<BuyTokens />
 					</Box>
 				</Stack>
 			</Box>
-
 			<BackgroundVideo />
 		</>
 	)
 }
+
+const Title = styled("h1")({
+	fontFamily: ["Nostromo Regular Black"].join(","),
+	fontSize: "3rem",
+	margin: 0,
+	"@media (max-width:600px)": {
+		fontSize: "2.5rem",
+	},
+	"@media (max-width:559px)": {
+		fontSize: "1.8rem",
+	},
+	"@media (max-width:375px)": {
+		fontSize: "1.6rem",
+	},
+	"@media (max-width:350px)": {
+		fontSize: "1.4rem",
+	},
+})
+
+const SubHeading = styled("span")({
+	fontFamily: ["Share Tech"].join(","),
+	fontSize: "2rem",
+	color: colors.neonBlue,
+	textAlign: "center",
+})
 
 const GameFrame = styled("iframe")({
 	position: "fixed",

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react"
 import { useContainer } from "unstated-next"
 import { AppState, SnackState } from "../../containers/supremacy/app"
 import { useWeb3 } from "../../containers/web3"
+import { IMAGE_FOLDER } from "../../pages/sale/salePage"
 import { colors } from "../../theme"
 import { CountdownTimer } from "./countdownTimer"
 import { FancyButton } from "./fancyButton"
@@ -49,39 +50,7 @@ export const WhiteListModal = (props: Props) => {
 				},
 			}}
 		>
-			<Box
-				sx={{
-					backgroundImage: props.publicSale ? "transparent" : "url(/images/gabs.webp)",
-					backgroundPosition: matches ? "50% 42%" : "0 -4em",
-					backgroundSize: "cover",
-					backgroundRepeat: "no-repeat",
-					height: matches ? "4rem" : props.publicSale ? "fit-content" : "10rem",
-				}}
-			>
-				{!props.publicSale && (
-					<Box
-						sx={{
-							p: "1em",
-							backgroundColor: "rgba(0,0,0,0.7)",
-							width: "100%",
-							display: "flex",
-							justifyContent: "center",
-							height: matches ? "4rem" : "auto",
-						}}
-					>
-						<Typography
-							sx={{
-								fontFamily: "Nostromo Regular Black",
-								textAlign: "center",
-								fontSize: "1rem",
-							}}
-						>
-							Game Launch | Token Sale
-						</Typography>
-					</Box>
-				)}
-			</Box>
-			{props.publicSale && <Box component="img" src="/images/gabs.webp" alt="gabs image" />}
+			<Box component="img" src={`${IMAGE_FOLDER}/gabs.webp`} alt="gabs image" />
 			<Box
 				sx={{
 					margin: "0 auto",
