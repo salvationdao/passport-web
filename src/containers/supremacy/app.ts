@@ -4,52 +4,37 @@ import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import { useWeb3 } from "../web3"
 
-export interface UserDataStoriesApi {
-	Address: string
-	RedM: number
-	Zaibat: number
-	Boston: number
-	Deaths: number
+export interface UserWhitelistApi {
+	type: "unregistered" | "registered"
+	can_enter: boolean
+	time: Date
 }
 
 function useAppState(initialState = {}) {
-	const { account } = useWeb3()
 	const [saleActive, setSaleActive] = useState(process.env.REACT_APP_SALE_ACTIVE == "true" ? true : false)
 	const [loading, setLoading] = useState(true)
 	// Check Whitelist
-	const [isAlphaCitizen, setIsAlphaCitizen] = useState(false)
-	const [isWhitelisted, setIsWhiteListed] = useState(false)
+	const [isWhitelisted, setIsWhitelisted] = useState(true)
 	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
-	const checkIsWhiteListed = (data: UserDataStoriesApi) => {
-		if (data.Boston > 0 || data.RedM > 0 || data.Zaibat > 0) {
-			setIsAlphaCitizen(true)
-			return true
-		} else if (data.Deaths > 0) {
-			setIsAlphaCitizen(false)
-			return true
-		} else {
-			setIsAlphaCitizen(false)
-			return false
-		}
-	}
 
-	useEffect(() => {
-		if (account) {
-			;(async () => {
-				try {
-					const response = await fetch(`https://stories.supremacy.game/api/users/${account}`)
-					const data = (await response.clone().json()) as UserDataStoriesApi
-					setIsWhiteListed(checkIsWhiteListed(data))
-				} catch (error) {
-					setIsWhiteListed(false)
-					console.log(error)
-				}
-			})()
-		}
-	}, [account])
+	const checkWhitelist = useCallback(
+		async (account: string): Promise<boolean> => {
+			try {
+				const response = await fetch(`https://stories.supremacy.game/api/whitelist/${account}`)
+				const data = (await response.clone().json()) as UserWhitelistApi
+				return data.can_enter
+			} catch (error) {
+				setIsWhitelisted(false)
+				console.log(error)
+				return false
+			}
+		},
+		[setIsWhitelisted],
+	)
 
 	return {
-		isAlphaCitizen,
+		checkWhitelist,
+		setIsWhitelisted,
 		isWhitelisted,
 		saleActive,
 		setSaleActive,
@@ -62,17 +47,7 @@ function useAppState(initialState = {}) {
 
 let AppState = createContainer(useAppState)
 
-function useSnackState() {
-	const [snackMessage, setSnackMessage] = useState<{
-		message: string
-		severity: AlertColor
-	} | null>(null)
-
-	return { setSnackMessage, snackMessage }
-}
-let SnackState = createContainer(useSnackState)
-
 export const SupremacyAppProvider = AppState.Provider
-export const SupremacySnackProvider = SnackState.Provider
+export const useSupremacyApp = AppState.useContainer
 
-export { SnackState, AppState }
+export { AppState }

@@ -1,4 +1,3 @@
-import { AlertColor } from "@mui/material"
 import WalletConnectProvider from "@walletconnect/web3-provider"
 import { BigNumber, ethers } from "ethers"
 import { parseEther } from "ethers/lib/utils"
@@ -23,6 +22,7 @@ import {
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
+import { useSupremacyApp } from "./supremacy/app"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -100,6 +100,7 @@ const tokenOptions: tokenSelect[] = [
  * A Container that handles Web3
  */
 export const Web3Container = createContainer(() => {
+	const { checkWhitelist, setIsWhitelisted } = useSupremacyApp()
 	const { displayMessage } = useSnackbar()
 	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
@@ -251,46 +252,6 @@ export const Web3Container = createContainer(() => {
 		}
 	}, [provider, handleAccountChange, handleChainChange, createWcProvider])
 
-	const connect = useCallback(
-		async (
-			setShowGame?: (value: React.SetStateAction<boolean>) => void,
-		): Promise<
-			| {
-					message: string
-					severity: AlertColor
-			  }
-			| undefined
-		> => {
-			if (provider) {
-				try {
-					await provider.send("eth_requestAccounts", [])
-					const signer = provider.getSigner()
-					const acc = await signer.getAddress()
-					setAccount(acc)
-					handleAccountChange([acc])
-					if (setShowGame && acc) {
-						window.localStorage.setItem("wallet", acc)
-						await checkNeoBalance(acc, setShowGame)
-					}
-				} catch (error) {
-					displayMessage("Something went wrong, please try again.", "error")
-					// For supremacy sale page
-					if (setShowGame) {
-						console.error(error)
-						const errMsg: {
-							message: string
-							severity: AlertColor
-						} = {
-							message: "Please login your wallet.",
-							severity: "info",
-						}
-						return errMsg
-					}
-				}
-			}
-		},
-		[displayMessage, provider, handleAccountChange],
-	)
 	const checkNeoBalance = useCallback(
 		async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
 			const NTABI = ["function balanceOf(address) view returns (uint256)"]
@@ -319,6 +280,29 @@ export const Web3Container = createContainer(() => {
 			}
 		},
 		[provider],
+	)
+	const connect = useCallback(
+		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+			if (provider) {
+				try {
+					await provider.send("eth_requestAccounts", [])
+					const signer = provider.getSigner()
+					const acc = await signer.getAddress()
+					// Check if account is whitelisted if not return
+					const allowAccess = await checkWhitelist(acc)
+					if (allowAccess) {
+						setIsWhitelisted(true)
+						setAccount(acc)
+						handleAccountChange([acc])
+					}
+					setIsWhitelisted(false)
+				} catch (error) {
+					if (error instanceof Error) displayMessage(error.message, "error")
+					else displayMessage("Please authenticate your wallet.", "info")
+				}
+			}
+		},
+		[displayMessage, provider, handleAccountChange, checkWhitelist, setIsWhitelisted],
 	)
 
 	const wcConnect = useCallback(

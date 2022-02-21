@@ -1,18 +1,18 @@
 import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
 import useMediaQuery from "@mui/material/useMediaQuery"
+import { formatUnits } from "ethers/lib/utils"
 import { useEffect, useRef, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { useContainer } from "unstated-next"
+import BWSupToken from "../../assets/images/BW-sup-token.png"
 import { BuyTokens } from "../../components/buyTokens"
 import { BackgroundVideo } from "../../components/supremacy/backgroundVideo"
 import { CountdownTimer } from "../../components/supremacy/countdownTimer"
 import { Loading } from "../../components/supremacy/loading"
 import { SupremacyNavbar } from "../../components/supremacy/navbar"
-import { AppState, SnackState } from "../../containers/supremacy/app"
-import { colors } from "../../theme"
-import BWSupToken from "../../assets/images/BW-sup-token.png"
+import { AppState } from "../../containers/supremacy/app"
 import { useWeb3, web3Constants } from "../../containers/web3"
-import { formatUnits } from "ethers/lib/utils"
+import { colors } from "../../theme"
 
 export const TEXT_GAME_LOCATION = "TextGame/TextAdventure.html"
 export const IMAGE_FOLDER = "https://afiles.ninja-cdn.com/supremacy/images"
@@ -32,7 +32,6 @@ export const SalePage = () => {
 
 	const { account, connect, wcConnect } = useWeb3()
 	const { loading, setLoading, saleActive, amountRemaining } = useContainer(AppState)
-	const { setSnackMessage } = useContainer(SnackState)
 
 	useEffect(() => {
 		let check = window.matchMedia("(hover: none), (pointer: coarse)").matches ? true : false
@@ -42,8 +41,7 @@ export const SalePage = () => {
 	const handleJoinBtn = async () => {
 		if (!account) {
 			if ((window as any).ethereum) {
-				const err = await connect(setShowGame)
-				err && setSnackMessage(err)
+				await connect(setShowGame)
 			} else {
 				await wcConnect(setShowGame)
 			}
@@ -94,21 +92,22 @@ export const SalePage = () => {
 					}}
 				>
 					<Stack alignItems="center">
-						<Box
-							component="img"
-							src={IMAGE_FOLDER + "/home/logo.webp"}
-							alt="Supremacy metaverse game"
-							sx={{
-								mt: "1rem",
-								cursor: "pointer",
-								width: "100%",
-								maxWidth: "30vw",
-								"@media (max-width: 1440px)": {
-									maxWidth: "30rem",
-								},
-							}}
-							onClick={() => history.push("https://supremacy.game/home")}
-						/>
+						<a href="https://supremacy.game/home">
+							<Box
+								component="img"
+								src={IMAGE_FOLDER + "/home/logo.webp"}
+								alt="Supremacy metaverse game"
+								sx={{
+									mt: "1rem",
+									cursor: "pointer",
+									width: "100%",
+									maxWidth: "40vw",
+									"@media (max-width: 1440px)": {
+										maxWidth: "30rem",
+									},
+								}}
+							/>
+						</a>
 						<Title>Game Launch and TOKEN SALE</Title>
 					</Stack>
 
@@ -150,23 +149,16 @@ export const SalePage = () => {
 										src={BWSupToken}
 										alt="token image"
 										sx={{
-											filter:
-												100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100 < 30
-													? "brightness(0) invert(0.9)"
-													: "unset",
 											ml: "auto",
-											height: "1.2rem",
+											height: "1.5rem",
 										}}
 									/>
 									<Typography
 										variant="body1"
 										sx={{
-											fontSize: ".8rem",
+											fontSize: "1rem",
 											textTransform: "uppercase",
-											color:
-												100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100 < 40
-													? colors.white
-													: colors.black,
+											color: colors.white,
 											textShadow: `1px 2px ${colors.black}`,
 											whiteSpace: "nowrap",
 											fontWeight: "600",
@@ -241,7 +233,7 @@ const GameFrame = styled("iframe")({
 const FancyLinearProgress = styled(LinearProgress)({
 	width: "90vw",
 	maxWidth: "30rem",
-	height: "45px",
+	height: "3.5rem",
 	"@media (max-width:559px)": {
 		height: "40px",
 	},
@@ -249,5 +241,6 @@ const FancyLinearProgress = styled(LinearProgress)({
 	backgroundColor: "rgba(0, 136, 136, 0.4)",
 	"&>span": {
 		backgroundColor: colors.neonBlue,
+		opacity: 0.5,
 	},
 })

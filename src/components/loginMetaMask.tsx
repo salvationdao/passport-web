@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react"
 import { useHistory } from "react-router-dom"
+import { useContainer } from "unstated-next"
 import { AuthContainer } from "../containers"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -35,13 +36,8 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
 				}
 			}
-		}
-		setIsProcessing(true)
-		if (metaMaskState === MetaMaskState.NotLoggedIn) {
-			await connect()
-			return
-		}
-		if (metaMaskState === MetaMaskState.Active) {
+		} else {
+			setIsProcessing(true)
 			if (onClick && !(await onClick())) return
 
 			try {
@@ -49,6 +45,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 				if (!resp || !resp.isNew) return
 				history.push("/onboarding?skip_username=true")
 			} catch (e) {
+				setIsProcessing(false)
 				if (onFailure) {
 					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
 				}

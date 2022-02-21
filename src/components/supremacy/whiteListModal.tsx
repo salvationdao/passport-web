@@ -1,105 +1,158 @@
 import { Box, Modal, Stack, Typography, useMediaQuery } from "@mui/material"
-import React, { useState, useEffect } from "react"
-import { useContainer } from "unstated-next"
-import { AppState, SnackState } from "../../containers/supremacy/app"
+import React from "react"
 import { useWeb3 } from "../../containers/web3"
 import { IMAGE_FOLDER } from "../../pages/sale/salePage"
 import { colors } from "../../theme"
-import { CountdownTimer } from "./countdownTimer"
-import { FancyButton } from "./fancyButton"
+import { ClipThing } from "./clipThing"
+import { SupFancyButton } from "./supFancyButton"
 
 type Props = {
 	handleJoinBtn: () => Promise<void>
 	open: boolean
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>
-	isTouchDevice: boolean
-	shorterScreen?: boolean
-	smallerScreen?: boolean
-	publicSale?: boolean
+}
+
+interface UserDataStoriesApi {
+	Address: string
+	RedM: number
+	Zaibat: number
+	Boston: number
+	Deaths: number
 }
 
 export const WhiteListModal = (props: Props) => {
 	const { account } = useWeb3()
-	const { setSnackMessage } = useContainer(SnackState)
 	const mobileScreen = useMediaQuery("(max-width:600px)")
-	const matches = props.shorterScreen || props.smallerScreen
 
 	return (
-		<Box
+		<Modal
+			open={props.open}
+			onClose={() => props.setOpen(false)}
+			BackdropProps={{
+				style: {
+					backgroundColor: "rgba(0,0,0,0.9)",
+				},
+			}}
 			sx={{
-				width: "fit-content",
-				maxWidth: "50vw",
-				height: "300px",
+				overflowY: "scroll",
+				overflowX: "hidden",
 				display: "flex",
 				flexDirection: "column",
-
-				"&:focus": {
+				justifyContent: "center",
+				alignItems: "center",
+				padding: "5rem 2rem",
+				zIndex: 9999,
+				opacity: props.open ? 1 : 0,
+				animation: props.open ? "fade 1s" : "unset",
+				"& *:focus": {
 					boxShadow: "none",
 				},
-
-				"& img": {
-					m: 0,
-					width: "100%",
-					height: "100%",
-					objectFit: "cover",
-					maxHeight: "30vh",
-					border: `1px groove ${colors.gold}`,
-					"@media (max-width:600px)": {
-						maxHeight: "15rem",
+				"@keyframes fade": {
+					"0%": {
+						opacity: 0,
+					},
+					"100%": {
+						opacity: 1,
 					},
 				},
 			}}
 		>
-			<Box component="img" src={`${IMAGE_FOLDER}/gabs.webp`} alt="gabs image" />
-			<Box
-				sx={{
-					margin: "0 auto",
-					p: props.publicSale ? "1em 0" : "1em 2em",
-					display: "flex",
-					flexDirection: "column",
-					gap: "1em",
-					width: "100%",
-					maxWidth: props.publicSale ? "100%" : "40rem",
-					"& caption": {
-						color: colors.neonBlue,
-						fontFamily: "Share Tech",
-						fontSize: ".8rem",
-					},
-				}}
-			>
-				<Typography
+			<Stack gap="2em">
+				<Box
 					sx={{
-						fontFamily: "Share tech",
-						fontSize: "1.2rem",
-						textAlign: "center",
-						"@media (max-width:400px)": {
-							textAlign: "center",
+						alignSelf: "flex-end",
+						mr: "-5rem",
+						position: "relative",
+						width: "30px",
+						height: "30px",
+						cursor: "pointer",
+						"@media (max-width:800px)": {
+							mr: 0,
+						},
+					}}
+					onClick={() => props.setOpen(false)}
+				>
+					<Box
+						sx={{
+							display: "block",
+							position: "absolute",
+							top: "12px",
+							right: "5px",
+							transform: "rotate(45deg)",
+							"&::after": {
+								content: '""',
+								display: "block",
+								position: "absolute",
+								right: 0,
+								top: 0,
+								transform: "rotate(90deg)",
+							},
+
+							"&, &::after": {
+								position: "absolute",
+								width: "20px",
+								height: "4px",
+								background: colors.white,
+							},
+						}}
+					/>
+				</Box>
+				<ClipThing
+					border={{ isFancy: true, borderColor: colors.black }}
+					innerSx={{
+						background: colors.darkNavyBlue,
+						width: "90vw",
+						maxWidth: "35rem",
+
+						"&:focus": {
+							boxShadow: "none",
+						},
+
+						"& img": {
+							boxShadow: "1px 1px 1px 1px black",
+							width: "100%",
+							objectFit: "cover",
+							maxHeight: "20rem",
+							"@media (max-width:600px)": {
+								maxHeight: "15rem",
+							},
 						},
 					}}
 				>
-					To be whitelisted you must survive the simulation.
-				</Typography>
-
-				<FancyButton
-					fullWidth
-					onClick={async () => {
-						if (account)
-							if (mobileScreen || props.isTouchDevice) {
-								setSnackMessage({
-									message: "May not work on your mobile device, and is best accessed from a PC",
-									severity: "warning",
-								})
-							}
-						await props.handleJoinBtn()
-					}}
-					sx={{
-						fontSize: props.publicSale ? "1.5rem" : "1rem",
-					}}
-				>
-					Run simulation
-				</FancyButton>
-				{!props.publicSale && <CountdownTimer />}
-			</Box>
-		</Box>
+					<Box sx={{ background: colors.black2 }}>
+						<img src={IMAGE_FOLDER + "/gabs.webp"} alt="gabs ai" />
+						<Box
+							sx={{
+								p: "2em",
+								display: "flex",
+								flexDirection: "column",
+								gap: "2em",
+								"@media (max-width:600px)": {
+									gap: "1em",
+									p: "1em",
+								},
+								"& caption": {
+									color: colors.neonBlue,
+									fontFamily: "Share Tech",
+									fontSize: ".8rem",
+								},
+							}}
+						>
+							<SupFancyButton
+								onClick={async () => await props.handleJoinBtn()}
+								sx={{
+									fontSize: "1.5rem",
+									"@media (max-width:600px)": {
+										fontSize: "1rem",
+									},
+								}}
+							>
+								Run simulation
+							</SupFancyButton>
+						</Box>
+					</Box>
+				</ClipThing>
+			</Stack>
+		</Modal>
 	)
 }

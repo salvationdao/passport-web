@@ -17,7 +17,9 @@ import { colors } from "../theme"
 import { ExchangeRates, tokenName, tokenSelect } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
+import { MetaMaskLogin } from "./loginMetaMask"
 import { SaleConnectWallet } from "./supremacy/saleConnectWallet"
+import { SupFancyButton } from "./supremacy/supFancyButton"
 import { TokenSelect } from "./tokenSelect"
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
@@ -266,6 +268,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 								display: "flex",
 								flexDirection: "column",
 								justifyContent: "center",
+								background: publicSale ? colors.darkerNavyBackground : "unset",
 						  }
 				}
 			>
@@ -302,9 +305,19 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				}
 			>
 				<Typography variant="h3" sx={{ textTransform: "uppercase" }}>
-					{publicSale ? "Enter Whitelist Sale" : "Connect Your Wallet"}
+					{publicSale ? "Enter Token Sale" : "Connect Your Wallet"}
 				</Typography>
-				{publicSale ? <SaleConnectWallet /> : <ConnectWallet />}
+				{publicSale ? (
+					<MetaMaskLogin
+						render={(props) => (
+							<SupFancyButton onClick={props.onClick} loading={props.isProcessing} title="Connect Wallet" fullWidth>
+								Connect Wallet
+							</SupFancyButton>
+						)}
+					/>
+				) : (
+					<ConnectWallet />
+				)}
 			</Box>
 
 			{/* transferState */}
@@ -402,7 +415,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			{/* Purchase Sups Form */}
 			<Box
 				sx={{
-					p: publicSale ? ".5em 1em" : "unset",
+					background: publicSale ? colors.darkerNavyBlue : "unset",
+					p: publicSale ? "2em" : "unset",
 					"@media (max-width:600px)": {
 						p: "1rem",
 					},
@@ -412,7 +426,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 					sx={{
 						width: "90vw",
 						maxWidth: publicSale ? "25rem" : "550px",
-						p: "1em",
 						display: "flex",
 						flexDirection: "column",
 						justifyContent: "space-between",

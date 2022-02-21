@@ -1,3 +1,4 @@
+import { connect } from "http2"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import HubKey from "../keys"
@@ -42,7 +43,7 @@ export enum VerificationType {
  * A Container that handles Authorisation
  */
 export const AuthContainer = createContainer(() => {
-	const { metaMaskState, sign, signWalletConnect, account } = useWeb3()
+	const { metaMaskState, sign, signWalletConnect, account, connect } = useWeb3()
 	const admin = process.env.REACT_APP_BUILD_TARGET === "ADMIN"
 	const [user, setUser] = useState<User>()
 	const [authorised, setAuthorised] = useState(false)
@@ -169,32 +170,36 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Metamask public address
 	 */
 	const loginMetamask = useCallback(async () => {
-		if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return undefined
+		if (state !== WebSocket.OPEN) return undefined
 
 		try {
+			let resp: PasswordLoginResponse
+			if (!account) await connect()
 			const signature = await sign()
-			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
-				publicAddress: account,
-				signature,
-				sessionID,
-			})
-			if (!resp || !resp.user || !resp.token) {
-				localStorage.clear()
-				setUser(undefined)
-				return
-			}
-			setUser(resp.user)
-			localStorage.setItem("token", resp.token)
-			setAuthorised(true)
+			if (account) {
+				resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
+					publicAddress: account,
+					signature,
+					sessionID,
+				})
+				if (!resp || !resp.user || !resp.token) {
+					localStorage.clear()
+					setUser(undefined)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
 
-			return resp
+				return resp
+			}
 		} catch (e) {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
-	}, [send, state, account, metaMaskState, sign, sessionID])
+	}, [send, state, account, sign, sessionID, connect])
 
 	/**
 	 * Logs a User in using a Wallet Connect public address
