@@ -2,12 +2,28 @@ import WalletConnectProvider from "@walletconnect/web3-provider"
 import { BigNumber, ethers, Transaction } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
-import { BINANCE_CHAIN_ID, PURCHASE_ADDRESS, SUPS_CONTRACT_ADDRESS } from "../config"
+import {
+	BINANCE_CHAIN_ID,
+	PURCHASE_ADDRESS,
+	SUPS_CONTRACT_ADDRESS,
+	BSC_SCAN_SITE,
+	BUSD_CONTRACT_ADDRESS,
+	ETHEREUM_CHAIN_ID,
+	ETH_SCAN_SITE,
+	USDC_CONTRACT_ADDRESS,
+	WBNB_CONTRACT_ADDRESS,
+	WETH_CONTRACT_ADDRESS,
+} from "../config"
 import { supFormatter } from "../helpers/items"
 import { GetNonceResponse } from "../types/auth"
 import { useSnackbar } from "./snackbar"
 import { genericABI } from "./web3GenericABI"
 import { parseEther, TransactionTypes } from "ethers/lib/utils"
+import { tokenSelect } from "../types/types"
+import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
+import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
+import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
+import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -33,11 +49,52 @@ export enum web3Constants {
 	binanceChainId = 56,
 	goerliChainId = 5,
 	bscTestNetChainId = 97,
-	supsToUsdConversion = 0.12,
-	ethToUsdConversion = 2500,
-	bnbToUsdConversion = 375,
 	totalSaleSups = 217000000,
 }
+
+const tokenOptions: tokenSelect[] = [
+	{
+		name: "eth",
+		networkName: "Ethereum",
+		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		scanSite: ETH_SCAN_SITE,
+		tokenSrc: Ethereum,
+		chainSrc: Ethereum,
+		isNative: true,
+		contractAddr: WETH_CONTRACT_ADDRESS,
+	},
+	{
+		name: "usdc",
+		networkName: "Ethereum",
+		chainId: parseInt(ETHEREUM_CHAIN_ID),
+		scanSite: ETH_SCAN_SITE,
+		tokenSrc: Usdc,
+		chainSrc: Ethereum,
+		isNative: false,
+		contractAddr: USDC_CONTRACT_ADDRESS,
+	},
+	{
+		name: "bnb",
+		networkName: "Binance",
+		chainId: parseInt(BINANCE_CHAIN_ID),
+		scanSite: BSC_SCAN_SITE,
+		tokenSrc: BinanceCoin,
+		chainSrc: BinanceCoin,
+		isNative: true,
+		contractAddr: WBNB_CONTRACT_ADDRESS,
+	},
+
+	{
+		name: "busd",
+		networkName: "Binance",
+		chainId: parseInt(BINANCE_CHAIN_ID),
+		scanSite: BSC_SCAN_SITE,
+		tokenSrc: BinanceUSD,
+		chainSrc: BinanceCoin,
+		isNative: false,
+		contractAddr: BUSD_CONTRACT_ADDRESS,
+	},
+]
 
 /**
  * A Container that handles Web3
@@ -51,6 +108,7 @@ export const Web3Container = createContainer(() => {
 	const [account, setAccount] = useState<string>()
 	const [currentChainId, setCurrentChainId] = useState<number>()
 	const [supBalance, setSupBalance] = useState<BigNumber>()
+	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -439,6 +497,9 @@ export const Web3Container = createContainer(() => {
 		supBalance,
 		wcConnect,
 		signWalletConnect,
+		tokenOptions,
+		currentToken,
+		setCurrentToken,
 	}
 })
 

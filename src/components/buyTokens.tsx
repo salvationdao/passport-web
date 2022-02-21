@@ -6,27 +6,14 @@ import { formatUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
 import Arrow from "../assets/images/arrow.png"
 import BWSupToken from "../assets/images/BW-sup-token.png"
-import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
-import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
-import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
-import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import SupsToken from "../assets/images/sup-token.svg"
-import {
-	BINANCE_CHAIN_ID,
-	BSC_SCAN_SITE,
-	BUSD_CONTRACT_ADDRESS,
-	ETHEREUM_CHAIN_ID,
-	ETH_SCAN_SITE,
-	USDC_CONTRACT_ADDRESS,
-	WBNB_CONTRACT_ADDRESS,
-	WETH_CONTRACT_ADDRESS,
-} from "../config"
+import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { ExchangeRates, tokenName, tokenSelect } from "../types/types"
+import { ExchangeRates, tokenName } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { TokenSelect } from "./tokenSelect"
@@ -35,10 +22,10 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC = () => {
 	const { subscribe, state } = useWebsocket()
-	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState, supBalance } = useWeb3()
+	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState, supBalance, setCurrentToken, currentToken, tokenOptions } =
+		useWeb3()
 	const theme = useTheme()
 
-	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
 	const [selectedTokenName, setSelectedTokenName] = useState<tokenName>("eth")
 	const [tokenValue, setTokenValue] = useState<string>("")
 	const [supsValue, setSupsValue] = useState<string>("")
@@ -528,10 +515,10 @@ export const BuyTokens: React.FC = () => {
 											</Typography>
 										</Box>
 										<Typography sx={{ color: colors.darkGrey }} variant="body1">
-											XSYN Balance: <b>{userSups ? formatUnits(BigNumber.from(userSups), 18) : "--"}</b>
+											XSYN Balance: <b>{userSups ? parseFloat(formatUnits(BigNumber.from(userSups), 18)).toFixed(2) : "--"}</b>
 										</Typography>
 										<Typography sx={{ color: colors.darkGrey }} variant="body1">
-											Wallet Balance: <b>{supBalance ? formatUnits(supBalance, 18) : "--"}</b>
+											Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, 18)).toFixed(2) : "--"}</b>
 										</Typography>
 									</Box>
 								</Box>
@@ -614,47 +601,3 @@ export const BuyTokens: React.FC = () => {
 		</Box>
 	)
 }
-
-const tokenOptions: tokenSelect[] = [
-	{
-		name: "eth",
-		networkName: "Ethereum",
-		chainId: parseInt(ETHEREUM_CHAIN_ID),
-		scanSite: ETH_SCAN_SITE,
-		tokenSrc: Ethereum,
-		chainSrc: Ethereum,
-		isNative: true,
-		contractAddr: WETH_CONTRACT_ADDRESS,
-	},
-	{
-		name: "usdc",
-		networkName: "Ethereum",
-		chainId: parseInt(ETHEREUM_CHAIN_ID),
-		scanSite: ETH_SCAN_SITE,
-		tokenSrc: Usdc,
-		chainSrc: Ethereum,
-		isNative: false,
-		contractAddr: USDC_CONTRACT_ADDRESS,
-	},
-	{
-		name: "bnb",
-		networkName: "Binance",
-		chainId: parseInt(BINANCE_CHAIN_ID),
-		scanSite: BSC_SCAN_SITE,
-		tokenSrc: BinanceCoin,
-		chainSrc: BinanceCoin,
-		isNative: true,
-		contractAddr: WBNB_CONTRACT_ADDRESS,
-	},
-
-	{
-		name: "busd",
-		networkName: "Binance",
-		chainId: parseInt(BINANCE_CHAIN_ID),
-		scanSite: BSC_SCAN_SITE,
-		tokenSrc: BinanceUSD,
-		chainSrc: BinanceCoin,
-		isNative: false,
-		contractAddr: BUSD_CONTRACT_ADDRESS,
-	},
-]
