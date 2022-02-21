@@ -155,7 +155,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		}
 	}, [handleConversions, tokenAmt])
 
-	const getCurrentBalance = async (token: tokenSelect) => {
+	const getCurrentBalance = useCallback(async (token: tokenSelect) => {
 		try {
 			if (token.isNative) {
 				const response = await getBalance(null)
@@ -171,7 +171,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		} finally {
 			setLoading(false)
 		}
-	}
+	}, [])
 
 	//getting user balance
 	useEffect(() => {
@@ -180,7 +180,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		;(async () => {
 			getCurrentBalance(currentToken)
 		})()
-	}, [currentToken, getBalance])
+	}, [currentToken, getBalance, getCurrentBalance])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
