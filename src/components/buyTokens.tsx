@@ -61,6 +61,7 @@ export const BuyTokens: React.FC = () => {
 				return
 			}
 			if (currentToken.isNative && exchangeRates) {
+				console.log(currentToken)
 				switch (selectedTokenName) {
 					case "bnb":
 						switch (direction) {
@@ -147,7 +148,7 @@ export const BuyTokens: React.FC = () => {
 			try {
 				const response = await getBalance(currentToken.contractAddr)
 				if (response) {
-					const balance = parseFloat(response)
+					const balance = parseFloat(ethers.utils.formatUnits(response, 18))
 					if (!balance) return
 					setUserBalance(balance)
 				}

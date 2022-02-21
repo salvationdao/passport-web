@@ -371,11 +371,12 @@ export const Web3Container = createContainer(() => {
 	const getBalance = useCallback(
 		async (contractAddress: string) => {
 			try {
-				if (!provider || !account || contractAddress === "") throw new Error("wallet not connected")
+				if (!provider || !account || contractAddress === "") return
 				const contract = new ethers.Contract(contractAddress, genericABI, provider)
 				return contract.balanceOf(account)
 			} catch (error) {
 				displayMessage("Couldn't get contract balance, please try again.", "error")
+				console.log(error)
 			}
 		},
 		[provider, account, displayMessage],
