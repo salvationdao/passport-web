@@ -150,9 +150,10 @@ export const BuyTokens: React.FC = () => {
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
-			if (rates.BNBtoUSD === 0 || rates.ETHtoUSD === 0 || rates.SUPtoUSD === 0) {
-				return
-			}
+			if (rates)
+				if (rates.BNBtoUSD === 0 || rates.ETHtoUSD === 0 || rates.SUPtoUSD === 0) {
+					return
+				}
 			setExchangeRates(rates)
 		})
 	}, [subscribe, state])

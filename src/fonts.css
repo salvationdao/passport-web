@@ -12,6 +12,10 @@
 	src: url("./assets/fonts/nostromo-regular/NostromoRegular-Black.otf");
 }
 @font-face {
+	font-family: "Nostromo Regular Heavy";
+	src: url("./assets/fonts/nostromo-regular/NostromoRegular-Heavy.otf");
+}
+@font-face {
 	font-family: "Nostromo Regular Bold";
 	src: url("./assets/fonts/nostromo-regular/NostromoRegular-Bold.otf");
 }

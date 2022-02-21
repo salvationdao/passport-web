@@ -20,6 +20,7 @@ const CountdownSection = styled(Box)({
 	alignItems: "center",
 	textTransform: "uppercase",
 	fontSize: "1.5rem",
+	fontFamily: "Nostromo Regular Black",
 	"@media (max-width:1440px)": {
 		fontSize: "2.5vmin",
 	},
