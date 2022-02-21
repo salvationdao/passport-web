@@ -110,10 +110,10 @@ export const BuyTokens: React.FC = () => {
 				}
 			}
 		},
-		[currentToken, exchangeRates],
+		[currentToken, exchangeRates, selectedTokenName],
 	)
 
-	//handles netowrk switch and default network token
+	// handles network switch and default network token name
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
 			const filteredArr = tokenOptions.filter((x) => {
@@ -133,16 +133,15 @@ export const BuyTokens: React.FC = () => {
 		} else {
 			setSelectedTokenName(tokenOptions[0].name)
 		}
-	}, [currentChainId, acceptedChainExceptions])
+	}, [currentChainId, acceptedChainExceptions, selectedTokenName, tokenOptions])
 
 	//handles token switch from drop down
 	useEffect(() => {
 		const filteredArr = tokenOptions.filter((x) => {
 			return x.name === selectedTokenName
 		})
-		const newToken = filteredArr[0]
-		setCurrentToken(newToken)
-	}, [selectedTokenName])
+		setCurrentToken(filteredArr[0])
+	}, [selectedTokenName, setCurrentToken, tokenOptions])
 
 	useEffect(() => {
 		getCurrentBalance(currentToken)
@@ -396,7 +395,7 @@ export const BuyTokens: React.FC = () => {
 			{/* Purchase Sups Form */}
 			<Box
 				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none"
+					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none" && metaMaskState === MetaMaskState.Active
 						? {
 								padding: {
 									xs: "1rem",
