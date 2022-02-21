@@ -8,6 +8,7 @@ import { useContainer } from "unstated-next"
 import Arrow from "../assets/images/arrow.png"
 import SupsToken from "../assets/images/sup-token.svg"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
+import { useAuth } from "../containers/auth"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { AppState } from "../containers/supremacy/app"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -26,6 +27,7 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
 	const { subscribe, state } = useWebsocket()
+	const { user } = useAuth()
 	const {
 		changeChain,
 		currentChainId,
@@ -286,7 +288,22 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			{/* Metamask Connection */}
 			<Box
 				sx={
-					metaMaskState === MetaMaskState.Active
+					publicSale && !user
+						? {
+								position: "absolute",
+								zIndex: "5",
+								padding: "1rem",
+								height: "100%",
+								width: "100%",
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+								alignItems: "center",
+								gap: "1em",
+
+								background: publicSale ? colors.darkerNavyBackground : "unset",
+						  }
+						: metaMaskState === MetaMaskState.Active
 						? { display: "none" }
 						: {
 								position: "absolute",
@@ -309,6 +326,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				</Typography>
 				{publicSale ? (
 					<MetaMaskLogin
+						publicSale={publicSale}
 						render={(props) => (
 							<SupFancyButton onClick={props.onClick} loading={props.isProcessing} title="Connect Wallet" fullWidth>
 								Connect Wallet

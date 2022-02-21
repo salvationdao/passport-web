@@ -12,12 +12,13 @@ interface MetaMaskLoginButtonRenderProps {
 }
 
 interface LoginMetaMaskProps {
+	publicSale?: boolean
 	onFailure?: (err: string) => void
 	onClick?: () => Promise<boolean> // return false to stop login
 	render: (props: MetaMaskLoginButtonRenderProps) => JSX.Element
 }
 
-export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ onFailure, onClick, render }) => {
+export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ publicSale, onFailure, onClick, render }) => {
 	const { loginMetamask, loginWalletConnect } = AuthContainer.useContainer()
 	const { metaMaskState, connect } = useWeb3()
 	const { displayMessage } = useSnackbar()
@@ -30,8 +31,11 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 				displayMessage("Please refer to your wallet for authentication")
 				const resp = await loginWalletConnect()
 				if (!resp || !resp.isNew) return
-				history.push("/onboarding?skip_username=true")
+				{
+					!publicSale && history.push("/onboarding?skip_username=true")
+				}
 			} catch (e) {
+				setIsProcessing(false)
 				if (onFailure) {
 					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
 				}
@@ -43,7 +47,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			try {
 				const resp = await loginMetamask()
 				if (!resp || !resp.isNew) return
-				history.push("/onboarding?skip_username=true")
+				!publicSale && history.push("/onboarding?skip_username=true")
 			} catch (e) {
 				setIsProcessing(false)
 				if (onFailure) {
@@ -54,7 +58,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 		}
 
 		setIsProcessing(false)
-	}, [onFailure, history, loginMetamask, metaMaskState, onClick, connect, loginWalletConnect])
+	}, [onFailure, history, loginMetamask, metaMaskState, onClick, connect, loginWalletConnect, publicSale])
 
 	const propsForRender = useMemo(
 		() => ({
