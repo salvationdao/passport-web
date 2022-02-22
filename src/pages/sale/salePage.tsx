@@ -22,7 +22,7 @@ export const SalePage = () => {
 	const { showSimulation, setShowSimulation } = useAuth()
 	const { account, checkNeoBalance, amountRemaining } = useWeb3()
 	const [disableSimulation, setDisableSimulation] = useState(false)
-	const [countdown, setCountdown] = useState(new Date())
+	const [countdown, setCountdown] = useState<Date | undefined>()
 	const [loading, setLoading] = useState(true)
 
 	// Game state
@@ -45,19 +45,21 @@ export const SalePage = () => {
 	}
 
 	const fetchTime = useCallback(async () => {
-		const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
-		const data = (await response.clone().json()) as WhitelistTime
-		if (!data.next_phase.includes("whitelist")) setDisableSimulation(true)
-		return new Date(data.time)
-	}, [])
+		try {
+			const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
+			const data = (await response.clone().json()) as WhitelistTime
+			if (!data.next_phase.includes("death")) setDisableSimulation(true)
 
-	useEffect(() => {
-		;(async () => {
-			const endDate = await fetchTime()
+			const endDate = new Date(data.time)
 			setCountdown(endDate)
-		})()
+		} catch (err) {
+			console.error(err)
+			setCountdown(undefined)
+		}
+	}, [])
+	useEffect(() => {
+		;(async () => await fetchTime())()
 	}, [fetchTime])
-
 	return (
 		<>
 			<Helmet>
@@ -118,6 +120,7 @@ export const SalePage = () => {
 				<>
 					<Loading loading={loading} setLoading={setLoading} />
 					<SupremacyNavbar loading={loading} />
+					{!disableSimulation && <WhiteListModal open={showSimulation} setOpen={setShowSimulation} handleJoinBtn={handleJoinBtn} />}
 					<Box
 						sx={{
 							opacity: loading ? 0 : 1,
@@ -132,7 +135,7 @@ export const SalePage = () => {
 								justifyContent: "center",
 								minHeight: "100vh",
 								alignItems: "center",
-								gap: "1em",
+								gap: "4em",
 								px: "2em",
 							}}
 						>
@@ -215,9 +218,8 @@ export const SalePage = () => {
 											</Typography>
 										</Box>
 									</Box>
-									<CountdownTimer date={countdown} publicSale />
+									{countdown && <CountdownTimer date={countdown} publicSale />}
 								</Stack>
-								{!disableSimulation && <WhiteListModal open={showSimulation} setOpen={setShowSimulation} handleJoinBtn={handleJoinBtn} />}
 								<BuyTokens publicSale />
 							</Box>
 						</Stack>
@@ -241,6 +243,7 @@ const Title = styled("h1")({
 
 const SubHeading = styled("span")({
 	fontFamily: "Nostromo Regular Heavy",
+	fontWeight: 800,
 	fontSize: "1.5rem",
 	color: colors.gold,
 	textAlign: "center",
@@ -273,7 +276,7 @@ const FancyLinearProgress = styled(LinearProgress)({
 	clipPath: `polygon(0 0, calc(100% - 1rem) 0%, 100% 1rem, 100% 100%, 1rem 100%, 0% calc(100% - 1rem))`,
 	backgroundColor: "rgba(0, 136, 136, 0.4)",
 	"&>span": {
-		backgroundColor: "rgba(43,233,253,0.8)",
+		backgroundColor: "rgba(43,233,253,0.5)",
 		animation: " 2s linear infinite forwards shimmer",
 		"&::after": {
 			content: "''",
@@ -285,15 +288,23 @@ const FancyLinearProgress = styled(LinearProgress)({
 			height: "100%",
 			transition: "all .5s",
 			animation: " 2s linear infinite forwards shimmer",
-			background: "linear-gradient(90deg, rgba(43,233,253,0.7) 3%, rgba(55,225,255,1) 49%, rgba(0,182,255,0.7) 100%)",
+			background:
+				"linear-gradient(90deg, rgba(43,233,253,0.9) 0%, rgba(55,185,255,.5) 49%, rgba(43,233,253,0.5) 55%, rgba(0,182,255,0.5) 80% , rgba(43,233,253,0.9) 100%)",
 			"@keyframes shimmer": {
-				from: {
-					width: "98%",
+				"0%": {
 					backgroundPosition: "-100px 0",
 				},
-				to: {
-					width: "100%",
+				"20%": {
+					backgroundPosition: "0px 0",
+				},
+				"50%": {
+					backgroundPosition: "100px 0",
+				},
+				"70%": {
 					backgroundPosition: "200px 0",
+				},
+				"100%": {
+					backgroundPosition: "300px 0",
 				},
 			},
 		},

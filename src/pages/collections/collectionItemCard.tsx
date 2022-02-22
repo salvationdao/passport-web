@@ -2,26 +2,13 @@ import SearchIcon from "@mui/icons-material/Search"
 import { Box, BoxProps, Skeleton, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Asset } from "../../types/types"
-import { Rarity } from "../store/storeItemCard"
-
-const rarityTextStyles: { [key in Rarity]: any } = {
-	Common: {
-		color: colors.rarity.common,
-	},
-	Rare: {
-		color: colors.rarity.rare,
-	},
-	Legendary: {
-		color: colors.rarity.legendary,
-		textShadow: `0 0 2px ${colors.rarity.legendary}`,
-	},
-}
-
+import { Rarity, rarityTextStyles } from "../profile/profile"
 export interface CollectionItemCardProps {
 	tokenID: number
 	username: string
@@ -31,6 +18,21 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<Asset>()
+	const [showPreview, setShowPreview] = useState(false)
+	const [noAsset, setNoAsset] = useState<boolean>(false) //used if asset doesn't exist in our metadata (shouldn't happen, fixes local dev stuff)
+
+	useEffect(() => {
+		;(async () => {
+			try {
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${tokenID}`)
+				if (!resp.ok || resp.status !== 200) {
+					setNoAsset(true)
+				}
+			} catch (e) {
+				setNoAsset(true)
+			}
+		})()
+	}, [history, tokenID])
 
 	useEffect(() => {
 		if (!subscribe) return
@@ -43,6 +45,8 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 		)
 	}, [subscribe, tokenID])
 
+	if (noAsset) return <></>
+
 	if (!item) {
 		return <CollectionItemCardSkeleton />
 	}
@@ -51,6 +55,10 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 		<Box
 			component="button"
 			onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}
+			onMouseOver={() => setShowPreview(true)}
+			onMouseLeave={() => setShowPreview(false)}
+			onFocus={() => setShowPreview(true)}
+			onBlur={() => setShowPreview(false)}
 			sx={{
 				position: "relative",
 				display: "flex",
@@ -89,14 +97,44 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 
 			{/* image */}
 			<Box
-				component="img"
-				src={item.image}
-				alt="Mech image"
 				sx={{
-					width: "100%",
-					marginBottom: ".3rem",
+					position: "relative",
 				}}
-			/>
+			>
+				<Box
+					component="img"
+					src={item.image}
+					alt="Mech image"
+					sx={{
+						width: "100%",
+						marginBottom: ".3rem",
+						visibility: item.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
+						opacity: item.animation_url ? (showPreview ? 0 : 1) : "visible",
+						transition: "all .2s ease-in",
+					}}
+				/>
+				{item.animation_url && (
+					<Box
+						component="video"
+						sx={{
+							position: "absolute",
+							top: "50%",
+							left: "50%",
+							width: "120%",
+							transform: "translate(-50%, -50%)",
+							visibility: showPreview ? "visible" : "hidden",
+							opacity: showPreview ? 1 : 0,
+							transition: "all .2s ease-in",
+						}}
+						muted
+						autoPlay
+						loop
+						tabIndex={-1}
+					>
+						<source src={item.animation_url} type="video/webm"></source>
+					</Box>
+				)}
+			</Box>
 			<Typography
 				variant="body1"
 				sx={{

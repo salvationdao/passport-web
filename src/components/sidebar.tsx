@@ -6,8 +6,8 @@ import LogoutIcon from "@mui/icons-material/Logout"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
 import { Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
-import { BigNumber } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
+import { BigNumber } from "ethers"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
@@ -29,7 +29,8 @@ import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
-import { BATTLE_ARENA_LINK, API_ENDPOINT_HOSTNAME } from "../config"
+import { BATTLE_ARENA_LINK, API_ENDPOINT_HOSTNAME, TOKEN_SALE_ENDPOINT } from "../config"
+import { supFormatter } from "../helpers/items"
 
 const drawerWidth = 250
 
@@ -191,7 +192,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						<Box sx={{ display: "flex", alignItems: "center", width: "100%", marginBottom: ".2rem" }}>
 							<SportsEsportsIcon sx={{ fontSize: "1.2rem", color: colors.darkGrey }} />
 							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: " 0 .5rem" }} />
-							<Typography variant="body1">{xsynSups ? parseFloat(formatUnits(xsynSups, 18)).toFixed(2) : "--"}</Typography>
+							<Typography variant="body1">{xsynSups ? supFormatter(xsynSups.toString()) : "--"}</Typography>
 						</Box>
 
 						<Divider />
@@ -211,14 +212,14 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 								<MetaMaskIcon height={"1.2rem"} width={"1.2rem"} />
 							)}
 							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: "0 .5rem" }} />
-							<Typography variant="body1">{walletSups ? parseFloat(walletSups).toFixed(2) : "--"}</Typography>
+							<Typography variant="body1">{walletSups ? supFormatter(walletSups) : "--"}</Typography>
 						</Box>
 					</Box>
 				</Box>
 				<Box>
 					<FancyButton
 						onClick={() => {
-							window.open("https://sale.supremacy.game", "_blank")?.focus()
+							window.open(TOKEN_SALE_ENDPOINT, "_blank")?.focus()
 						}}
 						borderColor={colors.skyBlue}
 						sx={{ width: "100%", marginTop: "1rem" }}

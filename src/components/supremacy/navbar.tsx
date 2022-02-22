@@ -7,6 +7,7 @@ import Logo from "../../assets/images/supremacy-white.svg"
 import { IMAGE_FOLDER, NAVBAR_HEIGHT } from "../../pages/sale/salePage"
 import { colors } from "../../theme"
 import { HamburgerNav } from "./hamburgerNav"
+import { TOKEN_SALE_ENDPOINT } from "../../config"
 
 const LogoLink = styled("a")({
 	"& img": {
@@ -128,7 +129,7 @@ export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (pr
 	const navbarPaths: { label: string; path: string; newTab?: boolean }[] = [
 		{
 			label: "token sale",
-			path: "https://sale.supremacy.game/",
+			path: TOKEN_SALE_ENDPOINT,
 		},
 		{
 			label: "utility token",

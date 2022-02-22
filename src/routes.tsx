@@ -7,6 +7,7 @@ import { Sidebar } from "./components/sidebar"
 import { useAuth } from "./containers/auth"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
+import { AssetRedirectPage } from "./pages/assetRedirect"
 import { LoginPage } from "./pages/auth/login"
 import { LogoutPage } from "./pages/auth/logout"
 import { PassportReady } from "./pages/auth/onboarding"
@@ -14,7 +15,6 @@ import { SignUpPage } from "./pages/auth/signup"
 import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
 import { CollectionPage } from "./pages/collections/collection"
-import { CollectionItemPage } from "./pages/collections/collectionItem"
 import { CollectionsPage } from "./pages/collections/collections"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
@@ -131,16 +131,13 @@ export const Routes = () => {
 							<Route path="/sale">
 								<SalePage />
 							</Route>
-							<Route path="/battle_arena">
+							<Route path="/battle_arena">`
 								<BattleArenaPage />
 							</Route>
 						</Switch>
 
 						{/* collections */}
 						<Switch>
-							<Route path="/collections/:username/:collection_name/:token_id">
-								<CollectionItemPage />
-							</Route>
 							<Route path="/collections/:username/:collection_name">
 								<CollectionPage />
 							</Route>
@@ -148,6 +145,10 @@ export const Routes = () => {
 								<CollectionsPage />
 							</Route>
 						</Switch>
+
+						<Route path="/asset/:token_id">
+							<AssetRedirectPage />
+						</Route>
 					</Sidebar>
 				</Switch>
 			</BrowserRouter>

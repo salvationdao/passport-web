@@ -69,17 +69,17 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 
 	useInterval(() => {
 		const seconds = differenceInSeconds(date, Date.now())
-		var d = Math.floor(seconds / (3600 * 24))
-		var h = Math.floor((seconds % (3600 * 24)) / 3600)
-		var m = Math.floor((seconds % 3600) / 60)
-		var s = Math.floor(seconds % 60)
+		const d = Math.floor(seconds / (3600 * 24))
+		const h = Math.floor((seconds % (3600 * 24)) / 3600)
+		const m = Math.floor((seconds % 3600) / 60)
+		const s = Math.floor(seconds % 60)
 		setRemaining({
 			d,
 			h,
 			m,
 			s,
 		})
-		if (date != new Date() && publicSale && seconds <= 0) {
+		if (date && publicSale && seconds <= 0) {
 			history.go(0)
 		}
 	}, 1000)
@@ -100,7 +100,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 					justifyContent: "center",
 					gridTemplateColumns: "repeat(4, 3rem)",
 					"& div": {
-						fontSize: publicSale ? "3vmin" : "unset",
+						fontSize: publicSale ? "2.5vmin" : "unset",
 						"@media (max-width:600px)": {
 							fontSize: "5vmin",
 						},
