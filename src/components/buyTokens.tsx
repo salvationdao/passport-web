@@ -453,7 +453,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 										src={Arrow}
 										alt="token image"
 										sx={{
-											height: "3.5rem",
+											height: "3rem",
 											position: "absolute",
 											top: "38%",
 											left: "50%",

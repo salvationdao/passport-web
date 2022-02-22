@@ -48,7 +48,6 @@ export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 
 	useEffect(() => {
 		const fallBackPlayVideo = () => {
-			if (videoLoading) setVideoLoading(false)
 			if (videoRef.current.played.length === 0) {
 				videoRef.current.play()
 			}
@@ -67,7 +66,7 @@ export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 		return () => {
 			clearTimeout(fallback)
 		}
-	}, [videoLoading])
+	}, [loading])
 
 	useEffect(() => {
 		videoRef.current.addEventListener(
