@@ -49,6 +49,8 @@ jobs:
 
       - name: Set prerelease tag and push tag
         run: |
+          git config --global url."https://github.com/".insteadOf
+          ssh://git@github.com/
           git config --global user.name "Github CI"
           git config --global user.email "team@syndicate.ninja"
           npm version prerelease --allow-same-version --preid rc
