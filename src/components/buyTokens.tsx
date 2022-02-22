@@ -424,7 +424,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={{
 						width: "90vw",
-						maxWidth: publicSale ? "30rem" : "550px",
+						maxWidth: publicSale ? "25rem" : "550px",
 						"@media (max-width:480px)": {
 							maxWidth: "24rem",
 						},
@@ -628,10 +628,10 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 									</Box>
 								</Stack>
 								<Box>
-									<Typography sx={{ color: colors.darkGrey }} variant="body1">
+									<Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
 										XSYN Balance: <b>{userSups ? parseFloat(formatUnits(BigNumber.from(userSups), 18)).toFixed(2) : "--"}</b>
 									</Typography>
-									<Typography sx={{ color: colors.darkGrey }} variant="body1">
+									<Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
 										Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, 18)).toFixed(2) : "--"}</b>
 									</Typography>
 								</Box>
