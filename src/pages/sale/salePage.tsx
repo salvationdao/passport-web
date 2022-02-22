@@ -145,11 +145,8 @@ export const SalePage = () => {
 									sx={{
 										position: "absolute",
 										top: "50%",
-										transform: `translate(-100%,-50%)`,
-										left:
-											100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100 < 40
-												? "75%"
-												: `${100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100}%`,
+										transform: `translate(-50%,-50%)`,
+										left: "50%",
 										display: "flex",
 										alignItems: "center",
 										pr: ".5em",
