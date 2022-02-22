@@ -138,7 +138,8 @@ export const WhiteListModal = (props: Props) => {
 								}}
 							>
 								{" "}
-								You are not in the whitelist. Survive to join.
+								You are not in the whitelist
+								<br /> Survive to join
 							</Typography>
 							<SupFancyButton
 								onClick={async () => await props.handleJoinBtn()}

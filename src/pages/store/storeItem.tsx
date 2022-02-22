@@ -15,6 +15,7 @@ import { colors, fonts } from "../../theme"
 import { Attribute, StoreItem } from "../../types/types"
 import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
 
+
 export const StoreItemPage = () => {
 	const { store_item_id: id } = useParams<{ store_item_id: string }>()
 	const history = useHistory()
