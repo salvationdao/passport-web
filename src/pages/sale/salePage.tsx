@@ -273,7 +273,7 @@ const FancyLinearProgress = styled(LinearProgress)({
 	clipPath: `polygon(0 0, calc(100% - 1rem) 0%, 100% 1rem, 100% 100%, 1rem 100%, 0% calc(100% - 1rem))`,
 	backgroundColor: "rgba(0, 136, 136, 0.4)",
 	"&>span": {
-		backgroundColor: "rgba(43,233,253,0.8)",
+		backgroundColor: "rgba(43,233,253,0.5)",
 		animation: " 2s linear infinite forwards shimmer",
 		"&::after": {
 			content: "''",
@@ -285,15 +285,14 @@ const FancyLinearProgress = styled(LinearProgress)({
 			height: "100%",
 			transition: "all .5s",
 			animation: " 2s linear infinite forwards shimmer",
-			background: "linear-gradient(90deg, rgba(43,233,253,0.7) 3%, rgba(55,225,255,1) 49%, rgba(0,182,255,0.7) 100%)",
+			background:
+				"linear-gradient(90deg, rgba(43,233,253,0.9) 0%, rgba(55,185,255,.5) 49%, rgba(43,233,253,0.5) 55%, rgba(0,182,255,0.5) 80% , rgba(43,233,253,0.9) 100%)",
 			"@keyframes shimmer": {
 				from: {
-					width: "98%",
 					backgroundPosition: "-100px 0",
 				},
 				to: {
-					width: "100%",
-					backgroundPosition: "200px 0",
+					backgroundPosition: "300px 0",
 				},
 			},
 		},
