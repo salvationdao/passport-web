@@ -38,10 +38,11 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		setCurrentToken,
 		currentToken,
 		tokenOptions,
+		account,
 	} = useWeb3()
 	const theme = useTheme()
 	const { amountRemaining, setAmountRemaining } = useContainer(AppState)
-
+	const [showWalletNag, setShowWalletNag] = useState<boolean>(false)
 	const [tokenAmt, setTokenAmt] = useState<BigNumber>(BigNumber.from(0))
 	const [supsAmt, setSupsAmt] = useState<BigNumber>(BigNumber.from(0))
 	const [tokenDisplay, setTokenDisplay] = useState<string | null>(null)
@@ -293,9 +294,20 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 					<MetaMaskLogin
 						publicSale={publicSale}
 						render={(props) => (
-							<SupFancyButton onClick={props.onClick} loading={props.isProcessing} title="Connect Wallet" fullWidth>
-								Connect Wallet
-							</SupFancyButton>
+							<>
+								<SupFancyButton
+									onClick={(e) => {
+										props.onClick(e)
+										setShowWalletNag(true)
+									}}
+									loading={props.isProcessing}
+									title="Connect Wallet"
+									fullWidth
+								>
+									Connect Wallet
+								</SupFancyButton>
+								{!account && showWalletNag ? "Check your wallet for a login notification" : null}
+							</>
 						)}
 					/>
 				) : (

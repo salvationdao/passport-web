@@ -128,7 +128,7 @@ export const Web3Container = createContainer(() => {
 	useEffect(() => {
 		updateNativeBalance()
 		updateStableBalance()
-	}, [provider, currentChainId])
+	}, [provider, currentChainId, account])
 
 	const handleChainChange = useCallback((chainId: string) => {
 		setCurrentChainId(parseInt(chainId))
@@ -209,15 +209,11 @@ export const Web3Container = createContainer(() => {
 			if (accounts.length > 0) {
 				setAccount(accounts[0])
 				setMetaMaskState(MetaMaskState.Active)
-				updateNativeBalance()
-				updateStableBalance()
 			}
 		})
 		// Subscribe to chainId change
 		walletConnectProvider.on("chainChanged", (chainId: number) => {
 			setCurrentChainId(chainId)
-			updateNativeBalance()
-			updateStableBalance()
 		})
 		// Subscribe to session disconnection
 		walletConnectProvider.on("disconnect", (code: number, reason: string) => {
@@ -229,40 +225,60 @@ export const Web3Container = createContainer(() => {
 		return walletConnectProvider
 	}, [])
 	const updateNativeBalance = async () => {
-		// console.log("1")
-		if (!provider) {
-			return
+		try {
+			console.log("1")
+			if (!provider) {
+				return
+			}
+			if (!currentChainId) {
+				return
+			}
+			if (!account) {
+				return
+			}
+			console.log("2")
+			const signer = provider.getSigner()
+			if (!signer) {
+				return
+			}
+			console.log({ signer: await signer.getAddress() })
+			const bal = await signer.getBalance()
+			if (!bal) {
+				setStableBalance(BigNumber.from(0))
+				return
+			}
+			setNativeBalance(bal)
+		} catch (e) {
+			console.error(e)
 		}
-		// console.log("2")
-		const signer = provider.getSigner(0)
-		// console.log({ signer: await signer.getAddress() })
-		const bal = await signer.getBalance()
-		if (!bal) {
-			setStableBalance(BigNumber.from(0))
-			return
-		}
-		setNativeBalance(bal)
 	}
 	// console.log({ provider, wcProvider, currentChainId })
 	const updateStableBalance = async () => {
-		if (!provider) {
-			return
+		try {
+			if (!provider) {
+				return
+			}
+			if (!currentChainId) {
+				return
+			}
+			if (!account) {
+				return
+			}
+			let erc20Addr = USDC_CONTRACT_ADDRESS
+			if (currentChainId == web3Constants.binanceChainId || currentChainId == web3Constants.bscTestNetChainId) {
+				erc20Addr = BUSD_CONTRACT_ADDRESS
+			}
+			console.log({ currentChainId, erc20Addr })
+			const contract = new ethers.Contract(erc20Addr, genericABI, provider)
+			const bal = await contract.balanceOf(account)
+			if (!bal) {
+				setStableBalance(BigNumber.from(0))
+				return
+			}
+			setStableBalance(bal)
+		} catch (e) {
+			console.error(e)
 		}
-		if (!currentChainId) {
-			return
-		}
-		let erc20Addr = USDC_CONTRACT_ADDRESS
-		if (currentChainId == web3Constants.binanceChainId || currentChainId == web3Constants.bscTestNetChainId) {
-			erc20Addr = BUSD_CONTRACT_ADDRESS
-		}
-		console.log({ currentChainId, erc20Addr })
-		const contract = new ethers.Contract(erc20Addr, genericABI, provider)
-		const bal = await contract.balanceOf(account)
-		if (!bal) {
-			setStableBalance(BigNumber.from(0))
-			return
-		}
-		setStableBalance(bal)
 	}
 
 	useEffect(() => {
