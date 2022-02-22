@@ -3,13 +3,14 @@ import { Box, Fade, IconButton, Popover, Stack, Typography } from "@mui/material
 import React, { useCallback, useState } from "react"
 import { SupTokenIconPath } from "../../assets"
 import { useSnackbar } from "../../containers/snackbar"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../../containers/socket"
+import {  useWebsocket } from "../../containers/socket"
 import useSubscription from "../../hooks/useSubscription"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { DetailedFaction, Faction } from "../../types/types"
 import { ClipThing } from "./clipThing"
 import { FancyButton } from "./fancyButton"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 
 interface StatProps {
 	title: string

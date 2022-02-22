@@ -31,9 +31,10 @@ import {
 } from "../types/auth"
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
+import { useWebsocket } from "./socket"
 import { useSupremacyApp } from "./supremacy/app"
 import { MetaMaskState, useWeb3 } from "./web3"
+import { API_ENDPOINT_HOSTNAME } from "../config"
 
 export enum VerificationType {
 	EmailVerification,
@@ -46,7 +47,6 @@ export enum VerificationType {
 export const AuthContainer = createContainer(() => {
 	const { metaMaskState, sign, signWalletConnect, account, connect } = useWeb3()
 	const { checkWhitelist, setIsWhitelisted, setShowSimulation } = useSupremacyApp()
-	const admin = process.env.REACT_APP_BUILD_TARGET === "ADMIN"
 	const [user, setUser] = useState<User>()
 	const [authorised, setAuthorised] = useState(false)
 	const [reconnecting, setReconnecting] = useState(false)
@@ -86,7 +86,6 @@ export const AuthContainer = createContainer(() => {
 			const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
 				email,
 				password,
-				admin,
 				sessionID,
 			})
 			if (!resp || !resp.user || !resp.token) {
@@ -98,7 +97,7 @@ export const AuthContainer = createContainer(() => {
 			localStorage.setItem("token", resp.token)
 			setAuthorised(true)
 		},
-		[send, state, admin, sessionID],
+		[send, state, sessionID],
 	)
 
 	/**
@@ -117,7 +116,6 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, {
 					token,
-					admin,
 					sessionID,
 					twitchExtensionJWT: searchParams.get("twitchExtensionJWT"),
 				})
@@ -131,7 +129,7 @@ export const AuthContainer = createContainer(() => {
 				setReconnecting(false)
 			}
 		},
-		[send, state, admin, sessionID],
+		[send, state, sessionID],
 	)
 
 	/**
@@ -175,7 +173,6 @@ export const AuthContainer = createContainer(() => {
 		if (state !== WebSocket.OPEN) return undefined
 
 		try {
-			let resp: PasswordLoginResponse
 			await connect()
 			const signature = await sign()
 			if (account) {
@@ -185,7 +182,7 @@ export const AuthContainer = createContainer(() => {
 					return
 				}
 				setIsWhitelisted(true)
-				resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
+				const resp: PasswordLoginResponse = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 					publicAddress: account,
 					signature,
 					sessionID,

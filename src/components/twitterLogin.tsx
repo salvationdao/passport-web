@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { API_ENDPOINT_HOSTNAME } from "../containers/socket"
 import { getParamsFromObject } from "../helpers"
+import { API_ENDPOINT_HOSTNAME } from "../config"
 
 export interface ReactTwitterFailureResponse {
 	status?: string

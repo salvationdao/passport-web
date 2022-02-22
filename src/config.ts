@@ -14,6 +14,11 @@ export const SENTRY_CONFIG = {
 		return rate
 	},
 }
+
+export const API_ENDPOINT_HOSTNAME = process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME || window.location.host
+
+export const SIGN_MESSAGE = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
+
 export const BATTLE_ARENA_LINK = process.env.REACT_APP_BATTLE_ARENA_LINK || "https://staging-watch.supremacy.game"
 
 export const NFT_CONTRACT_ADDRESS = process.env.REACT_APP_NFT_CONTRACT_ADDRESS || "0xC1ce98F52E771Bd82938c4Cb6CCaA40Dc2B3258D"
@@ -33,3 +38,5 @@ export const BINANCE_CHAIN_ID = process.env.REACT_APP_BINANCE_CHAIN_ID || "97"
 export const PURCHASE_ADDRESS = process.env.REACT_APP_PURCHASE_ADDRESS || "0x5591eBC09A89A8B11D9644eC1455e294Fd3BAbB5"
 export const WITHDRAW_ADDRESS = process.env.REACT_APP_WITHDRAW_ADDRESS || "0x9DAcEA338E4DDd856B152Ce553C7540DF920Bb15"
 export const REDEEM_ADDRESS = process.env.REACT_APP_REDEEM_ADDRESS || "0xc01c2f6DD7cCd2B9F8DB9aa1Da9933edaBc5079E"
+
+export const WALLET_CONNECT_RPC = process.env.REACT_APP_WALLET_CONNECT_RPC || "1375aa321ac8ac6cfba6aa9c"
