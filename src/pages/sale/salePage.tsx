@@ -57,7 +57,6 @@ export const SalePage = () => {
 			setCountdown(undefined)
 		}
 	}, [])
-
 	useEffect(() => {
 		;(async () => await fetchTime())()
 	}, [fetchTime])
@@ -292,10 +291,19 @@ const FancyLinearProgress = styled(LinearProgress)({
 			background:
 				"linear-gradient(90deg, rgba(43,233,253,0.9) 0%, rgba(55,185,255,.5) 49%, rgba(43,233,253,0.5) 55%, rgba(0,182,255,0.5) 80% , rgba(43,233,253,0.9) 100%)",
 			"@keyframes shimmer": {
-				from: {
+				"0%": {
 					backgroundPosition: "-100px 0",
 				},
-				to: {
+				"20%": {
+					backgroundPosition: "0px 0",
+				},
+				"50%": {
+					backgroundPosition: "100px 0",
+				},
+				"70%": {
+					backgroundPosition: "200px 0",
+				},
+				"100%": {
 					backgroundPosition: "300px 0",
 				},
 			},

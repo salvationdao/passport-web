@@ -225,7 +225,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 								zIndex: 5,
 								padding: "1rem",
 								height: "100%",
-								width: publicSale ? "24rem" : "100%",
+								width: "100%",
 								display: "flex",
 								flexDirection: "column",
 								justifyContent: "center",
