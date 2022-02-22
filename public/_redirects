@@ -1,2 +1,2 @@
-/api/*  https://api.xsyn.io/api/:splat  200
+/api/*  https://api.xsyn.io/api/:splat  301!
 /* /index.html 200
