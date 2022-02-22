@@ -320,7 +320,16 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={
 						transferState === "confirm"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									height: "100%",
+									width: "100%",
+									textAlign: "center",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
@@ -353,7 +362,14 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={
 						transferState === "error"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									height: "100%",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
@@ -380,14 +396,24 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Stack
 					sx={
 						transferState === "waiting"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "1rem" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									width: "100%",
+									height: "100%",
+									padding: "1rem",
+									textAlign: "center",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
 					<Box sx={{ width: "100%" }}>
 						<LinearProgress color="secondary" />
 					</Box>
-					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0" }}>
+					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0", textAlign: "center" }}>
 						Waiting on Confirmation
 					</Typography>
 
@@ -404,23 +430,13 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 
 			{/* Purchase Sups Form */}
 			<Box
-				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none" && metaMaskState === MetaMaskState.Active
-						? {
-								background: publicSale ? colors.darkNavyBlue : "unset",
-								p: publicSale ? "2em" : "unset",
-								"@media (max-width:400px)": {
-									p: "1rem",
-								},
-						  }
-						: {
-								filter: "blur(5px) brightness(20%)",
-								padding: {
-									xs: "1rem",
-									md: "0",
-								},
-						  }
-				}
+				sx={{
+					background: publicSale ? colors.darkNavyBlue : "unset",
+					p: publicSale ? "2em" : "unset",
+					"@media (max-width:400px)": {
+						p: "1rem",
+					},
+				}}
 			>
 				<Box
 					sx={{

@@ -22,7 +22,7 @@ export const SalePage = () => {
 	const { showSimulation, setShowSimulation } = useAuth()
 	const { account, checkNeoBalance, amountRemaining } = useWeb3()
 	const [disableSimulation, setDisableSimulation] = useState(false)
-	const [countdown, setCountdown] = useState(new Date())
+	const [countdown, setCountdown] = useState<Date | undefined>()
 	const [loading, setLoading] = useState(true)
 
 	// Game state
@@ -45,19 +45,22 @@ export const SalePage = () => {
 	}
 
 	const fetchTime = useCallback(async () => {
-		const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
-		const data = (await response.clone().json()) as WhitelistTime
-		if (!data.next_phase.includes("whitelist")) setDisableSimulation(true)
-		return new Date(data.time)
+		try {
+			const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
+			const data = (await response.clone().json()) as WhitelistTime
+			if (!data.next_phase.includes("death")) setDisableSimulation(true)
+
+			const endDate = new Date(data.time)
+			setCountdown(endDate)
+		} catch (err) {
+			console.error(err)
+			setCountdown(undefined)
+		}
 	}, [])
 
 	useEffect(() => {
-		;(async () => {
-			const endDate = await fetchTime()
-			setCountdown(endDate)
-		})()
+		;(async () => await fetchTime())()
 	}, [fetchTime])
-
 	return (
 		<>
 			<Helmet>
@@ -118,6 +121,7 @@ export const SalePage = () => {
 				<>
 					<Loading loading={loading} setLoading={setLoading} />
 					<SupremacyNavbar loading={loading} />
+					{!disableSimulation && <WhiteListModal open={showSimulation} setOpen={setShowSimulation} handleJoinBtn={handleJoinBtn} />}
 					<Box
 						sx={{
 							opacity: loading ? 0 : 1,
@@ -215,9 +219,8 @@ export const SalePage = () => {
 											</Typography>
 										</Box>
 									</Box>
-									<CountdownTimer date={countdown} publicSale />
+									{countdown && <CountdownTimer date={countdown} publicSale />}
 								</Stack>
-								{!disableSimulation && <WhiteListModal open={showSimulation} setOpen={setShowSimulation} handleJoinBtn={handleJoinBtn} />}
 								<BuyTokens publicSale />
 							</Box>
 						</Stack>

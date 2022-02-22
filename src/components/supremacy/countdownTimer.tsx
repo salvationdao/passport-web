@@ -79,7 +79,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 			m,
 			s,
 		})
-		if (date != new Date() && publicSale && seconds <= 0) {
+		if (date && publicSale && seconds <= 0) {
 			history.go(0)
 		}
 	}, 1000)

@@ -365,7 +365,6 @@ export const Web3Container = createContainer(() => {
 				await provider.send("eth_requestAccounts", [])
 				const signer = provider.getSigner()
 				const acc = await signer.getAddress()
-				// Check if account is whitelisted if not return
 				setAccount(acc)
 				handleAccountChange([acc])
 			} catch (error) {
