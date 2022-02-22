@@ -5,7 +5,7 @@ import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
 import Arrow from "../assets/images/arrow.png"
-import SupsToken from "../assets/images/sup-token.svg"
+import SupsToken from "../assets/images/supsToken.png"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
 import { useAuth } from "../containers/auth"
 import { SocketState, useWebsocket } from "../containers/socket"
@@ -206,7 +206,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		<Box
 			sx={{
 				border: publicSale
-					? `1px groove ${colors.skyBlue}`
+					? `2px solid ${colors.skyBlue}`
 					: {
 							xs: `2px solid ${theme.palette.secondary.main}`,
 							md: "none",
@@ -447,7 +447,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 					</Typography>
 					<form onSubmit={handleSubmit}>
 						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between", alignItems: "center" }}>
-							<Box sx={{ position: "relative", width: "100%" }}>
+							<Box sx={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", gap: "1em" }}>
 								<Stack sx={{ gap: ".7em" }}>
 									<Box
 										component="img"
@@ -478,6 +478,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 												From:{" "}
 											</Typography>
 											<TextField
+												color="secondary"
 												fullWidth
 												variant="standard"
 												value={tokenDisplay || ""}
@@ -562,7 +563,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 											</Typography>
 											<TextField
 												disabled
-												fullWidth
 												variant="filled"
 												value={supsDisplay || ""}
 												onChange={(e) => {
@@ -583,14 +583,20 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 												type="number"
 												sx={{
 													backgroundColor: colors.inputBg,
+													"& 	.MuiFilledInput": {
+														background: "none",
+													},
 													"& 	.MuiFilledInput-root": {
-														backgroundColor: "inherit",
+														backgroundColor: "none",
 													},
 													"& .MuiFilledInput-underline:after": {
 														borderBottomColor: colors.skyBlue,
 													},
 													"& 	.MuiFilledInput-root.Mui-disabled": {
 														backgroundColor: "none",
+													},
+													"& .MuiInputBase-root, & input": {
+														background: "none",
 													},
 													input: { color: colors.skyBlue, fontSize: "1.2rem" },
 												}}
@@ -605,18 +611,17 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 												alignItems: "flex-end",
 											}}
 										>
-											<Box sx={{ display: "flex", padding: ".5rem" }}>
+											<Box sx={{ display: "flex", gap: "5px", alignItems: "center", my: "auto" }}>
 												<Box
 													component="img"
 													src={SupsToken}
 													alt="token image"
 													sx={{
-														height: "1rem",
-														marginRight: "1rem",
+														height: "20px",
 													}}
 												/>
-												<Typography variant="body1" sx={{ textTransform: "uppercase" }}>
-													<b>Sups</b>
+												<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1rem", fontWeight: 600 }}>
+													$Sups
 												</Typography>
 											</Box>
 										</Box>
