@@ -14,6 +14,7 @@ export const SENTRY_CONFIG = {
 		return rate
 	},
 }
+export const BATTLE_ARENA_LINK = process.env.REACT_APP_BATTLE_ARENA_LINK || "https://staging-watch.supremacy.game"
 
 export const NFT_CONTRACT_ADDRESS = process.env.REACT_APP_NFT_CONTRACT_ADDRESS || "0xC1ce98F52E771Bd82938c4Cb6CCaA40Dc2B3258D"
 export const NFT_STAKING_CONTRACT_ADDRESS = process.env.REACT_APP_NFT_STAKING_CONTRACT_ADDRESS || "0xceED4Db9234e7374fe3132a2610c31275712685C"
