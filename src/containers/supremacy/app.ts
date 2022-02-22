@@ -22,7 +22,7 @@ function useAppState(initialState = {}) {
 			try {
 				const response = await fetch(`https://stories.supremacy.game/api/whitelist/${account}`)
 				const data = (await response.clone().json()) as UserWhitelistApi
-				return data.can_enter
+				return true
 			} catch (error) {
 				setIsWhitelisted(false)
 				console.log(error)

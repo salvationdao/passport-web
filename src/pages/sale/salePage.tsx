@@ -234,17 +234,8 @@ const Title = styled("h1")({
 	textAlign: "center",
 	fontSize: "3rem",
 	margin: 0,
-	"@media (max-width:600px)": {
-		fontSize: "2.5rem",
-	},
-	"@media (max-width:559px)": {
-		fontSize: "1.4rem",
-	},
-	"@media (max-width:400px)": {
-		fontSize: "1.2rem",
-	},
-	"@media (max-width:350px)": {
-		fontSize: "1.4rem",
+	"@media (max-width:800px)": {
+		fontSize: "4vmin",
 	},
 })
 
@@ -282,7 +273,29 @@ const FancyLinearProgress = styled(LinearProgress)({
 	clipPath: `polygon(0 0, calc(100% - 1rem) 0%, 100% 1rem, 100% 100%, 1rem 100%, 0% calc(100% - 1rem))`,
 	backgroundColor: "rgba(0, 136, 136, 0.4)",
 	"&>span": {
-		backgroundColor: colors.neonBlue,
-		opacity: 0.5,
+		backgroundColor: "rgba(43,233,253,0.8)",
+		animation: " 2s linear infinite forwards shimmer",
+		"&::after": {
+			content: "''",
+			position: "absolute",
+			top: 0,
+			left: 0,
+			display: "inline-block",
+			width: "100%",
+			height: "100%",
+			transition: "all .5s",
+			animation: " 2s linear infinite forwards shimmer",
+			background: "linear-gradient(90deg, rgba(43,233,253,0.7) 3%, rgba(55,225,255,1) 49%, rgba(0,182,255,0.7) 100%)",
+			"@keyframes shimmer": {
+				from: {
+					width: "98%",
+					backgroundPosition: "-100px 0",
+				},
+				to: {
+					width: "100%",
+					backgroundPosition: "200px 0",
+				},
+			},
+		},
 	},
 })
