@@ -8,6 +8,7 @@ import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Asset } from "../../types/types"
 import { Rarity } from "../store/storeItemCard"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 
 const rarityTextStyles: { [key in Rarity]: any } = {
 	Common: {
@@ -31,6 +32,21 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<Asset>()
+	const [imageLoading, setImageLoading] = useState<boolean>(true)
+	const [noAsset, setNoAsset] = useState<boolean>(false) //used if asset doesn't exist in our metadata (shouldn't happen, fixes local dev stuff)
+
+	useEffect(() => {
+		;(async () => {
+			try {
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${tokenID}`)
+				if (!resp.ok || resp.status !== 200)  {
+					setNoAsset(true)
+				}
+			} catch (e) {
+				setNoAsset(true)
+			}
+		})()
+	}, [history, tokenID])
 
 	useEffect(() => {
 		if (!subscribe) return
@@ -43,6 +59,8 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 		)
 	}, [subscribe, tokenID])
 
+	if (noAsset) return <></>
+
 	if (!item) {
 		return <CollectionItemCardSkeleton />
 	}
@@ -50,7 +68,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	return (
 		<Box
 			component="button"
-			onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}
+			onClick={() => history.push(`/profile/${username}/asset/${item?.tokenID}`)}
 			sx={{
 				position: "relative",
 				display: "flex",
@@ -92,9 +110,11 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 				component="img"
 				src={item.image}
 				alt="Mech image"
+				onLoad={()=>setImageLoading(false)}
 				sx={{
 					width: "100%",
 					marginBottom: ".3rem",
+					minHeight: imageLoading ? '350px': '200px',
 				}}
 			/>
 			<Typography

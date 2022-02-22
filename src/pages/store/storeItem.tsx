@@ -26,9 +26,9 @@ export const StoreItemPage = () => {
 
 	// Store item data
 	const [storeItem, setStoreItem] = useState<StoreItem>()
-	const [, setRegularAttributes] = useState<Attribute[]>([])
+	// const [, setRegularAttributes] = useState<Attribute[]>([])
 	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
-	const [, setAssetAttributes] = useState<Attribute[]>([])
+	// const [, setAssetAttributes] = useState<Attribute[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
 
@@ -73,9 +73,9 @@ export const StoreItemPage = () => {
 							regularAttributes.push(a)
 						}
 					})
-					setAssetAttributes(assetAttributes)
+					// setAssetAttributes(assetAttributes)
 					setNumberAttributes(numberAttributes)
-					setRegularAttributes(regularAttributes)
+					// setRegularAttributes(regularAttributes)
 					setStoreItem(payload)
 					setLoading(false)
 				},
@@ -532,12 +532,10 @@ export const StoreItemPage = () => {
 								<Box
 									sx={{
 										display: "flex",
-										justifyContent: "space-between",
+										justifyContent: "center",
 									}}
 								>
-									<Typography variant="caption" color={colors.darkGrey}>
-										({usdFormatter(storeItem.usdCentCost)} USD)
-									</Typography>
+
 									<Typography variant="caption">
 										Stock: {storeItem.amountAvailable - storeItem.amountSold} / {storeItem.amountAvailable}
 									</Typography>

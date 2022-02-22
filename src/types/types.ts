@@ -158,6 +158,7 @@ export interface Asset {
 	deletedAt?: Date
 	mintingSignature?: string
 	txHistory: any[]
+	minted: boolean
 }
 
 export interface Attribute {

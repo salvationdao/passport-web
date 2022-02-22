@@ -13,6 +13,7 @@ import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection, NFTOwner } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 
 export const CollectionsPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -32,6 +33,7 @@ export const CollectionsPage: React.FC = () => {
 				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
 				setCollections(resp.records)
 			} catch (e) {
+				console.log(e)
 				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
 					autoHideDuration: null,
 				})
@@ -47,17 +49,29 @@ export const CollectionsPage: React.FC = () => {
 			setLoading(true)
 			try {
 				const resp = await send<{ NFTOwners: NFTOwner[] }>(HubKey.WalletCollectionList)
-				const filter = resp.NFTOwners.filter((x) => {
-					return x.owner_of === user?.publicAddress
-				})
+				if (resp.NFTOwners) {
+					const filter = resp.NFTOwners.filter((x) => {
+						return x.owner_of === user?.publicAddress
+					})
 
-				const walletTokens: number[] = []
-				filter.map((x) => {
-					const num = parseInt(x.token_id)
-					walletTokens.push(num)
-				})
-				setWalletTokenIDs(walletTokens)
+					if (!filter) return
+
+					let itemIDs: number[] = []
+					filter.forEach((item) => {
+						fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${item.token_id}`).then((resp)=>{
+							if (resp.ok && resp.status !== 200) {
+								const num = parseInt(item.token_id)
+								itemIDs.push(num)
+							}
+						})
+
+					})
+					setWalletTokenIDs(itemIDs)
+				}
+
+
 			} catch (e) {
+				console.log(e)
 				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
 					autoHideDuration: null,
 				})

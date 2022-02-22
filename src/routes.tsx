@@ -131,7 +131,7 @@ export const Routes = () => {
 							<Route path="/sale">
 								<SalePage />
 							</Route>
-							<Route path="/battle_arena">
+							<Route path="/battle_arena">`
 								<BattleArenaPage />
 							</Route>
 						</Switch>

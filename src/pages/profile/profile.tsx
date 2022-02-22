@@ -21,7 +21,7 @@ import {
 	Typography,
 	useMediaQuery
 } from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { DiscordIcon, FacebookIcon, GoogleIcon, GradientHeartIconImagePath, MetaMaskIcon, SupTokenIcon, TwitchIcon, TwitterIcon } from "../../assets"
@@ -43,6 +43,7 @@ import { colors, fonts } from "../../theme"
 import { NilUUID } from "../../types/auth"
 import { Asset, Attribute, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
+import { NFT_CONTRACT_ADDRESS } from "../../config"
 
 export const ProfilePage: React.FC = () => {
 	const { username, token_id } = useParams<{ username: string; token_id: string }>()
@@ -752,6 +753,8 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
 	const [renameWindowOpen, setRenameWindowOpen] = useState(false)
 
+	const isOwner = asset ? loggedInUser?.id === asset?.userID : false
+
 	const isWarMachine = (): boolean => {
 		if (!asset) return false
 		// loops through asset's attributes checks if it has a trait_type of "Asset Type", and value of "War Machine"
@@ -899,13 +902,13 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 							marginBottom: "1rem",
 						}}
 					>
-						{loggedInUser?.id === asset.userID && isWarMachine() && !asset.frozenAt && (
+						{isOwner && isWarMachine() && !asset.frozenAt && (
 							<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
 								Rename Asset
 							</FancyButton>
 						)}
-						{loggedInUser?.id === asset.userID ? (
-							asset.mintingSignature || asset.mintingSignature !== "" ? (
+						{isOwner ? (
+							((asset.mintingSignature || asset.mintingSignature !== "")  && !asset.minted)  ? (
 								<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 									Continue Transition Off World
 								</FancyButton>
@@ -914,9 +917,9 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									<FancyButton size="small" onClick={() => onDeploy()}>
 										Deploy
 									</FancyButton>
-									<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+									{!asset.minted &&	<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 										Transition Off World
-									</FancyButton>
+									</FancyButton>}
 								</>
 							) : (
 								<>
@@ -1121,8 +1124,8 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 										</FancyButton>
 									)}
 									{loggedInUser?.id === asset.userID ? (
-										asset.mintingSignature || asset.mintingSignature !== "" ? (
-											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+										((asset.mintingSignature || asset.mintingSignature !== "")  && !asset.minted) ? (
+										<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 												Continue Transition Off World
 											</FancyButton>
 										) : !asset.frozenAt && isWarMachine() ? (
@@ -1130,9 +1133,9 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 												<FancyButton size="small" onClick={() => onDeploy()}>
 													Deploy
 												</FancyButton>
-												<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-													Transition Off World
-												</FancyButton>
+												{!asset.minted && <FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+												Transition Off World
+											</FancyButton>}
 											</>
 										) : (
 											<>
@@ -1265,9 +1268,10 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 										alignItems: "start",
 									}}
 								>
-									<Button component={"a"} href={asset.externalURL} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNewIcon />}>
+									{asset.username === "OnChain" &&<Button component={"a"} href={NFT_CONTRACT_ADDRESS === "0xC1ce98F52E771Bd82938c4Cb6CCaA40Dc2B3258D" ? `https://testnets.opensea.io/assets/goerli/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}` : `https://opensea.io/assets/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}`} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNewIcon />}>
 										View on OpenSea
-									</Button>
+									</Button>}
+
 									<StyledDisabledButton>
 										View Battle History Stats
 										<Box component="span" sx={{ marginLeft: ".5rem", color: colors.darkGrey }}>
