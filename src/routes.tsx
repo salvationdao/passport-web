@@ -36,7 +36,7 @@ export const Routes = () => {
 	/* Get subdomain name  */
 	const parts = window.location.hostname.split(".")
 	const sndleveldomain = parts.slice(-2).join(".")
-
+	console.log(parts, sndleveldomain)
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
