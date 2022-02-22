@@ -17,11 +17,15 @@ import {
 	ETH_SCAN_SITE,
 	PURCHASE_ADDRESS,
 	SUPS_CONTRACT_ADDRESS,
-	USDC_CONTRACT_ADDRESS, WALLET_CONNECT_RPC, SIGN_MESSAGE,
+	USDC_CONTRACT_ADDRESS,
+	WALLET_CONNECT_RPC,
+	SIGN_MESSAGE,
 } from "../config"
+import HubKey from "../keys"
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
+import { SocketState, useWebsocket } from "./socket"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -99,6 +103,7 @@ const tokenOptions: tokenSelect[] = [
  * A Container that handles Web3
  */
 export const Web3Container = createContainer(() => {
+	const { subscribe, state } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
@@ -108,6 +113,15 @@ export const Web3Container = createContainer(() => {
 	const [currentChainId, setCurrentChainId] = useState<number>()
 	const [supBalance, setSupBalance] = useState<BigNumber>()
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
+	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
+
+	//Setting up websocket to listen to remaining supply
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
+			setAmountRemaining(BigNumber.from(amount))
+		})
+	}, [subscribe, state])
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -546,6 +560,7 @@ export const Web3Container = createContainer(() => {
 		currentToken,
 		setCurrentToken,
 		checkNeoBalance,
+		amountRemaining,
 	}
 })
 

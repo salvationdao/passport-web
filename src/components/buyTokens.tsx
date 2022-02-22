@@ -25,8 +25,8 @@ type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
-	const { subscribe, state } = useWebsocket()
-	const { isWhitelisted } = useSupremacyApp()
+	const { state } = useWebsocket()
+	const { amountRemaining } = useWeb3()
 	const { user } = useAuth()
 	const {
 		changeChain,
@@ -41,7 +41,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		tokenOptions,
 	} = useWeb3()
 	const theme = useTheme()
-	const { amountRemaining, setAmountRemaining } = useContainer(AppState)
 
 	const [selectedTokenName, setSelectedTokenName] = useState<tokenName>("eth")
 	const [tokenAmt, setTokenAmt] = useState<BigNumber>(BigNumber.from(0))
@@ -184,25 +183,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			getCurrentBalance(currentToken)
 		})()
 	}, [currentToken, getBalance, getCurrentBalance])
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
-			if (rates)
-				if (rates.BNBtoUSD === 0 || rates.ETHtoUSD === 0 || rates.SUPtoUSD === 0) {
-					return
-				}
-			setExchangeRates(rates)
-		})
-	}, [subscribe, state])
-
-	//Setting up websocket to listen to remaining supply
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
-			setAmountRemaining(BigNumber.from(amount))
-		})
-	}, [subscribe, state])
 
 	const handleNetworkSwitch = async () => {
 		await changeChain(currentToken.chainId)

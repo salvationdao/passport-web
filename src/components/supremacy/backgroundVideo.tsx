@@ -30,15 +30,19 @@ const Container = styled(Box)({
 		},
 	},
 })
-export const BackgroundVideo = () => {
+
+interface IBackgroundVideo {
+	loading: boolean
+	setLoading: React.Dispatch<React.SetStateAction<boolean>>
+}
+export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 	const videoRef = useRef<HTMLVideoElement>(null!)
-	const { setLoading, loading } = useContainer(AppState)
-	const [videoLoading, setVideoLoading] = useState(true)
+	const { setLoading, loading } = props
 	const largeDesktop = useMediaQuery("(min-width:2000px)")
 	const mobileScreen = useMediaQuery("(max-width:600px)")
 
 	const fallBackPlayVideo = () => {
-		if (videoLoading) setVideoLoading(false)
+		if (loading) setLoading(false)
 		if (videoRef.current.played.length === 0) {
 			videoRef.current.play()
 		}
@@ -71,12 +75,10 @@ export const BackgroundVideo = () => {
 			false,
 		)
 		videoRef.current.addEventListener("play", () => {
-			setVideoLoading(false)
 			setLoading(false)
 		})
 
 		window.document.getElementById("bgVideo")?.addEventListener("play", () => {
-			setVideoLoading(false)
 			setLoading(false)
 		})
 	}, [videoRef, setLoading])
@@ -87,7 +89,7 @@ export const BackgroundVideo = () => {
 				background: colors.black,
 				"& video": {
 					pointerEvents: "none",
-					visibility: videoLoading ? "hidden" : "unset",
+					visibility: loading ? "hidden" : "unset",
 				},
 			}}
 		>
@@ -103,7 +105,6 @@ export const BackgroundVideo = () => {
 				loop
 				autoPlay
 				onPlay={() => {
-					setVideoLoading(false)
 					setLoading(false)
 				}}
 				src={
