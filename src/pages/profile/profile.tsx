@@ -32,7 +32,6 @@ import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
 import { SearchBar } from "../../components/searchBar"
-import { NFT_CONTRACT_ADDRESS } from "../../config"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -45,12 +44,10 @@ import { colors, fonts } from "../../theme"
 import { NilUUID } from "../../types/auth"
 import { Asset, Attribute, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
-<<<<<<< HEAD
 import { NFT_CONTRACT_ADDRESS, NFT_STAKING_CONTRACT_ADDRESS } from "../../config"
 import { useWeb3 } from "../../containers/web3"
 import { ethers, BigNumber } from "ethers"
-=======
->>>>>>> 083ab8f5e2795117ae2f3e862596b7144fe60b6a
+
 
 export const ProfilePage: React.FC = () => {
 	const { username, token_id } = useParams<{ username: string; token_id: string }>()
