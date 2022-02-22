@@ -1,7 +1,5 @@
 import { Box, styled, useMediaQuery } from "@mui/material"
-import React, { useRef, useEffect, useState } from "react"
-import { useContainer } from "unstated-next"
-import { AppState } from "../../containers/supremacy/app"
+import React, { useEffect, useRef } from "react"
 import { colors } from "../../theme"
 
 const Container = styled(Box)({
@@ -30,16 +28,26 @@ const Container = styled(Box)({
 		},
 	},
 })
-export const BackgroundVideo = () => {
+
+interface IBackgroundVideo {
+	loading: boolean
+	setLoading: React.Dispatch<React.SetStateAction<boolean>>
+}
+export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 	const videoRef = useRef<HTMLVideoElement>(null!)
-	const { setLoading } = useContainer(AppState)
-	const [videoLoading, setVideoLoading] = useState(true)
+	const { setLoading, loading } = props
 	const largeDesktop = useMediaQuery("(min-width:2000px)")
 	const mobileScreen = useMediaQuery("(max-width:600px)")
 
+	const fallBackPlayVideo = () => {
+		if (loading) setLoading(false)
+		if (videoRef.current.played.length === 0) {
+			videoRef.current.play()
+		}
+	}
+
 	useEffect(() => {
 		const fallBackPlayVideo = () => {
-			if (videoLoading) setVideoLoading(false)
 			if (videoRef.current.played.length === 0) {
 				videoRef.current.play()
 			}
@@ -58,7 +66,7 @@ export const BackgroundVideo = () => {
 		return () => {
 			clearTimeout(fallback)
 		}
-	}, [videoLoading])
+	}, [loading])
 
 	useEffect(() => {
 		videoRef.current.addEventListener(
@@ -70,12 +78,10 @@ export const BackgroundVideo = () => {
 			false,
 		)
 		videoRef.current.addEventListener("play", () => {
-			setVideoLoading(false)
 			setLoading(false)
 		})
 
 		window.document.getElementById("bgVideo")?.addEventListener("play", () => {
-			setVideoLoading(false)
 			setLoading(false)
 		})
 	}, [videoRef, setLoading])
@@ -86,7 +92,7 @@ export const BackgroundVideo = () => {
 				background: colors.black,
 				"& video": {
 					pointerEvents: "none",
-					visibility: videoLoading ? "hidden" : "unset",
+					visibility: loading ? "hidden" : "unset",
 				},
 			}}
 		>
@@ -102,7 +108,6 @@ export const BackgroundVideo = () => {
 				loop
 				autoPlay
 				onPlay={() => {
-					setVideoLoading(false)
 					setLoading(false)
 				}}
 				src={

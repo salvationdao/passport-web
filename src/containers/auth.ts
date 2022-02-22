@@ -1,5 +1,7 @@
+import { useSnackbar } from "./snackbar"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
+import { API_ENDPOINT_HOSTNAME } from "../config"
 import HubKey from "../keys"
 import {
 	AddDiscordRequest,
@@ -31,9 +33,7 @@ import {
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
 import { useWebsocket } from "./socket"
-import { useSupremacyApp } from "./supremacy/app"
 import { MetaMaskState, useWeb3 } from "./web3"
-import { API_ENDPOINT_HOSTNAME } from "../config"
 
 export enum VerificationType {
 	EmailVerification,
@@ -45,7 +45,6 @@ export enum VerificationType {
  */
 export const AuthContainer = createContainer(() => {
 	const { metaMaskState, sign, signWalletConnect, account, connect } = useWeb3()
-	const { checkWhitelist, setIsWhitelisted, setShowSimulation } = useSupremacyApp()
 	const [user, setUser] = useState<User>()
 	const [authorised, setAuthorised] = useState(false)
 	const [reconnecting, setReconnecting] = useState(false)
@@ -53,6 +52,8 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const { state, send, subscribe } = useWebsocket()
+	const { displayMessage } = useSnackbar()
+	const [showSimulation, setShowSimulation] = useState(false)
 
 	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
 
@@ -180,12 +181,6 @@ export const AuthContainer = createContainer(() => {
 			await connect()
 			const signature = await sign()
 			if (account) {
-				const allowAccess = await checkWhitelist(account)
-				if (!allowAccess) {
-					setShowSimulation(true)
-					return
-				}
-				setIsWhitelisted(true)
 				const resp: PasswordLoginResponse = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 					publicAddress: account,
 					signature,
@@ -206,10 +201,12 @@ export const AuthContainer = createContainer(() => {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
-			throw typeof e === "string" ? e : "Something went wrong, please try again."
+			if (typeof e === "string") {
+				setShowSimulation(true)
+				displayMessage(e, "error")
+			}
 		}
-	}, [send, state, account, sign, sessionID, connect, checkWhitelist, setIsWhitelisted, setShowSimulation])
-
+	}, [send, state, account, sign, sessionID, connect])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -219,14 +216,6 @@ export const AuthContainer = createContainer(() => {
 		if (state !== WebSocket.OPEN) return undefined
 		try {
 			const signature = await signWalletConnect()
-			if (account) {
-				const allowAccess = await checkWhitelist(account)
-				if (!allowAccess) {
-					setShowSimulation(true)
-					return
-				}
-				setIsWhitelisted(true)
-			}
 			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 				publicAddress: account as string,
 				signature,
@@ -240,15 +229,17 @@ export const AuthContainer = createContainer(() => {
 			setUser(resp.user)
 			localStorage.setItem("token", resp.token)
 			setAuthorised(true)
-
 			return resp
 		} catch (e) {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
-			throw typeof e === "string" ? e : "Something went wrong, please try again."
+			if (typeof e === "string") {
+				setShowSimulation(true)
+				displayMessage(e, "error")
+			}
 		}
-	}, [send, state, account, sessionID, signWalletConnect, checkWhitelist, setIsWhitelisted, setShowSimulation])
+	}, [send, state, account, sessionID, signWalletConnect])
 
 	/**
 	 * Signs a user up using a Google oauth token
@@ -982,6 +973,8 @@ export const AuthContainer = createContainer(() => {
 		verifyCompleteType,
 		setSessionID,
 		sessionID,
+		showSimulation,
+		setShowSimulation,
 	}
 })
 

@@ -11,14 +11,6 @@ type Props = {
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-// interface UserDataStoriesApi {
-// 	Address: string
-// 	RedM: number
-// 	Zaibat: number
-// 	Boston: number
-// 	Deaths: number
-// }
-
 export const WhiteListModal = (props: Props) => {
 	return (
 		<Modal
@@ -137,14 +129,15 @@ export const WhiteListModal = (props: Props) => {
 							<Typography
 								variant="h2"
 								sx={{
+									fontSize: "1.5rem",
 									fontFamily: "Nostromo Regular Heavy",
 									textAlign: "center",
-									"@media (max-width:425px)": {
-										fontSize: "1.3rem",
+									"@media (max-width:500px)": {
+										fontSize: "4vmin",
 									},
 								}}
 							>
-								Survive to join
+								Survive to join the whitelist
 							</Typography>
 							<SupFancyButton
 								onClick={async () => await props.handleJoinBtn()}

@@ -1,7 +1,8 @@
 import { Box, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material"
 import React from "react"
-import { tokenName, tokenSelect } from "../types/types"
 import { useWeb3 } from "../containers/web3"
+import { colors } from "../theme"
+import { tokenName, tokenSelect } from "../types/types"
 
 interface TokenSelectProps {
 	currentToken: tokenSelect
@@ -24,6 +25,7 @@ export const TokenSelect = ({ currentToken, cb }: TokenSelectProps) => {
 		<Select
 			variant="filled"
 			sx={{
+				background: colors.darkNavyBackground2,
 				marginBottom: "1rem",
 				marginLeft: "auto",
 				display: "flex",
