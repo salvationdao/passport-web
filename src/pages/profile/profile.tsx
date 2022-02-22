@@ -7,6 +7,10 @@ import {
 	ButtonProps,
 	Chip,
 	ChipProps,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
 	Divider,
 	IconButton,
 	IconButtonProps,
@@ -15,12 +19,14 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery,
+	useMediaQuery
 } from "@mui/material"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { DiscordIcon, FacebookIcon, GoogleIcon, GradientHeartIconImagePath, MetaMaskIcon, SupTokenIcon, TwitchIcon, TwitterIcon } from "../../assets"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
+import { InputField } from "../../components/form/inputField"
 import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
@@ -727,6 +733,7 @@ interface AssetViewProps {
 const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	const history = useHistory()
 	const { state, subscribe, send } = useWebsocket()
+	const { user: loggedInUser } = useAuth()
 	const { displayMessage } = useSnackbar()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -743,6 +750,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	const queueDetail = queuedWarMachine(tokenID)
 	const [submitting, setSubmitting] = useState(false)
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
+	const [renameWindowOpen, setRenameWindowOpen] = useState(false)
 
 	const isWarMachine = (): boolean => {
 		if (!asset) return false
@@ -857,6 +865,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 				tokenID={asset.tokenID.toString()}
 				mintingSignature={asset.mintingSignature}
 			/>
+			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -890,9 +899,16 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 							marginBottom: "1rem",
 						}}
 					>
-						{user.id === asset.userID ? (
+						{loggedInUser?.id === asset.userID && isWarMachine() && !asset.frozenAt && (
+							<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
+								Rename Asset
+							</FancyButton>
+						)}
+						{loggedInUser?.id === asset.userID ? (
 							asset.mintingSignature || asset.mintingSignature !== "" ? (
-								<FancyButton onClick={() => setMintWindowOpen(true)}>Continue Transition Off World</FancyButton>
+								<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+									Continue Transition Off World
+								</FancyButton>
 							) : !asset.frozenAt && isWarMachine() ? (
 								<>
 									<FancyButton size="small" onClick={() => onDeploy()}>
@@ -905,14 +921,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 							) : (
 								<>
 									{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
-										<FancyButton
-											size="small"
-											loading={submitting}
-											onClick={payInsurance}
-											sx={{
-												marginBottom: ".5rem",
-											}}
-										>
+										<FancyButton size="small" loading={submitting} onClick={payInsurance}>
 											Pay Insurance
 										</FancyButton>
 									)}
@@ -967,6 +976,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									<Box
 										component="span"
 										sx={{
+											marginLeft: ".5rem",
 											color: colors.skyBlue,
 											fontSize: "1rem",
 										}}
@@ -1007,7 +1017,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									margin: ".5rem 0",
 								}}
 							/>
-							{user.id === asset.userID && (
+							{loggedInUser?.id === asset.userID && (
 								<Box
 									sx={{
 										marginBottom: ".5rem",
@@ -1098,45 +1108,47 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									)}
 								</Box>
 							)}
-							<Box
-								sx={{
-									display: "flex",
-									gap: ".5rem",
-								}}
-							>
-								{user.id === asset.userID ? (
-									asset.mintingSignature || asset.mintingSignature !== "" ? (
-										<FancyButton onClick={() => setMintWindowOpen(true)}>Continue Transition Off World</FancyButton>
-									) : !asset.frozenAt && isWarMachine() ? (
-										<>
-											<FancyButton size="small" onClick={() => onDeploy()}>
-												Deploy
-											</FancyButton>
+							{isWiderThan1000px && (
+								<Box
+									sx={{
+										display: "flex",
+										gap: ".5rem",
+									}}
+								>
+									{loggedInUser?.id === asset.userID && isWarMachine() && !asset.frozenAt && (
+										<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
+											Rename Asset
+										</FancyButton>
+									)}
+									{loggedInUser?.id === asset.userID ? (
+										asset.mintingSignature || asset.mintingSignature !== "" ? (
 											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-												Transition Off World
+												Continue Transition Off World
 											</FancyButton>
-										</>
-									) : (
-										<>
-											{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
-												<FancyButton
-													size="small"
-													loading={submitting}
-													onClick={payInsurance}
-													sx={{
-														marginBottom: ".5rem",
-													}}
-												>
-													Pay Insurance
+										) : !asset.frozenAt && isWarMachine() ? (
+											<>
+												<FancyButton size="small" onClick={() => onDeploy()}>
+													Deploy
 												</FancyButton>
-											)}
-											<FancyButton size="small" loading={submitting} onClick={leaveQueue} borderColor={colors.errorRed}>
-												Leave
-											</FancyButton>
-										</>
-									)
-								) : null}
-							</Box>
+												<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+													Transition Off World
+												</FancyButton>
+											</>
+										) : (
+											<>
+												{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
+													<FancyButton size="small" loading={submitting} onClick={payInsurance}>
+														Pay Insurance
+													</FancyButton>
+												)}
+												<FancyButton size="small" loading={submitting} onClick={leaveQueue} borderColor={colors.errorRed}>
+													Leave
+												</FancyButton>
+											</>
+										)
+									) : null}
+								</Box>
+							)}
 						</Box>
 					</Box>
 					<Box
@@ -1381,5 +1393,86 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 				{label}
 			</Typography>
 		</Box>
+	)
+}
+
+const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Asset; userID: string }) => {
+	const { open, onClose, asset, userID } = props
+	const { send } = useWebsocket()
+	const { displayMessage } = useSnackbar()
+	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
+	const [loading, setLoading] = useState(false)
+
+	const getName = useCallback(() => {
+		let result = ""
+		const attr = asset.attributes.filter((a) => a.trait_type === "Name")
+		if (attr.length > 0) {
+			result = `${attr[0].value}`
+		}
+		return result
+	}, [asset])
+
+	const onSubmit = handleSubmit(async ({ name }) => {
+		setLoading(true)
+		try {
+			await send<Asset>(HubKey.AssetUpdateName, {
+				tokenID: asset.tokenID,
+				userID,
+				name,
+			})
+			console.log(name)
+			displayMessage("Asset successfully updated", "success")
+			onClose()
+		} catch (e) {
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+		} finally {
+			setLoading(false)
+		}
+	})
+
+	// set default name
+	useEffect(() => {
+		setValue("name", getName())
+	}, [getName, setValue])
+
+	return (
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle>Update Asset Name</DialogTitle>
+			<DialogContent>
+				<form onSubmit={onSubmit}>
+					<InputField
+						name="name"
+						label="Name"
+						type="name"
+						control={control}
+						rules={{
+							required: "Name is required.",
+						}}
+						placeholder="Name"
+						style={{ width: "300px" }}
+						autoFocus
+						disabled={loading}
+					/>
+					<DialogActions>
+						<>
+							<Button variant="contained" type="submit" color="primary" disabled={loading}>
+								Save
+							</Button>
+							<Button
+								variant="contained"
+								type="button"
+								color="error"
+								disabled={loading}
+								onClick={() => {
+									onClose()
+								}}
+							>
+								Cancel
+							</Button>
+						</>
+					</DialogActions>
+				</form>
+			</DialogContent>
+		</Dialog>
 	)
 }
