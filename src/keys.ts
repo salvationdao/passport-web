@@ -84,6 +84,7 @@ enum HubKey {
 
 	CollectionList = "COLLECTION:LIST",
 	CollectionUpdated = "COLLECTION:SUBSCRIBE",
+	WalletCollectionList = "COLLECTION:WALLET:LIST",
 
 	AssetList = "ASSET:LIST",
 	AssetUpdated = "ASSET:SUBSCRIBE",
