@@ -143,7 +143,10 @@ export const StorePage: React.FC = () => {
 
 	const renderFilters = () => (
 		<>
-			<Box>
+			<Box sx={{
+				position: 'sticky',
+				top: '20px',
+			}}>
 				<Typography
 					variant="subtitle1"
 					sx={{

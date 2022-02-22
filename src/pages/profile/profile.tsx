@@ -2,11 +2,12 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import {
+	Alert,
 	Box,
 	Button,
 	ButtonProps,
 	Chip,
-	ChipProps,
+	ChipProps, CircularProgress,
 	Dialog,
 	DialogActions,
 	DialogContent,
@@ -19,7 +20,7 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery
+	useMediaQuery,
 } from "@mui/material"
 import React, { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -43,7 +44,9 @@ import { colors, fonts } from "../../theme"
 import { NilUUID } from "../../types/auth"
 import { Asset, Attribute, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
-import { NFT_CONTRACT_ADDRESS } from "../../config"
+import { NFT_CONTRACT_ADDRESS, NFT_STAKING_CONTRACT_ADDRESS } from "../../config"
+import { useWeb3 } from "../../containers/web3"
+import { ethers, BigNumber } from "ethers"
 
 export const ProfilePage: React.FC = () => {
 	const { username, token_id } = useParams<{ username: string; token_id: string }>()
@@ -127,6 +130,7 @@ export const ProfilePage: React.FC = () => {
 					<>
 						<Box
 							sx={{
+
 								display: "flex",
 								flexDirection: "column",
 								width: "100%",
@@ -731,10 +735,19 @@ interface AssetViewProps {
 	tokenID: number
 }
 
+enum AssetState {
+	OnWorld,
+	OnWorldLocked,
+	OnWorldFrozen,
+	OffWorldNotStaked,
+	OffWorldStaked,
+}
+
 const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	const history = useHistory()
 	const { state, subscribe, send } = useWebsocket()
 	const { user: loggedInUser } = useAuth()
+	const {provider} = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -752,6 +765,10 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	const [submitting, setSubmitting] = useState(false)
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
 	const [renameWindowOpen, setRenameWindowOpen] = useState(false)
+	const [assetState, setAssetState] = useState<AssetState>(AssetState.OnWorld)
+
+	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
+	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
 
 	const isOwner = asset ? loggedInUser?.id === asset?.userID : false
 
@@ -799,6 +816,28 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 		}
 	}
 
+
+	useEffect(()=>{
+		if(!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+		;(async ()=>{
+			try {
+				const abi = ["function ownerOf(uint256) view returns (address)"]
+				const signer = provider.getSigner()
+				const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+				const owner = await nftContract.ownerOf(asset.tokenID)
+
+				if ( owner === NFT_STAKING_CONTRACT_ADDRESS && asset.userID === loggedInUser.id) {
+					setAssetState(AssetState.OffWorldStaked)
+				}else if ((owner !== loggedInUser.publicAddress && owner !== NFT_STAKING_CONTRACT_ADDRESS) ||
+					(owner === loggedInUser.publicAddress && asset.userID === '2fa1a63e-a4fa-4618-921f-4b4d28132069')) {
+					setAssetState(AssetState.OffWorldNotStaked)
+				} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+					setAssetState(AssetState.OffWorldStaked)
+				}
+			} catch (e) {
+			}
+		})()
+	},[asset, provider, loggedInUser])
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 
@@ -902,6 +941,17 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 							marginBottom: "1rem",
 						}}
 					>
+
+						{assetState === AssetState.OffWorldNotStaked &&
+							<FancyButton size="small"  onClick={() => setStakeModelOpen(true)}>
+								Transition In Asset
+							</FancyButton>}
+
+						{assetState === AssetState.OffWorldStaked &&
+							<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
+								Transition out Asset
+							</FancyButton>}
+
 						{isOwner && isWarMachine() && !asset.frozenAt && (
 							<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
 								Rename Asset
@@ -1118,6 +1168,19 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 										gap: ".5rem",
 									}}
 								>
+
+
+									{assetState === AssetState.OffWorldNotStaked &&
+										<FancyButton size="small"  onClick={() => setStakeModelOpen(true)}>
+											Transition In Asset
+										</FancyButton>}
+
+									{assetState === AssetState.OffWorldStaked &&
+										<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
+											Transition out Asset
+										</FancyButton>}
+
+									{/*TODO: fix this mess of if statements*/}
 									{loggedInUser?.id === asset.userID && isWarMachine() && !asset.frozenAt && (
 										<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
 											Rename Asset
@@ -1289,6 +1352,9 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 						</Box>
 					</Box>
 				</Box>
+				{provider && asset && <StakeModel open={stakeModelOpen} asset={asset} provider={provider} onClose={()=> setStakeModelOpen(false)}/>}
+				{provider && asset && <UnstakeModel open={unstakeModelOpen} asset={asset} provider={provider} onClose={()=> setUnstakeModelOpen(false)}/>}
+
 			</Paper>
 		</>
 	)
@@ -1479,4 +1545,254 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Ass
 			</DialogContent>
 		</Dialog>
 	)
+}
+
+interface StakeModelProps {
+	open: boolean
+	onClose: () => void
+	provider: ethers.providers.Web3Provider
+	asset: Asset
+}
+
+//
+// if minted, get on chain wallet owner
+// if user wallet == online wallet
+//     have stake button
+// tell them there are 2 phases
+// approve (show est gas)
+// stake (show est gas)
+//	const mintAttempt = useCallback(async () => {
+// 		try {
+// 			if (currentChainId?.toString() !== ETHEREUM_CHAIN_ID) {
+// 				setErrorMinting("Connected to wrong chain.")
+// 				return
+// 			}
+// 			if (!provider) return
+// 			setLoadingMint(true)
+// 			// get nonce from mint contract
+// 			// send nonce, amount and user wallet addr to server
+// 			// server validates they have enough sups
+// 			// server generates a sig and returns it
+// 			// submit that sig to mint contract mintSups func
+// 			// listen on backend for update
+//
+// 			// A Human-Readable ABI; for interacting with the contract,
+// 			// we must include any fragment we wish to use
+// 			const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
+// 			const signer = provider.getSigner()
+// 			const mintContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+// 			if (mintingSignature && mintingSignature !== "") {
+// 				await mintContract.signedMint(tokenID, mintingSignature)
+// 				setErrorMinting(undefined)
+// 				return
+// 			}
+//
+// 			const nonce = await mintContract.nonces(account)
+// 			const resp = await fetch(`/api/mint-nft/${account}/${nonce}/${tokenID}`)
+// 			const respJson: GetSignatureResponse = await resp.json()
+// 			await mintContract.signedMint(tokenID, respJson.messageSignature, respJson.expiry)
+// 			setErrorMinting(undefined)
+// 			onClose()
+// 		} catch (e) {
+// 			setErrorMinting(e === "string" ? e : "Issue minting, please try again or contact support.")
+// 		} finally {
+// 			setLoadingMint(false)
+// 		}
+// 	}, [provider, account, tokenID, mintingSignature, currentChainId, onClose])
+
+//	OnWorld, - done
+// 	OnWorldLocked,
+// 	OnWorldFrozen,
+// 	OffWorldNotStaked, - done
+// 	OffWorldStaked,
+
+// //
+// useEffect(()=>{
+// 	if(!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+// 		;(async ()=>{
+// 		try {
+// 			const abi = ["function ownerOf(uint256) view returns (address)"]
+// 			const signer = provider.getSigner()
+// 			const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+//
+// 			const owner = await nftContract.ownerOf(asset.tokenID)
+//
+// 			if ((owner !== loggedInUser.publicAddress) ||
+// 				(owner === loggedInUser.publicAddress && asset.userID === '2fa1a63e-a4fa-4618-921f-4b4d28132069')) {
+// 				setAssetState(AssetState.OffWorldNotStaked)
+// 			} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+// 				setAssetState(AssetState.OffWorldStaked)
+// 			}
+// 		} catch (e) {
+// 		}
+// 	})()
+// },[asset, provider, loggedInUser])
+
+
+const UnstakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
+	const [error, setError] = useState<string>()
+
+	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
+	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
+
+	const unstake = useCallback(async ()=>{
+		try{
+			setUnstakingLoading(true)
+			const abi = ["function unstake(uint256)"]
+			const signer = provider.getSigner()
+			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
+			const tx = await nftStakingContract.unstake(asset.tokenID);
+			await tx.wait()
+			setUnstakingSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setUnstakingLoading(false)
+		}
+	},[provider, asset])
+
+
+	return 	(
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle
+				sx={(theme) => ({
+					fontSize: theme.typography.h3,
+				})}
+				color={"primary"}
+			>
+				Transition Asset on World
+			</DialogTitle>
+			<DialogContent sx={{ display: 'flex', width: "100%", flexDirection:'column', gap:'1rem', justifyContent: 'center'}}>
+				<>
+					<Typography variant={"h5"} color={"error"}>
+						GABS WARNING:
+					</Typography>
+					<Typography>Once transitioned off world you will be required to pay the fees to approve and transition back, transition with care.</Typography>
+				</>
+		
+					<FancyButton disabled={unstakingSuccess || unstakingLoading} fullWidth  onClick={unstake}>
+						{unstakingLoading && <CircularProgress/>}
+						{!unstakingLoading && unstakingSuccess &&  "Successfully Transitioned"}
+						{!unstakingLoading && !unstakingSuccess && "Transition"}
+
+					</FancyButton>
+			
+			</DialogContent>
+			<DialogActions>
+				{!!error && <Alert severity="error">{error}</Alert>}
+				<Button onClick={()=>onClose()}>Cancel</Button>
+			</DialogActions>
+		</Dialog>)
+}
+
+
+
+const StakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
+	const [error, setError] = useState<string>()
+	const [approvalLoading, setApprovalLoading] = useState<boolean>(false)
+	const [approvalSuccess, setApprovalSuccess] = useState<boolean>(false)
+
+	const [stakingLoading, setStakingLoading] = useState<boolean>(false)
+	const [stakingSuccess, setStakingSuccess] = useState<boolean>(false)
+
+	// TODO: give our est gas price
+	// useEffect(()=>{
+	// 	;(async ()=>{
+	// 	try {
+	// 		// "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
+	// 		const abi = ["function ownerOf(uint256) view returns (address)", "function approve(address, uint256)"]
+	// 		const signer = provider.getSigner()
+	// 		const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+	// 		const estimation = await nftContract.estimateGas.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.tokenID);
+	//
+	// 		setApproveGasEst(estimation)
+	//
+	// 		// if ((owner !== loggedInUser.publicAddress) ||
+	// 		// 	(owner === loggedInUser.publicAddress && asset.userID === '2fa1a63e-a4fa-4618-921f-4b4d28132069')) {
+	// 		// 	setAssetState(AssetState.OffWorldNotStaked)
+	// 		// } else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+	// 		// 	setAssetState(AssetState.OffWorldStaked)
+	// 		// }
+	// 	} catch (e) {
+	// 		console.log(e)
+	// 	}
+	// })()
+	// },[provider, asset])
+
+	const approve = useCallback(async ()=>{
+		try{
+			setApprovalLoading(true)
+			const abi = ["function approve(address, uint256)"]
+			const signer = provider.getSigner()
+			const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+			const tx = await nftContract.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.tokenID);
+			await tx.wait()
+			setApprovalSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setApprovalLoading(false)
+		}
+
+	},[provider, asset])
+
+	const stake = useCallback(async ()=>{
+		try{
+			setStakingLoading(true)
+			const abi = ["function stake(uint256)"]
+			const signer = provider.getSigner()
+			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
+			const tx = await nftStakingContract.stake(asset.tokenID);
+			await tx.wait()
+			setStakingSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setStakingLoading(false)
+		}
+	},[provider, asset])
+
+
+	return 	(
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle
+				sx={(theme) => ({
+					fontSize: theme.typography.h3,
+				})}
+				color={"primary"}
+			>
+				Transition Asset on World
+			</DialogTitle>
+			<DialogContent sx={{ display: 'flex', width: "100%", flexDirection:'column', gap:'1rem', justifyContent: 'center'}}>
+				<>
+					<Typography variant={"h5"} color={"error"}>
+						GABS WARNING:
+					</Typography>
+					<Typography>To transition your items back on world it is a 2 part process, with each part requiring fees.</Typography>
+				</>
+				<Box>
+					<Typography>1. First you need to approve us to transition your item.</Typography>
+					<FancyButton disabled={approvalSuccess || approvalLoading} fullWidth onClick={approve}>
+						{approvalLoading && <CircularProgress/>}
+						{!approvalLoading && approvalSuccess  && "Successfully Approved"}
+						{!approvalLoading && !approvalSuccess  && "Approve"}
+					</FancyButton>
+				</Box>
+				<Box>
+					<Typography>2. Transition your item on world.</Typography>
+					<FancyButton disabled={stakingSuccess || stakingLoading} fullWidth  onClick={stake}>
+						{stakingLoading && <CircularProgress/>}
+						{!stakingLoading && stakingSuccess  && "Successfully Transitioned"}
+						{!stakingLoading && !stakingSuccess  && "Transition"}
+					</FancyButton>
+				</Box>
+			</DialogContent>
+			<DialogActions>
+				{!!error && <Alert severity="error">{error}</Alert>}
+				<Button onClick={()=>onClose()}>Cancel</Button>
+			</DialogActions>
+		</Dialog>)
 }
