@@ -20,3 +20,10 @@
   REACT_APP_WITHDRAW_ADDRESS = "0x6476dB7cFfeeBf7Cc47Ed8D4996d1D60608AAf95"
   REACT_APP_REDEEM_ADDRESS = "0x0"
   REACT_APP_WALLET_CONNECT_RPC = "1375aa321ac8ac6cfba6aa9c"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://api.xsyn.io/api/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
