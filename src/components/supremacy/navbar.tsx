@@ -2,7 +2,7 @@ import TelegramIcon from "@mui/icons-material/Telegram"
 import TwitterIcon from "@mui/icons-material/Twitter"
 import { Fade, Grow, Modal, Slide, Stack, useMediaQuery } from "@mui/material"
 import { Box, styled, SxProps } from "@mui/system"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Logo from "../../assets/images/supremacy-white.svg"
 import { IMAGE_FOLDER, NAVBAR_HEIGHT } from "../../pages/sale/salePage"
 import { colors } from "../../theme"
@@ -104,8 +104,12 @@ function MobileNavItem(props: { label: string; href: string; handleClick: () => 
 export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (props: { sx?: SxProps; loading: boolean }) => {
 	// MobileNav
 	const [open, setOpen] = useState<boolean>(false)
-	const [show, setShow] = useState<boolean>(true)
 	const matches = useMediaQuery("(max-width:1000px)")
+	const [show, setShow] = useState<boolean>(true)
+
+	useEffect(() => {
+		if (matches) setShow(false)
+	}, [matches])
 
 	// const navbarControl = () => {
 	// 	if (window.scrollY) {

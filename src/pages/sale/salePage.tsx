@@ -48,7 +48,7 @@ export const SalePage = () => {
 		try {
 			const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
 			const data = (await response.clone().json()) as WhitelistTime
-			if (!data.next_phase.includes("death")) setDisableSimulation(true)
+			// if (!["death", "alpha"].includes(data.next_phase)) setDisableSimulation(true)
 
 			const endDate = new Date(data.time)
 			setCountdown(endDate)
@@ -137,6 +137,9 @@ export const SalePage = () => {
 								alignItems: "center",
 								gap: "4em",
 								px: "2em",
+								"@media (max-width:600px)": {
+									gap: "1em",
+								},
 							}}
 						>
 							<Stack alignItems="center">
@@ -156,7 +159,7 @@ export const SalePage = () => {
 										}}
 									/>
 								</a>
-								<Title>Game Launch and TOKEN SALE</Title>
+								<Title>Whitelist TOKEN SALE</Title>
 							</Stack>
 
 							<Box
@@ -209,7 +212,7 @@ export const SalePage = () => {
 													fontSize: "1rem",
 													textTransform: "uppercase",
 													color: colors.white,
-													textShadow: `1px 2px ${colors.black}`,
+													textShadow: `2px 2px ${colors.black}`,
 													whiteSpace: "nowrap",
 													fontWeight: "600",
 												}}
@@ -218,6 +221,7 @@ export const SalePage = () => {
 											</Typography>
 										</Box>
 									</Box>
+
 									{countdown && <CountdownTimer date={countdown} publicSale />}
 								</Stack>
 								<BuyTokens publicSale />
@@ -236,8 +240,14 @@ const Title = styled("h1")({
 	textAlign: "center",
 	fontSize: "3rem",
 	margin: 0,
+	WebkitTextStrokeWidth: "1px",
+	WebkitTextStrokeColor: colors.black,
+	textShadow: `1px 3px ${colors.black}`,
 	"@media (max-width:800px)": {
 		fontSize: "4vmin",
+	},
+	"@media (max-width:600px)": {
+		textShadow: "unset",
 	},
 })
 
@@ -249,6 +259,13 @@ const SubHeading = styled("span")({
 	textAlign: "center",
 	WebkitTextStrokeWidth: "1px",
 	WebkitTextStrokeColor: colors.black,
+	textShadow: `1px 3px ${colors.black}`,
+	"@media (max-width:600px)": {
+		textShadow: "unset",
+	},
+	"@media (max-width:400px)": {
+		fontSize: "4vmin",
+	},
 })
 
 const GameFrame = styled("iframe")({
@@ -270,11 +287,11 @@ const FancyLinearProgress = styled(LinearProgress)({
 	width: "90vw",
 	maxWidth: "30rem",
 	height: "3.5rem",
-	"@media (max-width:559px)": {
-		height: "40px",
+	"@media (max-width:600px)": {
+		height: "4rem",
 	},
 	clipPath: `polygon(0 0, calc(100% - 1rem) 0%, 100% 1rem, 100% 100%, 1rem 100%, 0% calc(100% - 1rem))`,
-	backgroundColor: "rgba(0, 136, 136, 0.4)",
+	backgroundColor: "rgba(55,185,255,.3)",
 	"&>span": {
 		backgroundColor: "rgba(43,233,253,0.5)",
 		animation: " 2s linear infinite forwards shimmer",
