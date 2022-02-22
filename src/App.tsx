@@ -2,12 +2,17 @@ import { CssBaseline } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
 import { Action, Client, ClientContextProvider, createClient } from "react-fetching-library"
 import { Themes } from "./containers"
+import { AssetProvider } from "./containers/assets"
 import { AuthProvider } from "./containers/auth"
-import { API_ENDPOINT_HOSTNAME, SocketProvider } from "./containers/socket"
+import { SidebarStateProvider } from "./containers/sidebar"
+import { SupremacyAppProvider } from "./containers/supremacy/app"
+import { SnackbarProvider } from "./containers/snackbar"
+import { SocketProvider } from "./containers/socket"
 import { Web3Provider } from "./containers/web3"
 import "./fonts.css"
 import { loadIcons } from "./helpers/loadicons"
 import { Routes } from "./routes"
+import { API_ENDPOINT_HOSTNAME } from "./config"
 
 loadIcons()
 
@@ -29,16 +34,24 @@ const AppAdmin = () => {
 
 	return (
 		<SocketProvider>
-			<Web3Provider>
-				<ClientContextProvider client={client}>
-					<AuthProvider>
-						<ThemeProvider theme={currentTheme}>
-							<CssBaseline />
-							<Routes />
-						</ThemeProvider>
-					</AuthProvider>
-				</ClientContextProvider>
-			</Web3Provider>
+			<SnackbarProvider>
+				<SupremacyAppProvider>
+					<Web3Provider>
+						<ClientContextProvider client={client}>
+							<AuthProvider>
+								<SidebarStateProvider>
+									<AssetProvider>
+										<ThemeProvider theme={currentTheme}>
+											<CssBaseline />
+											<Routes />
+										</ThemeProvider>
+									</AssetProvider>
+								</SidebarStateProvider>
+							</AuthProvider>
+						</ClientContextProvider>
+					</Web3Provider>
+				</SupremacyAppProvider>
+			</SnackbarProvider>
 		</SocketProvider>
 	)
 }

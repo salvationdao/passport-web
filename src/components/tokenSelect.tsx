@@ -1,0 +1,61 @@
+import { Box, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material"
+import React from "react"
+import { tokenName, tokenSelect } from "../types/types"
+
+interface TokenSelectProps {
+	selectedTokenName: tokenName
+	tokenOptions: tokenSelect[]
+	setSelectedTokenName: React.Dispatch<React.SetStateAction<tokenName>>
+	cb: () => void
+}
+
+export const TokenSelect = ({ selectedTokenName, tokenOptions, setSelectedTokenName, cb }: TokenSelectProps) => {
+	const handleSelectChange = (e: SelectChangeEvent<unknown>) => {
+		if (cb) cb()
+		setSelectedTokenName(e.target.value as tokenName)
+	}
+
+	return (
+		<Select
+			variant="filled"
+			sx={{
+				marginBottom: "1rem",
+				marginLeft: "auto",
+				display: "flex",
+				minWidth: "175px",
+			}}
+			onChange={(e) => handleSelectChange(e)}
+			SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: ".5rem 32px .5rem .5rem" } }}
+			value={selectedTokenName}
+		>
+			{tokenOptions.map((x) => {
+				return (
+					<MenuItem key={x.name} sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", justifyItems: "center" }} value={x.name}>
+						<Box
+							component="img"
+							src={x.chainSrc}
+							alt="Ethereum token symbol"
+							sx={{
+								height: "1.5rem",
+								marginRight: "1rem",
+								filter: "grayscale(100%) opacity(70%)",
+							}}
+						/>
+						<Box
+							component="img"
+							src={x.tokenSrc}
+							alt="Ethereum token symbol"
+							sx={{
+								height: "1.5rem",
+								marginRight: "1rem",
+							}}
+						/>
+						<Typography variant="body1" sx={{ textTransform: "uppercase" }}>
+							{x.name}
+						</Typography>
+					</MenuItem>
+				)
+			})}
+		</Select>
+	)
+}

@@ -31,6 +31,14 @@ export const formatBytes = (bytes: number, decimals: number = 2) => {
 /** Takes a camel cased string and inserts spaces between the words (`camelCaseString` -> `camel Case String`) */
 export const splitCamelCase = (str: string) => str.replace(/([a-z])([A-Z])/g, "$1 $2")
 
+/** Takes a long string and truncates it with a middle-positioned ellipsis */
+export const middleTruncate = (str: string, length?: number, startOffset?: number, endOffset?: number) => {
+	if (length ? str.length > length : str.length > 16) {
+		return str.substring(0, startOffset || 12) + "..." + str.substring(str.length - (endOffset || 4), str.length)
+	}
+	return str
+}
+
 export default function debounce<T extends Function>(cb: T, wait = 20) {
 	let h: number
 	let callable = (...args: any) => {
@@ -47,4 +55,32 @@ export function makeid(length: number = 12): string {
 		result += characters.charAt(Math.floor(Math.random() * characters.length))
 	}
 	return result
+}
+
+// Generates a string of URI encoded parameters from an object
+export const getParamsFromObject = (params: any) => {
+	return (
+		"?" +
+		Object.keys(params)
+			.filter((param) => !!params[param])
+			.map((param) => `${param}=${window.encodeURIComponent(params[param])}`)
+			.join("&")
+	)
+}
+
+// Returns true if user agent is mobile
+export const getIsMobile = () => {
+	let isMobile = false
+	try {
+		isMobile = !!(
+			(window.navigator && (window.navigator as any).standalone === true) ||
+			window.matchMedia("(display-mode: standalone)").matches ||
+			navigator.userAgent.match("CriOS") ||
+			navigator.userAgent.match(/mobile/i)
+		)
+	} catch (ex) {
+		// continue regardless of error
+	}
+
+	return isMobile
 }

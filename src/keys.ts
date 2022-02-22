@@ -3,10 +3,18 @@ enum HubKey {
 
 	AuthLogin = "AUTH:LOGIN",
 	AuthLoginToken = "AUTH:TOKEN",
-	AuthLoginGoogle = "AUTH:GOOGLE",
-	AuthLoginFacebook = "AUTH:FACEBOOK",
-	AuthLoginTwitch = "AUTH:TWITCH",
-	AuthLoginWallet = "AUTH:WALLET",
+	AuthSignUpWallet = "AUTH:SIGNUP_WALLET",
+	AuthLoginWallet = "AUTH:LOGIN_WALLET",
+	AuthSignUpGoogle = "AUTH:SIGNUP_GOOGLE",
+	AuthLoginGoogle = "AUTH:LOGIN_GOOGLE",
+	AuthSignUpFacebook = "AUTH:SIGNUP_FACEBOOK",
+	AuthLoginFacebook = "AUTH:LOGIN_FACEBOOK",
+	AuthSignUpTwitch = "AUTH:SIGNUP_TWITCH",
+	AuthLoginTwitch = "AUTH:LOGIN_TWITCH",
+	AuthSignUpTwitter = "AUTH:SIGNUP_TWITTER",
+	AuthLoginTwitter = "AUTH:LOGIN_TWITTER",
+	AuthSignUpDiscord = "AUTH:SIGNUP_DISCORD",
+	AuthLoginDiscord = "AUTH:LOGIN_DISCORD",
 	AuthLogout = "AUTH:LOGOUT",
 	AuthSuccess = "AUTH:SUCCESS",
 	AuthRegister = "AUTH:REGISTER",
@@ -24,6 +32,7 @@ enum HubKey {
 	UserCreate = "USER:CREATE",
 	UserUpdate = "USER:UPDATE",
 	/** Tracks user changes */
+	UserUsernameUpdate = "USER:USERNAME:UPDATE",
 	UserUpdated = "USER:SUBSCRIBE",
 	UserArchive = "USER:ARCHIVE",
 	UserUnarchive = "USER:UNARCHIVE",
@@ -39,6 +48,11 @@ enum HubKey {
 	UserAddGoogle = "USER:ADD_GOOGLE",
 	UserRemoveTwitch = "USER:REMOVE_TWITCH",
 	UserAddTwitch = "USER:ADD_TWITCH",
+	UserRemoveTwitter = "USER:REMOVE_TWITTER",
+	UserAddTwitter = "USER:ADD_TWITTER",
+	UserRemoveDiscord = "USER:REMOVE_DISCORD",
+	UserAddDiscord = "USER:ADD_DISCORD",
+	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
 
 	RoleGet = "ROLE:GET",
 	RoleList = "ROLE:LIST",
@@ -66,9 +80,32 @@ enum HubKey {
 	UserActivityList = "USER_ACTIVITY:LIST",
 	UserActivityGet = "USER_ACTIVITY:GET",
 	UserActivityCreate = "USER_ACTIVITY:CREATE",
+	UserWarMachineQueuePositionSubscribe = "USER:WAR:MACHINE:QUEUE:POSITION:SUBSCRIBE",
 
-	AssetListUpdated = "ASSET:SUBSCRIBE",
+	CollectionList = "COLLECTION:LIST",
+	CollectionUpdated = "COLLECTION:SUBSCRIBE",
+
 	AssetList = "ASSET:LIST",
+	AssetUpdated = "ASSET:SUBSCRIBE",
+	AssetJoinQueue = "ASSET:QUEUE:JOIN",
+	AssetLeaveQue = "ASSET:QUEUE:LEAVE",
+	AssetUpdateName = "ASSET:UPDATE:NAME",
+	AssetInsurancePay = "ASSET:INSURANCE:PAY",
+	AssetQueueContractReward = "ASSET:QUEUE:CONTRACT:REWARD",
+
+	StoreItemSubscribe = "STORE:ITEM",
+	StoreList = "STORE:LIST",
+	StorePurchase = "STORE:PURCHASE",
+
+	BlockConfirmation = "BLOCK:CONFIRM",
+	GetFactionsDetail = "FACTION:ALL",
+	FactionEnlist = "FACTION:ENLIST",
+	SubscribeUserFaction = "USER:FACTION:SUBSCRIBE",
+	SubscribeFactionStat = "FACTION:STAT:SUBSCRIBE",
+
+	SupTotalRemaining = "SUPS:TREASURY",
+	SupExchangeRates = "SUPS:EXCHANGE",
+	SupsWithdraw = "SUPS:WITHDRAW",
 }
 
 export default HubKey

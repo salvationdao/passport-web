@@ -1,70 +1,78 @@
-import MetaMaskOnboarding from "@metamask/onboarding"
-import { Alert } from "@mui/material"
-import { useState } from "react"
-import { ReactComponent as MetaMaskIcon } from "../assets/images/icons/metamask.svg"
+import { useCallback, useMemo, useState } from "react"
+import { useHistory } from "react-router-dom"
+import { useContainer } from "unstated-next"
 import { AuthContainer } from "../containers"
+import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
-import { FancyButton, FancyButtonProps } from "./fancyButton"
 
-interface LoginMetaMaskProps extends FancyButtonProps {
-	signUp?: boolean
-	username?: string
-	onFailure?: (err: string) => void
-	onClick?: () => Promise<boolean> // return false to stop login
+interface MetaMaskLoginButtonRenderProps {
+	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+	metaMaskState: MetaMaskState
+	isProcessing: boolean
 }
 
-export const LoginMetaMask: React.FC<LoginMetaMaskProps> = ({ signUp, username, onFailure, onClick, ...props }) => {
-	const { loginMetamask } = AuthContainer.useContainer()
+interface LoginMetaMaskProps {
+	publicSale?: boolean
+	onFailure?: (err: string) => void
+	onClick?: () => Promise<boolean> // return false to stop login
+	render: (props: MetaMaskLoginButtonRenderProps) => JSX.Element
+}
+
+export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ publicSale, onFailure, onClick, render }) => {
+	const { loginMetamask, loginWalletConnect } = AuthContainer.useContainer()
 	const { metaMaskState, connect } = useWeb3()
-	const [errorMessage, setErrorMessage] = useState<string | null>(null)
+	const { displayMessage } = useSnackbar()
+	const history = useHistory()
+	const [isProcessing, setIsProcessing] = useState(false)
 
-	return (
-		<>
-			<FancyButton
-				onClick={async () => {
-					if (metaMaskState === MetaMaskState.NotLoggedIn) {
-						await connect()
-						return
-					}
-					if (metaMaskState === MetaMaskState.Active) {
-						if (onClick && !(await onClick())) return
-
-						const err = await loginMetamask(username)
-						if (err) {
-							if (onFailure) {
-								onFailure(err)
-								return
-							}
-							setErrorMessage(err)
-						}
-						return
-					}
-					const onboarding = new MetaMaskOnboarding()
-					onboarding.startOnboarding()
-				}}
-				title={
-					metaMaskState === MetaMaskState.NotInstalled
-						? "Install MetaMask"
-						: metaMaskState === MetaMaskState.NotLoggedIn
-							? "Sign into your MetaMask to continue"
-							: "Login With MetaMask"
+	const click = useCallback(async () => {
+		if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
+			try {
+				displayMessage("Please refer to your wallet for authentication")
+				const resp = await loginWalletConnect()
+				if (!resp || !resp.isNew) return
+				{
+					!publicSale && history.push("/onboarding?skip_username=true")
 				}
-				startIcon={<MetaMaskIcon />}
-				{...props}
-			>
-				{metaMaskState === MetaMaskState.NotInstalled
-					? "Install MetaMask"
-					: metaMaskState === MetaMaskState.NotLoggedIn
-						? "Connect and sign into your MetaMask to continue"
-						: signUp
-							? "Sign up with MetaMask"
-							: "Login With MetaMask"}
-			</FancyButton>
-			{errorMessage && (
-				<Alert severity="error" sx={{ mt: "20px", maxWidth: "600px" }}>
-					{errorMessage}
-				</Alert>
-			)}
-		</>
+			} catch (e) {
+				setIsProcessing(false)
+				if (onFailure) {
+					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
+				}
+			}
+		} else {
+			setIsProcessing(true)
+			if (onClick && !(await onClick())) return
+
+			try {
+				const resp = await loginMetamask()
+				setIsProcessing(false)
+				if (!resp || !resp.isNew) return
+				!publicSale && history.push("/onboarding?skip_username=true")
+			} catch (e) {
+				setIsProcessing(false)
+				if (onFailure) {
+					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
+				}
+			}
+			return
+		}
+
+		setIsProcessing(false)
+	}, [onFailure, history, loginMetamask, metaMaskState, onClick, connect, loginWalletConnect, publicSale])
+
+	const propsForRender = useMemo(
+		() => ({
+			onClick: click,
+			isProcessing,
+			metaMaskState,
+		}),
+		[click, isProcessing, metaMaskState],
 	)
+
+	if (!render) {
+		throw new Error("MetaMaskLogin requires a render prop to render")
+	}
+
+	return render(propsForRender)
 }

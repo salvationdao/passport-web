@@ -8,6 +8,8 @@ export interface User {
 	lastName: string
 	roleID: string
 	avatarID: string
+	factionID: string
+	faction: Faction | undefined
 	verified: boolean
 	createdAt: Date
 	updatedAt: Date
@@ -23,6 +25,48 @@ export interface User {
 	facebookID?: string
 	googleID?: string
 	twitchID?: string
+	twitterID?: string
+	discordID?: string
+}
+
+export interface UserFaction {
+	recruitID: string
+	supsEarned: number
+	rank: string
+	spectatedCount: number
+
+	// Faction specific
+	factionID: string
+	theme: FactionTheme
+	logoUrl: string
+	backgroundUrl: string
+}
+
+export interface FactionTheme {
+	primary: string
+	secondary: string
+	background: string
+}
+
+export interface Faction {
+	id: string
+	label: string
+	logoBlobID: string
+	backgroundUrl: string
+	theme: FactionTheme
+	description: string
+}
+
+export interface DetailedFaction {
+	description: string
+	velocity?: number
+	sharePercent: number
+	recruitNumber: number
+	winCount: number
+	lossCount: number
+	killCount: number
+	deathCount: number
+	mvp: User
 }
 
 export interface UserActivity {
@@ -69,15 +113,100 @@ export interface Product {
 	deletedAt: Date | null
 }
 
+export interface Collection {
+	id: string
+	name: string
+	image: string
+	createdAt: Date
+	updatedAt: Date
+	frozenAt?: Date
+	deletedAt?: Date
+}
+
 export interface Asset {
 	tokenID: number
+	userID: string
+	username: string
 	name: string
-	collection: string
+	collection: Collection
+	game_object?: any
 	description: string
 	externalURL: string
 	image: string
-	attributes: string
+	animation_url: string
+	attributes: Attribute[]
+	additional_metadata?: any
 	createdAt: Date
 	updatedAt: Date
-	deletedAt?: any
+	frozenAt?: Date
+	lockedByID?: string
+	deletedAt?: Date
+	mintingSignature?: string
+	txHistory: any[]
+}
+
+export interface Attribute {
+	display_type?: "number"
+	trait_type: string
+	token_id?: number
+	value: string | number
+}
+
+export interface StoreItem {
+	ID: string
+	name: string
+	factionID: string
+	faction?: Faction
+	collectionID: string
+	collection: Collection
+	description: string
+	image: string
+	animation_url: string
+	attributes: Attribute[]
+	usdCentCost: number
+	amountSold: number
+	supCost: string
+	amountAvailable: number
+	soldAfter: Date
+	soldBefore: Date
+	deletedAt: Date
+	createdAt: Date
+	updatedAt: Date
+}
+
+export interface QueuedWarMachine {
+	position: number
+	warMachineMetadata: WarMachineMetadata
+}
+
+export interface WarMachineMetadata {
+	tokenID: number
+	isInsured: boolean
+	contractReward: string
+}
+
+export enum Rarity {
+	Common,
+	Uncommon,
+	Rare,
+	Epic,
+	Legendary,
+}
+
+export interface ExchangeRates {
+	ETHtoUSD: number
+	BNBtoUSD: number
+	SUPtoUSD: number
+}
+
+export type tokenName = "eth" | "usdc" | "bnb" | "busd"
+export interface tokenSelect {
+	name: tokenName
+	networkName: string
+	chainId: number
+	tokenSrc: string
+	chainSrc: string
+	isNative: boolean
+	contractAddr: string
+	scanSite: string
 }
