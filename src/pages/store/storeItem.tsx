@@ -389,7 +389,7 @@ export const StoreItemPage = () => {
 											</Typography>
 										</Box>
 									</Box>
-									<FancyButton onClick={() => purchase()} fancy>
+									<FancyButton onClick={() => purchase()} loading={submitting} fancy>
 										Purchase Item
 									</FancyButton>
 								</>
