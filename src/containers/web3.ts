@@ -22,7 +22,6 @@ import {
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
-import { useSupremacyApp } from "./supremacy/app"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -252,7 +251,7 @@ export const Web3Container = createContainer(() => {
 	}, [provider, handleAccountChange, handleChainChange, createWcProvider])
 
 	const checkNeoBalance = useCallback(
-		async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+		async (addr: string) => {
 			const NTABI = ["function balanceOf(address) view returns (uint256)"]
 			if (provider) {
 				const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
@@ -265,57 +264,43 @@ export const Web3Container = createContainer(() => {
 						await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
 							method: "PUT",
 						})
-						if (setShowGame) {
-							setShowGame(true)
-						}
 					} catch (error) {
 						console.error()
 					}
-				} else {
-					if (setShowGame) {
-						setShowGame(true)
-					}
-				}
+				} else return
 			}
 		},
 		[provider],
 	)
-	const connect = useCallback(
-		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
-			if (provider) {
-				try {
-					await provider.send("eth_requestAccounts", [])
-					const signer = provider.getSigner()
-					const acc = await signer.getAddress()
-					// Check if account is whitelisted if not return
-					setAccount(acc)
-					handleAccountChange([acc])
-				} catch (error) {
-					if (error instanceof Error) displayMessage(error.message, "error")
-					else displayMessage("Please authenticate your wallet.", "info")
-				}
-			}
-		},
-		[displayMessage, provider, handleAccountChange],
-	)
-
-	const wcConnect = useCallback(
-		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
-			let walletConnectProvider
+	const connect = useCallback(async () => {
+		if (provider) {
 			try {
-				walletConnectProvider = await createWcProvider()
-				await walletConnectProvider.enable()
-				const connector = await walletConnectProvider.getWalletConnector()
-				const acc = connector.accounts[0]
+				await provider.send("eth_requestAccounts", [])
+				const signer = provider.getSigner()
+				const acc = await signer.getAddress()
+				// Check if account is whitelisted if not return
 				setAccount(acc)
-				if (setShowGame) setShowGame(true)
-				return { walletConnectProvider }
+				handleAccountChange([acc])
 			} catch (error) {
-				await walletConnectProvider?.disconnect()
+				if (error instanceof Error) displayMessage(error.message, "error")
+				else displayMessage("Please authenticate your wallet.", "info")
 			}
-		},
-		[createWcProvider],
-	)
+		}
+	}, [displayMessage, provider, handleAccountChange])
+
+	const wcConnect = useCallback(async () => {
+		let walletConnectProvider
+		try {
+			walletConnectProvider = await createWcProvider()
+			await walletConnectProvider.enable()
+			const connector = await walletConnectProvider.getWalletConnector()
+			const acc = connector.accounts[0]
+			setAccount(acc)
+			return { walletConnectProvider }
+		} catch (error) {
+			await walletConnectProvider?.disconnect()
+		}
+	}, [createWcProvider])
 
 	const ETHEREUM_NETWORK: AddEthereumChainParameter = useMemo(
 		() => ({
@@ -482,7 +467,7 @@ export const Web3Container = createContainer(() => {
 					return BigNumber.from(0)
 				}
 				const signer = provider.getSigner()
-				return signer.getBalance()
+				return await signer.getBalance()
 			}
 			try {
 				if (!provider || !account) return
@@ -562,6 +547,7 @@ export const Web3Container = createContainer(() => {
 		tokenOptions,
 		currentToken,
 		setCurrentToken,
+		checkNeoBalance,
 	}
 })
 

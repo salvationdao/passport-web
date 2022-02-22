@@ -27,19 +27,12 @@ export const SalePage = () => {
 	const [showGame, setShowGame] = useState(false)
 	const contentRef = useRef<HTMLIFrameElement>(null)
 	const { showSimulation, setShowSimulation } = useSupremacyApp()
-	const { account, connect, wcConnect } = useWeb3()
+	const { account, checkNeoBalance } = useWeb3()
 	const { loading, setLoading, amountRemaining } = useContainer(AppState)
 
 	const handleJoinBtn = async () => {
-		if (!account) {
-			if ((window as any).ethereum) {
-				await connect(setShowGame)
-			} else {
-				await wcConnect(setShowGame)
-			}
-		} else {
-			// Make request to server and send account address
-			// Receive response, if accepted, show game
+		if (account) {
+			await checkNeoBalance(account)
 			window.localStorage.setItem("wallet", account)
 			setShowGame(true)
 		}
@@ -79,9 +72,9 @@ export const SalePage = () => {
 					zIndex: 9999,
 				}}
 			/>
-			<iframe title="text game" src={TEXT_GAME_LOCATION} ref={contentRef}>
+			<GameFrame title="text game" src={TEXT_GAME_LOCATION} ref={contentRef}>
 				Your browser doesnt support iframes
-			</iframe>
+			</GameFrame>
 		</>
 	) : (
 		<>

@@ -8,6 +8,7 @@ import { useContainer } from "unstated-next"
 import Arrow from "../assets/images/arrow.png"
 import SupsToken from "../assets/images/sup-token.svg"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
+import { useAuth } from "../containers/auth"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { AppState, useSupremacyApp } from "../containers/supremacy/app"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -26,6 +27,7 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
 	const { subscribe, state } = useWebsocket()
 	const { isWhitelisted } = useSupremacyApp()
+	const { user } = useAuth()
 	const {
 		changeChain,
 		currentChainId,
@@ -53,7 +55,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
-
 	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
 
 	const handleConversions = useCallback(
@@ -246,7 +247,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		<Box
 			sx={{
 				border: publicSale
-					? `1px groove ${colors.neonBlue}`
+					? `1px groove ${colors.skyBlue}`
 					: {
 							xs: `2px solid ${theme.palette.secondary.main}`,
 							md: "none",
@@ -284,9 +285,10 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			</Box>
 
 			{/* Metamask Connection */}
+
 			<Box
 				sx={
-					publicSale && !isWhitelisted
+					publicSale && !user
 						? {
 								position: "absolute",
 								zIndex: "5",
@@ -431,7 +433,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			{/* Purchase Sups Form */}
 			<Box
 				sx={{
-					background: publicSale ? colors.darkerNavyBlue : "unset",
+					background: publicSale ? colors.darkNavyBlue : "unset",
 					p: publicSale ? "2em" : "unset",
 					"@media (max-width:600px)": {
 						p: "1rem",
@@ -447,31 +449,38 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						justifyContent: "space-between",
 					}}
 				>
-					{!publicSale && (
-						<Typography
-							variant="h2"
-							align="center"
-							sx={{
-								textTransform: "uppercase",
-								paddingBottom: "1rem",
-							}}
-						>
-							Purchase SUPS
-						</Typography>
-					)}
+					<Typography
+						variant="h2"
+						align="center"
+						sx={{
+							fontWeight: 800,
+							fontSize: "1.2rem",
+							textTransform: "uppercase",
+							paddingBottom: "1rem",
+						}}
+					>
+						Purchase $SUPS
+					</Typography>
 					<form onSubmit={handleSubmit}>
 						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between", alignItems: "center" }}>
 							<Box sx={{ position: "relative", width: "100%" }}>
 								<Box
-									sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: "1rem", marginBottom: "1rem" }}
+									sx={{
+										maxHeight: "6rem",
+										display: "flex",
+										backgroundColor: colors.inputBg,
+										borderRadius: "10px",
+										padding: ".5rem",
+										marginBottom: "1rem",
+									}}
 								>
-									<Box sx={{ flexGrow: "2" }}>
+									<Stack sx={{ gap: ".5em" }}>
 										<Typography sx={{ color: colors.darkGrey }} variant="h6">
 											From:{" "}
 										</Typography>
 										<TextField
 											fullWidth
-											variant="filled"
+											variant="standard"
 											value={tokenDisplay || ""}
 											onChange={(e) => {
 												try {
@@ -490,7 +499,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 											}}
 											type="number"
 											sx={{
-												backgroundColor: colors.darkNavyBlue,
+												fontWeight: 800,
+												"& *::after": { p: 0, border: "none" },
 												"& .MuiFilledInput-root": {
 													background: "inherit",
 												},
@@ -501,7 +511,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 											}}
 											inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
 										/>
-									</Box>
+									</Stack>
 
 									<Box
 										sx={{
@@ -552,7 +562,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 										zIndex: 2,
 									}}
 								/>
-								<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: "1rem", marginTop: "1rem" }}>
+								<Box sx={{ display: "flex", backgroundColor: colors.inputBg, borderRadius: "10px", padding: "1rem", marginTop: "1rem" }}>
 									<Box sx={{ flexGrow: "2" }}>
 										<Typography sx={{ color: colors.darkGrey }} variant="h6">
 											To:
@@ -579,7 +589,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 											}}
 											type="number"
 											sx={{
-												backgroundColor: colors.darkNavyBlue,
+												backgroundColor: colors.inputBg,
 												"& .MuiFilledInput-root": {
 													background: "inherit",
 												},

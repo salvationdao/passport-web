@@ -180,7 +180,7 @@ export const AuthContainer = createContainer(() => {
 			const signature = await sign()
 			if (account) {
 				const allowAccess = await checkWhitelist(account)
-				if (!allowAccess) {
+				if (allowAccess) {
 					setShowSimulation(true)
 					return
 				}
