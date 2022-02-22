@@ -164,7 +164,6 @@ export const Web3Container = createContainer(() => {
 				if (currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId) {
 					erc20Addr = BUSD_CONTRACT_ADDRESS
 				}
-				console.log({ currentChainId, erc20Addr })
 				const contract = new ethers.Contract(erc20Addr, genericABI, provider)
 				const bal = await contract.balanceOf(account)
 				if (!bal) {
