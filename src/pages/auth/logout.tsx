@@ -1,19 +1,16 @@
 import { useEffect } from "react"
-import { Redirect } from "react-router-dom"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
+import { useWebsocket } from "../../containers/socket"
 
 export const LogoutPage = () => {
-	const { user, sessionID, loading, logout } = useAuth()
+	const { sessionID, logout } = useAuth()
+	const { state } = useWebsocket()
 
 	useEffect(() => {
-		if (user && sessionID) {
-			logout()
-		}
-	}, [user, sessionID, logout])
+		if (!sessionID || state !== WebSocket.OPEN) return
+		logout()
+	}, [sessionID, state, logout])
 
-	if (!user && !loading) {
-		return <Redirect to={"/"} />
-	}
 	return <Loading text="We are logging you out, please wait..." />
 }

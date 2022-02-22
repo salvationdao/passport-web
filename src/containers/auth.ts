@@ -59,6 +59,8 @@ export const AuthContainer = createContainer(() => {
 
 	const [sessionID, setSessionID] = useState("")
 
+	const isLogoutPage = window.location.pathname.startsWith("/nosidebar/logout")
+
 	/////////////////
 	//  Functions  //
 	/////////////////
@@ -68,11 +70,14 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const logout = useCallback(() => {
 		const token = localStorage.getItem("token")
-		send(HubKey.AuthLogout, { token, sessionID }).then(() => {
+		return send(HubKey.AuthLogout, { token, sessionID }).then(() => {
 			localStorage.removeItem("token")
-			window.location.reload()
+			if (!isLogoutPage) {
+				window.location.reload()
+			}
+			return true
 		})
-	}, [send])
+	}, [send, isLogoutPage, sessionID])
 
 	/**
 	 * Logs a User in using their email and password.
@@ -877,15 +882,15 @@ export const AuthContainer = createContainer(() => {
 
 	// Effect: Login with saved login token when websocket is ready
 	useEffect(() => {
-		if (user || state === WebSocket.CLOSED) return
+		if (user || isLogoutPage || state === WebSocket.CLOSED) return
 
 		const token = localStorage.getItem("token")
-		if (token && token !== "") {
+		if (!isLogoutPage && token && token !== "") {
 			loginToken(token)
 		} else if (loading) {
 			setLoading(false)
 		}
-	}, [loading, user, loginToken, state])
+	}, [loading, user, loginToken, state, isLogoutPage])
 
 	// Effect: Relogin as User after establishing connection again
 	useEffect(() => {
@@ -930,10 +935,10 @@ export const AuthContainer = createContainer(() => {
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
-		if (authorised && sessionID && !window.location.pathname.startsWith("/nosidebar/logout")) {
+		if (authorised && sessionID && !isLogoutPage) {
 			window.close()
 		}
-	}, [authorised, sessionID])
+	}, [authorised, sessionID, isLogoutPage])
 
 	/////////////////
 	//  Container  //
