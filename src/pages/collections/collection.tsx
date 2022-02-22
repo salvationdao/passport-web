@@ -123,7 +123,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 	const renderFilters = () => (
 		<>
-			<Box>
+			<Box >
 				<Typography
 					variant="subtitle1"
 					sx={{
@@ -426,8 +426,11 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						{isWiderThan1000px && (
 							<Box
 								sx={{
-									alignSelf: "start",
+									// alignSelf: "start",
 									width: "340px",
+									position:'sticky',
+									top:'20px',
+									backgroundColor: 'red',
 								}}
 							>
 								<Tabs
