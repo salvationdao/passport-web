@@ -668,7 +668,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 									loading ||
 									exchangeRates === undefined
 								}
-								sx={{ width: "60%", minWidth: "150px", alignSelf: "center", marginTop: "1.5rem" }}
+								sx={{ width: "60%", minWidth: "200px", alignSelf: "center", marginTop: "1.5rem" }}
 								type="submit"
 								fancy
 							>
