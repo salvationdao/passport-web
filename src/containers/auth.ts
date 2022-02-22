@@ -201,7 +201,10 @@ export const AuthContainer = createContainer(() => {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
-			typeof e === "string" && displayMessage(e, "error")
+			if (typeof e === "string") {
+				setShowSimulation(true)
+				displayMessage(e, "error")
+			}
 		}
 	}, [send, state, account, sign, sessionID, connect])
 
@@ -232,7 +235,10 @@ export const AuthContainer = createContainer(() => {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
-			typeof e === "string" && displayMessage(e, "error")
+			if (typeof e === "string") {
+				setShowSimulation(true)
+				displayMessage(e, "error")
+			}
 		}
 	}, [send, state, account, sessionID, signWalletConnect])
 
@@ -968,6 +974,8 @@ export const AuthContainer = createContainer(() => {
 		verifyCompleteType,
 		setSessionID,
 		sessionID,
+		showSimulation,
+		setShowSimulation,
 	}
 })
 

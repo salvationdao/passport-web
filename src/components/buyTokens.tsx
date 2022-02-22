@@ -247,7 +247,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 
 			<Box
 				sx={
-					publicSale && user
+					publicSale && !user
 						? {
 								position: "absolute",
 								zIndex: "5",

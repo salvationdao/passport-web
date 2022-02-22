@@ -9,6 +9,7 @@ import { CountdownTimer } from "../../components/supremacy/countdownTimer"
 import { Loading } from "../../components/supremacy/loading"
 import { SupremacyNavbar } from "../../components/supremacy/navbar"
 import { WhiteListModal } from "../../components/supremacy/whiteListModal"
+import { useAuth } from "../../containers/auth"
 import { useWeb3, web3Constants } from "../../containers/web3"
 import { colors } from "../../theme"
 
@@ -18,9 +19,9 @@ export const VIDEO_FOLDER = "https://afiles.ninja-cdn.com/supremacy/videos"
 export const NAVBAR_HEIGHT = 100
 
 export const SalePage = () => {
+	const { showSimulation, setShowSimulation } = useAuth()
 	const { account, checkNeoBalance, amountRemaining } = useWeb3()
 	const [disableSimulation, setDisableSimulation] = useState(false)
-	const [showSimulation, setShowSimulation] = useState(false)
 	const [countdown, setCountdown] = useState(new Date())
 	const [loading, setLoading] = useState(true)
 
