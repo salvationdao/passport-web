@@ -47,6 +47,12 @@ export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 	}
 
 	useEffect(() => {
+		const fallBackPlayVideo = () => {
+			if (videoLoading) setVideoLoading(false)
+			if (videoRef.current.played.length === 0) {
+				videoRef.current.play()
+			}
+		}
 		// Fix  video not playing for iphones low-power mode
 		window.document.body.addEventListener("touchstart", () => {
 			// IF video is not already playing
@@ -61,7 +67,7 @@ export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 		return () => {
 			clearTimeout(fallback)
 		}
-	}, [])
+	}, [videoLoading])
 
 	useEffect(() => {
 		videoRef.current.addEventListener(

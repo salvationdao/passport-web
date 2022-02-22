@@ -207,7 +207,6 @@ export const AuthContainer = createContainer(() => {
 			}
 		}
 	}, [send, state, account, sign, sessionID, connect])
-
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *

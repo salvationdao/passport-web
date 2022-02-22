@@ -139,7 +139,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		} else {
 			setCurrentToken(tokenOptions[0])
 		}
-	}, [currentChainId, acceptedChainExceptions])
+	}, [currentChainId, acceptedChainExceptions, setCurrentToken, tokenOptions])
 
 	useEffect(() => {
 		if (tokenAmt && tokenAmt.gt(0)) {
@@ -201,7 +201,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 	if (currentToken.isNative) {
 		tokenBalance = nativeBalance
 	}
-
 	return (
 		<Box
 			sx={{
