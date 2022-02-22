@@ -1,7 +1,5 @@
 import { Box, styled, useMediaQuery } from "@mui/material"
-import React, { useRef, useEffect, useState } from "react"
-import { useContainer } from "unstated-next"
-import { AppState } from "../../containers/supremacy/app"
+import React, { useEffect, useRef } from "react"
 import { colors } from "../../theme"
 
 const Container = styled(Box)({

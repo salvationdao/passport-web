@@ -1,6 +1,7 @@
 import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
 import { formatUnits } from "ethers/lib/utils"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { Helmet } from "react-helmet"
 import BWSupToken from "../../assets/images/BW-sup-token.png"
 import { BuyTokens } from "../../components/buyTokens"
 import { BackgroundVideo } from "../../components/supremacy/backgroundVideo"
@@ -8,10 +9,8 @@ import { CountdownTimer } from "../../components/supremacy/countdownTimer"
 import { Loading } from "../../components/supremacy/loading"
 import { SupremacyNavbar } from "../../components/supremacy/navbar"
 import { WhiteListModal } from "../../components/supremacy/whiteListModal"
-import { useSupremacyApp } from "../../containers/supremacy/app"
 import { useWeb3, web3Constants } from "../../containers/web3"
 import { colors } from "../../theme"
-import { Helmet } from "react-helmet"
 
 export const TEXT_GAME_LOCATION = "./TextGame/TextAdventure.html"
 export const IMAGE_FOLDER = "https://afiles.ninja-cdn.com/supremacy/images"
@@ -21,13 +20,13 @@ export const NAVBAR_HEIGHT = 100
 export const SalePage = () => {
 	const { account, checkNeoBalance, amountRemaining } = useWeb3()
 	const [disableSimulation, setDisableSimulation] = useState(false)
+	const [showSimulation, setShowSimulation] = useState(false)
 	const [countdown, setCountdown] = useState(new Date())
+	const [loading, setLoading] = useState(true)
 
 	// Game state
 	const [showGame, setShowGame] = useState(false)
 	const contentRef = useRef<HTMLIFrameElement>(null)
-	const { showSimulation, setShowSimulation } = useSupremacyApp()
-	const [loading, setLoading] = useState(true)
 
 	const handleJoinBtn = async () => {
 		if (account) {
@@ -117,7 +116,7 @@ export const SalePage = () => {
 			) : (
 				<>
 					<Loading loading={loading} setLoading={setLoading} />
-					<SupremacyNavbar />
+					<SupremacyNavbar loading={loading} />
 					<Box
 						sx={{
 							opacity: loading ? 0 : 1,
