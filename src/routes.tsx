@@ -8,6 +8,7 @@ import { useAuth } from "./containers/auth"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
 import { LoginPage } from "./pages/auth/login"
+import { LogoutPage } from "./pages/auth/logout"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
 import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
@@ -23,6 +24,7 @@ import { SalePage } from "./pages/sale/salePage"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
+import { WithdrawPage } from "./pages/withdraw"
 
 export const Routes = () => {
 	const { setSessionID } = useAuth()
@@ -60,6 +62,9 @@ export const Routes = () => {
 					<Route path="/nosidebar/:username/:collection_name">
 						<CollectionPage />
 					</Route>
+					<Route path="/nosidebar/logout">
+						<LogoutPage />
+					</Route>
 					<Sidebar onClose={() => setSidebarOpen(false)}>
 						<Route exact path="/">
 							<Home />
@@ -79,6 +84,9 @@ export const Routes = () => {
 						</Route>
 						<Route path="/terms-and-conditions">
 							<Home />
+						</Route>
+						<Route path="/withdraw">
+							<WithdrawPage />
 						</Route>
 
 						{/* User-authenticated routes */}

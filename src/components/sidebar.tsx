@@ -17,7 +17,7 @@ import SupsTokenLogo from "../assets/images/sups-token-logo.png"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { useSnackbar } from "../containers/snackbar"
-import {  SocketState, useWebsocket } from "../containers/socket"
+import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
@@ -29,6 +29,7 @@ import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import { BATTLE_ARENA_LINK, API_ENDPOINT_HOSTNAME } from "../config"
 
 const drawerWidth = 250
@@ -314,7 +315,11 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					},
 				}}
 			>
-				{/* <RenderEnlist factionsData={factionsData} user={user}  /> */}
+				<Divider />
+				<Typography variant="body1" sx={{ textTransform: "uppercase", textAlign: "center", fontWeight: "600" }}>
+					{user?.faction ? "Your Syndicate" : "Choose Your Syndicate"}
+				</Typography>
+				<RenderEnlist factionsData={factionsData} user={user} />
 				<Divider />
 				<Button
 					sx={{
@@ -341,6 +346,21 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			</Box>
 
 			<Divider />
+
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					"& > *:not(:last-child)": {
+						marginBottom: ".5rem",
+					},
+				}}
+			>
+				<NavButton to="/withdraw" startIcon={<AccountBalanceWalletIcon />}>
+					Withdraw
+				</NavButton>
+			</Box>
+
 			{!!walletMsg && (
 				<Box sx={{ display: "flex" }}>
 					<ErrorOutlineIcon sx={{ fontSize: "2rem", color: theme.palette.error.light, alignSelf: "center" }} />
@@ -540,7 +560,7 @@ const EnlistButtonGroup: React.VoidFunctionComponent<EnlistButtonGroupProps> = (
 }
 
 const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?: User }) => {
-	if (!factionsData) return <Box>Loadiaang...</Box>
+	if (!factionsData) return <Box>Loading...</Box>
 	if (user?.faction) {
 		return (
 			<>

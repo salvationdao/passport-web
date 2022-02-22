@@ -9,11 +9,9 @@ import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import {
 	BINANCE_CHAIN_ID,
-	BNB_CONTRACT_ADDRESS,
 	BSC_SCAN_SITE,
 	BUSD_CONTRACT_ADDRESS,
 	ETHEREUM_CHAIN_ID,
-	ETH_CONTRACT_ADDRESS,
 	ETH_SCAN_SITE,
 	PURCHASE_ADDRESS,
 	SUPS_CONTRACT_ADDRESS,
@@ -64,7 +62,7 @@ const tokenOptions: tokenSelect[] = [
 		tokenSrc: Ethereum,
 		chainSrc: Ethereum,
 		isNative: true,
-		contractAddr: ETH_CONTRACT_ADDRESS,
+		contractAddr: "0x0",
 	},
 	{
 		name: "usdc",
@@ -84,7 +82,7 @@ const tokenOptions: tokenSelect[] = [
 		tokenSrc: BinanceCoin,
 		chainSrc: BinanceCoin,
 		isNative: true,
-		contractAddr: BNB_CONTRACT_ADDRESS,
+		contractAddr: "0x0",
 	},
 
 	{
@@ -122,6 +120,8 @@ export const Web3Container = createContainer(() => {
 			setAmountRemaining(BigNumber.from(amount))
 		})
 	}, [subscribe, state])
+	const [nativeBalance, setNativeBalance] = useState<BigNumber | null>(null)
+	const [stableBalance, setStableBalance] = useState<BigNumber | null>(null)
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -136,6 +136,11 @@ export const Web3Container = createContainer(() => {
 		[provider],
 	)
 
+	useEffect(() => {
+		updateNativeBalance()
+		updateStableBalance()
+	}, [provider, currentChainId, account])
+
 	const handleChainChange = useCallback((chainId: string) => {
 		setCurrentChainId(parseInt(chainId))
 	}, [])
@@ -143,8 +148,16 @@ export const Web3Container = createContainer(() => {
 	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
 	const handleWalletSups = useCallback(
 		async (acc: string) => {
-			if (!provider || currentChainId?.toString() !== BINANCE_CHAIN_ID) return
-
+			if (!provider) {
+				return
+			}
+			if (!currentChainId) {
+				return
+			}
+			if (currentChainId.toString() !== BINANCE_CHAIN_ID) {
+				return
+			}
+			console.log("get wallet sups")
 			// A Human-Readable ABI; for interacting with the contract, we
 			// must include any fragment we wish to use
 			const abi = [
@@ -164,9 +177,15 @@ export const Web3Container = createContainer(() => {
 			try {
 				console.log("loading")
 				const bal = await erc20.balanceOf(acc)
+				if (!bal) {
+					setSupBalance(BigNumber.from(0))
+					return
+				}
 				console.log("loaded")
+				console.log({ bal })
 				setSupBalance(bal)
 			} catch (e) {
+				setSupBalance(BigNumber.from(0))
 				console.error(e)
 			}
 		},
@@ -216,6 +235,62 @@ export const Web3Container = createContainer(() => {
 		})
 		return walletConnectProvider
 	}, [])
+	const updateNativeBalance = async () => {
+		try {
+			console.log("1")
+			if (!provider) {
+				return
+			}
+			if (!currentChainId) {
+				return
+			}
+			if (!account) {
+				return
+			}
+			console.log("2")
+			const signer = provider.getSigner()
+			if (!signer) {
+				return
+			}
+			console.log({ signer: await signer.getAddress() })
+			const bal = await signer.getBalance()
+			if (!bal) {
+				setStableBalance(BigNumber.from(0))
+				return
+			}
+			setNativeBalance(bal)
+		} catch (e) {
+			console.error(e)
+		}
+	}
+	// console.log({ provider, wcProvider, currentChainId })
+	const updateStableBalance = async () => {
+		try {
+			if (!provider) {
+				return
+			}
+			if (!currentChainId) {
+				return
+			}
+			if (!account) {
+				return
+			}
+			let erc20Addr = USDC_CONTRACT_ADDRESS
+			if (currentChainId == web3Constants.binanceChainId || currentChainId == web3Constants.bscTestNetChainId) {
+				erc20Addr = BUSD_CONTRACT_ADDRESS
+			}
+			console.log({ currentChainId, erc20Addr })
+			const contract = new ethers.Contract(erc20Addr, genericABI, provider)
+			const bal = await contract.balanceOf(account)
+			if (!bal) {
+				setStableBalance(BigNumber.from(0))
+				return
+			}
+			setStableBalance(bal)
+		} catch (e) {
+			console.error(e)
+		}
+	}
 
 	useEffect(() => {
 		// Run on every new block
@@ -472,33 +547,6 @@ export const Web3Container = createContainer(() => {
 		}
 	}
 
-	const getBalance = useCallback(
-		async (contractAddress: string | null) => {
-			if (!contractAddress) {
-				if (!provider) {
-					return BigNumber.from(0)
-				}
-				const signer = provider.getSigner()
-				return await signer.getBalance()
-			}
-			try {
-				if (!provider || !account) return
-
-				if (currentToken.isNative) {
-					const balance = await provider.getBalance(account)
-					return balance
-				}
-
-				if (currentToken.contractAddr === "") return
-				const contract = new ethers.Contract(currentToken.contractAddr, genericABI, provider)
-				return contract.balanceOf(account)
-			} catch (error) {
-				displayMessage("Couldn't get contract balance, please try again.", "error")
-				return BigNumber.from(0)
-			}
-		},
-		[provider, account, displayMessage],
-	)
 	async function sendNativeTransfer(value: BigNumber) {
 		try {
 			if (!provider || !account) {
@@ -509,7 +557,7 @@ export const Web3Container = createContainer(() => {
 			const bal = await signer.getBalance()
 			const hasSufficientFunds = bal.gt(value)
 			if (hasSufficientFunds) {
-				return await signer.sendTransaction({ to: PURCHASE_ADDRESS, value: parseEther(value.toString()) })
+				return await signer.sendTransaction({ to: PURCHASE_ADDRESS, value: value })
 			} else {
 				displayMessage("Wallet does not have sufficient funds.", "error")
 				return
@@ -550,7 +598,8 @@ export const Web3Container = createContainer(() => {
 		changeChain,
 		currentChainId,
 		provider,
-		getBalance,
+		nativeBalance,
+		stableBalance,
 		sendNativeTransfer,
 		sendTransferToPurchaseAddress,
 		supBalance,
