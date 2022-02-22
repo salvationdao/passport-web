@@ -20,6 +20,7 @@ import {
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { DiscordIcon, FacebookIcon, GoogleIcon, GradientHeartIconImagePath, MetaMaskIcon, SupTokenIcon, TwitchIcon, TwitterIcon } from "../../assets"
+import WarMachine from "../../assets/images/WarMachine.png"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
@@ -294,6 +295,7 @@ interface CollectionViewProps {
 const CollectionView = ({ user }: CollectionViewProps) => {
 	const { state } = useWebsocket()
 	const { loading, error, payload, query } = useQuery<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, false)
+	const history = useHistory()
 
 	// Collection data
 	const [search, setSearch] = useState("")
@@ -662,17 +664,49 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
+							flexDirection: "column",
 						}}
 					>
-						<Typography variant="subtitle2" color={colors.darkGrey}>
-							{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
-						</Typography>
+						{loading ? (
+							<Typography variant="subtitle2" color={colors.darkGrey}>
+								Loading assets...
+							</Typography>
+						) : error ? (
+							<Typography variant="subtitle2" color={colors.darkGrey}>
+								An error occurred while loading assets.
+							</Typography>
+						) : (
+							<Box
+								component={"div"}
+								sx={{
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									gap: "1em",
+									overflow: "wrap",
+								}}
+							>
+								<WarMachineImage src={WarMachine} alt="supremacy war machines" />
+								<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
+									Your Inventory Is Empty
+								</Typography>
+								<StyledFancyButton sx={{ padding: "0.5em 2em" }} onClick={() => history.push("/stores")}>
+									Go To Store
+								</StyledFancyButton>
+							</Box>
+						)}
 					</Box>
 				)}
 			</Paper>
 		</>
 	)
 }
+
+const WarMachineImage = styled("img")({
+	width: "100%",
+	height: "100%",
+})
 
 interface SortChipProps extends Omit<ChipProps, "color" | "onDelete"> {
 	color?: string
