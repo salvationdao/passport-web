@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { createContainer } from "unstated-next"
 import HubKey from "../keys"
-
-/** API Endpoint Host */
-export const API_ENDPOINT_HOSTNAME = `${process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME ?? window.location.host}`
-// export const API_ENDPOINT_HOSTNAME = `staging-passport.xsyn.io`
+import { API_ENDPOINT_HOSTNAME } from "../config"
 
 // makeid is used to generate a random transactionID for the websocket
 export function makeid(length: number = 12): string {

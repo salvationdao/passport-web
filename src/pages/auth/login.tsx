@@ -16,7 +16,6 @@ import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } 
 import { AuthContainer, useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
-import { API_ENDPOINT_HOSTNAME } from "../../containers/socket"
 import { MetaMaskState } from "../../containers/web3"
 import { fonts } from "../../theme"
 

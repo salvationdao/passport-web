@@ -1,6 +1,6 @@
 import { Box, Button } from "@mui/material"
 import React, { useRef, useState } from "react"
-import { API_ENDPOINT_HOSTNAME } from "../../containers/socket"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { colors } from "../../theme"
 import { Faction } from "../../types/types"
 import { EnlistDetailsPopover } from "./enlistPopover"

@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { API_ENDPOINT_HOSTNAME } from "../containers/socket"
+import { API_ENDPOINT_HOSTNAME } from "../config"
 
 const getParamsFromObject = (params: any) =>
 	"?" +
