@@ -24,6 +24,7 @@ import { SalePage } from "./pages/sale/salePage"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
+import { WithdrawPage } from "./pages/withdraw"
 
 export const Routes = () => {
 	const { setSessionID } = useAuth()
@@ -83,6 +84,9 @@ export const Routes = () => {
 						</Route>
 						<Route path="/terms-and-conditions">
 							<Home />
+						</Route>
+						<Route path="/withdraw">
+							<WithdrawPage />
 						</Route>
 
 						{/* User-authenticated routes */}
