@@ -13,8 +13,7 @@ import { getItemAttributeValue, supFormatter, usdFormatter } from "../../helpers
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Attribute, StoreItem } from "../../types/types"
-import { PercentageDisplay } from "../profile/profile"
-import { Rarity, rarityTextStyles } from "./storeItemCard"
+import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
 
 export const StoreItemPage = () => {
 	const { store_item_id: id } = useParams<{ store_item_id: string }>()
