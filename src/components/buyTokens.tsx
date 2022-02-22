@@ -210,6 +210,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 							xs: `2px solid ${theme.palette.secondary.main}`,
 							md: "none",
 					  },
+				minWidth: "24rem",
+				minHeight: "20rem",
 				position: "relative",
 			}}
 		>
@@ -318,7 +320,16 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={
 						transferState === "confirm"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									height: "100%",
+									width: "100%",
+									textAlign: "center",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
@@ -351,7 +362,14 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={
 						transferState === "error"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									height: "100%",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
@@ -378,14 +396,24 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Stack
 					sx={
 						transferState === "waiting"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "1rem" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									width: "100%",
+									height: "100%",
+									padding: "1rem",
+									textAlign: "center",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
 					<Box sx={{ width: "100%" }}>
 						<LinearProgress color="secondary" />
 					</Box>
-					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0" }}>
+					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0", textAlign: "center" }}>
 						Waiting on Confirmation
 					</Typography>
 
@@ -402,23 +430,13 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 
 			{/* Purchase Sups Form */}
 			<Box
-				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none" && metaMaskState === MetaMaskState.Active
-						? {
-								background: publicSale ? colors.darkNavyBlue : "unset",
-								p: publicSale ? "2em" : "unset",
-								"@media (max-width:400px)": {
-									p: "1rem",
-								},
-						  }
-						: {
-								filter: "blur(5px) brightness(20%)",
-								padding: {
-									xs: "1rem",
-									md: "0",
-								},
-						  }
-				}
+				sx={{
+					background: publicSale ? colors.darkNavyBlue : "unset",
+					p: publicSale ? "2em" : "unset",
+					"@media (max-width:400px)": {
+						p: "1rem",
+					},
+				}}
 			>
 				<Box
 					sx={{
@@ -434,7 +452,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						align="center"
 						sx={{
 							fontWeight: 800,
-							fontSize: "1.5rem",
+							fontSize: "1.2rem",
 							textTransform: "uppercase",
 							paddingBottom: "1rem",
 						}}
@@ -442,7 +460,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						Purchase $SUPS
 					</Typography>
 					<form onSubmit={handleSubmit}>
-						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between", alignItems: "center" }}>
+						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "20rem", justifyContent: "space-between", alignItems: "center" }}>
 							<Box sx={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", gap: "1em" }}>
 								<Stack sx={{ gap: ".7em" }}>
 									<Box
@@ -450,27 +468,30 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 										src={Arrow}
 										alt="token image"
 										sx={{
-											height: "3rem",
+											height: "2.5rem",
 											position: "absolute",
-											top: "38%",
+											top: "43%",
 											left: "50%",
 											transform: "translate(-50%,-50%)",
 											zIndex: 2,
-											boxShadow: "0 0 5px black",
 											borderRadius: "50%",
 										}}
 									/>
 									<Box
 										sx={{
-											maxHeight: "7rem",
 											display: "flex",
 											backgroundColor: colors.inputBg,
 											borderRadius: "10px",
 											padding: ".5rem 1rem",
 										}}
 									>
-										<Stack sx={{ gap: ".5em", justifyContent: "space-between" }}>
-											<Typography sx={{ color: colors.darkerGrey }} variant="h6">
+										<Stack
+											sx={{
+												gap: ".5em",
+												justifyContent: "space-between",
+											}}
+										>
+											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 												From:{" "}
 											</Typography>
 											<TextField
@@ -495,6 +516,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 												}}
 												type="number"
 												sx={{
+													mb: ".7rem",
 													fontWeight: 800,
 													border: "none",
 													"& *::after, & *::before, &:hover": { p: 0, border: "none" },
@@ -510,7 +532,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 													"& 	.MuiTextField-root.Mui-focused": {
 														backgroundColor: colors.lightNavyBlue,
 													},
-													input: { color: colors.skyBlue, fontSize: "1.6rem", fontWeight: 800, lineHeight: 0.5 },
+													input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, lineHeight: 0.5 },
 												}}
 												inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
 											/>
@@ -520,8 +542,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 											sx={{
 												display: "flex",
 												flexDirection: "column",
-												justifyContent: "space-between",
 												alignItems: "flex-end",
+												gap: ".5em",
 											}}
 										>
 											<TokenSelect
@@ -546,20 +568,20 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 													}
 												}}
 											>
-												<Typography sx={{ color: colors.darkGrey }} variant="body1">
+												<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
 													Balance: <b>{tokenBalance ? parseFloat(formatUnits(tokenBalance, 18)).toFixed(4) : "--"}</b>
 												</Typography>
 											</Button>
 										</Box>
 									</Box>
 
-									<Box sx={{ display: "flex", backgroundColor: colors.inputBg, borderRadius: "10px", padding: "1rem" }}>
+									<Box sx={{ display: "flex", backgroundColor: colors.inputBg, borderRadius: "10px", padding: ".5rem 1rem", gap: "1em" }}>
 										<Box sx={{ flexGrow: "2" }}>
-											<Typography sx={{ color: colors.darkerGrey }} variant="h6">
+											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 												To:
 											</Typography>
 											<TextField
-												disabled
+												// disabled
 												variant="filled"
 												value={supsDisplay || ""}
 												onChange={(e) => {
@@ -579,6 +601,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 												}}
 												type="number"
 												sx={{
+													width: "100%",
+													pointerEvents: "none",
 													backgroundColor: colors.inputBg,
 													"& 	.MuiFilledInput": {
 														background: "none",
@@ -595,42 +619,41 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 													"& .MuiInputBase-root, & input": {
 														background: "none",
 													},
-													input: { color: colors.skyBlue, fontSize: "1.2rem" },
+													input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, p: 0 },
 												}}
 												inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
 											/>
 										</Box>
-										<Box
-											sx={{
-												display: "flex",
-												flexDirection: "column",
-												justifyContent: "space-between",
-												alignItems: "flex-end",
-											}}
-										>
-											<Box sx={{ display: "flex", gap: "5px", alignItems: "center", my: "auto" }}>
-												<Box
-													component="img"
-													src={SupsToken}
-													alt="token image"
-													sx={{
-														height: "20px",
-													}}
-												/>
-												<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1rem", fontWeight: 600 }}>
-													$Sups
-												</Typography>
-											</Box>
-										</Box>
 									</Box>
 								</Stack>
-								<Box>
-									<Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
-										XSYN Balance: <b>{userSups ? parseFloat(formatUnits(BigNumber.from(userSups), 18)).toFixed(2) : "--"}</b>
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "center",
+										gap: ".5em",
+										width: "100%",
+									}}
+								>
+									<Box sx={{ display: "flex", gap: ".5em", alignItems: "center" }}>
+										<Box
+											component="img"
+											src={SupsToken}
+											alt="token image"
+											sx={{
+												height: "24px",
+											}}
+										/>
+										<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: ".8rem", fontWeight: 600 }}>
+											$Sups
+										</Typography>
+									</Box>
+									<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
+										Balance: <b>{userSups ? parseFloat(formatUnits(BigNumber.from(2321), 18)).toFixed(2) : "--"}</b>
 									</Typography>
-									<Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
+									{/* <Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
 										Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, 18)).toFixed(2) : "--"}</b>
-									</Typography>
+									</Typography> */}
 								</Box>
 							</Box>
 
@@ -645,7 +668,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 									loading ||
 									exchangeRates === undefined
 								}
-								sx={{ width: "60%", minWidth: "150px", alignSelf: "center", marginTop: "1.5rem" }}
+								sx={{ width: "60%", minWidth: "200px", alignSelf: "center", marginTop: "1.5rem" }}
 								type="submit"
 								fancy
 							>

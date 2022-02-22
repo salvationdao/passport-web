@@ -25,13 +25,14 @@ import {
 import React, { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, GradientHeartIconImagePath, MetaMaskIcon, SupTokenIcon, TwitchIcon, TwitterIcon } from "../../assets"
+import { GradientHeartIconImagePath, SupTokenIcon } from "../../assets"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { InputField } from "../../components/form/inputField"
 import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
 import { SearchBar } from "../../components/searchBar"
+import { NFT_CONTRACT_ADDRESS } from "../../config"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -44,9 +45,12 @@ import { colors, fonts } from "../../theme"
 import { NilUUID } from "../../types/auth"
 import { Asset, Attribute, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
+<<<<<<< HEAD
 import { NFT_CONTRACT_ADDRESS, NFT_STAKING_CONTRACT_ADDRESS } from "../../config"
 import { useWeb3 } from "../../containers/web3"
 import { ethers, BigNumber } from "ethers"
+=======
+>>>>>>> 083ab8f5e2795117ae2f3e862596b7144fe60b6a
 
 export const ProfilePage: React.FC = () => {
 	const { username, token_id } = useParams<{ username: string; token_id: string }>()
@@ -197,13 +201,7 @@ export const ProfilePage: React.FC = () => {
 									</IconButton>
 								</Box>
 							)}
-							<Section>
-								<Typography variant="h6" component="p">
-									Bio
-								</Typography>
-								<Typography variant="body1">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor.</Typography>
-							</Section>
-							{loggedInUser?.username === user.username && (
+							{/* {loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
 										Connect
@@ -271,7 +269,7 @@ export const ProfilePage: React.FC = () => {
 										)}
 									</Box>
 								</Section>
-							)}
+							)} */}
 							{loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
@@ -315,7 +313,6 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType] = useState<string>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
-	const [brands, setBrand] = useState<Set<string>>(new Set())
 
 	const toggleRarity = (rarity: string) => {
 		setRarities((prev) => {
@@ -327,19 +324,6 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 			}
 			temp.clear()
 			return temp.add(rarity)
-		})
-	}
-
-	const toggleBrand = (brand: string) => {
-		setBrand((prev) => {
-			const exists = prev.has(brand)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(brand)
-				return temp
-			}
-			temp.clear()
-			return temp.add(brand)
 		})
 	}
 
@@ -370,13 +354,6 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 				operatorValue: "contains",
 			}),
 		)
-		brands.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Brand",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
 
 		query({
 			search,
@@ -390,7 +367,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 			},
 			...sort,
 		})
-	}, [user, query, state, search, assetType, rarities, brands, sort])
+	}, [user, query, state, search, assetType, rarities, sort])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
@@ -514,46 +491,55 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
 					/>
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Brand
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip color={colors.skyBlue} active={brands.has("Gunn")} label="Gunn" variant="outlined" onClick={() => toggleBrand("Gunn")} />
-					<FilterChip color={colors.skyBlue} active={brands.has("Kaeber")} label="Kaeber" variant="outlined" onClick={() => toggleBrand("Kaeber")} />
+					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Death Metal")}
-						label="Death Metal"
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.colossal}
 						variant="outlined"
-						onClick={() => toggleBrand("Death Metal")}
+						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Daison Avionics")}
-						label="Daison Avionics"
+						active={rarities.has("Elite Legendary")}
+						label="Elite Legendary"
+						color={colors.rarity.eliteLegendary}
 						variant="outlined"
-						onClick={() => toggleBrand("Daison Avionics")}
+						onClick={() => toggleRarity("Elite Legendary")}
 					/>
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Quasar Industries")}
-						label="Quasar Industries"
+						active={rarities.has("Ultra Rare")}
+						label="Ultra Rare"
+						color={colors.rarity.ultraRare}
 						variant="outlined"
-						onClick={() => toggleBrand("Quasar Industries")}
+						onClick={() => toggleRarity("Ultra Rare")}
+					/>
+					<FilterChip
+						active={rarities.has("Exotic")}
+						label="Exotic"
+						color={colors.rarity.exotic}
+						variant="outlined"
+						onClick={() => toggleRarity("Exotic")}
+					/>
+					<FilterChip
+						active={rarities.has("Guardian")}
+						label="Guardian"
+						color={colors.rarity.guardian}
+						variant="outlined"
+						onClick={() => toggleRarity("Guardian")}
+					/>
+					<FilterChip
+						active={rarities.has("Mythic")}
+						label="Mythic"
+						color={colors.rarity.mythic}
+						variant="outlined"
+						onClick={() => toggleRarity("Mythic")}
+					/>
+					<FilterChip
+						active={rarities.has("Deus ex")}
+						label="Deus ex"
+						color={colors.rarity.deusEx}
+						variant="outlined"
+						onClick={() => toggleRarity("Deus ex")}
 					/>
 				</Box>
 			</Box>
@@ -650,7 +636,15 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						marginBottom: "1rem",
 					}}
 				>
-					<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small">
+					<FancyButton
+						onClick={() => setOpenFilterDrawer(true)}
+						size="small"
+						sx={{
+							"@media (max-width: 630px)": {
+								width: "100%",
+							},
+						}}
+					>
 						Filters / Sort
 					</FancyButton>
 				</Box>
@@ -937,6 +931,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 					<Box
 						sx={{
 							display: "flex",
+							flexWrap: "wrap",
 							gap: ".5rem",
 							marginBottom: "1rem",
 						}}
@@ -958,7 +953,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 							</FancyButton>
 						)}
 						{isOwner ? (
-							((asset.mintingSignature || asset.mintingSignature !== "")  && !asset.minted)  ? (
+							(asset.mintingSignature || asset.mintingSignature !== "") && !asset.minted ? (
 								<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 									Continue Transition Off World
 								</FancyButton>
@@ -967,9 +962,11 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									<FancyButton size="small" onClick={() => onDeploy()}>
 										Deploy
 									</FancyButton>
-									{!asset.minted &&	<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-										Transition Off World
-									</FancyButton>}
+									{!asset.minted && (
+										<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+											Transition Off World
+										</FancyButton>
+									)}
 								</>
 							) : (
 								<>
@@ -1165,6 +1162,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 								<Box
 									sx={{
 										display: "flex",
+										flexWrap: "wrap",
 										gap: ".5rem",
 									}}
 								>
@@ -1187,8 +1185,8 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 										</FancyButton>
 									)}
 									{loggedInUser?.id === asset.userID ? (
-										((asset.mintingSignature || asset.mintingSignature !== "")  && !asset.minted) ? (
-										<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+										(asset.mintingSignature || asset.mintingSignature !== "") && !asset.minted ? (
+											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 												Continue Transition Off World
 											</FancyButton>
 										) : !asset.frozenAt && isWarMachine() ? (
@@ -1196,9 +1194,11 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 												<FancyButton size="small" onClick={() => onDeploy()}>
 													Deploy
 												</FancyButton>
-												{!asset.minted && <FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-												Transition Off World
-											</FancyButton>}
+												{!asset.minted && (
+													<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+														Transition Off World
+													</FancyButton>
+												)}
 											</>
 										) : (
 											<>
@@ -1331,9 +1331,21 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 										alignItems: "start",
 									}}
 								>
-									{asset.username === "OnChain" &&<Button component={"a"} href={NFT_CONTRACT_ADDRESS === "0xC1ce98F52E771Bd82938c4Cb6CCaA40Dc2B3258D" ? `https://testnets.opensea.io/assets/goerli/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}` : `https://opensea.io/assets/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}`} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNewIcon />}>
-										View on OpenSea
-									</Button>}
+									{asset.username === "OnChain" && (
+										<Button
+											component={"a"}
+											href={
+												NFT_CONTRACT_ADDRESS === "0xC1ce98F52E771Bd82938c4Cb6CCaA40Dc2B3258D"
+													? `https://testnets.opensea.io/assets/goerli/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}`
+													: `https://opensea.io/assets/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}`
+											}
+											target="_blank"
+											rel="noopener noreferrer"
+											endIcon={<OpenInNewIcon />}
+										>
+											View on OpenSea
+										</Button>
+									)}
 
 									<StyledDisabledButton>
 										View Battle History Stats
@@ -1360,9 +1372,9 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	)
 }
 
-type Rarity = "Common" | "Rare" | "Legendary"
+export type Rarity = "Common" | "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex"
 
-const rarityTextStyles: { [key in Rarity]: any } = {
+export const rarityTextStyles: { [key in Rarity]: any } = {
 	Common: {
 		color: colors.rarity.common,
 	},
@@ -1371,7 +1383,32 @@ const rarityTextStyles: { [key in Rarity]: any } = {
 	},
 	Legendary: {
 		color: colors.rarity.legendary,
-		textShadow: `0 0 2px ${colors.rarity.legendary}`,
+	},
+	Mega: {
+		color: colors.rarity.mega,
+	},
+	Colossal: {
+		color: colors.rarity.colossal,
+	},
+	"Elite Legendary": {
+		color: colors.rarity.eliteLegendary,
+	},
+	"Ultra Rare": {
+		color: colors.rarity.ultraRare,
+	},
+	Exotic: {
+		color: colors.rarity.exotic,
+	},
+	Guardian: {
+		color: colors.rarity.guardian,
+	},
+	Mythic: {
+		color: colors.rarity.mythic,
+		textShadow: `0 0 2px ${colors.rarity.mythic}`,
+	},
+	"Deus ex": {
+		color: colors.rarity.deusEx,
+		textShadow: `0 0 2px ${colors.rarity.deusEx}`,
 	},
 }
 
@@ -1490,7 +1527,6 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Ass
 				userID,
 				name,
 			})
-			console.log(name)
 			displayMessage("Asset successfully updated", "success")
 			onClose()
 		} catch (e) {

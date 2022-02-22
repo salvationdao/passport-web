@@ -201,7 +201,7 @@ export const AuthContainer = createContainer(() => {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
-			if (typeof e === "string") {
+			if (typeof e == "string") {
 				setShowSimulation(true)
 				displayMessage(e, "error")
 			}

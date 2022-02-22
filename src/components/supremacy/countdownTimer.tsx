@@ -79,7 +79,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 			m,
 			s,
 		})
-		if (date != new Date() && publicSale && seconds <= 0) {
+		if (date && publicSale && seconds <= 0) {
 			history.go(0)
 		}
 	}, 1000)
@@ -100,7 +100,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 					justifyContent: "center",
 					gridTemplateColumns: "repeat(4, 3rem)",
 					"& div": {
-						fontSize: publicSale ? "3vmin" : "unset",
+						fontSize: publicSale ? "2.5vmin" : "unset",
 						"@media (max-width:600px)": {
 							fontSize: "5vmin",
 						},
