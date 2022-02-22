@@ -31,7 +31,6 @@ export const StorePage: React.FC = () => {
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType, setAssetType] = useState<string>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
-	const [brands, setBrand] = useState<Set<string>>(new Set())
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
 
@@ -49,19 +48,6 @@ export const StorePage: React.FC = () => {
 			}
 			temp.clear()
 			return temp.add(rarity)
-		})
-	}
-
-	const toggleBrand = (brand: string) => {
-		setBrand((prev) => {
-			const exists = prev.has(brand)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(brand)
-				return temp
-			}
-			temp.clear()
-			return temp.add(brand)
 		})
 	}
 
@@ -114,13 +100,6 @@ export const StorePage: React.FC = () => {
 				operatorValue: "contains",
 			}),
 		)
-		brands.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Brand",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
 
 		query({
 			search,
@@ -134,7 +113,7 @@ export const StorePage: React.FC = () => {
 			},
 			...sort,
 		})
-	}, [user, query, collection, state, assetType, rarities, brands, search, sort])
+	}, [user, query, collection, state, assetType, rarities, search, sort])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
@@ -258,46 +237,55 @@ export const StorePage: React.FC = () => {
 						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
 					/>
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Brand
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip color={colors.skyBlue} active={brands.has("Gunn")} label="Gunn" variant="outlined" onClick={() => toggleBrand("Gunn")} />
-					<FilterChip color={colors.skyBlue} active={brands.has("Kaeber")} label="Kaeber" variant="outlined" onClick={() => toggleBrand("Kaeber")} />
+					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Death Metal")}
-						label="Death Metal"
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.colossal}
 						variant="outlined"
-						onClick={() => toggleBrand("Death Metal")}
+						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Daison Avionics")}
-						label="Daison Avionics"
+						active={rarities.has("Elite Legendary")}
+						label="Elite Legendary"
+						color={colors.rarity.eliteLegendary}
 						variant="outlined"
-						onClick={() => toggleBrand("Daison Avionics")}
+						onClick={() => toggleRarity("Elite Legendary")}
 					/>
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Quasar Industries")}
-						label="Quasar Industries"
+						active={rarities.has("Ultra Rare")}
+						label="Ultra Rare"
+						color={colors.rarity.ultraRare}
 						variant="outlined"
-						onClick={() => toggleBrand("Quasar Industries")}
+						onClick={() => toggleRarity("Ultra Rare")}
+					/>
+					<FilterChip
+						active={rarities.has("Exotic")}
+						label="Exotic"
+						color={colors.rarity.exotic}
+						variant="outlined"
+						onClick={() => toggleRarity("Exotic")}
+					/>
+					<FilterChip
+						active={rarities.has("Guardian")}
+						label="Guardian"
+						color={colors.rarity.guardian}
+						variant="outlined"
+						onClick={() => toggleRarity("Guardian")}
+					/>
+					<FilterChip
+						active={rarities.has("Mythic")}
+						label="Mythic"
+						color={colors.rarity.mythic}
+						variant="outlined"
+						onClick={() => toggleRarity("Mythic")}
+					/>
+					<FilterChip
+						active={rarities.has("Deus ex")}
+						label="Deus ex"
+						color={colors.rarity.deusEx}
+						variant="outlined"
+						onClick={() => toggleRarity("Deus ex")}
 					/>
 				</Box>
 			</Box>

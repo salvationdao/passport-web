@@ -23,7 +23,7 @@ export const AssetRedirectPage = () => {
 				else if (e instanceof Error) displayMessage(e.message, "error")
 			}
 		})()
-	}, [history, token_id])
+	}, [history, token_id, displayMessage])
 
 	return <Loading text="Redirecting you to the asset..." />
 }

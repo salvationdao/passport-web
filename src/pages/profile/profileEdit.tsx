@@ -4,19 +4,12 @@ import { Box, Button, CircularProgress, IconButton, IconButtonProps, Link, Paper
 import { User } from "@sentry/react"
 import { useCallback, useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
-import GoogleLogin, { GoogleLoginResponse } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon, WalletConnectIcon } from "../../assets"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { DiscordLogin } from "../../components/discordLogin"
-import { FacebookLogin } from "../../components/facebookLogin"
 import { ImageUpload } from "../../components/form/imageUpload"
 import { InputField } from "../../components/form/inputField"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { MetaMaskLogin } from "../../components/loginMetaMask"
-import { TwitchLogin } from "../../components/twitchLogin"
-import { TwitterLogin } from "../../components/twitterLogin"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
@@ -141,8 +134,7 @@ interface UserInput {
 
 const ProfileEdit: React.FC = () => {
 	const token = localStorage.getItem("token")
-	const { user, addFacebook, addGoogle, addTwitch, addTwitter, addDiscord, removeFacebook, removeGoogle, removeTwitch, removeTwitter, removeDiscord } =
-		useAuth()
+	const { user } = useAuth()
 	const { send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 
@@ -270,7 +262,7 @@ const ProfileEdit: React.FC = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					marginBottom: "3rem",
+					// marginBottom: "3rem",
 					"& > *:not(:last-child)": {
 						marginBottom: "1rem",
 					},
@@ -418,7 +410,7 @@ const ProfileEdit: React.FC = () => {
 					</Button>
 				</Box>
 			</Box>
-			<Box
+			{/* <Box
 				sx={{
 					display: "flex",
 					flexDirection: "column",
@@ -655,7 +647,7 @@ const ProfileEdit: React.FC = () => {
 						/>
 					)}
 				</Box>
-			</Box>
+			</Box> */}
 		</Paper>
 	)
 }

@@ -1,5 +1,5 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import { Box, Divider, Link, Paper, Typography, useMediaQuery } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Link, Paper, Typography, useMediaQuery } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupTokenIcon } from "../../assets"
@@ -13,8 +13,7 @@ import { getItemAttributeValue, supFormatter, usdFormatter } from "../../helpers
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Attribute, StoreItem } from "../../types/types"
-import { PercentageDisplay } from "../profile/profile"
-import { Rarity, rarityTextStyles } from "./storeItemCard"
+import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
 
 export const StoreItemPage = () => {
 	const { store_item_id: id } = useParams<{ store_item_id: string }>()
@@ -26,28 +25,14 @@ export const StoreItemPage = () => {
 
 	// Store item data
 	const [storeItem, setStoreItem] = useState<StoreItem>()
-	const [, setRegularAttributes] = useState<Attribute[]>([])
+	// const [, setRegularAttributes] = useState<Attribute[]>([])
 	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
-	const [, setAssetAttributes] = useState<Attribute[]>([])
+	// const [, setAssetAttributes] = useState<Attribute[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
 
 	// Purchase store item
-	const [submitting, setSubmitting] = useState(false)
-	const purchase = useCallback(async () => {
-		if (state !== SocketState.OPEN) return
-		setSubmitting(true)
-		try {
-			await send(HubKey.StorePurchase, {
-				storeItemID: id,
-			})
-			displayMessage(`Successfully purchased 1 ${storeItem?.name}`, "success")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong. Please try again.", "error")
-		} finally {
-			setSubmitting(false)
-		}
-	}, [send, id, state, storeItem?.name, displayMessage])
+	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !user) return
@@ -73,9 +58,9 @@ export const StoreItemPage = () => {
 							regularAttributes.push(a)
 						}
 					})
-					setAssetAttributes(assetAttributes)
+					// setAssetAttributes(assetAttributes)
 					setNumberAttributes(numberAttributes)
-					setRegularAttributes(regularAttributes)
+					// setRegularAttributes(regularAttributes)
 					setStoreItem(payload)
 					setLoading(false)
 				},
@@ -110,446 +95,492 @@ export const StoreItemPage = () => {
 	}
 
 	return (
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				minHeight: "100vh",
-			}}
-		>
-			<Navbar
-				sx={{
-					marginBottom: "2rem",
-				}}
-			/>
+		<>
+			<PurchaseStoreItemModal open={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} storeItem={storeItem} />
 			<Box
 				sx={{
-					flex: 1,
 					display: "flex",
-					width: "100%",
-					maxWidth: "1700px",
-					margin: "0 auto",
-					marginBottom: "3rem",
-					padding: "0 3rem",
-					"@media (max-width: 1000px)": {
-						flexDirection: "column",
-					},
+					flexDirection: "column",
+					minHeight: "100vh",
 				}}
 			>
-				<Paper
+				<Navbar
 					sx={{
-						flexGrow: 1,
+						marginBottom: "2rem",
+					}}
+				/>
+				<Box
+					sx={{
+						flex: 1,
 						display: "flex",
-						flexDirection: "column",
-						padding: "2rem",
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem",
+						width: "100%",
+						maxWidth: "1700px",
+						margin: "0 auto",
+						marginBottom: "3rem",
+						padding: "0 3rem",
+						"@media (max-width: 1000px)": {
+							flexDirection: "column",
 						},
 					}}
 				>
-					<Link
-						variant="h5"
-						underline="hover"
+					<Paper
 						sx={{
-							alignSelf: "start",
+							flexGrow: 1,
 							display: "flex",
-							alignItems: "center",
-							marginBottom: "1rem",
-							textTransform: "uppercase",
-						}}
-						color={colors.white}
-						component={"button"}
-						onClick={() => history.goBack()}
-					>
-						<ChevronLeftIcon />
-						Go Back
-					</Link>
-					<Box
-						sx={{
-							display: "flex",
-							flexWrap: "wrap",
-							gap: "1rem",
-							justifyContent: "center",
+							flexDirection: "column",
+							padding: "2rem",
+							"& > *:not(:last-child)": {
+								marginBottom: "1rem",
+							},
 						}}
 					>
-						<Box
-							component="img"
-							src={storeItem.image}
-							alt="Asset Image"
+						<Link
+							variant="h5"
+							underline="hover"
 							sx={{
-								width: "100%",
-								maxWidth: "350px",
-							}}
-						/>
-						<Box
-							sx={{
-								flex: 1,
-								flexBasis: "400px",
+								alignSelf: "start",
 								display: "flex",
-								flexDirection: "column",
+								alignItems: "center",
+								marginBottom: "1rem",
+								textTransform: "uppercase",
+							}}
+							color={colors.white}
+							component={"button"}
+							onClick={() => history.goBack()}
+						>
+							<ChevronLeftIcon />
+							Go Back
+						</Link>
+						<Box
+							sx={{
+								display: "flex",
+								flexWrap: "wrap",
+								gap: "1rem",
+								justifyContent: "center",
 							}}
 						>
-							<Typography
-								variant="h2"
-								component="h1"
-								sx={{
-									marginBottom: ".3rem",
-									textTransform: "uppercase",
-								}}
-							>
-								{storeItem.name}
-							</Typography>
-							<Typography
-								variant="h4"
-								component="p"
-								sx={{
-									fontFamily: fonts.bizmoblack,
-									fontStyle: "italic",
-									letterSpacing: "2px",
-									textTransform: "uppercase",
-									...rarityTextStyles[getItemAttributeValue(storeItem.attributes, "Rarity") as Rarity],
-								}}
-							>
-								{getItemAttributeValue(storeItem.attributes, "Rarity")}
-							</Typography>
 							<Box
+								component="img"
+								src={storeItem.image}
+								alt="Asset Image"
 								sx={{
-									display: "flex",
-									alignItems: "baseline",
-									gap: ".5rem",
-								}}
-							>
-								<Typography
-									variant="subtitle1"
-									sx={{
-										display: "flex",
-										justifyContent: "center",
-										alignItems: "center",
-										letterSpacing: "1px",
-									}}
-								>
-									<Box
-										component={SupTokenIcon}
-										sx={{
-											height: "1rem",
-											marginRight: ".2rem",
-										}}
-									/>
-									{supFormatter(storeItem.supCost)}
-								</Typography>
-							</Box>
-							<Divider
-								sx={{
-									margin: ".5rem 0",
-									marginBottom: "1rem",
+									width: "100%",
+									maxWidth: "350px",
 								}}
 							/>
 							<Box
 								sx={{
-									alignSelf: isWiderThan1000px ? "start" : "unset",
-									marginBottom: "1rem",
-									padding: "1rem",
-									borderRadius: ".5rem",
-									backgroundColor: "rgba(255, 255, 255, 0.3)",
+									flex: 1,
+									flexBasis: "400px",
+									display: "flex",
+									flexDirection: "column",
 								}}
 							>
+								<Typography
+									variant="h2"
+									component="h1"
+									sx={{
+										marginBottom: ".3rem",
+										textTransform: "uppercase",
+									}}
+								>
+									{storeItem.name}
+								</Typography>
 								<Typography
 									variant="h4"
 									component="p"
 									sx={{
-										marginBottom: ".5rem",
+										fontFamily: fonts.bizmoblack,
+										fontStyle: "italic",
+										letterSpacing: "2px",
 										textTransform: "uppercase",
+										...rarityTextStyles[getItemAttributeValue(storeItem.attributes, "Rarity") as Rarity],
 									}}
 								>
-									Sale ends in
+									{getItemAttributeValue(storeItem.attributes, "Rarity")}
 								</Typography>
 								<Box
 									sx={{
 										display: "flex",
-										"& > *:not(:last-child)": {
-											marginRight: "1rem",
-										},
+										alignItems: "baseline",
+										gap: ".5rem",
 									}}
 								>
-									<Box
+									<Typography
+										variant="subtitle1"
 										sx={{
 											display: "flex",
-											flexDirection: "column",
+											justifyContent: "center",
+											alignItems: "center",
+											letterSpacing: "1px",
 										}}
 									>
-										<Typography variant="h3" component="p" color={colors.skyBlue}>
-											--
-										</Typography>
-										<Typography
-											variant="subtitle2"
-											color={colors.darkGrey}
+										<Box
+											component={SupTokenIcon}
 											sx={{
-												textTransform: "uppercase",
+												height: "1rem",
+												marginRight: ".2rem",
 											}}
-										>
-											Days
-										</Typography>
-									</Box>
-									<Box
-										sx={{
-											display: "flex",
-											flexDirection: "column",
-										}}
-									>
-										<Typography variant="h3" component="p" color={colors.skyBlue}>
-											--
-										</Typography>
-										<Typography
-											variant="subtitle2"
-											color={colors.darkGrey}
-											sx={{
-												textTransform: "uppercase",
-											}}
-										>
-											Hours
-										</Typography>
-									</Box>
-									<Box
-										sx={{
-											display: "flex",
-											flexDirection: "column",
-										}}
-									>
-										<Typography variant="h3" component="p" color={colors.skyBlue}>
-											--
-										</Typography>
-										<Typography
-											variant="subtitle2"
-											color={colors.darkGrey}
-											sx={{
-												textTransform: "uppercase",
-											}}
-										>
-											Minutes
-										</Typography>
-									</Box>
-									<Box
-										sx={{
-											display: "flex",
-											flexDirection: "column",
-										}}
-									>
-										<Typography variant="h3" component="p" color={colors.skyBlue}>
-											--
-										</Typography>
-										<Typography
-											variant="subtitle2"
-											color={colors.darkGrey}
-											sx={{
-												textTransform: "uppercase",
-											}}
-										>
-											Seconds
-										</Typography>
-									</Box>
+										/>
+										{supFormatter(storeItem.supCost)}
+									</Typography>
 								</Box>
-							</Box>
-
-							{!isWiderThan1000px && (
-								<>
-									<Box
+								<Divider
+									sx={{
+										margin: ".5rem 0",
+										marginBottom: "1rem",
+									}}
+								/>
+								<Box
+									sx={{
+										alignSelf: isWiderThan1000px ? "start" : "unset",
+										marginBottom: "1rem",
+										padding: "1rem",
+										borderRadius: ".5rem",
+										backgroundColor: "rgba(255, 255, 255, 0.3)",
+									}}
+								>
+									<Typography
+										variant="h4"
+										component="p"
 										sx={{
-											marginBottom: "1rem",
+											marginBottom: ".5rem",
+											textTransform: "uppercase",
 										}}
 									>
-										<Typography
-											variant="h2"
-											sx={{
-												display: "flex",
-												alignItems: "center",
-												marginBottom: ".5rem",
-												letterSpacing: "1px",
-											}}
-										>
-											<Box
-												component={SupTokenIcon}
-												sx={{
-													height: "2rem",
-													marginRight: ".5rem",
-												}}
-											/>
-											{supFormatter(storeItem.supCost)}
-										</Typography>
+										Sale ends in
+									</Typography>
+									<Box
+										sx={{
+											display: "flex",
+											"& > *:not(:last-child)": {
+												marginRight: "1rem",
+											},
+										}}
+									>
 										<Box
 											sx={{
 												display: "flex",
-												justifyContent: "space-between",
+												flexDirection: "column",
 											}}
 										>
-											<Typography variant="caption" color={colors.darkGrey}>
-												({usdFormatter(storeItem.usdCentCost)} USD)
+											<Typography variant="h3" component="p" color={colors.skyBlue}>
+												--
 											</Typography>
-											<Typography variant="caption">
-												Stock: {storeItem.amountAvailable - storeItem.amountSold} / {storeItem.amountAvailable}
+											<Typography
+												variant="subtitle2"
+												color={colors.darkGrey}
+												sx={{
+													textTransform: "uppercase",
+												}}
+											>
+												Days
+											</Typography>
+										</Box>
+										<Box
+											sx={{
+												display: "flex",
+												flexDirection: "column",
+											}}
+										>
+											<Typography variant="h3" component="p" color={colors.skyBlue}>
+												--
+											</Typography>
+											<Typography
+												variant="subtitle2"
+												color={colors.darkGrey}
+												sx={{
+													textTransform: "uppercase",
+												}}
+											>
+												Hours
+											</Typography>
+										</Box>
+										<Box
+											sx={{
+												display: "flex",
+												flexDirection: "column",
+											}}
+										>
+											<Typography variant="h3" component="p" color={colors.skyBlue}>
+												--
+											</Typography>
+											<Typography
+												variant="subtitle2"
+												color={colors.darkGrey}
+												sx={{
+													textTransform: "uppercase",
+												}}
+											>
+												Minutes
+											</Typography>
+										</Box>
+										<Box
+											sx={{
+												display: "flex",
+												flexDirection: "column",
+											}}
+										>
+											<Typography variant="h3" component="p" color={colors.skyBlue}>
+												--
+											</Typography>
+											<Typography
+												variant="subtitle2"
+												color={colors.darkGrey}
+												sx={{
+													textTransform: "uppercase",
+												}}
+											>
+												Seconds
 											</Typography>
 										</Box>
 									</Box>
-									<FancyButton onClick={() => purchase()} loading={submitting} fancy>
-										Purchase Item
-									</FancyButton>
-								</>
-							)}
-						</Box>
-					</Box>
-					<Box
-						sx={{
-							display: "flex",
-							flexWrap: "wrap",
-							gap: "1rem",
-							justifyContent: "center",
-						}}
-					>
-						<Box
-							sx={{
-								flex: 1,
-								flexBasis: "400px",
-							}}
-						>
-							<Typography
-								variant="subtitle1"
-								color={colors.neonPink}
-								sx={{
-									textTransform: "uppercase",
-									marginBottom: ".5rem",
-								}}
-							>
-								Properties
-							</Typography>
-							<Box
-								sx={{
-									display: "grid",
-									gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
-									gap: "1rem",
-								}}
-							>
-								{numberAttributes &&
-									numberAttributes.map((attr, i) => {
-										return (
-											<PercentageDisplay
-												key={`${attr.trait_type}-${attr.value}-${i}`}
-												displayValue={`${attr.value}`}
-												label={attr.trait_type}
-											/>
-										)
-									})}
-							</Box>
-						</Box>
-						<Box
-							sx={{
-								flex: 1,
-								flexBasis: "400px",
-								"& > *:not(:last-child)": {
-									marginBottom: "1rem",
-								},
-							}}
-						>
-							<Box>
-								<Typography
-									variant="subtitle1"
-									color={colors.neonPink}
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									Description
-								</Typography>
-								<Divider
-									sx={{
-										margin: ".5rem 0",
-									}}
-								/>
-								{storeItem.description ? (
-									<Typography variant="body1">{storeItem.description}</Typography>
-								) : (
-									<Typography variant="body1" color={colors.darkGrey} fontStyle="italic">
-										No description available
-									</Typography>
+								</Box>
+
+								{!isWiderThan1000px && (
+									<>
+										<Box
+											sx={{
+												marginBottom: "1rem",
+											}}
+										>
+											<Typography
+												variant="h2"
+												sx={{
+													display: "flex",
+													alignItems: "center",
+													marginBottom: ".5rem",
+													letterSpacing: "1px",
+												}}
+											>
+												<Box
+													component={SupTokenIcon}
+													sx={{
+														height: "2rem",
+														marginRight: ".5rem",
+													}}
+												/>
+												{supFormatter(storeItem.supCost)}
+											</Typography>
+											<Box
+												sx={{
+													display: "flex",
+													justifyContent: "space-between",
+												}}
+											>
+												<Typography variant="caption" color={colors.darkGrey}>
+													({usdFormatter(storeItem.usdCentCost)} USD)
+												</Typography>
+												<Typography variant="caption">
+													Stock: {storeItem.amountAvailable - storeItem.amountSold} / {storeItem.amountAvailable}
+												</Typography>
+											</Box>
+										</Box>
+										<FancyButton onClick={() => setShowPurchaseModal(true)} fancy>
+											Purchase Item
+										</FancyButton>
+									</>
 								)}
 							</Box>
-							<Box>
-								<Typography
-									variant="subtitle1"
-									color={colors.neonPink}
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									Info
-								</Typography>
-								<Divider
-									sx={{
-										margin: ".5rem 0",
-									}}
-								/>
-								<Typography variant="body1">Part of the {storeItem.collection.name} collection.</Typography>
-							</Box>
 						</Box>
-					</Box>
-				</Paper>
-				{isWiderThan1000px && (
-					<>
-						<Box minHeight="2rem" minWidth="2rem" />
 						<Box
 							sx={{
 								display: "flex",
-								flexDirection: "column",
-								width: "100%",
-								maxWidth: "340px",
-								padding: "2rem 0",
-								"& > *:not(:last-child)": {
-									marginBottom: "1rem",
-								},
-								"@media (max-width: 1000px)": {
-									alignSelf: "center",
-									maxWidth: "600px",
-								},
+								flexWrap: "wrap",
+								gap: "1rem",
+								justifyContent: "center",
 							}}
 						>
-							<Box>
+							<Box
+								sx={{
+									flex: 1,
+									flexBasis: "400px",
+								}}
+							>
 								<Typography
-									variant="h2"
+									variant="subtitle1"
+									color={colors.neonPink}
 									sx={{
-										display: "flex",
-										alignItems: "center",
+										textTransform: "uppercase",
 										marginBottom: ".5rem",
-										letterSpacing: "1px",
 									}}
 								>
-									<Box
-										component={SupTokenIcon}
-										sx={{
-											height: "2rem",
-											marginRight: ".5rem",
-										}}
-									/>
-									{supFormatter(storeItem.supCost)}
+									Properties
 								</Typography>
 								<Box
 									sx={{
-										display: "flex",
-										justifyContent: "space-between",
+										display: "grid",
+										gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+										gap: "1rem",
 									}}
 								>
-									<Typography variant="caption" color={colors.darkGrey}>
-										({usdFormatter(storeItem.usdCentCost)} USD)
-									</Typography>
-									<Typography variant="caption">
-										Stock: {storeItem.amountAvailable - storeItem.amountSold} / {storeItem.amountAvailable}
-									</Typography>
+									{numberAttributes &&
+										numberAttributes.map((attr, i) => {
+											return (
+												<PercentageDisplay
+													key={`${attr.trait_type}-${attr.value}-${i}`}
+													displayValue={`${attr.value}`}
+													label={attr.trait_type}
+												/>
+											)
+										})}
 								</Box>
 							</Box>
-							<FancyButton onClick={() => purchase()} size="small" fancy>
-								Purchase Item
-							</FancyButton>
+							<Box
+								sx={{
+									flex: 1,
+									flexBasis: "400px",
+									"& > *:not(:last-child)": {
+										marginBottom: "1rem",
+									},
+								}}
+							>
+								<Box>
+									<Typography
+										variant="subtitle1"
+										color={colors.neonPink}
+										sx={{
+											textTransform: "uppercase",
+										}}
+									>
+										Description
+									</Typography>
+									<Divider
+										sx={{
+											margin: ".5rem 0",
+										}}
+									/>
+									{storeItem.description ? (
+										<Typography variant="body1">{storeItem.description}</Typography>
+									) : (
+										<Typography variant="body1" color={colors.darkGrey} fontStyle="italic">
+											No description available
+										</Typography>
+									)}
+								</Box>
+								<Box>
+									<Typography
+										variant="subtitle1"
+										color={colors.neonPink}
+										sx={{
+											textTransform: "uppercase",
+										}}
+									>
+										Info
+									</Typography>
+									<Divider
+										sx={{
+											margin: ".5rem 0",
+										}}
+									/>
+									<Typography variant="body1">Part of the {storeItem.collection.name} collection.</Typography>
+								</Box>
+							</Box>
 						</Box>
-					</>
-				)}
+					</Paper>
+					{isWiderThan1000px && (
+						<>
+							<Box minHeight="2rem" minWidth="2rem" />
+							<Box
+								sx={{
+									display: "flex",
+									flexDirection: "column",
+									width: "100%",
+									maxWidth: "340px",
+									padding: "2rem 0",
+									"& > *:not(:last-child)": {
+										marginBottom: "1rem",
+									},
+									"@media (max-width: 1000px)": {
+										alignSelf: "center",
+										maxWidth: "600px",
+									},
+								}}
+							>
+								<Box>
+									<Typography
+										variant="h2"
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											marginBottom: ".5rem",
+											letterSpacing: "1px",
+										}}
+									>
+										<Box
+											component={SupTokenIcon}
+											sx={{
+												height: "2rem",
+												marginRight: ".5rem",
+											}}
+										/>
+										{supFormatter(storeItem.supCost)}
+									</Typography>
+									<Box
+										sx={{
+											display: "flex",
+											justifyContent: "center",
+										}}
+									>
+										<Typography variant="caption">
+											Stock: {storeItem.amountAvailable - storeItem.amountSold} / {storeItem.amountAvailable}
+										</Typography>
+									</Box>
+								</Box>
+								<FancyButton onClick={() => setShowPurchaseModal(true)} size="small" fancy>
+									Purchase Item
+								</FancyButton>
+							</Box>
+						</>
+					)}
+				</Box>
 			</Box>
-		</Box>
+		</>
+	)
+}
+
+const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; storeItem: StoreItem }) => {
+	const { open, onClose, storeItem } = props
+	const { send, state } = useWebsocket()
+	const { displayMessage } = useSnackbar()
+	const [loading, setLoading] = useState(false)
+
+	const purchase = useCallback(async () => {
+		if (state !== SocketState.OPEN) return
+		setLoading(true)
+		try {
+			await send(HubKey.StorePurchase, {
+				storeItemID: storeItem.ID,
+			})
+			onClose()
+			displayMessage(`Successfully purchased 1 ${storeItem.name}`, "success")
+		} catch (e) {
+			displayMessage(typeof e === "string" ? e : "Something went wrong. Please try again.", "error")
+		} finally {
+			setLoading(false)
+		}
+	}, [send, state, storeItem, displayMessage])
+
+	return (
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle>Confirm Item Purchase</DialogTitle>
+			<DialogContent>Confirm purchase of {storeItem.name}?</DialogContent>
+			<DialogActions>
+				<Button variant="contained" type="submit" color="primary" disabled={loading} onClick={() => purchase()}>
+					Purchase
+				</Button>
+				<Button
+					variant="contained"
+					type="button"
+					color="error"
+					disabled={loading}
+					onClick={() => {
+						onClose()
+					}}
+				>
+					Cancel
+				</Button>
+			</DialogActions>
+		</Dialog>
 	)
 }

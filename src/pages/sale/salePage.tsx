@@ -221,7 +221,6 @@ export const SalePage = () => {
 											</Typography>
 										</Box>
 									</Box>
-
 									{countdown && <CountdownTimer date={countdown} publicSale />}
 								</Stack>
 								<BuyTokens publicSale />

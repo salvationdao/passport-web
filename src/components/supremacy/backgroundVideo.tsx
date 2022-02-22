@@ -81,6 +81,7 @@ export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 			setLoading(false)
 		})
 
+
 		window.document.getElementById("bgVideo")?.addEventListener("play", () => {
 			setLoading(false)
 		})

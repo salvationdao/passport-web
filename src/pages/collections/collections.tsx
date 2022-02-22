@@ -6,6 +6,7 @@ import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { SearchBar } from "../../components/searchBar"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -32,9 +33,7 @@ export const CollectionsPage: React.FC = () => {
 				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
 				setCollections(resp.records)
 			} catch (e) {
-				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
-					autoHideDuration: null,
-				})
+				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error")
 			} finally {
 				setLoading(false)
 			}
@@ -47,17 +46,26 @@ export const CollectionsPage: React.FC = () => {
 			setLoading(true)
 			try {
 				const resp = await send<{ NFTOwners: NFTOwner[] }>(HubKey.WalletCollectionList)
-				const filter = resp.NFTOwners.filter((x) => {
-					return x.owner_of === user?.publicAddress
-				})
+				if (resp.NFTOwners) {
+					const filter = resp.NFTOwners.filter((x) => {
+						return x.owner_of === user?.publicAddress
+					})
 
-				const walletTokens: number[] = []
-				filter.map((x) => {
-					const num = parseInt(x.token_id)
-					walletTokens.push(num)
-				})
-				setWalletTokenIDs(walletTokens)
+					if (!filter) return
+
+					let itemIDs: number[] = []
+					filter.forEach((item) => {
+						fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${item.token_id}`).then((resp) => {
+							if (resp.ok && resp.status !== 200) {
+								const num = parseInt(item.token_id)
+								itemIDs.push(num)
+							}
+						})
+					})
+					setWalletTokenIDs(itemIDs)
+				}
 			} catch (e) {
+				console.log(e)
 				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
 					autoHideDuration: null,
 				})
@@ -285,11 +293,17 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 			</Box>
 
 			<Box>
-				<Divider sx={{ marginTop: "2rem" }} />
-				<Typography variant="h2" sx={{ margin: "1rem 0" }}>
+				<Typography
+					variant="h2"
+					sx={{
+						marginBottom: "1rem",
+						"@media (max-width: 630px)": {
+							textAlign: "center",
+						},
+					}}
+				>
 					On World Assets
 				</Typography>
-				<Divider />
 				{tokenIDs.length ? (
 					renderCollection(tokenIDs, username)
 				) : (
@@ -301,12 +315,19 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				)}
 			</Box>
 
+			<Divider sx={{ margin: "1rem 0" }} />
 			<Box>
-				<Divider sx={{ marginTop: "2rem" }} />
-				<Typography variant="h2" sx={{ margin: "1rem 0" }}>
+				<Typography
+					variant="h2"
+					sx={{
+						marginBottom: "1rem",
+						"@media (max-width: 630px)": {
+							textAlign: "center",
+						},
+					}}
+				>
 					Off World Assets
 				</Typography>
-				<Divider />
 				{walletTokenIDs.length ? (
 					renderCollection(walletTokenIDs, username)
 				) : (

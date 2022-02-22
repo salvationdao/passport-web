@@ -206,7 +206,7 @@ export const AuthContainer = createContainer(() => {
 				displayMessage(e, "error")
 			}
 		}
-	}, [send, state, account, sign, sessionID, connect])
+	}, [send, state, account, sign, sessionID, connect, displayMessage])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -239,7 +239,7 @@ export const AuthContainer = createContainer(() => {
 				displayMessage(e, "error")
 			}
 		}
-	}, [send, state, account, sessionID, signWalletConnect])
+	}, [send, state, account, sessionID, signWalletConnect, displayMessage])
 
 	/**
 	 * Signs a user up using a Google oauth token
