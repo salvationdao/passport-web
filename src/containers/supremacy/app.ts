@@ -1,6 +1,7 @@
 import { BigNumber } from "ethers"
 import { useCallback, useState } from "react"
 import { createContainer } from "unstated-next"
+import { BYPASS_WHITELIST } from "../../config"
 
 export interface UserWhitelistApi {
 	type: "unregistered" | "registered"
@@ -19,6 +20,9 @@ function useAppState(initialState = {}) {
 	const checkWhitelist = useCallback(
 		async (account: string): Promise<boolean> => {
 			try {
+				if (BYPASS_WHITELIST === "true") {
+					return true
+				}
 				const response = await fetch(`https://stories.supremacy.game/api/whitelist/${account}`)
 				const data = (await response.clone().json()) as UserWhitelistApi
 				return data.can_enter
