@@ -23,10 +23,10 @@ export const TokenSelect = ({ currentToken, cb }: TokenSelectProps) => {
 
 	return (
 		<Select
+			color="secondary"
 			variant="filled"
 			sx={{
 				background: colors.darkNavyBackground2,
-				marginBottom: "1rem",
 				marginLeft: "auto",
 				display: "flex",
 				minWidth: "175px",

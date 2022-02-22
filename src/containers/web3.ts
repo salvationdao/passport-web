@@ -365,7 +365,6 @@ export const Web3Container = createContainer(() => {
 				await provider.send("eth_requestAccounts", [])
 				const signer = provider.getSigner()
 				const acc = await signer.getAddress()
-				// Check if account is whitelisted if not return
 				setAccount(acc)
 				handleAccountChange([acc])
 			} catch (error) {
@@ -516,6 +515,7 @@ export const Web3Container = createContainer(() => {
 		if (!provider) return
 
 		if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
+			// Disconnect and reconnect user to change chain
 			if (wcProvider) await wcProvider.disconnect()
 			await createWcProvider()
 		} else {
