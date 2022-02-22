@@ -36,7 +36,6 @@ export const Routes = () => {
 	/* Get subdomain name  */
 	const parts = window.location.hostname.split(".")
 	const sndleveldomain = parts.slice(-2).join(".")
-	console.log(parts, sndleveldomain)
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
@@ -59,7 +58,7 @@ export const Routes = () => {
 				>
 					<Alert severity={alertSeverity || "info"}>{message}</Alert>
 				</Snackbar>
-				{sndleveldomain.includes("passport") ? (
+				{parts.includes("passport") ? (
 					<Switch>
 						<Route path="/nosidebar/login">
 							<LoginPage />
@@ -133,9 +132,6 @@ export const Routes = () => {
 
 							{/* Supremacy */}
 							<Switch>
-								<Route path="/sale">
-									<SalePage />
-								</Route>
 								<Route path="/battle_arena">
 									<BattleArenaPage />
 								</Route>
