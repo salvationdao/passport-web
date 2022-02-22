@@ -4,6 +4,10 @@
 
 [CD Docs](.github/workflows/README.md)
 
+### Staging
+https://test-sale.supremacy.game/
+https://test-passport.supremacy.game/
+
 ### Envars
 
 ```shell

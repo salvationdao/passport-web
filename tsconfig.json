@@ -18,5 +18,5 @@
 		"sourceRoot": "/",
 		"jsx": "react-jsx"
 	},
-	"include": ["src"]
+	"include": ["src", "public/TextGame"]
 }

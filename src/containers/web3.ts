@@ -22,6 +22,7 @@ import {
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
+import { useSupremacyApp } from "./supremacy/app"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -100,7 +101,7 @@ const tokenOptions: tokenSelect[] = [
  */
 export const Web3Container = createContainer(() => {
 	const { displayMessage } = useSnackbar()
-
+	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
 	const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
 	const [wcProvider, setWcProvider] = useState<WalletConnectProvider | undefined>()
@@ -147,9 +148,10 @@ export const Web3Container = createContainer(() => {
 			]
 
 			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
-
 			try {
+				console.log("loading")
 				const bal = await erc20.balanceOf(acc)
+				console.log("loaded")
 				setSupBalance(bal)
 			} catch (e) {
 				console.error(e)
@@ -203,7 +205,17 @@ export const Web3Container = createContainer(() => {
 	}, [])
 
 	useEffect(() => {
-		if (provider) return // wallet connected
+		// Run on every new block
+		if (provider && provider.listeners("block").length == 0) {
+			provider.on("block", function (result) {
+				setBlock(result)
+				if (account) handleWalletSups(account)
+			})
+		}
+	}, [provider])
+
+	useEffect(() => {
+		if (provider) return // metamask connected
 		;(async () => {
 			if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
 				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
@@ -239,33 +251,71 @@ export const Web3Container = createContainer(() => {
 		}
 	}, [provider, handleAccountChange, handleChainChange, createWcProvider])
 
-	const connect = useCallback(async () => {
-		if (provider) {
-			try {
-				await provider.send("eth_requestAccounts", [])
-				const signer = provider.getSigner()
-				const acc = await signer.getAddress()
-				setAccount(acc)
-				handleAccountChange([acc])
-			} catch (error) {
-				displayMessage("Something went wrong, please try again.", "error")
+	const checkNeoBalance = useCallback(
+		async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+			const NTABI = ["function balanceOf(address) view returns (uint256)"]
+			if (provider) {
+				const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
+				const bal: BigNumber = await NTContract.balanceOf(addr)
+				if (parseInt(bal.toString()) > 0) {
+					try {
+						await fetch(`https://stories.supremacy.game/api/users/${account}`, {
+							method: "POST",
+						})
+						await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
+							method: "PUT",
+						})
+						if (setShowGame) {
+							setShowGame(true)
+						}
+					} catch (error) {
+						console.error()
+					}
+				} else {
+					if (setShowGame) {
+						setShowGame(true)
+					}
+				}
 			}
-		}
-	}, [displayMessage, provider, handleAccountChange])
+		},
+		[provider],
+	)
+	const connect = useCallback(
+		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+			if (provider) {
+				try {
+					await provider.send("eth_requestAccounts", [])
+					const signer = provider.getSigner()
+					const acc = await signer.getAddress()
+					// Check if account is whitelisted if not return
+					setAccount(acc)
+					handleAccountChange([acc])
+				} catch (error) {
+					if (error instanceof Error) displayMessage(error.message, "error")
+					else displayMessage("Please authenticate your wallet.", "info")
+				}
+			}
+		},
+		[displayMessage, provider, handleAccountChange],
+	)
 
-	const wcConnect = useCallback(async () => {
-		let walletConnectProvider
-		try {
-			walletConnectProvider = await createWcProvider()
-			await walletConnectProvider.enable()
-			const connector = await walletConnectProvider.getWalletConnector()
-			const acc = connector.accounts[0]
-			setAccount(acc)
-			return { walletConnectProvider }
-		} catch (error) {
-			await walletConnectProvider?.disconnect()
-		}
-	}, [createWcProvider])
+	const wcConnect = useCallback(
+		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+			let walletConnectProvider
+			try {
+				walletConnectProvider = await createWcProvider()
+				await walletConnectProvider.enable()
+				const connector = await walletConnectProvider.getWalletConnector()
+				const acc = connector.accounts[0]
+				setAccount(acc)
+				if (setShowGame) setShowGame(true)
+				return { walletConnectProvider }
+			} catch (error) {
+				await walletConnectProvider?.disconnect()
+			}
+		},
+		[createWcProvider],
+	)
 
 	const ETHEREUM_NETWORK: AddEthereumChainParameter = useMemo(
 		() => ({
@@ -385,7 +435,8 @@ export const Web3Container = createContainer(() => {
 				const rawMessageLength = new Blob([rawMessage]).size
 				const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
 				const signMsg = ethers.utils.keccak256(convertMsg)
-				return await connector.signMessage([account, signMsg])
+				const signature = await connector.signMessage([account, signMsg])
+				return signature
 			} else return ""
 		},
 		[wcProvider, getNonce, getNonceFromID, account, wcConnect],
@@ -425,11 +476,18 @@ export const Web3Container = createContainer(() => {
 	}
 
 	const getBalance = useCallback(
-		async (currentToken: tokenSelect) => {
+		async (contractAddress: string | null) => {
+			if (!contractAddress) {
+				if (!provider) {
+					return BigNumber.from(0)
+				}
+				const signer = provider.getSigner()
+				return signer.getBalance()
+			}
 			try {
 				if (!provider || !account) return
 
-				if (currentToken.isNative){
+				if (currentToken.isNative) {
 					const balance = await provider.getBalance(account)
 					return balance
 				}
@@ -439,12 +497,12 @@ export const Web3Container = createContainer(() => {
 				return contract.balanceOf(account)
 			} catch (error) {
 				displayMessage("Couldn't get contract balance, please try again.", "error")
-				return
+				return BigNumber.from(0)
 			}
 		},
 		[provider, account, displayMessage],
 	)
-	async function sendNativeTransfer(value: number) {
+	async function sendNativeTransfer(value: BigNumber) {
 		try {
 			if (!provider || !account) {
 				displayMessage("Wallet is not connected.", "error")
