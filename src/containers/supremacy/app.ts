@@ -1,8 +1,6 @@
-import { AlertColor } from "@mui/material/Alert"
 import { BigNumber } from "ethers"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import { createContainer } from "unstated-next"
-import { useWeb3 } from "../web3"
 
 export interface UserWhitelistApi {
 	type: "unregistered" | "registered"
@@ -11,7 +9,7 @@ export interface UserWhitelistApi {
 }
 
 function useAppState(initialState = {}) {
-	const [saleActive, setSaleActive] = useState(process.env.REACT_APP_SALE_ACTIVE == "true" ? true : false)
+	const [saleActive, setSaleActive] = useState(process.env.REACT_APP_SALE_ACTIVE === "true" ? true : false)
 	const [loading, setLoading] = useState(true)
 	// Check Whitelist
 	const [isWhitelisted, setIsWhitelisted] = useState(false)
@@ -20,7 +18,6 @@ function useAppState(initialState = {}) {
 
 	const checkWhitelist = useCallback(
 		async (account: string): Promise<boolean> => {
-			if (true === true) return true
 			try {
 				const response = await fetch(`https://stories.supremacy.game/api/whitelist/${account}`)
 				const data = (await response.clone().json()) as UserWhitelistApi

@@ -1,6 +1,5 @@
 import WalletConnectProvider from "@walletconnect/web3-provider"
 import { BigNumber, ethers } from "ethers"
-import { parseEther } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
@@ -22,7 +21,6 @@ import {
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
-import { useSupremacyApp } from "./supremacy/app"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -124,8 +122,60 @@ export const Web3Container = createContainer(() => {
 		},
 		[provider],
 	)
-
 	useEffect(() => {
+		const updateNativeBalance = async () => {
+			try {
+				if (!provider) {
+					return
+				}
+				if (!currentChainId) {
+					return
+				}
+				if (!account) {
+					return
+				}
+				const signer = provider.getSigner()
+				if (!signer) {
+					return
+				}
+				const bal = await signer.getBalance()
+				if (!bal) {
+					setStableBalance(BigNumber.from(0))
+					return
+				}
+				setNativeBalance(bal)
+			} catch (e) {
+				console.error(e)
+			}
+		}
+		// console.log({ provider, wcProvider, currentChainId })
+		const updateStableBalance = async () => {
+			try {
+				if (!provider) {
+					return
+				}
+				if (!currentChainId) {
+					return
+				}
+				if (!account) {
+					return
+				}
+				let erc20Addr = USDC_CONTRACT_ADDRESS
+				if (currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId) {
+					erc20Addr = BUSD_CONTRACT_ADDRESS
+				}
+				console.log({ currentChainId, erc20Addr })
+				const contract = new ethers.Contract(erc20Addr, genericABI, provider)
+				const bal = await contract.balanceOf(account)
+				if (!bal) {
+					setStableBalance(BigNumber.from(0))
+					return
+				}
+				setStableBalance(bal)
+			} catch (e) {
+				console.error(e)
+			}
+		}
 		updateNativeBalance()
 		updateStableBalance()
 	}, [provider, currentChainId, account])
@@ -224,72 +274,16 @@ export const Web3Container = createContainer(() => {
 		})
 		return walletConnectProvider
 	}, [])
-	const updateNativeBalance = async () => {
-		try {
-			console.log("1")
-			if (!provider) {
-				return
-			}
-			if (!currentChainId) {
-				return
-			}
-			if (!account) {
-				return
-			}
-			console.log("2")
-			const signer = provider.getSigner()
-			if (!signer) {
-				return
-			}
-			console.log({ signer: await signer.getAddress() })
-			const bal = await signer.getBalance()
-			if (!bal) {
-				setStableBalance(BigNumber.from(0))
-				return
-			}
-			setNativeBalance(bal)
-		} catch (e) {
-			console.error(e)
-		}
-	}
-	// console.log({ provider, wcProvider, currentChainId })
-	const updateStableBalance = async () => {
-		try {
-			if (!provider) {
-				return
-			}
-			if (!currentChainId) {
-				return
-			}
-			if (!account) {
-				return
-			}
-			let erc20Addr = USDC_CONTRACT_ADDRESS
-			if (currentChainId == web3Constants.binanceChainId || currentChainId == web3Constants.bscTestNetChainId) {
-				erc20Addr = BUSD_CONTRACT_ADDRESS
-			}
-			console.log({ currentChainId, erc20Addr })
-			const contract = new ethers.Contract(erc20Addr, genericABI, provider)
-			const bal = await contract.balanceOf(account)
-			if (!bal) {
-				setStableBalance(BigNumber.from(0))
-				return
-			}
-			setStableBalance(bal)
-		} catch (e) {
-			console.error(e)
-		}
-	}
 
 	useEffect(() => {
 		// Run on every new block
-		if (provider && provider.listeners("block").length == 0) {
+		if (provider && provider.listeners("block").length === 0) {
 			provider.on("block", function (result) {
 				setBlock(result)
 				if (account) handleWalletSups(account)
 			})
 		}
-	}, [provider])
+	}, [provider, account, handleWalletSups])
 
 	useEffect(() => {
 		if (provider) return // metamask connected
@@ -328,35 +322,35 @@ export const Web3Container = createContainer(() => {
 		}
 	}, [provider, handleAccountChange, handleChainChange, createWcProvider])
 
-	const checkNeoBalance = useCallback(
-		async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
-			const NTABI = ["function balanceOf(address) view returns (uint256)"]
-			if (provider) {
-				const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
-				const bal: BigNumber = await NTContract.balanceOf(addr)
-				if (parseInt(bal.toString()) > 0) {
-					try {
-						await fetch(`https://stories.supremacy.game/api/users/${account}`, {
-							method: "POST",
-						})
-						await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
-							method: "PUT",
-						})
-						if (setShowGame) {
-							setShowGame(true)
-						}
-					} catch (error) {
-						console.error()
-					}
-				} else {
-					if (setShowGame) {
-						setShowGame(true)
-					}
-				}
-			}
-		},
-		[provider],
-	)
+	// const checkNeoBalance = useCallback(
+	// 	async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+	// 		const NTABI = ["function balanceOf(address) view returns (uint256)"]
+	// 		if (provider) {
+	// 			const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
+	// 			const bal: BigNumber = await NTContract.balanceOf(addr)
+	// 			if (parseInt(bal.toString()) > 0) {
+	// 				try {
+	// 					await fetch(`https://stories.supremacy.game/api/users/${account}`, {
+	// 						method: "POST",
+	// 					})
+	// 					await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
+	// 						method: "PUT",
+	// 					})
+	// 					if (setShowGame) {
+	// 						setShowGame(true)
+	// 					}
+	// 				} catch (error) {
+	// 					console.error()
+	// 				}
+	// 			} else {
+	// 				if (setShowGame) {
+	// 					setShowGame(true)
+	// 				}
+	// 			}
+	// 		}
+	// 	},
+	// 	[provider],
+	// )
 	const connect = useCallback(
 		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
 			if (provider) {
@@ -594,6 +588,7 @@ export const Web3Container = createContainer(() => {
 	}
 
 	return {
+		block,
 		connect,
 		metaMaskState,
 		sign,

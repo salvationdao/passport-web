@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
 import { useHistory } from "react-router-dom"
-import { useContainer } from "unstated-next"
 import { AuthContainer } from "../containers"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -20,7 +19,7 @@ interface LoginMetaMaskProps {
 
 export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ publicSale, onFailure, onClick, render }) => {
 	const { loginMetamask, loginWalletConnect } = AuthContainer.useContainer()
-	const { metaMaskState, connect } = useWeb3()
+	const { metaMaskState } = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const history = useHistory()
 	const [isProcessing, setIsProcessing] = useState(false)
@@ -31,9 +30,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 				displayMessage("Please refer to your wallet for authentication")
 				const resp = await loginWalletConnect()
 				if (!resp || !resp.isNew) return
-				{
-					!publicSale && history.push("/onboarding?skip_username=true")
-				}
+				!publicSale && history.push("/onboarding?skip_username=true")
 			} catch (e) {
 				setIsProcessing(false)
 				if (onFailure) {
@@ -59,7 +56,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 		}
 
 		setIsProcessing(false)
-	}, [onFailure, history, loginMetamask, metaMaskState, onClick, connect, loginWalletConnect, publicSale])
+	}, [onFailure, history, loginMetamask, onClick, loginWalletConnect, publicSale, displayMessage])
 
 	const propsForRender = useMemo(
 		() => ({

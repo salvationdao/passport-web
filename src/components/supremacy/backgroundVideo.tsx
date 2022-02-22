@@ -32,19 +32,18 @@ const Container = styled(Box)({
 })
 export const BackgroundVideo = () => {
 	const videoRef = useRef<HTMLVideoElement>(null!)
-	const { setLoading, loading } = useContainer(AppState)
+	const { setLoading } = useContainer(AppState)
 	const [videoLoading, setVideoLoading] = useState(true)
 	const largeDesktop = useMediaQuery("(min-width:2000px)")
 	const mobileScreen = useMediaQuery("(max-width:600px)")
 
-	const fallBackPlayVideo = () => {
-		if (videoLoading) setVideoLoading(false)
-		if (videoRef.current.played.length === 0) {
-			videoRef.current.play()
-		}
-	}
-
 	useEffect(() => {
+		const fallBackPlayVideo = () => {
+			if (videoLoading) setVideoLoading(false)
+			if (videoRef.current.played.length === 0) {
+				videoRef.current.play()
+			}
+		}
 		// Fix  video not playing for iphones low-power mode
 		window.document.body.addEventListener("touchstart", () => {
 			// IF video is not already playing
@@ -59,7 +58,7 @@ export const BackgroundVideo = () => {
 		return () => {
 			clearTimeout(fallback)
 		}
-	}, [])
+	}, [videoLoading])
 
 	useEffect(() => {
 		videoRef.current.addEventListener(

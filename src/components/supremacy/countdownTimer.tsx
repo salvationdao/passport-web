@@ -1,6 +1,6 @@
 import { Box, styled, SxProps } from "@mui/system"
 import { differenceInSeconds } from "date-fns"
-import React, { useCallback } from "react"
+import React from "react"
 import { useInterval } from "react-use"
 import { colors } from "../../theme"
 import { useHistory } from "react-router"

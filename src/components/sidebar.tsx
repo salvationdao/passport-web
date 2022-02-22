@@ -4,7 +4,6 @@ import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
-import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
 import StorefrontIcon from "@mui/icons-material/Storefront"
 import { Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
@@ -41,7 +40,7 @@ export interface SidebarLayoutProps {
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
 	const { send, state } = useWebsocket()
-	const { sidebarOpen, setSidebarOpen } = useSidebarState()
+	const { sidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
 	const { user, logout } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")

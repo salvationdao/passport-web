@@ -1,7 +1,6 @@
 import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
 import { formatUnits } from "ethers/lib/utils"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useHistory } from "react-router-dom"
 import { useContainer } from "unstated-next"
 import BWSupToken from "../../assets/images/BW-sup-token.png"
 import { BuyTokens } from "../../components/buyTokens"
@@ -221,20 +220,20 @@ const SubHeading = styled("span")({
 	WebkitTextStrokeColor: colors.black,
 })
 
-const GameFrame = styled("iframe")({
-	position: "fixed",
-	top: 0,
-	left: 0,
-	bottom: 0,
-	right: 0,
-	width: "100vw",
-	height: "100vh",
-	border: "none",
-	margin: 0,
-	padding: 0,
-	overflow: "hidden",
-	zIndex: 9999,
-})
+// const GameFrame = styled("iframe")({
+// 	position: "fixed",
+// 	top: 0,
+// 	left: 0,
+// 	bottom: 0,
+// 	right: 0,
+// 	width: "100vw",
+// 	height: "100vh",
+// 	border: "none",
+// 	margin: 0,
+// 	padding: 0,
+// 	overflow: "hidden",
+// 	zIndex: 9999,
+// })
 
 const FancyLinearProgress = styled(LinearProgress)({
 	width: "90vw",

@@ -139,7 +139,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		} else {
 			setCurrentToken(tokenOptions[0])
 		}
-	}, [currentChainId, acceptedChainExceptions])
+	}, [currentChainId, acceptedChainExceptions, currentToken.name, setCurrentToken, tokenOptions])
 
 	useEffect(() => {
 		if (tokenAmt && tokenAmt.gt(0)) {
@@ -164,7 +164,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
 			setAmountRemaining(BigNumber.from(amount))
 		})
-	}, [subscribe, state])
+	}, [subscribe, state, setAmountRemaining])
 
 	const handleNetworkSwitch = async () => {
 		await changeChain(currentToken.chainId)

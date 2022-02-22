@@ -1,4 +1,3 @@
-import { connect } from "http2"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import HubKey from "../keys"
@@ -209,7 +208,7 @@ export const AuthContainer = createContainer(() => {
 			console.error(e)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
-	}, [send, state, account, sign, sessionID, connect, checkWhitelist, setIsWhitelisted])
+	}, [send, state, account, sign, sessionID, connect, checkWhitelist, setIsWhitelisted, setShowSimulation])
 
 	/**
 	 * Logs a User in using a Wallet Connect public address
@@ -249,7 +248,7 @@ export const AuthContainer = createContainer(() => {
 			console.error(e)
 			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
-	}, [send, state, account, sessionID, signWalletConnect])
+	}, [send, state, account, sessionID, signWalletConnect, checkWhitelist, setIsWhitelisted, setShowSimulation])
 
 	/**
 	 * Signs a user up using a Google oauth token

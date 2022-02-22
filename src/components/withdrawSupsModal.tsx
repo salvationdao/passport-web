@@ -69,7 +69,7 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 			return
 		}
 		setErrorAmount(null)
-	}, [withdrawAmount, userSups, withdrawContractAmount])
+	}, [withdrawAmount, userSups, withdrawContractAmount, xsynBalance])
 
 	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
 	const getWithdrawContractBalance = useCallback(async () => {
