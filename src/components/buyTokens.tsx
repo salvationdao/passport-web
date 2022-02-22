@@ -24,10 +24,10 @@ type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
 	const { state, subscribe } = useWebsocket()
-	const { amountRemaining } = useWeb3()
 	const { user } = useAuth()
 	const {
 		changeChain,
+		amountRemaining,
 		currentChainId,
 		nativeBalance,
 		stableBalance,
@@ -220,10 +220,10 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						? { display: "none" }
 						: {
 								position: "absolute",
-								zIndex: "5",
+								zIndex: 5,
 								padding: "1rem",
 								height: "100%",
-								width: "100%",
+								width: publicSale ? "25rem" : "100%",
 								display: "flex",
 								flexDirection: "column",
 								justifyContent: "center",
@@ -423,10 +423,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={{
 						width: "90vw",
-						maxWidth: publicSale ? "25rem" : "550px",
-						"@media (max-width:480px)": {
-							maxWidth: "24rem",
-						},
+						maxWidth: publicSale ? "24rem" : "550px",
 						display: "flex",
 						flexDirection: "column",
 						justifyContent: "space-between",
@@ -530,6 +527,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 											<TokenSelect
 												currentToken={currentToken}
 												cb={async (newToken: tokenSelect) => {
+													await changeChain(newToken.chainId)
 													setTokenAmt(BigNumber.from(0))
 													setTokenDisplay(null)
 													setSupsAmt(BigNumber.from(0))

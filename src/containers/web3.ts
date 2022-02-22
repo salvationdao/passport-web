@@ -335,22 +335,26 @@ export const Web3Container = createContainer(() => {
 
 	const checkNeoBalance = useCallback(
 		async (addr: string) => {
-			const NTABI = ["function balanceOf(address) view returns (uint256)"]
-			if (provider) {
-				const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
-				const bal: BigNumber = await NTContract.balanceOf(addr)
-				if (parseInt(bal.toString()) > 0) {
-					try {
-						await fetch(`https://stories.supremacy.game/api/users/${account}`, {
-							method: "POST",
-						})
-						await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
-							method: "PUT",
-						})
-					} catch (error) {
-						console.error()
-					}
-				} else return
+			try {
+				const NTABI = ["function balanceOf(address) view returns (uint256)"]
+				if (provider) {
+					const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
+					const bal: BigNumber = await NTContract.balanceOf(addr)
+					if (parseInt(bal.toString()) > 0) {
+						try {
+							await fetch(`https://stories.supremacy.game/api/users/${account}`, {
+								method: "POST",
+							})
+							await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
+								method: "PUT",
+							})
+						} catch (error) {
+							console.error()
+						}
+					} else return
+				}
+			} catch (err) {
+				console.error(err)
 			}
 		},
 		[provider],
