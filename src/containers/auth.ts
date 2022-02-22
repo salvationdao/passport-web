@@ -930,7 +930,7 @@ export const AuthContainer = createContainer(() => {
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
-		if (authorised && sessionID) {
+		if (authorised && sessionID && !window.location.pathname.startsWith("/nosidebar/logout")) {
 			window.close()
 		}
 	}, [authorised, sessionID])
