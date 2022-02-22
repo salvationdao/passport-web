@@ -180,7 +180,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 					maskImage: "linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 100%)",
 				}}
 			>
-				{storeItemIDs.slice(0, 5).map((a) => {
+				{storeItemIDs.slice(0, 6).map((a) => {
 					return <StoreItemCard key={a} storeItemID={a} />
 				})}
 			</Box>
