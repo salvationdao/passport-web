@@ -17,7 +17,7 @@ import {
 	ETH_SCAN_SITE,
 	PURCHASE_ADDRESS,
 	SUPS_CONTRACT_ADDRESS,
-	USDC_CONTRACT_ADDRESS,
+	USDC_CONTRACT_ADDRESS, WALLET_CONNECT_RPC, SIGN_MESSAGE,
 } from "../config"
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
@@ -168,10 +168,10 @@ export const Web3Container = createContainer(() => {
 		//  Create WalletConnect Provider
 		const walletConnectProvider = new WalletConnectProvider({
 			rpc: {
-				1: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/mainnet`,
-				5: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/eth/goerli`,
-				56: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/mainnet`,
-				97: `https://speedy-nodes-nyc.moralis.io/${process.env.REACT_APP_WALLET_CONNECT_RPC}/bsc/testnet`,
+				1: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/mainnet`,
+				5: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/goerli`,
+				56: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/mainnet`,
+				97: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/testnet`,
 			},
 			qrcode: showQrCode,
 		})
@@ -397,8 +397,7 @@ export const Web3Container = createContainer(() => {
 				nonce = await getNonce(acc)
 			}
 			if (nonce === "") return ""
-			const msg = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
-			return await signer.signMessage(`${msg}:\n ${nonce}`)
+			return await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
 		},
 		[provider, getNonce, getNonceFromID],
 	)
@@ -415,8 +414,7 @@ export const Web3Container = createContainer(() => {
 					nonce = await getNonce(account)
 				} else return ""
 				if (nonce === "") return ""
-				const msg = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
-				const rawMessage = `${msg}:\n ${nonce}`
+				const rawMessage = `${SIGN_MESSAGE}:\n ${nonce}`
 				const rawMessageLength = new Blob([rawMessage]).size
 				const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
 				const signMsg = ethers.utils.keccak256(convertMsg)

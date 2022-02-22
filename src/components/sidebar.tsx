@@ -17,7 +17,7 @@ import SupsTokenLogo from "../assets/images/sups-token-logo.png"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { useSnackbar } from "../containers/snackbar"
-import { API_ENDPOINT_HOSTNAME, SocketState, useWebsocket } from "../containers/socket"
+import {  SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
@@ -29,6 +29,7 @@ import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
+import { BATTLE_ARENA_LINK, API_ENDPOINT_HOSTNAME } from "../config"
 
 const drawerWidth = 250
 
@@ -323,7 +324,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					}}
 					onClick={() => {
 						if (!xsynSups.eq(0)) {
-							window.open("https://staging-watch.supremacy.game", "_blank")?.focus()
+							window.open(BATTLE_ARENA_LINK, "_blank")?.focus()
 						}
 					}}
 					startIcon={<PlayArrowIcon />}
