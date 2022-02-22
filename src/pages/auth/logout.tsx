@@ -4,13 +4,13 @@ import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 
 export const LogoutPage = () => {
-	const { user, loading, logout } = useAuth()
+	const { user, sessionID, loading, logout } = useAuth()
 
 	useEffect(() => {
-		if (user) {
+		if (user && sessionID) {
 			logout()
 		}
-	}, [user, logout])
+	}, [user, sessionID, logout])
 
 	if (!user && !loading) {
 		return <Redirect to={"/"} />

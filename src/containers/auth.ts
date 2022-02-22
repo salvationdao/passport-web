@@ -68,7 +68,7 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const logout = useCallback(() => {
 		const token = localStorage.getItem("token")
-		send(HubKey.AuthLogout, { token }).then(() => {
+		send(HubKey.AuthLogout, { token, sessionID }).then(() => {
 			localStorage.removeItem("token")
 			window.location.reload()
 		})
