@@ -20,7 +20,7 @@ import {
 	StarAtlasLogoImagePath,
 	SteemSteemLogoImagePath,
 	TheSandboxSandLogoImagePath,
-	XSYNWordmarkImagePath
+	XSYNWordmarkImagePath,
 } from "../assets"
 import BottomRightMatrix from "../assets/images/Bottom right corner matrix accent.png"
 import BottomLeftMatrix from "../assets/images/Left Corner Matrix.png"
@@ -29,6 +29,8 @@ import { GradientCircleThing } from "../components/home/gradientCircleThing"
 import { Navbar } from "../components/home/navbar"
 import { useAuth } from "../containers/auth"
 import { colors } from "../theme"
+import PrivacyPolicy from "../assets/documents/XSYN-Privacy-Policy.pdf"
+import TermsAndConditions from "../assets/documents/XSYN-Terms-and-Conditions.pdf"
 
 export const Home = () => {
 	const history = useHistory()
@@ -290,10 +292,10 @@ export const Home = () => {
 						margin: "0 auto",
 					}}
 				>
-					<Link href="/privacy-policy" underline="none" color="white">
+					<Link href={PrivacyPolicy} target="_blank" underline="none" color="white">
 						Privacy Policy
 					</Link>
-					<Link href="/terms-and-conditions" underline="none" color="white">
+					<Link href={TermsAndConditions} underline="none" color="white">
 						Terms And Conditions
 					</Link>
 				</Box>
