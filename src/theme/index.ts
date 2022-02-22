@@ -29,10 +29,12 @@ export const colors = {
 	navyBlue: "#402F98",
 	darkNavyBlue: "#0a061f",
 	darkerNavyBlue: "#030208",
+	darkNavyBackground2: "rgba(16, 16, 25, 0.2)",
 	darkNavyBackground: "rgba(16, 16, 25, 0.7)",
 	darkerNavyBackground: "rgb(5, 12, 18,0.95)",
 	black2: "#050C12",
 	black2Background: "rgb(5, 12, 18,0.7)",
+	inputBg: "#211E33",
 	gold: "#ffc400",
 	neonBlue: "#00FFFF",
 	darkNeonBlue: "#176969",
@@ -211,7 +213,7 @@ const lightTheme = createTheme({
 		MuiCssBaseline: {
 			styleOverrides: {
 				html: {
-					"@media (max-width: 1000px)": {
+					"@media (max-width: 1080px)": {
 						fontSize: "80%",
 					},
 				},

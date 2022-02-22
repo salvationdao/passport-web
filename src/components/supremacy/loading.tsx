@@ -8,15 +8,15 @@ interface Props {
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export const Loading = (props: Props) => {
+export const Loading = ({ loading, setLoading }: Props) => {
 	useEffect(() => {
 		setTimeout(() => {
-			if (props.loading) props.setLoading(false)
+			if (loading) setLoading(false)
 		}, 5000)
-	}, [props.loading])
+	}, [loading, setLoading])
 	return (
 		<Box sx={{ position: "absolute", top: 0, left: 0, zIndex: 1000 }}>
-			<Fade in={props.loading} appear={false} timeout={1000}>
+			<Fade in={loading} appear={false} timeout={1000}>
 				<Backdrop open={true} sx={{ backgroundColor: colors.black2 }}>
 					<Loader />
 				</Backdrop>

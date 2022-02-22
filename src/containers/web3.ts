@@ -1,6 +1,5 @@
 import WalletConnectProvider from "@walletconnect/web3-provider"
 import { BigNumber, ethers } from "ethers"
-import { parseEther } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
@@ -9,20 +8,21 @@ import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import {
 	BINANCE_CHAIN_ID,
-	BNB_CONTRACT_ADDRESS,
 	BSC_SCAN_SITE,
 	BUSD_CONTRACT_ADDRESS,
 	ETHEREUM_CHAIN_ID,
-	ETH_CONTRACT_ADDRESS,
 	ETH_SCAN_SITE,
 	PURCHASE_ADDRESS,
 	SUPS_CONTRACT_ADDRESS,
-	USDC_CONTRACT_ADDRESS, WALLET_CONNECT_RPC, SIGN_MESSAGE,
+	USDC_CONTRACT_ADDRESS,
+	WALLET_CONNECT_RPC,
+	SIGN_MESSAGE,
 } from "../config"
+import HubKey from "../keys"
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
-import { useSupremacyApp } from "./supremacy/app"
+import { SocketState, useWebsocket } from "./socket"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -61,7 +61,7 @@ const tokenOptions: tokenSelect[] = [
 		tokenSrc: Ethereum,
 		chainSrc: Ethereum,
 		isNative: true,
-		contractAddr: ETH_CONTRACT_ADDRESS,
+		contractAddr: "0x0",
 	},
 	{
 		name: "usdc",
@@ -81,7 +81,7 @@ const tokenOptions: tokenSelect[] = [
 		tokenSrc: BinanceCoin,
 		chainSrc: BinanceCoin,
 		isNative: true,
-		contractAddr: BNB_CONTRACT_ADDRESS,
+		contractAddr: "0x0",
 	},
 
 	{
@@ -100,6 +100,7 @@ const tokenOptions: tokenSelect[] = [
  * A Container that handles Web3
  */
 export const Web3Container = createContainer(() => {
+	const { subscribe, state } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
@@ -109,6 +110,17 @@ export const Web3Container = createContainer(() => {
 	const [currentChainId, setCurrentChainId] = useState<number>()
 	const [supBalance, setSupBalance] = useState<BigNumber>()
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
+	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
+
+	//Setting up websocket to listen to remaining supply
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
+			setAmountRemaining(BigNumber.from(amount))
+		})
+	}, [subscribe, state])
+	const [nativeBalance, setNativeBalance] = useState<BigNumber | null>(null)
+	const [stableBalance, setStableBalance] = useState<BigNumber | null>(null)
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
@@ -122,6 +134,62 @@ export const Web3Container = createContainer(() => {
 		},
 		[provider],
 	)
+	useEffect(() => {
+		const updateNativeBalance = async () => {
+			try {
+				if (!provider) {
+					return
+				}
+				if (!currentChainId) {
+					return
+				}
+				if (!account) {
+					return
+				}
+				const signer = provider.getSigner()
+				if (!signer) {
+					return
+				}
+				const bal = await signer.getBalance()
+				if (!bal) {
+					setStableBalance(BigNumber.from(0))
+					return
+				}
+				setNativeBalance(bal)
+			} catch (e) {
+				console.error(e)
+			}
+		}
+		// console.log({ provider, wcProvider, currentChainId })
+		const updateStableBalance = async () => {
+			try {
+				if (!provider) {
+					return
+				}
+				if (!currentChainId) {
+					return
+				}
+				if (!account) {
+					return
+				}
+				let erc20Addr = USDC_CONTRACT_ADDRESS
+				if (currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId) {
+					erc20Addr = BUSD_CONTRACT_ADDRESS
+				}
+				const contract = new ethers.Contract(erc20Addr, genericABI, provider)
+				const bal = await contract.balanceOf(account)
+				if (!bal) {
+					setStableBalance(BigNumber.from(0))
+					return
+				}
+				setStableBalance(bal)
+			} catch (e) {
+				console.error(e)
+			}
+		}
+		updateNativeBalance()
+		updateStableBalance()
+	}, [provider, currentChainId, account])
 
 	const handleChainChange = useCallback((chainId: string) => {
 		setCurrentChainId(parseInt(chainId))
@@ -130,8 +198,16 @@ export const Web3Container = createContainer(() => {
 	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
 	const handleWalletSups = useCallback(
 		async (acc: string) => {
-			if (!provider || currentChainId?.toString() !== BINANCE_CHAIN_ID) return
-
+			if (!provider) {
+				return
+			}
+			if (!currentChainId) {
+				return
+			}
+			if (currentChainId.toString() !== BINANCE_CHAIN_ID) {
+				return
+			}
+			console.log("get wallet sups")
 			// A Human-Readable ABI; for interacting with the contract, we
 			// must include any fragment we wish to use
 			const abi = [
@@ -151,9 +227,15 @@ export const Web3Container = createContainer(() => {
 			try {
 				console.log("loading")
 				const bal = await erc20.balanceOf(acc)
+				if (!bal) {
+					setSupBalance(BigNumber.from(0))
+					return
+				}
 				console.log("loaded")
+				console.log({ bal })
 				setSupBalance(bal)
 			} catch (e) {
+				setSupBalance(BigNumber.from(0))
 				console.error(e)
 			}
 		},
@@ -206,13 +288,13 @@ export const Web3Container = createContainer(() => {
 
 	useEffect(() => {
 		// Run on every new block
-		if (provider && provider.listeners("block").length == 0) {
+		if (provider && provider.listeners("block").length === 0) {
 			provider.on("block", function (result) {
 				setBlock(result)
 				if (account) handleWalletSups(account)
 			})
 		}
-	}, [provider])
+	}, [provider, account, handleWalletSups])
 
 	useEffect(() => {
 		if (provider) return // metamask connected
@@ -252,7 +334,7 @@ export const Web3Container = createContainer(() => {
 	}, [provider, handleAccountChange, handleChainChange, createWcProvider])
 
 	const checkNeoBalance = useCallback(
-		async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+		async (addr: string) => {
 			const NTABI = ["function balanceOf(address) view returns (uint256)"]
 			if (provider) {
 				const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
@@ -265,57 +347,43 @@ export const Web3Container = createContainer(() => {
 						await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
 							method: "PUT",
 						})
-						if (setShowGame) {
-							setShowGame(true)
-						}
 					} catch (error) {
 						console.error()
 					}
-				} else {
-					if (setShowGame) {
-						setShowGame(true)
-					}
-				}
+				} else return
 			}
 		},
 		[provider],
 	)
-	const connect = useCallback(
-		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
-			if (provider) {
-				try {
-					await provider.send("eth_requestAccounts", [])
-					const signer = provider.getSigner()
-					const acc = await signer.getAddress()
-					// Check if account is whitelisted if not return
-					setAccount(acc)
-					handleAccountChange([acc])
-				} catch (error) {
-					if (error instanceof Error) displayMessage(error.message, "error")
-					else displayMessage("Please authenticate your wallet.", "info")
-				}
-			}
-		},
-		[displayMessage, provider, handleAccountChange],
-	)
-
-	const wcConnect = useCallback(
-		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
-			let walletConnectProvider
+	const connect = useCallback(async () => {
+		if (provider) {
 			try {
-				walletConnectProvider = await createWcProvider()
-				await walletConnectProvider.enable()
-				const connector = await walletConnectProvider.getWalletConnector()
-				const acc = connector.accounts[0]
+				await provider.send("eth_requestAccounts", [])
+				const signer = provider.getSigner()
+				const acc = await signer.getAddress()
+				// Check if account is whitelisted if not return
 				setAccount(acc)
-				if (setShowGame) setShowGame(true)
-				return { walletConnectProvider }
+				handleAccountChange([acc])
 			} catch (error) {
-				await walletConnectProvider?.disconnect()
+				if (error instanceof Error) displayMessage(error.message, "error")
+				else displayMessage("Please authenticate your wallet.", "info")
 			}
-		},
-		[createWcProvider],
-	)
+		}
+	}, [displayMessage, provider, handleAccountChange])
+
+	const wcConnect = useCallback(async () => {
+		let walletConnectProvider
+		try {
+			walletConnectProvider = await createWcProvider()
+			await walletConnectProvider.enable()
+			const connector = await walletConnectProvider.getWalletConnector()
+			const acc = connector.accounts[0]
+			setAccount(acc)
+			return { walletConnectProvider }
+		} catch (error) {
+			await walletConnectProvider?.disconnect()
+		}
+	}, [createWcProvider])
 
 	const ETHEREUM_NETWORK: AddEthereumChainParameter = useMemo(
 		() => ({
@@ -473,33 +541,6 @@ export const Web3Container = createContainer(() => {
 		}
 	}
 
-	const getBalance = useCallback(
-		async (contractAddress: string | null) => {
-			if (!contractAddress) {
-				if (!provider) {
-					return BigNumber.from(0)
-				}
-				const signer = provider.getSigner()
-				return signer.getBalance()
-			}
-			try {
-				if (!provider || !account) return
-
-				if (currentToken.isNative) {
-					const balance = await provider.getBalance(account)
-					return balance
-				}
-
-				if (currentToken.contractAddr === "") return
-				const contract = new ethers.Contract(currentToken.contractAddr, genericABI, provider)
-				return contract.balanceOf(account)
-			} catch (error) {
-				displayMessage("Couldn't get contract balance, please try again.", "error")
-				return BigNumber.from(0)
-			}
-		},
-		[provider, account, displayMessage],
-	)
 	async function sendNativeTransfer(value: BigNumber) {
 		try {
 			if (!provider || !account) {
@@ -510,7 +551,7 @@ export const Web3Container = createContainer(() => {
 			const bal = await signer.getBalance()
 			const hasSufficientFunds = bal.gt(value)
 			if (hasSufficientFunds) {
-				return await signer.sendTransaction({ to: PURCHASE_ADDRESS, value: parseEther(value.toString()) })
+				return await signer.sendTransaction({ to: PURCHASE_ADDRESS, value: value })
 			} else {
 				displayMessage("Wallet does not have sufficient funds.", "error")
 				return
@@ -544,6 +585,7 @@ export const Web3Container = createContainer(() => {
 	}
 
 	return {
+		block,
 		connect,
 		metaMaskState,
 		sign,
@@ -551,7 +593,8 @@ export const Web3Container = createContainer(() => {
 		changeChain,
 		currentChainId,
 		provider,
-		getBalance,
+		nativeBalance,
+		stableBalance,
 		sendNativeTransfer,
 		sendTransferToPurchaseAddress,
 		supBalance,
@@ -560,6 +603,8 @@ export const Web3Container = createContainer(() => {
 		tokenOptions,
 		currentToken,
 		setCurrentToken,
+		checkNeoBalance,
+		amountRemaining,
 	}
 })
 

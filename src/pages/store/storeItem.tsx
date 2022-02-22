@@ -33,7 +33,7 @@ export const StoreItemPage = () => {
 	const [error, setError] = useState("")
 
 	// Purchase store item
-	const [submitting, setSubmitting] = useState(false)
+	const [, setSubmitting] = useState(false)
 	const purchase = useCallback(async () => {
 		if (state !== SocketState.OPEN) return
 		setSubmitting(true)

@@ -20,7 +20,6 @@ import { TwitterLogin } from "../../components/twitterLogin"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
-import { MetaMaskState, useWeb3 } from "../../containers/web3"
 import { fetching } from "../../fetching"
 import { middleTruncate } from "../../helpers"
 import HubKey from "../../keys"
@@ -142,7 +141,6 @@ interface UserInput {
 
 const ProfileEdit: React.FC = () => {
 	const token = localStorage.getItem("token")
-	const { metaMaskState, sign, account, connect } = useWeb3()
 	const { user, addFacebook, addGoogle, addTwitch, addTwitter, addDiscord, removeFacebook, removeGoogle, removeTwitch, removeTwitter, removeDiscord } =
 		useAuth()
 	const { send } = useWebsocket()

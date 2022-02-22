@@ -1,5 +1,4 @@
 import { Box, IconButton, Link, styled, Typography } from "@mui/material"
-import { blue } from "@mui/material/colors"
 import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
@@ -16,7 +15,6 @@ import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } 
 import { AuthContainer, useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
-import { MetaMaskState } from "../../containers/web3"
 import { fonts } from "../../theme"
 
 interface LogInInput {

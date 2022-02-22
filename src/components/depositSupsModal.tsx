@@ -1,18 +1,12 @@
 import { Alert, Box, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Skeleton, TextField, Typography } from "@mui/material"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
-import HubKey from "../keys"
 
-import React, { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
-import { BigNumber, ethers, FixedNumber } from "ethers"
-import { supFormatter } from "../helpers/items"
+import { BigNumber } from "ethers"
 import { FancyButton } from "./fancyButton"
-import { SocketState, useWebsocket } from "../containers/socket"
-import { useAuth } from "../containers/auth"
-import { BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS } from "../config"
 import { ConnectWallet } from "./connectWallet"
 import { formatUnits, parseUnits } from "@ethersproject/units"
-import { isBigNumberish } from "@ethersproject/bignumber/lib/bignumber"
 
 interface DepositModalProps {
 	open: boolean
@@ -25,10 +19,10 @@ export const DepositSupsModal = ({ open, onClose, walletBalance, xsynBalance }: 
 	const { currentChainId, metaMaskState, changeChain, sendTransferToPurchaseAddress } = useWeb3()
 	const [depositAmount, setDepositAmount] = useState<BigNumber | null>(null)
 	const [depositDisplay, setDepositDisplay] = useState<string | null>(null)
-	const [loadingDeposit, setLoadingDeposit] = useState<boolean>(false)
-	const [loadingWalletBalance, setLoadingWalletBalance] = useState<boolean>(false)
-	const [errorWalletBalance, setErrorWalletBalance] = useState<string>()
-	const [errorDepositing, setErrorDepositing] = useState<string>()
+	const [loadingDeposit] = useState<boolean>(false)
+	const [loadingWalletBalance] = useState<boolean>(false)
+	const [errorWalletBalance] = useState<string>()
+	const [errorDepositing] = useState<string>()
 	const [errorAmount, setErrorAmount] = useState<string | null>(null)
 
 	const changeChainToBSC = useCallback(async () => {

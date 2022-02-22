@@ -1,24 +1,31 @@
 import { Box, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material"
 import React from "react"
+import { useWeb3 } from "../containers/web3"
+import { colors } from "../theme"
 import { tokenName, tokenSelect } from "../types/types"
 
 interface TokenSelectProps {
-	selectedTokenName: tokenName
-	tokenOptions: tokenSelect[]
-	setSelectedTokenName: React.Dispatch<React.SetStateAction<tokenName>>
-	cb: () => void
+	currentToken: tokenSelect
+	cb: (newTokenName: tokenSelect) => void
 }
 
-export const TokenSelect = ({ selectedTokenName, tokenOptions, setSelectedTokenName, cb }: TokenSelectProps) => {
-	const handleSelectChange = (e: SelectChangeEvent<unknown>) => {
-		if (cb) cb()
-		setSelectedTokenName(e.target.value as tokenName)
+export const TokenSelect = ({ currentToken, cb }: TokenSelectProps) => {
+	const { tokenOptions } = useWeb3()
+	const handleSelectChange = (e: SelectChangeEvent<tokenName>) => {
+		const newToken = tokenOptions.find((el) => {
+			return el.name === e.target.value
+		})
+		if (!newToken) {
+			return
+		}
+		if (cb) cb(newToken)
 	}
 
 	return (
 		<Select
 			variant="filled"
 			sx={{
+				background: colors.darkNavyBackground2,
 				marginBottom: "1rem",
 				marginLeft: "auto",
 				display: "flex",
@@ -26,7 +33,7 @@ export const TokenSelect = ({ selectedTokenName, tokenOptions, setSelectedTokenN
 			}}
 			onChange={(e) => handleSelectChange(e)}
 			SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: ".5rem 32px .5rem .5rem" } }}
-			value={selectedTokenName}
+			value={currentToken.name}
 		>
 			{tokenOptions.map((x) => {
 				return (
