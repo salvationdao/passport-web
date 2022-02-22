@@ -15,12 +15,10 @@ function useAppState(initialState = {}) {
 	const [loading, setLoading] = useState(true)
 	// Check Whitelist
 	const [isWhitelisted, setIsWhitelisted] = useState(false)
-	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
 	const [showSimulation, setShowSimulation] = useState(false)
 
 	const checkWhitelist = useCallback(
 		async (account: string): Promise<boolean> => {
-			if (true === true) return true
 			try {
 				const response = await fetch(`https://stories.supremacy.game/api/whitelist/${account}`)
 				const data = (await response.clone().json()) as UserWhitelistApi
@@ -42,8 +40,6 @@ function useAppState(initialState = {}) {
 		setSaleActive,
 		loading,
 		setLoading,
-		amountRemaining,
-		setAmountRemaining,
 		showSimulation,
 		setShowSimulation,
 	}
