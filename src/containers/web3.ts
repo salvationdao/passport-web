@@ -18,9 +18,11 @@ import {
 	WALLET_CONNECT_RPC,
 	SIGN_MESSAGE,
 } from "../config"
+import HubKey from "../keys"
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
+import { SocketState, useWebsocket } from "./socket"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -98,6 +100,7 @@ const tokenOptions: tokenSelect[] = [
  * A Container that handles Web3
  */
 export const Web3Container = createContainer(() => {
+	const { subscribe, state } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
@@ -107,6 +110,15 @@ export const Web3Container = createContainer(() => {
 	const [currentChainId, setCurrentChainId] = useState<number>()
 	const [supBalance, setSupBalance] = useState<BigNumber>()
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
+	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
+
+	//Setting up websocket to listen to remaining supply
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
+			setAmountRemaining(BigNumber.from(amount))
+		})
+	}, [subscribe, state])
 	const [nativeBalance, setNativeBalance] = useState<BigNumber | null>(null)
 	const [stableBalance, setStableBalance] = useState<BigNumber | null>(null)
 
@@ -321,71 +333,57 @@ export const Web3Container = createContainer(() => {
 		}
 	}, [provider, handleAccountChange, handleChainChange, createWcProvider])
 
-	// const checkNeoBalance = useCallback(
-	// 	async (addr: string, setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
-	// 		const NTABI = ["function balanceOf(address) view returns (uint256)"]
-	// 		if (provider) {
-	// 			const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
-	// 			const bal: BigNumber = await NTContract.balanceOf(addr)
-	// 			if (parseInt(bal.toString()) > 0) {
-	// 				try {
-	// 					await fetch(`https://stories.supremacy.game/api/users/${account}`, {
-	// 						method: "POST",
-	// 					})
-	// 					await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
-	// 						method: "PUT",
-	// 					})
-	// 					if (setShowGame) {
-	// 						setShowGame(true)
-	// 					}
-	// 				} catch (error) {
-	// 					console.error()
-	// 				}
-	// 			} else {
-	// 				if (setShowGame) {
-	// 					setShowGame(true)
-	// 				}
-	// 			}
-	// 		}
-	// 	},
-	// 	[provider],
-	// )
-	const connect = useCallback(
-		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
+	const checkNeoBalance = useCallback(
+		async (addr: string) => {
+			const NTABI = ["function balanceOf(address) view returns (uint256)"]
 			if (provider) {
-				try {
-					await provider.send("eth_requestAccounts", [])
-					const signer = provider.getSigner()
-					const acc = await signer.getAddress()
-					// Check if account is whitelisted if not return
-					setAccount(acc)
-					handleAccountChange([acc])
-				} catch (error) {
-					if (error instanceof Error) displayMessage(error.message, "error")
-					else displayMessage("Please authenticate your wallet.", "info")
-				}
+				const NTContract = new ethers.Contract("0xb668beb1fa440f6cf2da0399f8c28cab993bdd65", NTABI, provider)
+				const bal: BigNumber = await NTContract.balanceOf(addr)
+				if (parseInt(bal.toString()) > 0) {
+					try {
+						await fetch(`https://stories.supremacy.game/api/users/${account}`, {
+							method: "POST",
+						})
+						await fetch(`https://stories.supremacy.game/api/users/neo/${account}`, {
+							method: "PUT",
+						})
+					} catch (error) {
+						console.error()
+					}
+				} else return
 			}
 		},
-		[displayMessage, provider, handleAccountChange],
+		[provider],
 	)
-
-	const wcConnect = useCallback(
-		async (setShowGame?: (value: React.SetStateAction<boolean>) => void) => {
-			let walletConnectProvider
+	const connect = useCallback(async () => {
+		if (provider) {
 			try {
-				walletConnectProvider = await createWcProvider()
-				await walletConnectProvider.enable()
-				const connector = await walletConnectProvider.getWalletConnector()
-				const acc = connector.accounts[0]
+				await provider.send("eth_requestAccounts", [])
+				const signer = provider.getSigner()
+				const acc = await signer.getAddress()
+				// Check if account is whitelisted if not return
 				setAccount(acc)
-				if (setShowGame) setShowGame(true)
-				return { walletConnectProvider }
+				handleAccountChange([acc])
 			} catch (error) {
-				await walletConnectProvider?.disconnect()
+				if (error instanceof Error) displayMessage(error.message, "error")
+				else displayMessage("Please authenticate your wallet.", "info")
 			}
-		},
-		[createWcProvider],
-	)
+		}
+	}, [displayMessage, provider, handleAccountChange])
+
+	const wcConnect = useCallback(async () => {
+		let walletConnectProvider
+		try {
+			walletConnectProvider = await createWcProvider()
+			await walletConnectProvider.enable()
+			const connector = await walletConnectProvider.getWalletConnector()
+			const acc = connector.accounts[0]
+			setAccount(acc)
+			return { walletConnectProvider }
+		} catch (error) {
+			await walletConnectProvider?.disconnect()
+		}
+	}, [createWcProvider])
 
 	const ETHEREUM_NETWORK: AddEthereumChainParameter = useMemo(
 		() => ({
@@ -605,6 +603,8 @@ export const Web3Container = createContainer(() => {
 		tokenOptions,
 		currentToken,
 		setCurrentToken,
+		checkNeoBalance,
+		amountRemaining,
 	}
 })
 

@@ -21,6 +21,7 @@ const CountdownSection = styled(Box)({
 	textTransform: "uppercase",
 	fontSize: "1.5rem",
 	fontFamily: "Nostromo Regular Black",
+	margin: "0 .2em",
 	"@media (max-width:1440px)": {
 		fontSize: "2.5vmin",
 	},
@@ -78,7 +79,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 			m,
 			s,
 		})
-		if (publicSale && seconds <= 0) {
+		if (date != new Date() && publicSale && seconds <= 0) {
 			history.go(0)
 		}
 	}, 1000)
@@ -100,6 +101,9 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 					gridTemplateColumns: "repeat(4, 3rem)",
 					"& div": {
 						fontSize: publicSale ? "3vmin" : "unset",
+						"@media (max-width:600px)": {
+							fontSize: "5vmin",
+						},
 					},
 				}}
 			>
