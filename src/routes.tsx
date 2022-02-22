@@ -8,6 +8,7 @@ import { useAuth } from "./containers/auth"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
 import { LoginPage } from "./pages/auth/login"
+import { LogoutPage } from "./pages/auth/logout"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
 import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
@@ -59,6 +60,9 @@ export const Routes = () => {
 					</Route>
 					<Route path="/nosidebar/:username/:collection_name">
 						<CollectionPage />
+					</Route>
+					<Route path="/nosidebar/logout">
+						<LogoutPage />
 					</Route>
 					<Sidebar onClose={() => setSidebarOpen(false)}>
 						<Route exact path="/">
