@@ -20,7 +20,7 @@ import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
 import { ProfileEditPage } from "./pages/profile/profileEdit"
-import { SalePage } from "./pages/sale/salePage"
+import { LootBoxPage } from "./pages/store/lootBox"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
@@ -128,6 +128,10 @@ export const Routes = () => {
 								<StoresPage />
 							</Route>
 						</Switch>
+
+						<Route path="/mystery">
+							<LootBoxPage />
+						</Route>
 
 						{/* Supremacy */}
 						<Switch>

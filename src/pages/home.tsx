@@ -1,15 +1,11 @@
 import { Box, Link, styled, Typography } from "@mui/material"
 import { useHistory } from "react-router-dom"
-import { XSYNWordmarkImagePath } from "../assets"
-import BottomRightMatrix from "../assets/images/Bottom right corner matrix accent.png"
-import BottomLeftMatrix from "../assets/images/Left Corner Matrix.png"
+import PrivacyPolicy from "../assets/documents/XSYN-Privacy-Policy.pdf"
+import TermsAndConditions from "../assets/documents/XSYN-Terms-and-Conditions.pdf"
 import { FancyButton } from "../components/fancyButton"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
 import { Navbar } from "../components/home/navbar"
 import { useAuth } from "../containers/auth"
-import { colors } from "../theme"
-import PrivacyPolicy from "../assets/documents/XSYN-Privacy-Policy.pdf"
-import TermsAndConditions from "../assets/documents/XSYN-Terms-and-Conditions.pdf"
 
 export const Home = () => {
 	const history = useHistory()
@@ -19,28 +15,26 @@ export const Home = () => {
 		<>
 			<Box
 				sx={{
-					overflow: "hidden",
 					position: "relative",
-					minHeight: "max(100vh, 70rem)",
-					height: "100%",
+					minHeight: "100vh",
 				}}
 			>
 				<GradientCircleThing
 					sx={{
 						zIndex: -1,
 						position: "absolute",
-						top: "31%",
+						top: "50%",
 						left: "50%",
-						transform: "translate(-50%, calc(-50% + (100vh - 70rem) / 2))",
+						transform: "translate(-50%, -50%)",
 					}}
 				/>
 				<Navbar />
 				<Box
 					sx={{
 						position: "absolute",
-						top: "31%",
+						top: "50%",
 						left: "50%",
-						transform: "translate(-50%, calc(-50% + (100vh - 70rem) / 2))",
+						transform: "translate(-50%, -50%)",
 						display: "flex",
 						flexDirection: "column",
 						alignItems: "center",
@@ -67,46 +61,6 @@ export const Home = () => {
 				</Box>
 			</Box>
 
-			{/* <Box
-				sx={(theme) => ({
-					position: "relative",
-					padding: "4rem 3rem",
-					backgroundColor: colors.darkNavyBlue,
-					borderBottom: `1px solid ${theme.palette.secondary.main}`,
-				})}
-			>
-				<Box
-					component="img"
-					src={BottomLeftMatrix}
-					alt="Background matrix image"
-					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						width: "max(30vw, 20rem)",
-						objectFit: "cover",
-						opacity: 0.4,
-					}}
-				/>
-				<Box
-					component="img"
-					src={BottomRightMatrix}
-					alt="Background matrix image"
-					sx={{
-						position: "absolute",
-						right: 0,
-						bottom: 0,
-						width: "max(30vw, 20rem)",
-						objectFit: "cover",
-						opacity: 0.4,
-					}}
-				/>
-				<Box>
-					<StatsFrame src="https://stats.supremacy.game/#/" scrolling="no">
-						Iframe not supported
-					</StatsFrame>
-				</Box>
-			</Box> */}
 			<Box
 				sx={{
 					overflow: "hidden",
@@ -120,21 +74,6 @@ export const Home = () => {
 					paddingBottom: "1rem",
 				}}
 			>
-				{/* <Typography
-					variant="h1"
-					component="h2"
-					sx={{
-						width: "100%",
-						maxWidth: "800px",
-						fontSize: "3rem",
-						"@media (max-width: 600px)": {
-							fontSize: "2rem",
-						},
-					}}
-				>
-					Start Exploring Blockchain Apps In Seconds
-				</Typography> */}
-
 				<Box
 					sx={{
 						flex: 1,

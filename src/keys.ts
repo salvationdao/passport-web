@@ -97,6 +97,7 @@ enum HubKey {
 	StoreItemSubscribe = "STORE:ITEM",
 	StoreList = "STORE:LIST",
 	StorePurchase = "STORE:PURCHASE",
+	StoreLootBox = "STORE:LOOTBOX",
 
 	BlockConfirmation = "BLOCK:CONFIRM",
 	GetFactionsDetail = "FACTION:ALL",

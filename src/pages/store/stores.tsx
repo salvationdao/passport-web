@@ -11,6 +11,7 @@ import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection, Faction } from "../../types/types"
+import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 
 // Displays all stores available to the user
@@ -141,7 +142,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 			setLoading(true)
 			try {
 				const resp = await send<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, {
-					pageSize: 6,
+					pageSize: 5,
 					search,
 					filter: {
 						linkOperator: "and",
@@ -180,7 +181,8 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 					maskImage: "linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 100%)",
 				}}
 			>
-				{storeItemIDs.slice(0, 6).map((a) => {
+				<LootBoxCard />
+				{storeItemIDs.slice(0, 5).map((a) => {
 					return <StoreItemCard key={a} storeItemID={a} />
 				})}
 			</Box>
