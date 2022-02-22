@@ -100,7 +100,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 					justifyContent: "center",
 					gridTemplateColumns: "repeat(4, 3rem)",
 					"& div": {
-						fontSize: publicSale ? "3vmin" : "unset",
+						fontSize: publicSale ? "2.5vmin" : "unset",
 						"@media (max-width:600px)": {
 							fontSize: "5vmin",
 						},

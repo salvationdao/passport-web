@@ -132,7 +132,7 @@ export const SalePage = () => {
 								justifyContent: "center",
 								minHeight: "100vh",
 								alignItems: "center",
-								gap: "1em",
+								gap: "4em",
 								px: "2em",
 							}}
 						>
@@ -241,6 +241,7 @@ const Title = styled("h1")({
 
 const SubHeading = styled("span")({
 	fontFamily: "Nostromo Regular Heavy",
+	fontWeight: 800,
 	fontSize: "1.5rem",
 	color: colors.gold,
 	textAlign: "center",
