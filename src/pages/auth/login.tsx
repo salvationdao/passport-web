@@ -326,7 +326,7 @@ export const LoginPage: React.FC = () => {
 										zIndex: 100,
 									}}
 								>
-									Only wallet connections are allowed during the whitelist period
+									Only wallet connections are allowed during early access
 								</Typography>
 							)}
 							<BlurBox disable={onlyWalletConnection}>
