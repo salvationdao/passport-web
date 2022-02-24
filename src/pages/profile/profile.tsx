@@ -22,7 +22,7 @@ import {
 	Typography,
 	useMediaQuery,
 } from "@mui/material"
-import { ethers, BigNumber } from "ethers"
+import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
