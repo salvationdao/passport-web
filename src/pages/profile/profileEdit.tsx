@@ -22,11 +22,15 @@ import { PasswordRequirement } from "./../auth/onboarding"
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const { user } = useAuth()
+	const { user, loading: authLoading } = useAuth()
 
 	const [loadingText, setLoadingText] = useState<string>()
 
 	useEffect(() => {
+		if (authLoading) {
+			setLoadingText("Loading. Please wait...")
+			return
+		}
 		let userTimeout: NodeJS.Timeout
 		if (!user) {
 			setLoadingText("You need to be logged in to view this page. Redirecting to login page...")
@@ -44,7 +48,7 @@ export const ProfileEditPage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [user, history, username])
+	}, [user, history, username, authLoading])
 
 	if (!user || user.username !== username) {
 		return <Loading text={loadingText} />
