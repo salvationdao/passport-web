@@ -17,7 +17,7 @@ import { Collection } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
-	const { username, collection_name } = useParams<{ username: string; collection_name: string }>()
+	const { username, collection_slug } = useParams<{ username: string; collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
@@ -52,7 +52,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	}
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_name) return
+		if (state !== SocketState.OPEN || !collection_slug) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -60,10 +60,10 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 				setCollection(payload)
 			},
 			{
-				slug: collection_name,
+				slug: collection_slug,
 			},
 		)
-	}, [collection_name, subscribe, state])
+	}, [collection_slug, subscribe, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -137,7 +137,8 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 				<Box
 					sx={{
 						display: "flex",
-						flexDirection: "column",
+						flexDirection: isWiderThan1000px ? "column" : "row",
+						flexWrap: isWiderThan1000px ? "initial" : "wrap",
 						gap: ".5rem",
 					}}
 				>
@@ -426,11 +427,8 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						{isWiderThan1000px && (
 							<Box
 								sx={{
-									// alignSelf: "start",
+									alignSelf: "start",
 									width: "340px",
-									position: "sticky",
-									top: "20px",
-									backgroundColor: "red",
 								}}
 							>
 								<Tabs

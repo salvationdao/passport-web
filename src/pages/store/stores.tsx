@@ -181,7 +181,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 					maskImage: "linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 100%)",
 				}}
 			>
-				<LootBoxCard />
+				{collection.name === "Supremacy Genesis" && <LootBoxCard />}
 				{storeItemIDs.slice(0, 5).map((a) => {
 					return <StoreItemCard key={a} storeItemID={a} />
 				})}
@@ -237,11 +237,11 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 					},
 				}}
 			>
-				<RouterLink component={StyledFancyButton} to={`/stores/${collection.name}`}>
+				<RouterLink component={StyledFancyButton} to={`/stores/${collection.slug}`}>
 					View Entire Store
 				</RouterLink>
 			</Box>
-			{storeItemIDs.length ? (
+			{storeItemIDs.length || collection.name === "Supremacy Genesis" ? (
 				renderCollection()
 			) : (
 				<Box>
