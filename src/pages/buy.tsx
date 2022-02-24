@@ -8,7 +8,7 @@ import { Loading } from "../components/loading"
 import { useAuth } from "../containers/auth"
 
 export const BuyPage: React.FC = () => {
-	const { user } = useAuth()
+	const { user, loading } = useAuth()
 	const history = useHistory()
 
 	//placeholder for private routes
@@ -21,6 +21,9 @@ export const BuyPage: React.FC = () => {
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
 
+	if (loading) {
+		return <Loading text="Loading. Please wait..." />
+	}
 	if (!user) {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}

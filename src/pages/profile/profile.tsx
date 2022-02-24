@@ -20,9 +20,9 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery
+	useMediaQuery,
 } from "@mui/material"
-import { ethers } from "ethers"
+import { ethers, BigNumber } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
@@ -56,12 +56,16 @@ export const ProfilePage: React.FC = () => {
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	// User
-	const { user: loggedInUser } = useAuth()
+	const { user: loggedInUser, loading: authLoading } = useAuth()
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
+		if (authLoading) {
+			setLoadingText("Loading. Please wait...")
+			return
+		}
 		let userTimeout: NodeJS.Timeout
 		;(async () => {
 			if (username) {
@@ -90,7 +94,7 @@ export const ProfilePage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [loggedInUser, state, history, send, username])
+	}, [loggedInUser, state, history, send, username, authLoading])
 
 	if (error) {
 		return <Box>{error}</Box>

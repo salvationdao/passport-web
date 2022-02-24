@@ -19,7 +19,7 @@ export const CollectionsPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
 	const { state, send } = useWebsocket()
-	const { user } = useAuth()
+	const { user, loading: authLoading } = useAuth()
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
@@ -83,6 +83,9 @@ export const CollectionsPage: React.FC = () => {
 		return () => clearTimeout(userTimeout)
 	}, [user, history, username])
 
+	if (authLoading) {
+		return <Loading text="Loading. Please wait..." />
+	}
 	if (!user && !username) {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
