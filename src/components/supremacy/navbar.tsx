@@ -3,12 +3,11 @@ import TwitterIcon from "@mui/icons-material/Twitter"
 import { Fade, Grow, Modal, Slide, Stack, useMediaQuery } from "@mui/material"
 import { Box, styled, SxProps } from "@mui/system"
 import React, { useEffect, useState } from "react"
-import { useContainer } from "unstated-next"
 import Logo from "../../assets/images/supremacy-white.svg"
-import { AppState } from "../../containers/supremacy/app"
 import { IMAGE_FOLDER, NAVBAR_HEIGHT } from "../../pages/sale/salePage"
 import { colors } from "../../theme"
 import { HamburgerNav } from "./hamburgerNav"
+import { TOKEN_SALE_ENDPOINT } from "../../config"
 
 const LogoLink = styled("a")({
 	"& img": {
@@ -103,35 +102,38 @@ function MobileNavItem(props: { label: string; href: string; handleClick: () => 
 	)
 }
 
-export const SupremacyNavbar: React.FC<{ sx?: SxProps }> = (props: { sx?: SxProps }) => {
+export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (props: { sx?: SxProps; loading: boolean }) => {
 	// MobileNav
 	const [open, setOpen] = useState<boolean>(false)
-	const [show, setShow] = useState<boolean>(false)
-	const { loading } = useContainer(AppState)
 	const matches = useMediaQuery("(max-width:1000px)")
-
-	const navbarControl = () => {
-		if (window.scrollY) {
-			setShow(true)
-		} else {
-			setShow(false)
-		}
-	}
+	const [show, setShow] = useState<boolean>(true)
 
 	useEffect(() => {
-		if (!loading) {
-			window.document.getElementById("navbar")?.addEventListener("mouseover", () => setShow(true))
-		} else {
-			window.document.getElementById("navbar")?.removeEventListener("mouseover", () => setShow(false))
-		}
-		window.addEventListener("scroll", navbarControl)
-		return () => window.removeEventListener("scroll", navbarControl)
-	}, [loading])
+		if (matches) setShow(false)
+	}, [matches])
+
+	// const navbarControl = () => {
+	// 	if (window.scrollY) {
+	// 		setShow(true)
+	// 	} else {
+	// 		setShow(false)
+	// 	}
+	// }
+
+	// useEffect(() => {
+	// 	if (!loading) {
+	// 		window.document.getElementById("sup-navbar")?.addEventListener("mouseover", () => setShow(true))
+	// 	} else {
+	// 		window.document.getElementById("sup-navbar")?.removeEventListener("mouseover", () => setShow(false))
+	// 	}
+	// 	window.addEventListener("scroll", navbarControl)
+	// 	return () => window.removeEventListener("scroll", navbarControl)
+	// }, [loading])
 
 	const navbarPaths: { label: string; path: string; newTab?: boolean }[] = [
 		{
 			label: "token sale",
-			path: "https://sale.supremacy.game/",
+			path: TOKEN_SALE_ENDPOINT,
 		},
 		{
 			label: "utility token",
@@ -190,7 +192,7 @@ export const SupremacyNavbar: React.FC<{ sx?: SxProps }> = (props: { sx?: SxProp
 	return (
 		<Box
 			component="header"
-			id="navbar"
+			id="sup-navbar"
 			sx={{
 				width: "100vw",
 				minHeight: "5rem",

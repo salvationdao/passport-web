@@ -1,5 +1,4 @@
 import { Box, IconButton, Link, styled, Typography } from "@mui/material"
-import { blue } from "@mui/material/colors"
 import { useEffect, useState } from "react"
 import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
@@ -16,8 +15,6 @@ import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } 
 import { AuthContainer, useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
-import { API_ENDPOINT_HOSTNAME } from "../../containers/socket"
-import { MetaMaskState } from "../../containers/web3"
 import { fonts } from "../../theme"
 
 interface LogInInput {
@@ -329,7 +326,7 @@ export const LoginPage: React.FC = () => {
 										zIndex: 100,
 									}}
 								>
-									Only wallet connections are allowed during the whitelist period
+									Only wallet connections are allowed during early access
 								</Typography>
 							)}
 							<BlurBox disable={onlyWalletConnection}>

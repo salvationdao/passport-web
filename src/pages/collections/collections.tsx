@@ -6,12 +6,13 @@ import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { SearchBar } from "../../components/searchBar"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
-import { Collection } from "../../types/types"
+import { Collection, NFTOwner } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
 
 export const CollectionsPage: React.FC = () => {
@@ -22,6 +23,7 @@ export const CollectionsPage: React.FC = () => {
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
+	const [walletTokenIDs, setWalletTokenIDs] = useState<number[]>([])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
@@ -31,6 +33,39 @@ export const CollectionsPage: React.FC = () => {
 				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
 				setCollections(resp.records)
 			} catch (e) {
+				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error")
+			} finally {
+				setLoading(false)
+			}
+		})()
+	}, [send, state, user, displayMessage])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !send) return
+		;(async () => {
+			setLoading(true)
+			try {
+				const resp = await send<{ NFTOwners: NFTOwner[] }>(HubKey.WalletCollectionList)
+				if (resp.NFTOwners) {
+					const filter = resp.NFTOwners.filter((x) => {
+						return x.owner_of === user?.publicAddress
+					})
+
+					if (!filter) return
+
+					let itemIDs: number[] = []
+					filter.forEach((item) => {
+						fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${item.token_id}`).then((resp) => {
+							if (resp.ok && resp.status !== 200) {
+								const num = parseInt(item.token_id)
+								itemIDs.push(num)
+							}
+						})
+					})
+					setWalletTokenIDs(itemIDs)
+				}
+			} catch (e) {
+				console.log(e)
 				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
 					autoHideDuration: null,
 				})
@@ -88,7 +123,7 @@ export const CollectionsPage: React.FC = () => {
 						}}
 					>
 						{collections.map((c, i) => {
-							return <CollectionPreview key={i} collection={c} username={username || user?.username || ""} />
+							return <CollectionPreview key={i} collection={c} username={username || user?.username || ""} walletTokenIDs={walletTokenIDs} />
 						})}
 					</Paper>
 				)}
@@ -141,9 +176,28 @@ const CollectionPreviewSkeleton: React.VoidFunctionComponent = () => {
 interface CollectionPreviewProps {
 	collection: Collection
 	username: string
+	walletTokenIDs: number[]
 }
 
-const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = ({ collection, username }) => {
+const renderCollection = (tokenIDs: number[], username: string) => {
+	return (
+		<Box
+			sx={{
+				overflowX: "hidden",
+				display: "grid",
+				gridTemplateColumns: "repeat(6, 240px)",
+				gap: "1rem",
+				maskImage: "linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 100%)",
+			}}
+		>
+			{tokenIDs.slice(0, 6).map((a) => {
+				return <CollectionItemCard key={a} tokenID={a} username={username} />
+			})}
+		</Box>
+	)
+}
+
+const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = ({ collection, username, walletTokenIDs }) => {
 	const { user } = useAuth()
 	const { state, send } = useWebsocket()
 	const [tokenIDs, setTokenIDs] = useState<number[]>([])
@@ -185,24 +239,6 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 			}
 		})()
 	}, [send, state, collection, username, search])
-
-	const renderCollection = () => {
-		return (
-			<Box
-				sx={{
-					overflowX: "hidden",
-					display: "grid",
-					gridTemplateColumns: "repeat(6, 240px)",
-					gap: "1rem",
-					maskImage: "linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 100%)",
-				}}
-			>
-				{tokenIDs.slice(0, 6).map((a) => {
-					return <CollectionItemCard key={a} tokenID={a} username={username} />
-				})}
-			</Box>
-		)
-	}
 
 	return (
 		<>
@@ -255,15 +291,54 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 					View Entire Collection
 				</RouterLink>
 			</Box>
-			{tokenIDs.length ? (
-				renderCollection()
-			) : (
-				<Box>
-					<Typography variant="subtitle2" color={colors.darkGrey}>
-						{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
-					</Typography>
-				</Box>
-			)}
+
+			<Box>
+				<Typography
+					variant="h2"
+					sx={{
+						marginBottom: "1rem",
+						"@media (max-width: 630px)": {
+							textAlign: "center",
+						},
+					}}
+				>
+					On World Assets
+				</Typography>
+				{tokenIDs.length ? (
+					renderCollection(tokenIDs, username)
+				) : (
+					<Box>
+						<Typography variant="subtitle2" color={colors.darkGrey}>
+							{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
+						</Typography>
+					</Box>
+				)}
+			</Box>
+
+			<Divider sx={{ margin: "1rem 0" }} />
+			<Box>
+				<Typography
+					variant="h2"
+					sx={{
+						marginBottom: "1rem",
+						"@media (max-width: 630px)": {
+							textAlign: "center",
+						},
+					}}
+				>
+					Off World Assets
+				</Typography>
+				{walletTokenIDs.length ? (
+					renderCollection(walletTokenIDs, username)
+				) : (
+					<Box>
+						<Typography variant="subtitle2" color={colors.darkGrey}>
+							{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
+						</Typography>
+					</Box>
+				)}
+			</Box>
+
 			<Divider
 				sx={{
 					display: "none",

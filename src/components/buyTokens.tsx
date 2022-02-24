@@ -4,12 +4,11 @@ import { Box, Button, LinearProgress, Link, Stack, TextField, Typography, useThe
 import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
-import { useContainer } from "unstated-next"
 import Arrow from "../assets/images/arrow.png"
-import SupsToken from "../assets/images/sup-token.svg"
+import SupsToken from "../assets/images/supsToken.png"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
+import { useAuth } from "../containers/auth"
 import { SocketState, useWebsocket } from "../containers/socket"
-import { AppState, useSupremacyApp } from "../containers/supremacy/app"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
@@ -24,12 +23,14 @@ type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
-	const { subscribe, state } = useWebsocket()
-	const { isWhitelisted } = useSupremacyApp()
+	const { state, subscribe } = useWebsocket()
+	const { user } = useAuth()
 	const {
 		changeChain,
+		amountRemaining,
 		currentChainId,
-		getBalance,
+		nativeBalance,
+		stableBalance,
 		sendNativeTransfer,
 		sendTransferToPurchaseAddress,
 		metaMaskState,
@@ -37,23 +38,22 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		setCurrentToken,
 		currentToken,
 		tokenOptions,
+		account,
 	} = useWeb3()
 	const theme = useTheme()
-	const { amountRemaining, setAmountRemaining } = useContainer(AppState)
 
 	const [selectedTokenName, setSelectedTokenName] = useState<tokenName>("eth")
+	const [showWalletNag, setShowWalletNag] = useState<boolean>(false)
 	const [tokenAmt, setTokenAmt] = useState<BigNumber>(BigNumber.from(0))
 	const [supsAmt, setSupsAmt] = useState<BigNumber>(BigNumber.from(0))
 	const [tokenDisplay, setTokenDisplay] = useState<string | null>(null)
 	const [supsDisplay, setSupsDisplay] = useState<string | null>(null)
-	const [userBalance, setUserBalance] = useState<BigNumber>(BigNumber.from(0))
 	const [transferState, setTransferState] = useState<transferStateType>("none")
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 	const [transferError, setTransferError] = useState<any>(null)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
-
 	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
 
 	const handleConversions = useCallback(
@@ -63,9 +63,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				setSupsAmt(BigNumber.from(0))
 				return
 			}
-			console.log({ exchangeRates })
 			if (currentToken.isNative && exchangeRates) {
-				switch (selectedTokenName) {
+				switch (currentToken.name) {
 					case "bnb":
 						switch (direction) {
 							case "tokensToSups":
@@ -114,75 +113,39 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				}
 			}
 		},
-		[currentToken, exchangeRates, selectedTokenName],
+		[currentToken, exchangeRates],
 	)
 
-	// handles network switch and default network token name
+	// // handles network switch and default network token name
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
-			const filteredArr = tokenOptions.filter((x) => {
-				return x.chainId === currentChainId
-			})
-			const filteredByName = filteredArr.filter((x) => {
-				return x.name === selectedTokenName
-			})
-
-			if (filteredByName.length === 0) {
-				setSelectedTokenName(filteredArr[0].name)
-				return
-			} else {
-				setSelectedTokenName(filteredByName[0].name)
+			if (currentChainId === parseInt(BINANCE_CHAIN_ID)) {
+				const filteredChain = tokenOptions.filter((el) => {
+					return el.chainId === parseInt(BINANCE_CHAIN_ID)
+				})
+				setCurrentToken(filteredChain[0])
 				return
 			}
+
+			const newToken = tokenOptions.find((el) => {
+				return el.name === currentToken.name
+			})
+
+			if (!newToken) {
+				setCurrentToken(tokenOptions[0])
+				return
+			}
+			setCurrentToken(newToken)
 		} else {
-			setSelectedTokenName(tokenOptions[0].name)
+			setCurrentToken(tokenOptions[0])
 		}
-	}, [currentChainId, acceptedChainExceptions, selectedTokenName, tokenOptions])
-
-	//handles token switch from drop down
-	useEffect(() => {
-		const filteredArr = tokenOptions.filter((x) => {
-			return x.name === selectedTokenName
-		})
-		setCurrentToken(filteredArr[0])
-	}, [selectedTokenName, setCurrentToken, tokenOptions])
-
-	useEffect(() => {
-		getCurrentBalance(currentToken)
-	}, [currentChainId])
+	}, [currentChainId, acceptedChainExceptions, setCurrentToken, tokenOptions])
 
 	useEffect(() => {
 		if (tokenAmt && tokenAmt.gt(0)) {
 			handleConversions("tokensToSups", tokenAmt)
 		}
 	}, [handleConversions, tokenAmt])
-
-	const getCurrentBalance = useCallback(async (token: tokenSelect) => {
-		try {
-			if (token.isNative) {
-				const response = await getBalance(null)
-				setUserBalance(response)
-				setLoading(false)
-			} else {
-				const response = await getBalance(token.contractAddr)
-				setUserBalance(response)
-			}
-		} catch (e) {
-			console.error(e)
-			setUserBalance(BigNumber.from(0))
-		} finally {
-			setLoading(false)
-		}
-	}, [])
-
-	//getting user balance
-	useEffect(() => {
-		setUserBalance(BigNumber.from(0))
-		setLoading(true)
-		;(async () => {
-			getCurrentBalance(currentToken)
-		})()
-	}, [currentToken, getBalance, getCurrentBalance])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -193,15 +156,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				}
 			setExchangeRates(rates)
 		})
-	}, [subscribe, state])
-
-	//Setting up websocket to listen to remaining supply
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
-			setAmountRemaining(BigNumber.from(amount))
-		})
-	}, [subscribe, state])
+	}, [state])
 
 	const handleNetworkSwitch = async () => {
 		await changeChain(currentToken.chainId)
@@ -213,7 +168,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		if (tokenAmt.lte(0)) return
 		if (!amountRemaining) return
 		if (supsAmt.gt(amountRemaining)) return
-
 		setLoading(true)
 		setTransferState("waiting")
 		try {
@@ -242,15 +196,22 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		e.preventDefault()
 		handleTransfer()
 	}
+
+	let tokenBalance: BigNumber | null = stableBalance
+	if (currentToken.isNative) {
+		tokenBalance = nativeBalance
+	}
 	return (
 		<Box
 			sx={{
 				border: publicSale
-					? `1px groove ${colors.neonBlue}`
+					? `2px solid ${colors.skyBlue}`
 					: {
 							xs: `2px solid ${theme.palette.secondary.main}`,
 							md: "none",
 					  },
+				minWidth: "24rem",
+				minHeight: "20rem",
 				position: "relative",
 			}}
 		>
@@ -261,10 +222,10 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						? { display: "none" }
 						: {
 								position: "absolute",
-								zIndex: "5",
+								zIndex: 5,
 								padding: "1rem",
 								height: "100%",
-								width: "100%",
+								width: publicSale ? "25rem" : "100%",
 								display: "flex",
 								flexDirection: "column",
 								justifyContent: "center",
@@ -284,9 +245,10 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			</Box>
 
 			{/* Metamask Connection */}
+
 			<Box
 				sx={
-					publicSale && !isWhitelisted
+					publicSale && !user
 						? {
 								position: "absolute",
 								zIndex: "5",
@@ -326,9 +288,20 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 					<MetaMaskLogin
 						publicSale={publicSale}
 						render={(props) => (
-							<SupFancyButton onClick={props.onClick} loading={props.isProcessing} title="Connect Wallet" fullWidth>
-								Connect Wallet
-							</SupFancyButton>
+							<>
+								<SupFancyButton
+									onClick={(e) => {
+										props.onClick(e)
+										setShowWalletNag(true)
+									}}
+									loading={props.isProcessing}
+									title="Connect Wallet"
+									fullWidth
+								>
+									Connect Wallet
+								</SupFancyButton>
+								{!account && showWalletNag ? "Check your wallet for a login notification" : null}
+							</>
 						)}
 					/>
 				) : (
@@ -347,7 +320,16 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={
 						transferState === "confirm"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									height: "100%",
+									width: "100%",
+									textAlign: "center",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
@@ -380,7 +362,14 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={
 						transferState === "error"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									height: "100%",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
@@ -389,9 +378,9 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						Error
 					</Typography>
 					<Typography variant="h4">{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}</Typography>
-					<Typography sx={{ marginTop: "1rem" }} variant="body1">
+					{/* <Typography sx={{ marginTop: "1rem" }} variant="body1">
 						{transferError ? (transferError.code === undefined ? transferError : null) : null}
-					</Typography>
+					</Typography> */}
 
 					<Box sx={{ margin: "2rem 0", display: "flex", width: "70%", justifyContent: "space-around" }}>
 						<FancyButton borderColor={colors.skyBlue} sx={{ minWidth: "7rem" }} onClick={() => setTransferState("none")}>
@@ -407,19 +396,30 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Stack
 					sx={
 						transferState === "waiting"
-							? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									width: "100%",
+									height: "100%",
+									padding: "1rem",
+									textAlign: "center",
+									background: colors.darkerNavyBackground,
+							  }
 							: { display: "none" }
 					}
 				>
 					<Box sx={{ width: "100%" }}>
 						<LinearProgress color="secondary" />
 					</Box>
-					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0" }}>
+					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0", textAlign: "center" }}>
 						Waiting on Confirmation
 					</Typography>
 
 					<Typography variant="body1">
-						Purchasing {formatUnits(supsAmt, 18)} SUPS with {formatUnits(tokenAmt, 18)} {selectedTokenName.toUpperCase()}
+						Purchasing {parseFloat(formatUnits(supsAmt, 18)).toFixed(2)} SUPS with {parseFloat(formatUnits(tokenAmt, 18)).toFixed(2)}{" "}
+						{currentToken.name.toUpperCase()}
 					</Typography>
 					<Typography variant="body1">Confirm this transaction in your wallet</Typography>
 					<Box sx={{ width: "100%", marginTop: "1rem" }}>
@@ -431,9 +431,9 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			{/* Purchase Sups Form */}
 			<Box
 				sx={{
-					background: publicSale ? colors.darkerNavyBlue : "unset",
+					background: publicSale ? colors.darkNavyBlue : "unset",
 					p: publicSale ? "2em" : "unset",
-					"@media (max-width:600px)": {
+					"@media (max-width:400px)": {
 						p: "1rem",
 					},
 				}}
@@ -441,185 +441,219 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 				<Box
 					sx={{
 						width: "90vw",
-						maxWidth: publicSale ? "25rem" : "550px",
+						maxWidth: publicSale ? "24rem" : "550px",
 						display: "flex",
 						flexDirection: "column",
 						justifyContent: "space-between",
 					}}
 				>
-					{!publicSale && (
-						<Typography
-							variant="h2"
-							align="center"
-							sx={{
-								textTransform: "uppercase",
-								paddingBottom: "1rem",
-							}}
-						>
-							Purchase SUPS
-						</Typography>
-					)}
+					<Typography
+						variant="h2"
+						align="center"
+						sx={{
+							fontWeight: 800,
+							fontSize: "1.2rem",
+							textTransform: "uppercase",
+							paddingBottom: "1rem",
+						}}
+					>
+						Purchase $SUPS
+					</Typography>
 					<form onSubmit={handleSubmit}>
-						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "30vh", justifyContent: "space-between", alignItems: "center" }}>
-							<Box sx={{ position: "relative", width: "100%" }}>
-								<Box
-									sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: "1rem", marginBottom: "1rem" }}
-								>
-									<Box sx={{ flexGrow: "2" }}>
-										<Typography sx={{ color: colors.darkGrey }} variant="h6">
-											From:{" "}
-										</Typography>
-										<TextField
-											fullWidth
-											variant="filled"
-											value={tokenDisplay || ""}
-											onChange={(e) => {
-												try {
-													if (e.target.value === "") setTokenDisplay(null) // if empty allow empty
-													const amt = parseUnits(e.target.value, 18)
-													setTokenDisplay(e.target.value.toString())
-													setTokenAmt(amt)
-													handleConversions("tokensToSups", amt)
-												} catch (e) {
-													console.error(e)
-													setTokenAmt(BigNumber.from(0))
-													setSupsAmt(BigNumber.from(0))
-													setTokenDisplay(null)
-													setSupsDisplay(null)
-												}
-											}}
-											type="number"
-											sx={{
-												backgroundColor: colors.darkNavyBlue,
-												"& .MuiFilledInput-root": {
-													background: "inherit",
-												},
-												"& .MuiFilledInput-underline:after": {
-													borderBottomColor: colors.skyBlue,
-												},
-												input: { color: colors.skyBlue, fontSize: "1.2rem" },
-											}}
-											inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-										/>
-									</Box>
-
+						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "20rem", justifyContent: "space-between", alignItems: "center" }}>
+							<Box sx={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", gap: "1em" }}>
+								<Stack sx={{ gap: ".7em" }}>
+									<Box
+										component="img"
+										src={Arrow}
+										alt="token image"
+										sx={{
+											height: "2.5rem",
+											position: "absolute",
+											top: "43%",
+											left: "50%",
+											transform: "translate(-50%,-50%)",
+											zIndex: 2,
+											borderRadius: "50%",
+										}}
+									/>
 									<Box
 										sx={{
 											display: "flex",
-											flexDirection: "column",
-											justifyContent: "space-between",
-											alignItems: "flex-end",
+											backgroundColor: colors.inputBg,
+											borderRadius: "10px",
+											padding: ".5rem 1rem",
 										}}
 									>
-										<TokenSelect
-											selectedTokenName={selectedTokenName}
-											setSelectedTokenName={setSelectedTokenName}
-											tokenOptions={tokenOptions}
-											cb={() => {
-												setTokenAmt(BigNumber.from(0))
-												setTokenDisplay(null)
-												setSupsAmt(BigNumber.from(0))
-												setSupsDisplay(null)
-											}}
-										/>
-										<Button
-											disabled={userBalance ? userBalance.eq(0) : false}
-											sx={{ marginLeft: "auto" }}
-											onClick={() => {
-												setTokenAmt(userBalance)
-												setTokenDisplay(formatUnits(userBalance, 18))
-												handleConversions("tokensToSups", userBalance)
+										<Stack
+											sx={{
+												gap: ".5em",
+												justifyContent: "space-between",
 											}}
 										>
-											<Typography sx={{ color: colors.darkGrey }} variant="body1">
-												Balance: <b>{userBalance.eq(0) ? "--" : formatUnits(userBalance, 18)}</b>
+											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+												From:{" "}
 											</Typography>
-										</Button>
-									</Box>
-								</Box>
-								<Box
-									component="img"
-									src={Arrow}
-									alt="token image"
-									sx={{
-										height: "3rem",
-										position: "absolute",
-										top: "0",
-										left: "0",
-										right: "0",
-										bottom: "0",
-										margin: "auto",
-										zIndex: 2,
-									}}
-								/>
-								<Box sx={{ display: "flex", backgroundColor: colors.darkNavyBlue, borderRadius: "10px", padding: "1rem", marginTop: "1rem" }}>
-									<Box sx={{ flexGrow: "2" }}>
-										<Typography sx={{ color: colors.darkGrey }} variant="h6">
-											To:
-										</Typography>
-										<TextField
-											disabled
-											fullWidth
-											variant="filled"
-											value={supsDisplay || ""}
-											onChange={(e) => {
-												try {
-													if (e.target.value === "") setTokenDisplay(null) // if empty allow empty
-													const amt = parseUnits(e.target.value, 18)
-													setSupsDisplay(e.target.value.toString())
-													setSupsAmt(amt)
-													handleConversions("supsToTokens", amt)
-												} catch (e) {
-													console.error(e)
-													setTokenAmt(BigNumber.from(0))
-													setSupsAmt(BigNumber.from(0))
-													setTokenDisplay(null)
-													setSupsDisplay(null)
-												}
-											}}
-											type="number"
-											sx={{
-												backgroundColor: colors.darkNavyBlue,
-												"& .MuiFilledInput-root": {
-													background: "inherit",
-												},
-												"& .MuiFilledInput-underline:after": {
-													borderBottomColor: colors.skyBlue,
-												},
-												input: { color: colors.skyBlue, fontSize: "1.2rem" },
-											}}
-											inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-										/>
-									</Box>
-									<Box
-										sx={{
-											display: "flex",
-											flexDirection: "column",
-											justifyContent: "space-between",
-											alignItems: "flex-end",
-										}}
-									>
-										<Box sx={{ display: "flex", padding: ".5rem" }}>
-											<Box
-												component="img"
-												src={SupsToken}
-												alt="token image"
+											<TextField
+												color="secondary"
+												fullWidth
+												variant="standard"
+												value={tokenDisplay || ""}
+												onChange={(e) => {
+													try {
+														if (e.target.value === "") setTokenDisplay(null) // if empty allow empty
+														const amt = parseUnits(e.target.value, 18)
+														setTokenDisplay(e.target.value.toString())
+														setTokenAmt(amt)
+														handleConversions("tokensToSups", amt)
+													} catch (e) {
+														console.error(e)
+														setTokenAmt(BigNumber.from(0))
+														setSupsAmt(BigNumber.from(0))
+														setTokenDisplay(null)
+														setSupsDisplay(null)
+													}
+												}}
+												type="number"
 												sx={{
-													height: "1rem",
-													marginRight: "1rem",
+													mb: ".7rem",
+													fontWeight: 800,
+													border: "none",
+													"& *::after, & *::before, &:hover": { p: 0, border: "none" },
+													"& 	.MuiTextField-root": {
+														background: "inherit",
+													},
+													"& .MuiFilledInput-underline:after": {
+														borderBottomColor: "none",
+													},
+													"& 	.MuiTextField-root.Mui-disabled": {
+														backgroundColor: colors.lightNavyBlue,
+													},
+													"& 	.MuiTextField-root.Mui-focused": {
+														backgroundColor: colors.lightNavyBlue,
+													},
+													input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, lineHeight: 0.5 },
+												}}
+												inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+											/>
+										</Stack>
+
+										<Box
+											sx={{
+												display: "flex",
+												flexDirection: "column",
+												alignItems: "flex-end",
+												gap: ".5em",
+											}}
+										>
+											<TokenSelect
+												currentToken={currentToken}
+												cb={async (newToken: tokenSelect) => {
+													await changeChain(newToken.chainId)
+													setTokenAmt(BigNumber.from(0))
+													setTokenDisplay(null)
+													setSupsAmt(BigNumber.from(0))
+													setSupsDisplay(null)
+													setCurrentToken(newToken)
 												}}
 											/>
-											<Typography variant="body1" sx={{ textTransform: "uppercase" }}>
-												<b>Sups</b>
-											</Typography>
+											<Button
+												disabled={!tokenBalance}
+												sx={{ marginLeft: "auto" }}
+												onClick={() => {
+													if (tokenBalance) {
+														setTokenAmt(tokenBalance)
+														setTokenDisplay(formatUnits(tokenBalance, 18))
+														handleConversions("tokensToSups", tokenBalance)
+													}
+												}}
+											>
+												<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
+													Balance: <b>{tokenBalance ? parseFloat(formatUnits(tokenBalance, 18)).toFixed(4) : "--"}</b>
+												</Typography>
+											</Button>
 										</Box>
-										<Typography sx={{ color: colors.darkGrey }} variant="body1">
-											XSYN Balance: <b>{userSups ? parseFloat(formatUnits(BigNumber.from(userSups), 18)).toFixed(2) : "--"}</b>
-										</Typography>
-										<Typography sx={{ color: colors.darkGrey }} variant="body1">
-											Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, 18)).toFixed(2) : "--"}</b>
+									</Box>
+
+									<Box sx={{ display: "flex", backgroundColor: colors.inputBg, borderRadius: "10px", padding: ".5rem 1rem", gap: "1em" }}>
+										<Box sx={{ flexGrow: "2" }}>
+											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+												To:
+											</Typography>
+											<TextField
+												// disabled
+												variant="filled"
+												value={supsDisplay || ""}
+												onChange={(e) => {
+													try {
+														if (e.target.value === "") setTokenDisplay(null) // if empty allow empty
+														const amt = parseUnits(e.target.value, 18)
+														setSupsDisplay(e.target.value.toString())
+														setSupsAmt(amt)
+														handleConversions("supsToTokens", amt)
+													} catch (e) {
+														console.error(e)
+														setTokenAmt(BigNumber.from(0))
+														setSupsAmt(BigNumber.from(0))
+														setTokenDisplay(null)
+														setSupsDisplay(null)
+													}
+												}}
+												type="number"
+												sx={{
+													width: "100%",
+													pointerEvents: "none",
+													backgroundColor: colors.inputBg,
+													"& 	.MuiFilledInput": {
+														background: "none",
+													},
+													"& 	.MuiFilledInput-root": {
+														backgroundColor: "none",
+													},
+													"& .MuiFilledInput-underline:after": {
+														borderBottomColor: colors.skyBlue,
+													},
+													"& 	.MuiFilledInput-root.Mui-disabled": {
+														backgroundColor: "none",
+													},
+													"& .MuiInputBase-root, & input": {
+														background: "none",
+													},
+													input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, p: 0 },
+												}}
+												inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+											/>
+										</Box>
+									</Box>
+								</Stack>
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "center",
+										gap: ".5em",
+										width: "100%",
+									}}
+								>
+									<Box sx={{ display: "flex", gap: ".5em", alignItems: "center" }}>
+										<Box
+											component="img"
+											src={SupsToken}
+											alt="token image"
+											sx={{
+												height: "24px",
+											}}
+										/>
+										<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: ".8rem", fontWeight: 600 }}>
+											$Sups
 										</Typography>
 									</Box>
+									<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
+										Balance: <b>{userSups ? parseFloat(formatUnits(BigNumber.from(2321), 18)).toFixed(2) : "--"}</b>
+									</Typography>
+									{/* <Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
+										Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, 18)).toFixed(2) : "--"}</b>
+									</Typography> */}
 								</Box>
 							</Box>
 
@@ -627,23 +661,25 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 								borderColor={colors.skyBlue}
 								disabled={
 									!acceptedChainExceptions ||
-									tokenAmt.gt(userBalance) ||
+									!tokenBalance ||
+									tokenAmt.gt(tokenBalance) ||
 									tokenAmt.eq(0) ||
 									supsAmt.gt(amountRemaining) ||
 									loading ||
 									exchangeRates === undefined
 								}
-								sx={{ width: "60%", minWidth: "150px", alignSelf: "center", marginTop: "1.5rem" }}
+								sx={{ width: "60%", minWidth: "200px", alignSelf: "center", marginTop: "1.5rem" }}
 								type="submit"
 								fancy
 							>
 								{(() => {
-									if (tokenAmt.gt(userBalance)) {
+									if (!tokenBalance) return "Fetching Balance"
+									if (tokenAmt.gt(tokenBalance)) {
 										return `Insufficient ${currentToken.name.toUpperCase()} Balance`
 									} else if (!tokenDisplay) {
 										return "Enter values"
 									} else if (supsAmt.gt(amountRemaining)) {
-										return `Insufficient Remaining SUPS`
+										return `Insufficient SUPS Remaining`
 									} else if (exchangeRates === undefined) {
 										return `Retrieving Exchange Rates`
 									} else {

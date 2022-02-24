@@ -2,11 +2,17 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import {
+	Alert,
 	Box,
 	Button,
 	ButtonProps,
 	Chip,
 	ChipProps,
+	CircularProgress,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
 	Divider,
 	IconButton,
 	IconButtonProps,
@@ -17,19 +23,24 @@ import {
 	Typography,
 	useMediaQuery,
 } from "@mui/material"
-import { useEffect, useState } from "react"
+import { ethers } from "ethers"
+import React, { useCallback, useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, GradientHeartIconImagePath, MetaMaskIcon, SupTokenIcon, TwitchIcon, TwitterIcon } from "../../assets"
+import { GradientHeartIconImagePath, SupTokenIcon } from "../../assets"
 import WarMachine from "../../assets/images/WarMachine.png"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
+import { InputField } from "../../components/form/inputField"
 import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
 import { SearchBar } from "../../components/searchBar"
+import { NFT_CONTRACT_ADDRESS, NFT_STAKING_CONTRACT_ADDRESS } from "../../config"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
+import { useWeb3 } from "../../containers/web3"
 import { middleTruncate } from "../../helpers"
 import { getItemAttributeValue, supFormatter } from "../../helpers/items"
 import { useQuery } from "../../hooks/useSend"
@@ -187,13 +198,7 @@ export const ProfilePage: React.FC = () => {
 									</IconButton>
 								</Box>
 							)}
-							<Section>
-								<Typography variant="h6" component="p">
-									Bio
-								</Typography>
-								<Typography variant="body1">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor.</Typography>
-							</Section>
-							{loggedInUser?.username === user.username && (
+							{/* {loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
 										Connect
@@ -261,7 +266,7 @@ export const ProfilePage: React.FC = () => {
 										)}
 									</Box>
 								</Section>
-							)}
+							)} */}
 							{loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
@@ -306,7 +311,6 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType] = useState<string>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
-	const [brands, setBrand] = useState<Set<string>>(new Set())
 
 	const toggleRarity = (rarity: string) => {
 		setRarities((prev) => {
@@ -318,19 +322,6 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 			}
 			temp.clear()
 			return temp.add(rarity)
-		})
-	}
-
-	const toggleBrand = (brand: string) => {
-		setBrand((prev) => {
-			const exists = prev.has(brand)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(brand)
-				return temp
-			}
-			temp.clear()
-			return temp.add(brand)
 		})
 	}
 
@@ -361,13 +352,6 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 				operatorValue: "contains",
 			}),
 		)
-		brands.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Brand",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
 
 		query({
 			search,
@@ -381,7 +365,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 			},
 			...sort,
 		})
-	}, [user, query, state, search, assetType, rarities, brands, sort])
+	}, [user, query, state, search, assetType, rarities, sort])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
@@ -505,46 +489,55 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
 					/>
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Brand
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip color={colors.skyBlue} active={brands.has("Gunn")} label="Gunn" variant="outlined" onClick={() => toggleBrand("Gunn")} />
-					<FilterChip color={colors.skyBlue} active={brands.has("Kaeber")} label="Kaeber" variant="outlined" onClick={() => toggleBrand("Kaeber")} />
+					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Death Metal")}
-						label="Death Metal"
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.colossal}
 						variant="outlined"
-						onClick={() => toggleBrand("Death Metal")}
+						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Daison Avionics")}
-						label="Daison Avionics"
+						active={rarities.has("Elite Legendary")}
+						label="Elite Legendary"
+						color={colors.rarity.eliteLegendary}
 						variant="outlined"
-						onClick={() => toggleBrand("Daison Avionics")}
+						onClick={() => toggleRarity("Elite Legendary")}
 					/>
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Quasar Industries")}
-						label="Quasar Industries"
+						active={rarities.has("Ultra Rare")}
+						label="Ultra Rare"
+						color={colors.rarity.ultraRare}
 						variant="outlined"
-						onClick={() => toggleBrand("Quasar Industries")}
+						onClick={() => toggleRarity("Ultra Rare")}
+					/>
+					<FilterChip
+						active={rarities.has("Exotic")}
+						label="Exotic"
+						color={colors.rarity.exotic}
+						variant="outlined"
+						onClick={() => toggleRarity("Exotic")}
+					/>
+					<FilterChip
+						active={rarities.has("Guardian")}
+						label="Guardian"
+						color={colors.rarity.guardian}
+						variant="outlined"
+						onClick={() => toggleRarity("Guardian")}
+					/>
+					<FilterChip
+						active={rarities.has("Mythic")}
+						label="Mythic"
+						color={colors.rarity.mythic}
+						variant="outlined"
+						onClick={() => toggleRarity("Mythic")}
+					/>
+					<FilterChip
+						active={rarities.has("Deus ex")}
+						label="Deus ex"
+						color={colors.rarity.deusEx}
+						variant="outlined"
+						onClick={() => toggleRarity("Deus ex")}
 					/>
 				</Box>
 			</Box>
@@ -641,7 +634,15 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						marginBottom: "1rem",
 					}}
 				>
-					<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small">
+					<FancyButton
+						onClick={() => setOpenFilterDrawer(true)}
+						size="small"
+						sx={{
+							"@media (max-width: 630px)": {
+								width: "100%",
+							},
+						}}
+					>
 						Filters / Sort
 					</FancyButton>
 				</Box>
@@ -758,9 +759,19 @@ interface AssetViewProps {
 	tokenID: number
 }
 
+enum AssetState {
+	OnWorld,
+	OnWorldLocked,
+	OnWorldFrozen,
+	OffWorldNotStaked,
+	OffWorldStaked,
+}
+
 const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	const history = useHistory()
 	const { state, subscribe, send } = useWebsocket()
+	const { user: loggedInUser } = useAuth()
+	const { provider } = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -777,6 +788,13 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	const queueDetail = queuedWarMachine(tokenID)
 	const [submitting, setSubmitting] = useState(false)
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
+	const [renameWindowOpen, setRenameWindowOpen] = useState(false)
+	const [assetState, setAssetState] = useState<AssetState>(AssetState.OnWorld)
+
+	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
+	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
+
+	const isOwner = asset ? loggedInUser?.id === asset?.userID : false
 
 	const isWarMachine = (): boolean => {
 		if (!asset) return false
@@ -822,6 +840,28 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 		}
 	}
 
+	useEffect(() => {
+		if (!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+		;(async () => {
+			try {
+				const abi = ["function ownerOf(uint256) view returns (address)"]
+				const signer = provider.getSigner()
+				const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+				const owner = await nftContract.ownerOf(asset.tokenID)
+
+				if (owner === NFT_STAKING_CONTRACT_ADDRESS && asset.userID === loggedInUser.id) {
+					setAssetState(AssetState.OffWorldStaked)
+				} else if (
+					(owner !== loggedInUser.publicAddress && owner !== NFT_STAKING_CONTRACT_ADDRESS) ||
+					(owner === loggedInUser.publicAddress && asset.userID === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
+				) {
+					setAssetState(AssetState.OffWorldNotStaked)
+				} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+					setAssetState(AssetState.OffWorldStaked)
+				}
+			} catch (e) {}
+		})()
+	}, [asset, provider, loggedInUser])
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 
@@ -891,6 +931,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 				tokenID={asset.tokenID.toString()}
 				mintingSignature={asset.mintingSignature}
 			/>
+			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -920,33 +961,48 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 					<Box
 						sx={{
 							display: "flex",
+							flexWrap: "wrap",
 							gap: ".5rem",
 							marginBottom: "1rem",
 						}}
 					>
-						{user.id === asset.userID ? (
-							asset.mintingSignature || asset.mintingSignature !== "" ? (
-								<FancyButton onClick={() => setMintWindowOpen(true)}>Continue Transition Off World</FancyButton>
+						{assetState === AssetState.OffWorldNotStaked && (
+							<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
+								Transition In Asset
+							</FancyButton>
+						)}
+
+						{assetState === AssetState.OffWorldStaked && (
+							<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
+								Transition out Asset
+							</FancyButton>
+						)}
+
+						{isOwner && isWarMachine() && !asset.frozenAt && (
+							<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
+								Rename Asset
+							</FancyButton>
+						)}
+						{isOwner ? (
+							(asset.mintingSignature || asset.mintingSignature !== "") && !asset.minted ? (
+								<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+									Continue Transition Off World
+								</FancyButton>
 							) : !asset.frozenAt && isWarMachine() ? (
 								<>
 									<FancyButton size="small" onClick={() => onDeploy()}>
 										Deploy
 									</FancyButton>
-									<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-										Transition Off World
-									</FancyButton>
+									{!asset.minted && (
+										<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+											Transition Off World
+										</FancyButton>
+									)}
 								</>
 							) : (
 								<>
 									{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
-										<FancyButton
-											size="small"
-											loading={submitting}
-											onClick={payInsurance}
-											sx={{
-												marginBottom: ".5rem",
-											}}
-										>
+										<FancyButton size="small" loading={submitting} onClick={payInsurance}>
 											Pay Insurance
 										</FancyButton>
 									)}
@@ -1001,6 +1057,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									<Box
 										component="span"
 										sx={{
+											marginLeft: ".5rem",
 											color: colors.skyBlue,
 											fontSize: "1rem",
 										}}
@@ -1041,7 +1098,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									margin: ".5rem 0",
 								}}
 							/>
-							{user.id === asset.userID && (
+							{loggedInUser?.id === asset.userID && (
 								<Box
 									sx={{
 										marginBottom: ".5rem",
@@ -1132,45 +1189,63 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									)}
 								</Box>
 							)}
-							<Box
-								sx={{
-									display: "flex",
-									gap: ".5rem",
-								}}
-							>
-								{user.id === asset.userID ? (
-									asset.mintingSignature || asset.mintingSignature !== "" ? (
-										<FancyButton onClick={() => setMintWindowOpen(true)}>Continue Transition Off World</FancyButton>
-									) : !asset.frozenAt && isWarMachine() ? (
-										<>
-											<FancyButton size="small" onClick={() => onDeploy()}>
-												Deploy
-											</FancyButton>
+							{isWiderThan1000px && (
+								<Box
+									sx={{
+										display: "flex",
+										flexWrap: "wrap",
+										gap: ".5rem",
+									}}
+								>
+									{assetState === AssetState.OffWorldNotStaked && (
+										<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
+											Transition In Asset
+										</FancyButton>
+									)}
+
+									{assetState === AssetState.OffWorldStaked && (
+										<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
+											Transition out Asset
+										</FancyButton>
+									)}
+
+									{/*TODO: fix this mess of if statements*/}
+									{loggedInUser?.id === asset.userID && isWarMachine() && !asset.frozenAt && (
+										<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
+											Rename Asset
+										</FancyButton>
+									)}
+									{loggedInUser?.id === asset.userID ? (
+										(asset.mintingSignature || asset.mintingSignature !== "") && !asset.minted ? (
 											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-												Transition Off World
+												Continue Transition Off World
 											</FancyButton>
-										</>
-									) : (
-										<>
-											{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
-												<FancyButton
-													size="small"
-													loading={submitting}
-													onClick={payInsurance}
-													sx={{
-														marginBottom: ".5rem",
-													}}
-												>
-													Pay Insurance
+										) : !asset.frozenAt && isWarMachine() ? (
+											<>
+												<FancyButton size="small" onClick={() => onDeploy()}>
+													Deploy
 												</FancyButton>
-											)}
-											<FancyButton size="small" loading={submitting} onClick={leaveQueue} borderColor={colors.errorRed}>
-												Leave
-											</FancyButton>
-										</>
-									)
-								) : null}
-							</Box>
+												{!asset.minted && (
+													<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+														Transition Off World
+													</FancyButton>
+												)}
+											</>
+										) : (
+											<>
+												{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
+													<FancyButton size="small" loading={submitting} onClick={payInsurance}>
+														Pay Insurance
+													</FancyButton>
+												)}
+												<FancyButton size="small" loading={submitting} onClick={leaveQueue} borderColor={colors.errorRed}>
+													Leave
+												</FancyButton>
+											</>
+										)
+									) : null}
+								</Box>
+							)}
 						</Box>
 					</Box>
 					<Box
@@ -1287,9 +1362,22 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 										alignItems: "start",
 									}}
 								>
-									<Button component={"a"} href={asset.externalURL} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNewIcon />}>
-										View on OpenSea
-									</Button>
+									{asset.username === "OnChain" && (
+										<Button
+											component={"a"}
+											href={
+												NFT_CONTRACT_ADDRESS === "0xC1ce98F52E771Bd82938c4Cb6CCaA40Dc2B3258D"
+													? `https://testnets.opensea.io/assets/goerli/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}`
+													: `https://opensea.io/assets/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}`
+											}
+											target="_blank"
+											rel="noopener noreferrer"
+											endIcon={<OpenInNewIcon />}
+										>
+											View on OpenSea
+										</Button>
+									)}
+
 									<StyledDisabledButton>
 										View Battle History Stats
 										<Box component="span" sx={{ marginLeft: ".5rem", color: colors.darkGrey }}>
@@ -1307,14 +1395,16 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 						</Box>
 					</Box>
 				</Box>
+				{provider && asset && <StakeModel open={stakeModelOpen} asset={asset} provider={provider} onClose={() => setStakeModelOpen(false)} />}
+				{provider && asset && <UnstakeModel open={unstakeModelOpen} asset={asset} provider={provider} onClose={() => setUnstakeModelOpen(false)} />}
 			</Paper>
 		</>
 	)
 }
 
-type Rarity = "Common" | "Rare" | "Legendary"
+export type Rarity = "Common" | "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex"
 
-const rarityTextStyles: { [key in Rarity]: any } = {
+export const rarityTextStyles: { [key in Rarity]: any } = {
 	Common: {
 		color: colors.rarity.common,
 	},
@@ -1323,7 +1413,32 @@ const rarityTextStyles: { [key in Rarity]: any } = {
 	},
 	Legendary: {
 		color: colors.rarity.legendary,
-		textShadow: `0 0 2px ${colors.rarity.legendary}`,
+	},
+	Mega: {
+		color: colors.rarity.mega,
+	},
+	Colossal: {
+		color: colors.rarity.colossal,
+	},
+	"Elite Legendary": {
+		color: colors.rarity.eliteLegendary,
+	},
+	"Ultra Rare": {
+		color: colors.rarity.ultraRare,
+	},
+	Exotic: {
+		color: colors.rarity.exotic,
+	},
+	Guardian: {
+		color: colors.rarity.guardian,
+	},
+	Mythic: {
+		color: colors.rarity.mythic,
+		textShadow: `0 0 2px ${colors.rarity.mythic}`,
+	},
+	"Deus ex": {
+		color: colors.rarity.deusEx,
+		textShadow: `0 0 2px ${colors.rarity.deusEx}`,
 	},
 }
 
@@ -1415,5 +1530,331 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 				{label}
 			</Typography>
 		</Box>
+	)
+}
+
+const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Asset; userID: string }) => {
+	const { open, onClose, asset, userID } = props
+	const { send } = useWebsocket()
+	const { displayMessage } = useSnackbar()
+	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
+	const [loading, setLoading] = useState(false)
+
+	const getName = useCallback(() => {
+		let result = ""
+		const attr = asset.attributes.filter((a) => a.trait_type === "Name")
+		if (attr.length > 0) {
+			result = `${attr[0].value}`
+		}
+		return result
+	}, [asset])
+
+	const onSubmit = handleSubmit(async ({ name }) => {
+		setLoading(true)
+		try {
+			await send<Asset>(HubKey.AssetUpdateName, {
+				tokenID: asset.tokenID,
+				userID,
+				name,
+			})
+			displayMessage("Asset successfully updated", "success")
+			onClose()
+		} catch (e) {
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+		} finally {
+			setLoading(false)
+		}
+	})
+
+	// set default name
+	useEffect(() => {
+		setValue("name", getName())
+	}, [getName, setValue])
+
+	return (
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle>Update Asset Name</DialogTitle>
+			<DialogContent>
+				<form onSubmit={onSubmit}>
+					<InputField
+						name="name"
+						label="Name"
+						type="name"
+						control={control}
+						rules={{
+							required: "Name is required.",
+						}}
+						placeholder="Name"
+						style={{ width: "300px" }}
+						autoFocus
+						disabled={loading}
+					/>
+					<DialogActions>
+						<>
+							<Button variant="contained" type="submit" color="primary" disabled={loading}>
+								Save
+							</Button>
+							<Button
+								variant="contained"
+								type="button"
+								color="error"
+								disabled={loading}
+								onClick={() => {
+									onClose()
+								}}
+							>
+								Cancel
+							</Button>
+						</>
+					</DialogActions>
+				</form>
+			</DialogContent>
+		</Dialog>
+	)
+}
+
+interface StakeModelProps {
+	open: boolean
+	onClose: () => void
+	provider: ethers.providers.Web3Provider
+	asset: Asset
+}
+
+//
+// if minted, get on chain wallet owner
+// if user wallet == online wallet
+//     have stake button
+// tell them there are 2 phases
+// approve (show est gas)
+// stake (show est gas)
+//	const mintAttempt = useCallback(async () => {
+// 		try {
+// 			if (currentChainId?.toString() !== ETHEREUM_CHAIN_ID) {
+// 				setErrorMinting("Connected to wrong chain.")
+// 				return
+// 			}
+// 			if (!provider) return
+// 			setLoadingMint(true)
+// 			// get nonce from mint contract
+// 			// send nonce, amount and user wallet addr to server
+// 			// server validates they have enough sups
+// 			// server generates a sig and returns it
+// 			// submit that sig to mint contract mintSups func
+// 			// listen on backend for update
+//
+// 			// A Human-Readable ABI; for interacting with the contract,
+// 			// we must include any fragment we wish to use
+// 			const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
+// 			const signer = provider.getSigner()
+// 			const mintContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+// 			if (mintingSignature && mintingSignature !== "") {
+// 				await mintContract.signedMint(tokenID, mintingSignature)
+// 				setErrorMinting(undefined)
+// 				return
+// 			}
+//
+// 			const nonce = await mintContract.nonces(account)
+// 			const resp = await fetch(`/api/mint-nft/${account}/${nonce}/${tokenID}`)
+// 			const respJson: GetSignatureResponse = await resp.json()
+// 			await mintContract.signedMint(tokenID, respJson.messageSignature, respJson.expiry)
+// 			setErrorMinting(undefined)
+// 			onClose()
+// 		} catch (e) {
+// 			setErrorMinting(e === "string" ? e : "Issue minting, please try again or contact support.")
+// 		} finally {
+// 			setLoadingMint(false)
+// 		}
+// 	}, [provider, account, tokenID, mintingSignature, currentChainId, onClose])
+
+//	OnWorld, - done
+// 	OnWorldLocked,
+// 	OnWorldFrozen,
+// 	OffWorldNotStaked, - done
+// 	OffWorldStaked,
+
+// //
+// useEffect(()=>{
+// 	if(!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+// 		;(async ()=>{
+// 		try {
+// 			const abi = ["function ownerOf(uint256) view returns (address)"]
+// 			const signer = provider.getSigner()
+// 			const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+//
+// 			const owner = await nftContract.ownerOf(asset.tokenID)
+//
+// 			if ((owner !== loggedInUser.publicAddress) ||
+// 				(owner === loggedInUser.publicAddress && asset.userID === '2fa1a63e-a4fa-4618-921f-4b4d28132069')) {
+// 				setAssetState(AssetState.OffWorldNotStaked)
+// 			} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+// 				setAssetState(AssetState.OffWorldStaked)
+// 			}
+// 		} catch (e) {
+// 		}
+// 	})()
+// },[asset, provider, loggedInUser])
+
+const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
+	const [error, setError] = useState<string>()
+
+	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
+	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
+
+	const unstake = useCallback(async () => {
+		try {
+			setUnstakingLoading(true)
+			const abi = ["function unstake(uint256)"]
+			const signer = provider.getSigner()
+			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
+			const tx = await nftStakingContract.unstake(asset.tokenID)
+			await tx.wait()
+			setUnstakingSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setUnstakingLoading(false)
+		}
+	}, [provider, asset])
+
+	return (
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle
+				sx={(theme) => ({
+					fontSize: theme.typography.h3,
+				})}
+				color={"primary"}
+			>
+				Transition Asset on World
+			</DialogTitle>
+			<DialogContent sx={{ display: "flex", width: "100%", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
+				<>
+					<Typography variant={"h5"} color={"error"}>
+						GABS WARNING:
+					</Typography>
+					<Typography>
+						Once transitioned off world you will be required to pay the fees to approve and transition back, transition with care.
+					</Typography>
+				</>
+
+				<FancyButton disabled={unstakingSuccess || unstakingLoading} fullWidth onClick={unstake}>
+					{unstakingLoading && <CircularProgress />}
+					{!unstakingLoading && unstakingSuccess && "Successfully Transitioned"}
+					{!unstakingLoading && !unstakingSuccess && "Transition"}
+				</FancyButton>
+			</DialogContent>
+			<DialogActions>
+				{!!error && <Alert severity="error">{error}</Alert>}
+				<Button onClick={() => onClose()}>Cancel</Button>
+			</DialogActions>
+		</Dialog>
+	)
+}
+
+const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
+	const [error, setError] = useState<string>()
+	const [approvalLoading, setApprovalLoading] = useState<boolean>(false)
+	const [approvalSuccess, setApprovalSuccess] = useState<boolean>(false)
+
+	const [stakingLoading, setStakingLoading] = useState<boolean>(false)
+	const [stakingSuccess, setStakingSuccess] = useState<boolean>(false)
+
+	// TODO: give our est gas price
+	// useEffect(()=>{
+	// 	;(async ()=>{
+	// 	try {
+	// 		// "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
+	// 		const abi = ["function ownerOf(uint256) view returns (address)", "function approve(address, uint256)"]
+	// 		const signer = provider.getSigner()
+	// 		const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+	// 		const estimation = await nftContract.estimateGas.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.tokenID);
+	//
+	// 		setApproveGasEst(estimation)
+	//
+	// 		// if ((owner !== loggedInUser.publicAddress) ||
+	// 		// 	(owner === loggedInUser.publicAddress && asset.userID === '2fa1a63e-a4fa-4618-921f-4b4d28132069')) {
+	// 		// 	setAssetState(AssetState.OffWorldNotStaked)
+	// 		// } else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+	// 		// 	setAssetState(AssetState.OffWorldStaked)
+	// 		// }
+	// 	} catch (e) {
+	// 		console.log(e)
+	// 	}
+	// })()
+	// },[provider, asset])
+
+	const approve = useCallback(async () => {
+		try {
+			setApprovalLoading(true)
+			const abi = ["function approve(address, uint256)"]
+			const signer = provider.getSigner()
+			const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+			const tx = await nftContract.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.tokenID)
+			await tx.wait()
+			setApprovalSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setApprovalLoading(false)
+		}
+	}, [provider, asset])
+
+	const stake = useCallback(async () => {
+		try {
+			setStakingLoading(true)
+			const abi = ["function stake(uint256)"]
+			const signer = provider.getSigner()
+			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
+			const tx = await nftStakingContract.stake(asset.tokenID)
+			await tx.wait()
+			setStakingSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setStakingLoading(false)
+		}
+	}, [provider, asset])
+
+	return (
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle
+				sx={(theme) => ({
+					fontSize: theme.typography.h3,
+				})}
+				color={"primary"}
+			>
+				Transition Asset on World
+			</DialogTitle>
+			<DialogContent sx={{ display: "flex", width: "100%", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
+				<>
+					<Typography variant={"h5"} color={"error"}>
+						GABS WARNING:
+					</Typography>
+					<Typography>To transition your items back on world it is a 2 part process, with each part requiring fees.</Typography>
+				</>
+				<Box>
+					<Typography>1. First you need to approve us to transition your item.</Typography>
+					<FancyButton disabled={approvalSuccess || approvalLoading} fullWidth onClick={approve}>
+						{approvalLoading && <CircularProgress />}
+						{!approvalLoading && approvalSuccess && "Successfully Approved"}
+						{!approvalLoading && !approvalSuccess && "Approve"}
+					</FancyButton>
+				</Box>
+				<Box>
+					<Typography>2. Transition your item on world.</Typography>
+					<FancyButton disabled={stakingSuccess || stakingLoading} fullWidth onClick={stake}>
+						{stakingLoading && <CircularProgress />}
+						{!stakingLoading && stakingSuccess && "Successfully Transitioned"}
+						{!stakingLoading && !stakingSuccess && "Transition"}
+					</FancyButton>
+				</Box>
+			</DialogContent>
+			<DialogActions>
+				{!!error && <Alert severity="error">{error}</Alert>}
+				<Button onClick={() => onClose()}>Cancel</Button>
+			</DialogActions>
+		</Dialog>
 	)
 }

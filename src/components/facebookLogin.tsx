@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { API_ENDPOINT_HOSTNAME } from "../containers/socket"
+import { API_ENDPOINT_HOSTNAME } from "./../config"
 import { getIsMobile, getParamsFromObject } from "../helpers"
 
 const decodeParamForKey = (paramString: string, key: string) =>

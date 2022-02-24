@@ -1,6 +1,5 @@
-import { Box, Modal, Stack, Typography, useMediaQuery } from "@mui/material"
+import { Box, Modal, Stack, Typography } from "@mui/material"
 import React from "react"
-import { useWeb3 } from "../../containers/web3"
 import { IMAGE_FOLDER } from "../../pages/sale/salePage"
 import { colors } from "../../theme"
 import { ClipThing } from "./clipThing"
@@ -12,18 +11,7 @@ type Props = {
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-interface UserDataStoriesApi {
-	Address: string
-	RedM: number
-	Zaibat: number
-	Boston: number
-	Deaths: number
-}
-
 export const WhiteListModal = (props: Props) => {
-	const { account } = useWeb3()
-	const mobileScreen = useMediaQuery("(max-width:600px)")
-
 	return (
 		<Modal
 			open={props.open}
@@ -141,14 +129,17 @@ export const WhiteListModal = (props: Props) => {
 							<Typography
 								variant="h2"
 								sx={{
+									fontSize: "1.5rem",
 									fontFamily: "Nostromo Regular Heavy",
 									textAlign: "center",
-									"@media (max-width:425px)": {
-										fontSize: "1.3rem",
+									"@media (max-width:500px)": {
+										fontSize: "4vmin",
 									},
 								}}
 							>
-								Survive to join
+								{" "}
+								You are not in the whitelist
+								<br /> Survive to join
 							</Typography>
 							<SupFancyButton
 								onClick={async () => await props.handleJoinBtn()}

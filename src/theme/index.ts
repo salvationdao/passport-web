@@ -26,13 +26,16 @@ export const colors = {
 	darkSkyBlue: "#3b9ebd",
 	darkerSkyBlue: "#3388a3",
 	lightNavyBlue: "#211E33",
+	lightNavyBlue2: "#6E7198",
 	navyBlue: "#402F98",
 	darkNavyBlue: "#0a061f",
 	darkerNavyBlue: "#030208",
+	darkNavyBackground2: "rgba(16, 16, 25, 0.2)",
 	darkNavyBackground: "rgba(16, 16, 25, 0.7)",
 	darkerNavyBackground: "rgb(5, 12, 18,0.95)",
 	black2: "#050C12",
 	black2Background: "rgb(5, 12, 18,0.7)",
+	inputBg: "#211E33",
 	gold: "#ffc400",
 	neonBlue: "#00FFFF",
 	darkNeonBlue: "#176969",
@@ -54,6 +57,14 @@ export const colors = {
 		common: "#c3c3c3",
 		rare: "#4d90fa",
 		legendary: "#fabd4d",
+		mega: "#e84234",
+		colossal: "#b43328",
+		eliteLegendary: "#ffcc4e",
+		ultraRare: "#4e57ff",
+		exotic: "#824dff",
+		guardian: "#4dcfff",
+		mythic: "#a1e6ff",
+		deusEx: "#fffa4e",
 	},
 	supremacy: {
 		text: "#FFFFFF",
@@ -211,7 +222,7 @@ const lightTheme = createTheme({
 		MuiCssBaseline: {
 			styleOverrides: {
 				html: {
-					"@media (max-width: 1000px)": {
+					"@media (max-width: 1080px)": {
 						fontSize: "80%",
 					},
 				},

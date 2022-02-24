@@ -1,6 +1,6 @@
 import { Box, styled, SxProps } from "@mui/system"
 import { differenceInSeconds } from "date-fns"
-import React, { useCallback } from "react"
+import React from "react"
 import { useInterval } from "react-use"
 import { colors } from "../../theme"
 import { useHistory } from "react-router"
@@ -21,6 +21,7 @@ const CountdownSection = styled(Box)({
 	textTransform: "uppercase",
 	fontSize: "1.5rem",
 	fontFamily: "Nostromo Regular Black",
+	margin: "0 .2em",
 	"@media (max-width:1440px)": {
 		fontSize: "2.5vmin",
 	},
@@ -68,17 +69,17 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 
 	useInterval(() => {
 		const seconds = differenceInSeconds(date, Date.now())
-		var d = Math.floor(seconds / (3600 * 24))
-		var h = Math.floor((seconds % (3600 * 24)) / 3600)
-		var m = Math.floor((seconds % 3600) / 60)
-		var s = Math.floor(seconds % 60)
+		const d = Math.floor(seconds / (3600 * 24))
+		const h = Math.floor((seconds % (3600 * 24)) / 3600)
+		const m = Math.floor((seconds % 3600) / 60)
+		const s = Math.floor(seconds % 60)
 		setRemaining({
 			d,
 			h,
 			m,
 			s,
 		})
-		if (publicSale && seconds <= 0) {
+		if (date && publicSale && seconds <= 0) {
 			history.go(0)
 		}
 	}, 1000)
@@ -99,7 +100,10 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = (props) => {
 					justifyContent: "center",
 					gridTemplateColumns: "repeat(4, 3rem)",
 					"& div": {
-						fontSize: publicSale ? "3vmin" : "unset",
+						fontSize: publicSale ? "2.5vmin" : "unset",
+						"@media (max-width:600px)": {
+							fontSize: "5vmin",
+						},
 					},
 				}}
 			>

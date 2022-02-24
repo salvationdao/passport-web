@@ -7,22 +7,24 @@ import { Sidebar } from "./components/sidebar"
 import { useAuth } from "./containers/auth"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
+import { AssetRedirectPage } from "./pages/assetRedirect"
 import { LoginPage } from "./pages/auth/login"
+import { LogoutPage } from "./pages/auth/logout"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
 import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
 import { CollectionPage } from "./pages/collections/collection"
-import { CollectionItemPage } from "./pages/collections/collectionItem"
 import { CollectionsPage } from "./pages/collections/collections"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
 import { ProfileEditPage } from "./pages/profile/profileEdit"
-import { SalePage } from "./pages/sale/salePage"
+import { LootBoxPage } from "./pages/store/lootBox"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
+import { WithdrawPage } from "./pages/withdraw"
 
 export const Routes = () => {
 	const { setSessionID } = useAuth()
@@ -31,6 +33,9 @@ export const Routes = () => {
 	const searchParams = new URLSearchParams(window.location.search)
 	const sessionID = searchParams.get("sessionID")
 
+	/* Get subdomain name  */
+	const parts = window.location.hostname.split(".")
+	const sndleveldomain = parts.slice(-2).join(".")
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
@@ -52,13 +57,16 @@ export const Routes = () => {
 					{...snackbarProps}
 				>
 					<Alert severity={alertSeverity || "info"}>{message}</Alert>
-				</Snackbar>
+				</Snackbar>{" "}
 				<Switch>
 					<Route path="/nosidebar/login">
 						<LoginPage />
 					</Route>
 					<Route path="/nosidebar/:username/:collection_name">
 						<CollectionPage />
+					</Route>
+					<Route path="/nosidebar/logout">
+						<LogoutPage />
 					</Route>
 					<Sidebar onClose={() => setSidebarOpen(false)}>
 						<Route exact path="/">
@@ -79,6 +87,9 @@ export const Routes = () => {
 						</Route>
 						<Route path="/terms-and-conditions">
 							<Home />
+						</Route>
+						<Route path="/withdraw">
+							<WithdrawPage />
 						</Route>
 
 						{/* User-authenticated routes */}
@@ -118,11 +129,12 @@ export const Routes = () => {
 							</Route>
 						</Switch>
 
+						<Route path="/mystery">
+							<LootBoxPage />
+						</Route>
+
 						{/* Supremacy */}
 						<Switch>
-							<Route path="/sale">
-								<SalePage />
-							</Route>
 							<Route path="/battle_arena">
 								<BattleArenaPage />
 							</Route>
@@ -130,9 +142,6 @@ export const Routes = () => {
 
 						{/* collections */}
 						<Switch>
-							<Route path="/collections/:username/:collection_name/:token_id">
-								<CollectionItemPage />
-							</Route>
 							<Route path="/collections/:username/:collection_name">
 								<CollectionPage />
 							</Route>
@@ -140,10 +149,14 @@ export const Routes = () => {
 								<CollectionsPage />
 							</Route>
 						</Switch>
+
+						<Route path="/asset/:token_id">
+							<AssetRedirectPage />
+						</Route>
 					</Sidebar>
 				</Switch>
 			</BrowserRouter>
-			<ConnectionLostSnackbar app="admin" />
+			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
 		</>
 	)

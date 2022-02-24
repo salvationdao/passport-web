@@ -123,6 +123,21 @@ export interface Collection {
 	deletedAt?: Date
 }
 
+export interface NFTOwner {
+	token_address: string
+	token_id: string
+	contract_type: string
+	owner_of: string
+	block_number: string
+	block_number_minted: string
+	token_uri: string
+	metadata: string
+	synced_at: string
+	amount: string
+	name: string
+	symbol: string
+}
+
 export interface Asset {
 	tokenID: number
 	userID: string
@@ -143,6 +158,7 @@ export interface Asset {
 	deletedAt?: Date
 	mintingSignature?: string
 	txHistory: any[]
+	minted: boolean
 }
 
 export interface Attribute {

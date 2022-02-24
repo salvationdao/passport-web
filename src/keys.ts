@@ -84,6 +84,7 @@ enum HubKey {
 
 	CollectionList = "COLLECTION:LIST",
 	CollectionUpdated = "COLLECTION:SUBSCRIBE",
+	WalletCollectionList = "COLLECTION:WALLET:LIST",
 
 	AssetList = "ASSET:LIST",
 	AssetUpdated = "ASSET:SUBSCRIBE",
@@ -96,6 +97,7 @@ enum HubKey {
 	StoreItemSubscribe = "STORE:ITEM",
 	StoreList = "STORE:LIST",
 	StorePurchase = "STORE:PURCHASE",
+	StoreLootBox = "STORE:LOOTBOX",
 
 	BlockConfirmation = "BLOCK:CONFIRM",
 	GetFactionsDetail = "FACTION:ALL",
