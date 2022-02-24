@@ -57,7 +57,7 @@ export const BuyPage: React.FC = () => {
 						maxWidth: "600px",
 					}}
 				>
-					<BuyTokens />
+					<BuyTokens publicSale={false} />
 				</Box>
 			</Box>
 		</>

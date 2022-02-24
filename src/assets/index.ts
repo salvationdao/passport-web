@@ -40,3 +40,4 @@ export { default as XSYNWordmarkImagePath } from "./images/XSYN Wordmark White.p
 export { default as ZaibatsuLogoImagePath } from "./images/Zaibatsu_Logo.svg"
 export { default as PrivacyPolicy } from "./documents/XSYN-Privacy-Policy.pdf"
 export { default as TermsAndConditions } from "./documents/XSYN-Terms-and-Conditions.pdf"
+export { default as SupremacyTC } from "./documents/Supremacy - Terms and Conditions v2.pdf"
