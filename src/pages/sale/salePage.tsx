@@ -2,6 +2,7 @@ import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
 import { formatUnits } from "ethers/lib/utils"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Helmet } from "react-helmet"
+import { SupremacyTC } from "../../assets"
 import BWSupToken from "../../assets/images/BW-sup-token.png"
 import { BuyTokens } from "../../components/buyTokens"
 import { BackgroundVideo } from "../../components/supremacy/backgroundVideo"
@@ -21,7 +22,7 @@ export const NAVBAR_HEIGHT = 100
 export const SalePage = () => {
 	const { showSimulation, setShowSimulation } = useAuth()
 	const { account, checkNeoBalance, amountRemaining } = useWeb3()
-	const [disableSimulation, setDisableSimulation] = useState(false)
+	const [disableSimulation, setDisableSimulation] = useState(true)
 	const [countdown, setCountdown] = useState<Date | undefined>()
 	const [loading, setLoading] = useState(true)
 
@@ -166,17 +167,19 @@ export const SalePage = () => {
 								sx={{
 									display: "flex",
 									width: "100%",
-									alignItems: "center",
+									height: "100%",
+									alignItems: "stretch",
 									justifyContent: "center",
 									gap: "5em",
 									px: "2em",
 									"@media (max-width: 900px)": {
+										alignItems: "center",
 										flexDirection: "column-reverse",
 										gap: "2em",
 									},
 								}}
 							>
-								<Stack gap="2em" sx={{ maxWidth: "30rem", justifyContent: "center", height: "100%" }}>
+								<Stack gap="2em" sx={{ maxWidth: "30rem", justifyContent: "space-between", height: "100%" }}>
 									<SubHeading>PURCHASE $SUPS TO ACCESS THE BATTLE ARENA</SubHeading>
 									{/* Progress Bar */}
 									<Box sx={{ position: "relative" }}>
@@ -217,14 +220,47 @@ export const SalePage = () => {
 													fontWeight: "600",
 												}}
 											>
-												{(parseInt(formatUnits(amountRemaining, 18)) / 10 ** 6).toFixed(2)}m $SUPS remaining
+												{parseInt(formatUnits(amountRemaining, 18))
+													.toString()
+													.replace(/\B(?=(\d{3})+(?!\d))/g, ",") || "148,231,111,552"}{" "}
+												$SUPS remaining
 											</Typography>
 										</Box>
 									</Box>
 									{countdown && <CountdownTimer date={countdown} publicSale />}
+									<Box
+										sx={{
+											"& p": {
+												fontSize: ".8rem",
+												"@media (max-width:800px)": {
+													fontSize: "3vmin",
+												},
+											},
+										}}
+									>
+										<Typography>
+											$SUPS tokens will be dispersed into your game account linked to your wallet. You'll be able to access and use them
+											in the game when the Battle Arena launches, where you can purchase NFTs with your $SUPS and participate in the
+											Battle stream.
+											<br />
+											<br />
+										</Typography>
+										<Typography>
+											After the Public Sale, once the liquidity pool on Pancake Swap is set up: withdrawals on-chain to BSC will be
+											enabled. Thank you for your patience.
+										</Typography>
+									</Box>
 								</Stack>
 								<BuyTokens publicSale />
 							</Box>
+
+							<Typography
+								component="a"
+								href={SupremacyTC}
+								sx={{ color: colors.skyBlue, textDecoration: "unset", fontFamily: "Nostromo Regular Black" }}
+							>
+								Terms and Conditions
+							</Typography>
 						</Stack>
 					</Box>
 					<BackgroundVideo setLoading={setLoading} loading={loading} />

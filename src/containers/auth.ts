@@ -178,11 +178,11 @@ export const AuthContainer = createContainer(() => {
 		if (state !== WebSocket.OPEN) return undefined
 
 		try {
-			await connect()
+			const acc = await connect()
 			const signature = await sign()
-			if (account) {
+			if (acc) {
 				const resp: PasswordLoginResponse = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
-					publicAddress: account,
+					publicAddress: acc,
 					signature,
 					sessionID,
 				})
@@ -206,7 +206,7 @@ export const AuthContainer = createContainer(() => {
 				displayMessage(e, "error")
 			}
 		}
-	}, [send, state, account, sign, sessionID, connect, displayMessage])
+	}, [send, state, sign, sessionID, connect, displayMessage])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *

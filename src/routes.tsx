@@ -25,6 +25,7 @@ import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
 import { WithdrawPage } from "./pages/withdraw"
+import { SalePage } from "./pages/sale/salePage"
 
 export const Routes = () => {
 	const { setSessionID } = useAuth()
@@ -57,7 +58,7 @@ export const Routes = () => {
 					{...snackbarProps}
 				>
 					<Alert severity={alertSeverity || "info"}>{message}</Alert>
-				</Snackbar>{" "}
+				</Snackbar>
 				<Switch>
 					<Route path="/nosidebar/login">
 						<LoginPage />
@@ -92,6 +93,24 @@ export const Routes = () => {
 							<WithdrawPage />
 						</Route>
 
+						<Route path="/mystery">
+							<LootBoxPage />
+						</Route>
+
+						{/* Supremacy */}
+						<Switch>
+							<Route path="/battle_arena">
+								<BattleArenaPage />
+							</Route>
+						</Switch>
+
+						<Route path="/buy">
+							<BuyPage />
+						</Route>
+						<Route path="/if-buy">
+							<IFrameBuyPage />
+						</Route>
+
 						{/* User-authenticated routes */}
 						{/* profile */}
 						<Switch>
@@ -109,13 +128,6 @@ export const Routes = () => {
 							</Route>
 						</Switch>
 
-						<Route path="/buy">
-							<BuyPage />
-						</Route>
-						<Route path="/if-buy">
-							<IFrameBuyPage />
-						</Route>
-
 						{/* stores */}
 						<Switch>
 							<Route path="/stores/:collection_slug/:store_item_id">
@@ -128,10 +140,6 @@ export const Routes = () => {
 								<StoresPage />
 							</Route>
 						</Switch>
-
-						<Route path="/mystery">
-							<LootBoxPage />
-						</Route>
 
 						{/* Supremacy */}
 						<Switch>
@@ -155,6 +163,9 @@ export const Routes = () => {
 						</Route>
 					</Sidebar>
 				</Switch>
+				<Route path="/sale-sup">
+					<SalePage />
+				</Route>
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
