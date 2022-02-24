@@ -11,7 +11,7 @@ import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
-import { colors } from "../../theme"
+import { colors, fonts } from "../../theme"
 import { Collection, NFTOwner } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
 
@@ -291,14 +291,19 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				</RouterLink>
 			</Box>
 
-			<Box>
+			<Box
+				sx={{
+					marginBottom: "1rem",
+				}}
+			>
 				<Typography
-					variant="h2"
+					variant="subtitle1"
 					sx={{
-						marginBottom: "1rem",
-						"@media (max-width: 630px)": {
-							textAlign: "center",
-						},
+						marginBottom: ".5rem",
+						fontFamily: fonts.bizmoblack,
+						fontStyle: "italic",
+						letterSpacing: "2px",
+						textTransform: "uppercase",
 					}}
 				>
 					On World Assets
@@ -308,21 +313,21 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				) : (
 					<Box>
 						<Typography variant="subtitle2" color={colors.darkGrey}>
-							{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
+							{loading ? "Loading assets..." : error ? error : `No on-world assets from ${collection.name}.`}
 						</Typography>
 					</Box>
 				)}
 			</Box>
 
-			<Divider sx={{ margin: "1rem 0" }} />
 			<Box>
 				<Typography
-					variant="h2"
+					variant="subtitle1"
 					sx={{
-						marginBottom: "1rem",
-						"@media (max-width: 630px)": {
-							textAlign: "center",
-						},
+						marginBottom: ".5rem",
+						fontFamily: fonts.bizmoblack,
+						fontStyle: "italic",
+						letterSpacing: "2px",
+						textTransform: "uppercase",
 					}}
 				>
 					Off World Assets
@@ -332,7 +337,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				) : (
 					<Box>
 						<Typography variant="subtitle2" color={colors.darkGrey}>
-							{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
+							{loading ? "Loading assets..." : error ? error : `No off-world assets from ${collection.name}.`}
 						</Typography>
 					</Box>
 				)}
