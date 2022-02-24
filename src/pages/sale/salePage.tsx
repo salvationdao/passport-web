@@ -21,10 +21,9 @@ export const NAVBAR_HEIGHT = 100
 
 export const SalePage = () => {
 	const { showSimulation, setShowSimulation } = useAuth()
-	const { account, checkNeoBalance, amountRemaining } = useWeb3()
+	const { account, checkNeoBalance, amountRemaining, loadingAmountRemaining, setLoadingAmountRemaining } = useWeb3()
 	const [disableSimulation, setDisableSimulation] = useState(true)
 	const [countdown, setCountdown] = useState<Date | undefined>()
-	const [loading, setLoading] = useState(true)
 
 	// Game state
 	const [showGame, setShowGame] = useState(false)
@@ -119,12 +118,12 @@ export const SalePage = () => {
 				</>
 			) : (
 				<>
-					<Loading loading={loading} setLoading={setLoading} />
-					<SupremacyNavbar loading={loading} />
+					<Loading loading={loadingAmountRemaining} setLoading={setLoadingAmountRemaining} />
+					<SupremacyNavbar loading={loadingAmountRemaining} />
 					{!disableSimulation && <WhiteListModal open={showSimulation} setOpen={setShowSimulation} handleJoinBtn={handleJoinBtn} />}
 					<Box
 						sx={{
-							opacity: loading ? 0 : 1,
+							opacity: loadingAmountRemaining ? 0 : 1,
 							minHeight: "100vh",
 							background: colors.black2Background,
 						}}
@@ -182,10 +181,15 @@ export const SalePage = () => {
 								<Stack gap="2em" sx={{ maxWidth: "30rem", justifyContent: "space-between", height: "100%" }}>
 									<SubHeading>PURCHASE $SUPS TO ACCESS THE BATTLE ARENA</SubHeading>
 									{/* Progress Bar */}
+
 									<Box sx={{ position: "relative" }}>
 										<FancyLinearProgress
 											variant="determinate"
-											value={100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100}
+											value={
+												!loadingAmountRemaining
+													? 100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100
+													: 0
+											}
 											aria-label="Tokens sold progressive bar"
 										/>
 										<Box
@@ -198,6 +202,7 @@ export const SalePage = () => {
 												alignItems: "center",
 												pr: ".5em",
 												gap: ".5em",
+												visibility: loadingAmountRemaining ? "hidden" : "unset",
 											}}
 										>
 											<Box
@@ -222,7 +227,7 @@ export const SalePage = () => {
 											>
 												{parseInt(formatUnits(amountRemaining, 18))
 													.toString()
-													.replace(/\B(?=(\d{3})+(?!\d))/g, ",") || "148,231,111,552"}{" "}
+													.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
 												$SUPS remaining
 											</Typography>
 										</Box>
@@ -263,7 +268,7 @@ export const SalePage = () => {
 							</Typography>
 						</Stack>
 					</Box>
-					<BackgroundVideo setLoading={setLoading} loading={loading} />
+					<BackgroundVideo loading={loadingAmountRemaining} />
 				</>
 			)}
 		</>

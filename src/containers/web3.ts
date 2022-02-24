@@ -63,6 +63,7 @@ const tokenOptions: tokenSelect[] = [
 		chainSrc: Ethereum,
 		isNative: true,
 		contractAddr: "0x0",
+		gasFee: 0.005,
 	},
 	{
 		name: "usdc",
@@ -73,6 +74,7 @@ const tokenOptions: tokenSelect[] = [
 		chainSrc: Ethereum,
 		isNative: false,
 		contractAddr: USDC_CONTRACT_ADDRESS,
+		gasFee: 0.005,
 	},
 	{
 		name: "bnb",
@@ -83,6 +85,7 @@ const tokenOptions: tokenSelect[] = [
 		chainSrc: BinanceCoin,
 		isNative: true,
 		contractAddr: "0x0",
+		gasFee: 0.0002,
 	},
 
 	{
@@ -94,6 +97,7 @@ const tokenOptions: tokenSelect[] = [
 		chainSrc: BinanceCoin,
 		isNative: false,
 		contractAddr: BUSD_CONTRACT_ADDRESS,
+		gasFee: 0.0002,
 	},
 ]
 
@@ -112,12 +116,14 @@ export const Web3Container = createContainer(() => {
 	const [supBalance, setSupBalance] = useState<BigNumber>()
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
 	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
+	const [loadingAmountRemaining, setLoadingAmountRemaining] = useState<boolean>(true)
 
 	//Setting up websocket to listen to remaining supply
 	useInterval(() => {
 		if (state !== SocketState.OPEN) return
 		return send<string>(HubKey.SupTotalRemaining, (amount: any) => {
 			setAmountRemaining(BigNumber.from(amount))
+			if (loadingAmountRemaining) setLoadingAmountRemaining(false)
 		})
 	}, 5000)
 
@@ -125,6 +131,7 @@ export const Web3Container = createContainer(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
 			setAmountRemaining(BigNumber.from(amount))
+			setLoadingAmountRemaining(false)
 		})
 	}, [subscribe, state])
 	const [nativeBalance, setNativeBalance] = useState<BigNumber | null>(null)
@@ -622,6 +629,8 @@ export const Web3Container = createContainer(() => {
 		setCurrentToken,
 		checkNeoBalance,
 		amountRemaining,
+		loadingAmountRemaining,
+		setLoadingAmountRemaining,
 	}
 })
 

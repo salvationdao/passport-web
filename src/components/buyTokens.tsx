@@ -1,6 +1,7 @@
+import { parseFixed } from "@ethersproject/bignumber"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
-import { Box, Button, LinearProgress, Link, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { Box, Button, LinearProgress, Link, Stack, TextField, Tooltip, Typography, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
@@ -43,7 +44,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 	} = useWeb3()
 	const theme = useTheme()
 
-	const [selectedTokenName, setSelectedTokenName] = useState<tokenName>("eth")
 	const [showWalletNag, setShowWalletNag] = useState<boolean>(false)
 	const [tokenAmt, setTokenAmt] = useState<BigNumber>(BigNumber.from(0))
 	const [supsAmt, setSupsAmt] = useState<BigNumber>(BigNumber.from(0))
@@ -56,6 +56,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
+	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
+	const [inputTextFocus, setInputTextFocus] = useState(false)
 
 	const handleConversions = useCallback(
 		(direction: conversionType, value: BigNumber) => {
@@ -176,6 +178,16 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		await changeChain(currentToken.chainId)
 	}
 
+	const checkBalanceDelta = (value: string) => {
+		if (value.length === 0) {
+			setBalanceDelta(undefined)
+			return
+		}
+		const valDelta = (tokenBalance && formatUnits(tokenBalance?.sub(parseUnits(value, 18)))) || ""
+		const numDelta = parseFloat(valDelta)
+		setBalanceDelta(numDelta)
+	}
+
 	async function handleTransfer() {
 		if (!supsAmt) return
 		if (!tokenAmt) return
@@ -236,7 +248,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			{/* Switch Network Dialog */}
 			<Box
 				sx={
-					(acceptedChainExceptions && currentChainId === currentToken.chainId) || metaMaskState !== MetaMaskState.Active
+					acceptedChainExceptions && currentChainId === currentToken.chainId
 						? { display: "none" }
 						: {
 								position: "absolute",
@@ -492,7 +504,16 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						Purchase $SUPS
 					</Typography>
 					<form onSubmit={handleSubmit}>
-						<Box sx={{ display: "flex", flexDirection: "column", minHeight: "20rem", justifyContent: "space-between", alignItems: "center" }}>
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: "column",
+								minHeight: "20rem",
+								justifyContent: "space-between",
+								alignItems: "center",
+								gap: "1em",
+							}}
+						>
 							<Box sx={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", gap: "1em" }}>
 								<Stack sx={{ gap: ".7em" }}>
 									<Box
@@ -528,48 +549,70 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 												From:{" "}
 											</Typography>
-											<TextField
-												color="secondary"
-												fullWidth
-												variant="standard"
-												value={tokenDisplay || ""}
-												type="number"
-												onChange={(e) => {
-													try {
-														if (e.target.value === "") setTokenDisplay(null) // if empty allow empty
-														const amt = parseUnits(e.target.value, tokenDecimals)
-														setTokenDisplay(e.target.value.toString())
-														setTokenAmt(amt)
-														handleConversions("tokensToSups", amt)
-													} catch (e) {
-														console.error(e)
-														setTokenAmt(BigNumber.from(0))
-														setSupsAmt(BigNumber.from(0))
-														setTokenDisplay(null)
-														setSupsDisplay(null)
-													}
-												}}
-												sx={{
-													mb: ".7rem",
-													fontWeight: 800,
-													border: "none",
-													"& *::after, & *::before, &:hover": { p: 0, border: "none" },
-													"& 	.MuiTextField-root": {
-														background: "inherit",
-													},
-													"& .MuiFilledInput-underline:after": {
-														borderBottomColor: "none",
-													},
-													"& 	.MuiTextField-root.Mui-disabled": {
-														backgroundColor: colors.lightNavyBlue,
-													},
-													"& 	.MuiTextField-root.Mui-focused": {
-														backgroundColor: colors.lightNavyBlue,
-													},
-													input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, lineHeight: 0.5 },
-												}}
-												inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-											/>
+											{/* add or subtract buttons */}
+											<Box></Box>
+											<Tooltip
+												title={`Please leave: ${currentToken.gasFee} ${
+													currentToken.networkName === "Ethereum" ? "ETH" : "BNB"
+												} for gas fees`}
+												open={typeof balanceDelta === "number" ? balanceDelta <= 0 : false}
+											>
+												<TextField
+													color="secondary"
+													fullWidth
+													variant="filled"
+													value={tokenDisplay || ""}
+													type="number"
+													onChange={(e) => {
+														try {
+															if (e.target.value === "") setTokenDisplay(null) // if empty allow empty
+															const amt = parseUnits(e.target.value, tokenDecimals)
+															setTokenDisplay(e.target.value.toString())
+															setTokenAmt(amt)
+															handleConversions("tokensToSups", amt)
+															setBalanceDelta(undefined)
+														} catch (e) {
+															console.error(e)
+															setTokenAmt(BigNumber.from(0))
+															setSupsAmt(BigNumber.from(0))
+															setTokenDisplay(null)
+															setSupsDisplay(null)
+														}
+													}}
+													onBlur={(e) => checkBalanceDelta(e.target.value)}
+													sx={{
+														fontWeight: 800,
+														border: "none",
+														"&>div": {
+															background: "none !important",
+															"&::before": {
+																border: "none !important",
+															},
+															"&::after": {
+																border: "none !important",
+															},
+														},
+														"& *": {
+															p: "unset !important",
+														},
+														"& *::after, & *::before, &:hover": { p: 0, border: "none" },
+														"& 	.MuiTextField-root": {
+															background: "inherit",
+														},
+														"& .MuiFilledInput-underline:after": {
+															borderBottomColor: "none",
+														},
+														"& 	.MuiTextField-root.Mui-disabled": {
+															backgroundColor: colors.lightNavyBlue,
+														},
+														"& 	.MuiTextField-root.Mui-focused": {
+															backgroundColor: colors.lightNavyBlue,
+														},
+														input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, lineHeight: 0.5 },
+													}}
+													inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+												/>
+											</Tooltip>
 										</Stack>
 
 										<Box
@@ -595,6 +638,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 												sx={{ marginLeft: "auto" }}
 												onClick={() => {
 													if (tokenBalance) {
+														setBalanceDelta(0)
 														setTokenAmt(tokenBalance)
 														setTokenDisplay(formatUnits(tokenBalance, tokenDecimals))
 														handleConversions("tokensToSups", tokenBalance)
@@ -635,8 +679,20 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 												}}
 												sx={{
 													width: "100%",
-													pointerEvents: "none",
 													backgroundColor: colors.inputBg,
+													"& *": {
+														p: 0,
+														m: 0,
+													},
+													"&>div": {
+														background: "none !important",
+														"&::before": {
+															border: "none !important",
+														},
+														"&::after": {
+															border: "none !important",
+														},
+													},
 													"& 	.MuiFilledInput": {
 														background: "none",
 													},
@@ -694,7 +750,15 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 									{user && user.publicAddress && (
 										<Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", width: "100%", padding: "0 .5rem" }}>
 											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
-												Account: {AddressDisplay(user.publicAddress)}
+												Account: {AddressDisplay(user.publicAddress)}{" "}
+												<span
+													style={{ cursor: "pointer" }}
+													onClick={() => {
+														logout()
+													}}
+												>
+													(disconnect)
+												</span>
 											</Typography>
 											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
 												$SUPS in Account: <b>{userSups ? parseFloat(formatUnits(userSups, supsDecimals)).toFixed(2) : "--"}</b>
@@ -725,7 +789,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 							>
 								{(() => {
 									if (!tokenBalance) return "Fetching Balance"
-									if (tokenAmt.gt(tokenBalance)) {
+									if (tokenAmt.gte(tokenBalance)) {
 										return `Insufficient ${currentToken.name.toUpperCase()} Balance`
 									} else if (!tokenDisplay) {
 										return "Enter values"

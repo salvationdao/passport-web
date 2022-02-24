@@ -226,4 +226,5 @@ export interface tokenSelect {
 	isNative: boolean
 	contractAddr: string
 	scanSite: string
+	gasFee: number
 }
