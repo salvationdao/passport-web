@@ -60,7 +60,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 				setCollection(payload)
 			},
 			{
-				name: collection_name,
+				slug: collection_name,
 			},
 		)
 	}, [collection_name, subscribe, state])
@@ -123,7 +123,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 	const renderFilters = () => (
 		<>
-			<Box >
+			<Box>
 				<Typography
 					variant="subtitle1"
 					sx={{
@@ -428,9 +428,9 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								sx={{
 									// alignSelf: "start",
 									width: "340px",
-									position:'sticky',
-									top:'20px',
-									backgroundColor: 'red',
+									position: "sticky",
+									top: "20px",
+									backgroundColor: "red",
 								}}
 							>
 								<Tabs

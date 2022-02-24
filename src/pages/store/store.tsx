@@ -60,7 +60,7 @@ export const StorePage: React.FC = () => {
 				setCollection(payload)
 			},
 			{
-				name: collection_name,
+				slug: collection_name,
 			},
 		)
 	}, [collection_name, subscribe, state])
@@ -122,10 +122,12 @@ export const StorePage: React.FC = () => {
 
 	const renderFilters = () => (
 		<>
-			<Box sx={{
-				position: 'sticky',
-				top: '20px',
-			}}>
+			<Box
+				sx={{
+					position: "sticky",
+					top: "20px",
+				}}
+			>
 				<Typography
 					variant="subtitle1"
 					sx={{
