@@ -15,13 +15,12 @@ import {
 	DialogTitle,
 	Divider,
 	IconButton,
-	IconButtonProps,
 	Link,
 	Paper,
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery,
+	useMediaQuery
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
@@ -388,7 +387,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 				<Box
 					sx={{
 						display: "flex",
-						flexDirection: "column",
+						flexWrap: "wrap",
 						gap: ".5rem",
 					}}
 				>
@@ -1442,12 +1441,12 @@ export const rarityTextStyles: { [key in Rarity]: any } = {
 	},
 }
 
-const StyledIconButton = styled(({ navigate, ...props }: IconButtonProps & { navigate?: any }) => <IconButton {...props} />)({
-	borderRadius: ".5rem",
-	"& svg": {
-		height: "2rem",
-	},
-})
+// const StyledIconButton = styled(({ navigate, ...props }: IconButtonProps & { navigate?: any }) => <IconButton {...props} />)({
+// 	borderRadius: ".5rem",
+// 	"& svg": {
+// 		height: "2rem",
+// 	},
+// })
 
 const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)({})
 

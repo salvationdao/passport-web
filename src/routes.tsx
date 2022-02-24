@@ -34,8 +34,8 @@ export const Routes = () => {
 	const sessionID = searchParams.get("sessionID")
 
 	/* Get subdomain name  */
-	const parts = window.location.hostname.split(".")
-	const sndleveldomain = parts.slice(-2).join(".")
+	// const parts = window.location.hostname.split(".")
+	// const sndleveldomain = parts.slice(-2).join(".")
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
@@ -62,7 +62,7 @@ export const Routes = () => {
 					<Route path="/nosidebar/login">
 						<LoginPage />
 					</Route>
-					<Route path="/nosidebar/:username/:collection_name">
+					<Route path="/nosidebar/:username/:collection_slug">
 						<CollectionPage />
 					</Route>
 					<Route path="/nosidebar/logout">
@@ -118,10 +118,10 @@ export const Routes = () => {
 
 						{/* stores */}
 						<Switch>
-							<Route path="/stores/:store_id/:store_item_id">
+							<Route path="/stores/:collection_slug/:store_item_id">
 								<StoreItemPage />
 							</Route>
-							<Route path="/stores/:collection_name">
+							<Route path="/stores/:collection_slug">
 								<StorePage />
 							</Route>
 							<Route path="/stores">
@@ -142,7 +142,7 @@ export const Routes = () => {
 
 						{/* collections */}
 						<Switch>
-							<Route path="/collections/:username/:collection_name">
+							<Route path="/collections/:username/:collection_slug">
 								<CollectionPage />
 							</Route>
 							<Route path={["/collections/:username", "/collections"]}>
