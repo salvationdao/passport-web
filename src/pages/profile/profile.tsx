@@ -7,21 +7,22 @@ import {
 	Button,
 	ButtonProps,
 	Chip,
-	ChipProps, CircularProgress,
+	ChipProps,
+	CircularProgress,
 	Dialog,
 	DialogActions,
 	DialogContent,
 	DialogTitle,
 	Divider,
 	IconButton,
-	IconButtonProps,
 	Link,
 	Paper,
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery,
+	useMediaQuery
 } from "@mui/material"
+import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
@@ -32,10 +33,12 @@ import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
 import { SearchBar } from "../../components/searchBar"
+import { NFT_CONTRACT_ADDRESS, NFT_STAKING_CONTRACT_ADDRESS } from "../../config"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
+import { useWeb3 } from "../../containers/web3"
 import { middleTruncate } from "../../helpers"
 import { getItemAttributeValue, supFormatter } from "../../helpers/items"
 import { useQuery } from "../../hooks/useSend"
@@ -44,10 +47,6 @@ import { colors, fonts } from "../../theme"
 import { NilUUID } from "../../types/auth"
 import { Asset, Attribute, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
-import { NFT_CONTRACT_ADDRESS, NFT_STAKING_CONTRACT_ADDRESS } from "../../config"
-import { useWeb3 } from "../../containers/web3"
-import { ethers, BigNumber } from "ethers"
-
 
 export const ProfilePage: React.FC = () => {
 	const { username, token_id } = useParams<{ username: string; token_id: string }>()
@@ -131,7 +130,6 @@ export const ProfilePage: React.FC = () => {
 					<>
 						<Box
 							sx={{
-
 								display: "flex",
 								flexDirection: "column",
 								width: "100%",
@@ -387,7 +385,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 				<Box
 					sx={{
 						display: "flex",
-						flexDirection: "column",
+						flexWrap: "wrap",
 						gap: ".5rem",
 					}}
 				>
@@ -738,7 +736,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	const history = useHistory()
 	const { state, subscribe, send } = useWebsocket()
 	const { user: loggedInUser } = useAuth()
-	const {provider} = useWeb3()
+	const { provider } = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -807,28 +805,28 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 		}
 	}
 
-
-	useEffect(()=>{
-		if(!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
-		;(async ()=>{
+	useEffect(() => {
+		if (!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+		;(async () => {
 			try {
 				const abi = ["function ownerOf(uint256) view returns (address)"]
 				const signer = provider.getSigner()
 				const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
 				const owner = await nftContract.ownerOf(asset.tokenID)
 
-				if ( owner === NFT_STAKING_CONTRACT_ADDRESS && asset.userID === loggedInUser.id) {
+				if (owner === NFT_STAKING_CONTRACT_ADDRESS && asset.userID === loggedInUser.id) {
 					setAssetState(AssetState.OffWorldStaked)
-				}else if ((owner !== loggedInUser.publicAddress && owner !== NFT_STAKING_CONTRACT_ADDRESS) ||
-					(owner === loggedInUser.publicAddress && asset.userID === '2fa1a63e-a4fa-4618-921f-4b4d28132069')) {
+				} else if (
+					(owner !== loggedInUser.publicAddress && owner !== NFT_STAKING_CONTRACT_ADDRESS) ||
+					(owner === loggedInUser.publicAddress && asset.userID === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
+				) {
 					setAssetState(AssetState.OffWorldNotStaked)
 				} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
 					setAssetState(AssetState.OffWorldStaked)
 				}
-			} catch (e) {
-			}
+			} catch (e) {}
 		})()
-	},[asset, provider, loggedInUser])
+	}, [asset, provider, loggedInUser])
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 
@@ -933,16 +931,17 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 							marginBottom: "1rem",
 						}}
 					>
-
-						{assetState === AssetState.OffWorldNotStaked &&
-							<FancyButton size="small"  onClick={() => setStakeModelOpen(true)}>
+						{assetState === AssetState.OffWorldNotStaked && (
+							<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
 								Transition In Asset
-							</FancyButton>}
+							</FancyButton>
+						)}
 
-						{assetState === AssetState.OffWorldStaked &&
+						{assetState === AssetState.OffWorldStaked && (
 							<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
 								Transition out Asset
-							</FancyButton>}
+							</FancyButton>
+						)}
 
 						{isOwner && isWarMachine() && !asset.frozenAt && (
 							<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
@@ -1163,17 +1162,17 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 										gap: ".5rem",
 									}}
 								>
-
-
-									{assetState === AssetState.OffWorldNotStaked &&
-										<FancyButton size="small"  onClick={() => setStakeModelOpen(true)}>
+									{assetState === AssetState.OffWorldNotStaked && (
+										<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
 											Transition In Asset
-										</FancyButton>}
+										</FancyButton>
+									)}
 
-									{assetState === AssetState.OffWorldStaked &&
+									{assetState === AssetState.OffWorldStaked && (
 										<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
 											Transition out Asset
-										</FancyButton>}
+										</FancyButton>
+									)}
 
 									{/*TODO: fix this mess of if statements*/}
 									{loggedInUser?.id === asset.userID && isWarMachine() && !asset.frozenAt && (
@@ -1361,9 +1360,8 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 						</Box>
 					</Box>
 				</Box>
-				{provider && asset && <StakeModel open={stakeModelOpen} asset={asset} provider={provider} onClose={()=> setStakeModelOpen(false)}/>}
-				{provider && asset && <UnstakeModel open={unstakeModelOpen} asset={asset} provider={provider} onClose={()=> setUnstakeModelOpen(false)}/>}
-
+				{provider && asset && <StakeModel open={stakeModelOpen} asset={asset} provider={provider} onClose={() => setStakeModelOpen(false)} />}
+				{provider && asset && <UnstakeModel open={unstakeModelOpen} asset={asset} provider={provider} onClose={() => setUnstakeModelOpen(false)} />}
 			</Paper>
 		</>
 	)
@@ -1409,12 +1407,12 @@ export const rarityTextStyles: { [key in Rarity]: any } = {
 	},
 }
 
-const StyledIconButton = styled(({ navigate, ...props }: IconButtonProps & { navigate?: any }) => <IconButton {...props} />)({
-	borderRadius: ".5rem",
-	"& svg": {
-		height: "2rem",
-	},
-})
+// const StyledIconButton = styled(({ navigate, ...props }: IconButtonProps & { navigate?: any }) => <IconButton {...props} />)({
+// 	borderRadius: ".5rem",
+// 	"& svg": {
+// 		height: "2rem",
+// 	},
+// })
 
 const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)({})
 
@@ -1661,20 +1659,19 @@ interface StakeModelProps {
 // 	})()
 // },[asset, provider, loggedInUser])
 
-
-const UnstakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
+const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 	const [error, setError] = useState<string>()
 
 	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
 	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
 
-	const unstake = useCallback(async ()=>{
-		try{
+	const unstake = useCallback(async () => {
+		try {
 			setUnstakingLoading(true)
 			const abi = ["function unstake(uint256)"]
 			const signer = provider.getSigner()
 			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
-			const tx = await nftStakingContract.unstake(asset.tokenID);
+			const tx = await nftStakingContract.unstake(asset.tokenID)
 			await tx.wait()
 			setUnstakingSuccess(true)
 		} catch (e) {
@@ -1683,10 +1680,9 @@ const UnstakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
 		} finally {
 			setUnstakingLoading(false)
 		}
-	},[provider, asset])
+	}, [provider, asset])
 
-
-	return 	(
+	return (
 		<Dialog onClose={() => onClose()} open={open}>
 			<DialogTitle
 				sx={(theme) => ({
@@ -1696,32 +1692,31 @@ const UnstakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
 			>
 				Transition Asset on World
 			</DialogTitle>
-			<DialogContent sx={{ display: 'flex', width: "100%", flexDirection:'column', gap:'1rem', justifyContent: 'center'}}>
+			<DialogContent sx={{ display: "flex", width: "100%", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
 				<>
 					<Typography variant={"h5"} color={"error"}>
 						GABS WARNING:
 					</Typography>
-					<Typography>Once transitioned off world you will be required to pay the fees to approve and transition back, transition with care.</Typography>
+					<Typography>
+						Once transitioned off world you will be required to pay the fees to approve and transition back, transition with care.
+					</Typography>
 				</>
-		
-					<FancyButton disabled={unstakingSuccess || unstakingLoading} fullWidth  onClick={unstake}>
-						{unstakingLoading && <CircularProgress/>}
-						{!unstakingLoading && unstakingSuccess &&  "Successfully Transitioned"}
-						{!unstakingLoading && !unstakingSuccess && "Transition"}
 
-					</FancyButton>
-			
+				<FancyButton disabled={unstakingSuccess || unstakingLoading} fullWidth onClick={unstake}>
+					{unstakingLoading && <CircularProgress />}
+					{!unstakingLoading && unstakingSuccess && "Successfully Transitioned"}
+					{!unstakingLoading && !unstakingSuccess && "Transition"}
+				</FancyButton>
 			</DialogContent>
 			<DialogActions>
 				{!!error && <Alert severity="error">{error}</Alert>}
-				<Button onClick={()=>onClose()}>Cancel</Button>
+				<Button onClick={() => onClose()}>Cancel</Button>
 			</DialogActions>
-		</Dialog>)
+		</Dialog>
+	)
 }
 
-
-
-const StakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
+const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 	const [error, setError] = useState<string>()
 	const [approvalLoading, setApprovalLoading] = useState<boolean>(false)
 	const [approvalSuccess, setApprovalSuccess] = useState<boolean>(false)
@@ -1753,13 +1748,13 @@ const StakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
 	// })()
 	// },[provider, asset])
 
-	const approve = useCallback(async ()=>{
-		try{
+	const approve = useCallback(async () => {
+		try {
 			setApprovalLoading(true)
 			const abi = ["function approve(address, uint256)"]
 			const signer = provider.getSigner()
 			const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
-			const tx = await nftContract.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.tokenID);
+			const tx = await nftContract.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.tokenID)
 			await tx.wait()
 			setApprovalSuccess(true)
 		} catch (e) {
@@ -1768,16 +1763,15 @@ const StakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
 		} finally {
 			setApprovalLoading(false)
 		}
+	}, [provider, asset])
 
-	},[provider, asset])
-
-	const stake = useCallback(async ()=>{
-		try{
+	const stake = useCallback(async () => {
+		try {
 			setStakingLoading(true)
 			const abi = ["function stake(uint256)"]
 			const signer = provider.getSigner()
 			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
-			const tx = await nftStakingContract.stake(asset.tokenID);
+			const tx = await nftStakingContract.stake(asset.tokenID)
 			await tx.wait()
 			setStakingSuccess(true)
 		} catch (e) {
@@ -1786,10 +1780,9 @@ const StakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
 		} finally {
 			setStakingLoading(false)
 		}
-	},[provider, asset])
+	}, [provider, asset])
 
-
-	return 	(
+	return (
 		<Dialog onClose={() => onClose()} open={open}>
 			<DialogTitle
 				sx={(theme) => ({
@@ -1799,7 +1792,7 @@ const StakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
 			>
 				Transition Asset on World
 			</DialogTitle>
-			<DialogContent sx={{ display: 'flex', width: "100%", flexDirection:'column', gap:'1rem', justifyContent: 'center'}}>
+			<DialogContent sx={{ display: "flex", width: "100%", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
 				<>
 					<Typography variant={"h5"} color={"error"}>
 						GABS WARNING:
@@ -1809,23 +1802,24 @@ const StakeModel = ({open, onClose, provider, asset }:StakeModelProps)=>{
 				<Box>
 					<Typography>1. First you need to approve us to transition your item.</Typography>
 					<FancyButton disabled={approvalSuccess || approvalLoading} fullWidth onClick={approve}>
-						{approvalLoading && <CircularProgress/>}
-						{!approvalLoading && approvalSuccess  && "Successfully Approved"}
-						{!approvalLoading && !approvalSuccess  && "Approve"}
+						{approvalLoading && <CircularProgress />}
+						{!approvalLoading && approvalSuccess && "Successfully Approved"}
+						{!approvalLoading && !approvalSuccess && "Approve"}
 					</FancyButton>
 				</Box>
 				<Box>
 					<Typography>2. Transition your item on world.</Typography>
-					<FancyButton disabled={stakingSuccess || stakingLoading} fullWidth  onClick={stake}>
-						{stakingLoading && <CircularProgress/>}
-						{!stakingLoading && stakingSuccess  && "Successfully Transitioned"}
-						{!stakingLoading && !stakingSuccess  && "Transition"}
+					<FancyButton disabled={stakingSuccess || stakingLoading} fullWidth onClick={stake}>
+						{stakingLoading && <CircularProgress />}
+						{!stakingLoading && stakingSuccess && "Successfully Transitioned"}
+						{!stakingLoading && !stakingSuccess && "Transition"}
 					</FancyButton>
 				</Box>
 			</DialogContent>
 			<DialogActions>
 				{!!error && <Alert severity="error">{error}</Alert>}
-				<Button onClick={()=>onClose()}>Cancel</Button>
+				<Button onClick={() => onClose()}>Cancel</Button>
 			</DialogActions>
-		</Dialog>)
+		</Dialog>
+	)
 }

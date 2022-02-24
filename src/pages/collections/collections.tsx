@@ -65,7 +65,6 @@ export const CollectionsPage: React.FC = () => {
 					setWalletTokenIDs(itemIDs)
 				}
 			} catch (e) {
-				console.log(e)
 				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
 					autoHideDuration: null,
 				})
@@ -287,7 +286,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 					},
 				}}
 			>
-				<RouterLink component={StyledFancyButton} to={`/collections/${username || user?.username}/${collection.name}`}>
+				<RouterLink component={StyledFancyButton} to={`/collections/${username || user?.username}/${collection.slug}`}>
 					View Entire Collection
 				</RouterLink>
 			</Box>

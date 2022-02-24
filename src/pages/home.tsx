@@ -1,4 +1,4 @@
-import { Box, Link, styled, Typography } from "@mui/material"
+import { Box, Link, Typography } from "@mui/material"
 import { useHistory } from "react-router-dom"
 import PrivacyPolicy from "../assets/documents/XSYN-Privacy-Policy.pdf"
 import TermsAndConditions from "../assets/documents/XSYN-Terms-and-Conditions.pdf"
@@ -100,9 +100,3 @@ export const Home = () => {
 		</>
 	)
 }
-
-const StatsFrame = styled("iframe")({
-	width: "100%",
-	border: "none",
-	height: "100vh",
-})
