@@ -60,7 +60,7 @@ export const StorePage: React.FC = () => {
 				setCollection(payload)
 			},
 			{
-				name: collection_slug,
+				slug: collection_slug,
 			},
 		)
 	}, [collection_slug, subscribe, state])

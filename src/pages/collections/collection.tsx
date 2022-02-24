@@ -60,7 +60,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 				setCollection(payload)
 			},
 			{
-				name: collection_slug,
+				slug: collection_slug,
 			},
 		)
 	}, [collection_slug, subscribe, state])
@@ -427,10 +427,8 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						{isWiderThan1000px && (
 							<Box
 								sx={{
-									// alignSelf: "start",
+									alignSelf: "start",
 									width: "340px",
-									position: "sticky",
-									top: "20px",
 								}}
 							>
 								<Tabs
