@@ -46,7 +46,6 @@ export const StorePage: React.FC = () => {
 				temp.delete(rarity)
 				return temp
 			}
-			temp.clear()
 			return temp.add(rarity)
 		})
 	}
