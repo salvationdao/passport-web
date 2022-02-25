@@ -6,6 +6,8 @@ import { SupTokenIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { WhiteListCheck } from "../../components/pleaseEnlist"
+import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -16,6 +18,8 @@ import { Attribute, StoreItem } from "../../types/types"
 import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
 
 export const StoreItemPage = () => {
+	console.log("here!!!!!!!!!!")
+
 	const { store_item_id: id } = useParams<{ store_item_id: string; collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
@@ -30,10 +34,23 @@ export const StoreItemPage = () => {
 	// const [, setAssetAttributes] = useState<Attribute[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
+	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
 
 	// Purchase store item
 	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !user || !user.publicAddress) return
+		return subscribe<{ isAllowed: boolean; message: string }>(
+			HubKey.CheckUserCanAccessStore,
+			(payload) => {
+				setCanAccessStore(payload)
+			},
+			{
+				walletAddress: user.publicAddress,
+			},
+		)
+	}, [user, subscribe, state])
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !user) return
 
@@ -88,6 +105,11 @@ export const StoreItemPage = () => {
 				<Typography variant="subtitle1">{error}</Typography>
 			</Box>
 		)
+	}
+
+	console.log(canAccessStore)
+	if (canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
+		return <WhiteListCheck />
 	}
 
 	if (loading || !storeItem) {

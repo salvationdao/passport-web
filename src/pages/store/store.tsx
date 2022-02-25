@@ -6,8 +6,9 @@ import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
-import { PleaseEnlist } from "../../components/pleaseEnlist"
+import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
+import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
@@ -19,6 +20,8 @@ import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 
 export const StorePage: React.FC = () => {
+	console.log("here!!!!!!!!!!")
+
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
@@ -36,6 +39,7 @@ export const StorePage: React.FC = () => {
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
+	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
@@ -67,6 +71,19 @@ export const StorePage: React.FC = () => {
 			},
 		)
 	}, [collection_slug, subscribe, state])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !user || !user.publicAddress) return
+		return subscribe<{ isAllowed: boolean; message: string }>(
+			HubKey.CheckUserCanAccessStore,
+			(payload) => {
+				setCanAccessStore(payload)
+			},
+			{
+				walletAddress: user.publicAddress,
+			},
+		)
+	}, [user, subscribe, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !collection) return
@@ -128,6 +145,11 @@ export const StorePage: React.FC = () => {
 	if (user && !user.faction) {
 		return <PleaseEnlist />
 	}
+
+	if (canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
+		return <WhiteListCheck />
+	}
+
 	const renderFilters = () => (
 		<>
 			<Box>

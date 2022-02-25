@@ -7,21 +7,24 @@ import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
-import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
+import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
+
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
+import { ENABLE_WHITELIST_CHECK } from "../../config"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const { state, send } = useWebsocket()
+	const { send, state, subscribe } = useWebsocket()
+
 	const { user } = useAuth()
 
 	const [assetHashes, setAssetHashes] = useState<string[]>([])
@@ -36,6 +39,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	} = useQuery<{ assetHashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
 
 	// search and filter
+
 	const [search, setSearch] = useState("")
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [showOffWorldOnly, setShowOffWorld] = useState(false)
@@ -44,6 +48,10 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
 	const [isLoading, setIsLoading] = useState(false)
+	const [userLoad, setUserLoad] = useState(true)
+	const [canEnter, setCanEnter] = useState(false)
+	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
+
 	const { displayMessage } = useSnackbar()
 
 	const toggleAssetType = (assetType: string) => {
@@ -89,6 +97,20 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 			}
 		})()
 	}, [send, state, user, displayMessage])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !user || !user.publicAddress || userLoad) return
+		return subscribe<{ isAllowed: boolean; message: string }>(
+			HubKey.CheckUserCanAccessStore,
+			(payload) => {
+				if (userLoad) return
+				setCanAccessStore(payload)
+			},
+			{
+				walletAddress: user.publicAddress,
+			},
+		)
+	}, [user, subscribe, state, userLoad])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -161,6 +183,11 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 		setAssetHashes(Array.from(new Set(offWorldPayload.assetHashes)))
 	}, [offWorldPayload, offWorldLoading, offWorldError])
+
+	console.log(canAccessStore)
+	if (!userLoad && canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
+		return <WhiteListCheck />
+	}
 
 	if (user && !user.faction) {
 		return <PleaseEnlist />
