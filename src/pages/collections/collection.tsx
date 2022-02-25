@@ -544,6 +544,9 @@ export const FilterChip = ({ color = colors.white, active, ...props }: FilterChi
 			},
 			"&&:focus": {
 				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
+				borderColor: color,
+				color: active ? colors.darkerNavyBlue : color,
+				backgroundColor: active ? color : "transparent",
 			},
 		}}
 		{...props}
