@@ -7,6 +7,7 @@ import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
+import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -32,13 +33,16 @@ export const StoresPage = () => {
 		if (user) {
 			if (!user.faction) {
 				setUserLoad(false)
-			} else {
-				setCanEnter(true)
-				setUserLoad(false)
+				return
 			}
-		} else {
-			setUserLoad(false)
+			if (ENABLE_WHITELIST_CHECK && (!canAccessStore || !canAccessStore.isAllowed)) {
+				setUserLoad(false)
+				return
+			}
 		}
+
+		setCanEnter(true)
+		setUserLoad(false)
 	}, [userLoad, user, canAccessStore])
 
 	useEffect(() => {
@@ -71,29 +75,31 @@ export const StoresPage = () => {
 	}, [send, state, displayMessage])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !user || !user.publicAddress) return
+		if (state !== SocketState.OPEN || !user || !user.publicAddress || userLoad) return
 		return subscribe<{ isAllowed: boolean; message: string }>(
 			HubKey.CheckUserCanAccessStore,
 			(payload) => {
+				if (userLoad) return
 				setCanAccessStore(payload)
 			},
 			{
 				walletAddress: user.publicAddress,
 			},
 		)
-	}, [user, subscribe, state])
+	}, [user, subscribe, state, userLoad])
 
-	if (!canAccessStore || !canAccessStore.isAllowed) {
-		return <WhiteListCheck />
+	if (!user || userLoad) {
+		return <Loading text={"Getting shop data"} />
 	}
 
-	if (user && !user.faction) {
+	if (!userLoad && user && !user.faction) {
 		return <PleaseEnlist />
 	}
 
-	if (userLoad) {
-		return <Loading text={"Getting shop data"} />
+	if (!userLoad && canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
+		return <WhiteListCheck />
 	}
+
 	return (
 		<Box
 			sx={{

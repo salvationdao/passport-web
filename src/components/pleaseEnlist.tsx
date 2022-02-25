@@ -36,14 +36,13 @@ export const PleaseEnlist = () => {
 					</Typography>
 
 					<Box alignSelf={"center"} justifyContent={"center"}>
-						<Typography variant={"body1"}>Enlist in a faction (using the sidebar) before entering the storefront.</Typography>
+						<Typography variant={"body1"}>Enlist in a faction (using the sidebar) before entering.</Typography>
 					</Box>
 				</Paper>
 			</Box>
 		</div>
 	)
 }
-
 export const WhiteListCheck = () => {
 	return (
 		<div>
