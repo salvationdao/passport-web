@@ -6,8 +6,10 @@ import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
-import { PleaseEnlist } from "../../components/pleaseEnlist"
+import { Loading } from "../../components/loading"
+import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
+import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
@@ -29,6 +31,8 @@ export const StorePage: React.FC = () => {
 	const { loading: queryLoading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
 	const [tabLoading, setTabLoading] = useState(true)
 
+	const [canEnter, setCanEnter] = useState(true)
+
 	// search and filter
 	const [search, setSearch] = useState("")
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
@@ -36,6 +40,8 @@ export const StorePage: React.FC = () => {
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
+	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
+	const [userLoad, setUserLoad] = useState(true)
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
@@ -55,7 +61,7 @@ export const StorePage: React.FC = () => {
 	}
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_slug) return
+		if (state !== SocketState.OPEN || !collection_slug || !canAccessStore || !canAccessStore.isAllowed) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -66,7 +72,37 @@ export const StorePage: React.FC = () => {
 				slug: collection_slug,
 			},
 		)
-	}, [collection_slug, subscribe, state])
+	}, [collection_slug, canAccessStore, subscribe, state])
+
+	useEffect(() => {
+		if (user) {
+			if (!user.faction) {
+				setUserLoad(false)
+				return
+			}
+			if (ENABLE_WHITELIST_CHECK && (!canAccessStore || !canAccessStore.isAllowed)) {
+				setUserLoad(false)
+				return
+			}
+		}
+
+		setUserLoad(false)
+	}, [userLoad, user, canAccessStore])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !user || !user.publicAddress) return
+		return subscribe<{ isAllowed: boolean; message: string }>(
+			HubKey.CheckUserCanAccessStore,
+			(payload) => {
+				if (!user) return
+				setCanAccessStore(payload)
+				setCanEnter(payload.isAllowed)
+			},
+			{
+				walletAddress: user.publicAddress,
+			},
+		)
+	}, [user, subscribe, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !collection) return
@@ -128,6 +164,15 @@ export const StorePage: React.FC = () => {
 	if (user && !user.faction) {
 		return <PleaseEnlist />
 	}
+
+	const loading = tabLoading || queryLoading
+
+	const showLootBox = collection?.name === "Supremacy Genesis" && (!assetType || assetType === "All")
+
+	if (!userLoad && canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
+		return <WhiteListCheck />
+	}
+
 	const renderFilters = () => (
 		<>
 			<Box>
@@ -294,13 +339,9 @@ export const StorePage: React.FC = () => {
 		</>
 	)
 
-	const loading = tabLoading || queryLoading
-
-	const showLootBox = collection?.name === "Supremacy Genesis" && (!assetType || assetType === "All")
-
 	return (
 		<>
-			{!isWiderThan1000px && (
+			{!isWiderThan1000px && canEnter && (
 				<SwipeableDrawer
 					open={openFilterDrawer}
 					onClose={() => setOpenFilterDrawer(false)}
@@ -479,7 +520,7 @@ export const StorePage: React.FC = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{!loading && (storeItemIDs.length || showLootBox) ? (
+							{!loading && canEnter && (storeItemIDs.length || showLootBox) ? (
 								<Paper
 									sx={{
 										flex: 1,
