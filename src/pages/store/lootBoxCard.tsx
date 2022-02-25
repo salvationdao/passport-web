@@ -1,12 +1,34 @@
 import SearchIcon from "@mui/icons-material/Search"
 import { Box, Typography } from "@mui/material"
+import { useState, useEffect } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
 import { colors, fonts } from "../../theme"
 import { ViewButton } from "../collections/collectionItemCard"
+import { useAuth } from "../../containers/auth"
 
 export const LootBoxCard: React.VoidFunctionComponent = () => {
+	const [imgURL, setImg] = useState("")
+	const { user } = useAuth()
 	const history = useHistory()
+	useEffect(() => {
+		if (user && user.faction) {
+			switch (user.faction.label) {
+				case "Red Mountain Offworld Mining Corporation":
+					setImg("https://afiles.ninja-cdn.com/passport/rm_crate.png")
+					break
+				case "Boston Cybernetics":
+					setImg("https://afiles.ninja-cdn.com/passport/boston_crate.png")
+					break
+				case "Zaibatsu Heavy Industries":
+					setImg("https://afiles.ninja-cdn.com/passport/zaibatsu_crate.png")
+					break
+				default:
+					setImg(GradientSafeIconImagePath)
+					break
+			}
+		}
+	}, [user])
 
 	return (
 		<Box
@@ -59,7 +81,7 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 			>
 				<Box
 					component="img"
-					src={GradientSafeIconImagePath}
+					src={imgURL}
 					alt="Mech image"
 					sx={{
 						width: "100%",

@@ -1,10 +1,13 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, keyframes, Paper, Typography, useMediaQuery, useTheme, Zoom } from "@mui/material"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import LootboxVideo from "../../components/lootboxVideo"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
+import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
@@ -20,6 +23,28 @@ export const LootBoxPage = () => {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const theme = useTheme()
+	const [open, setOpen] = useState(false)
+	const { setSidebarOpen } = useSidebarState()
+	const [imgURL, setImg] = useState("")
+
+	useEffect(() => {
+		if (user && user.faction) {
+			switch (user.faction.label) {
+				case "Red Mountain Offworld Mining Corporation":
+					setImg("https://afiles.ninja-cdn.com/passport/rm_crate.png")
+					break
+				case "Boston Cybernetics":
+					setImg("https://afiles.ninja-cdn.com/passport/boston_crate.png")
+					break
+				case "Zaibatsu Heavy Industries":
+					setImg("https://afiles.ninja-cdn.com/passport/zaibatsu_crate.png")
+					break
+				default:
+					setImg(GradientSafeIconImagePath)
+					break
+			}
+		}
+	}, [user])
 
 	const purchase = async () => {
 		if (state !== SocketState.OPEN || !user) return
@@ -33,6 +58,8 @@ export const LootBoxPage = () => {
 			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${resp}`)
 			const mysteryAsset: Asset = await assetResponse.json()
 			setAsset(mysteryAsset)
+			setSidebarOpen(false)
+			setOpen(true)
 
 			setTimeout(() => {
 				setDialogOpen(true)
@@ -47,7 +74,19 @@ export const LootBoxPage = () => {
 		}
 	}
 
-	return (
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
+
+	return open ? (
+		<LootboxVideo
+			setOpen={setOpen}
+			srcURL={
+				"https://player.vimeo.com/progressive_redirect/playback/674309643/rendition/1080p?loc=external&signature=ff7173eead0d0940ee7926f5266c01d7050272ba06c2bd22cd07f90ce880bae6"
+			}
+			open={open}
+		/>
+	) : (
 		<Box
 			sx={{
 				display: "flex",
@@ -107,11 +146,11 @@ export const LootBoxPage = () => {
 						<Zoom in={true}>
 							<Box
 								component="img"
-								src={GradientSafeIconImagePath}
+								src={imgURL}
 								alt="Mystery Crate Icon"
 								sx={{
-									width: "200px",
-									height: "200px",
+									width: "300px",
+									height: "300px",
 									animation: loading ? `${slowJiggle} 0.2s infinite` : `${jiggle} 0.82s cubic-bezier(.36,.07,.19,.97) both`,
 								}}
 							/>
