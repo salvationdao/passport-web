@@ -122,6 +122,20 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				"& > *:not(:last-child)": {
 					marginBottom: "1rem",
 				},
+				overflowY: "auto",
+				overflowX: "hidden",
+				scrollbarWidth: "none",
+				"::-webkit-scrollbar": {
+					width: 4,
+				},
+				"::-webkit-scrollbar-track": {
+					boxShadow: `inset 0 0 5px ${colors.darkNavyBackground}`,
+					borderRadius: 3,
+				},
+				"::-webkit-scrollbar-thumb": {
+					background: colors.darkNeonBlue,
+					borderRadius: 3,
+				},
 			}}
 		>
 			<Box
@@ -478,7 +492,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			<Box
 				component="main"
 				sx={(theme) => ({
-					overflowX: "auto",
 					flexGrow: 1,
 					transition: theme.transitions.create("margin", {
 						easing: theme.transitions.easing.sharp,
