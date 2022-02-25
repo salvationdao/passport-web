@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Chip, ChipProps, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Chip, ChipProps, Divider, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
@@ -15,24 +15,31 @@ import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
+import { useSnackbar } from "../../containers/snackbar"
+
+type onOffWorld = "on only" | "off only" | "both"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
-	const { username, collection_slug } = useParams<{ username: string; collection_slug: string }>()
+	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const { subscribe, state } = useWebsocket()
+	const { state, send } = useWebsocket()
 	const { user } = useAuth()
 
 	const [assetHashes, setAssetHashes] = useState<string[]>([])
 	const [collection, setCollection] = useState<Collection>()
+	const [collections, setCollections] = useState<Collection[]>()
 	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
 
 	// search and filter
 	const [search, setSearch] = useState("")
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
+	const [onOffWorld, setOnOffWorld] = useState<onOffWorld>("both")
 	const [assetType, setAssetType] = useState<string>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
+	const [isLoading, setIsLoading] = useState(false)
+	const { displayMessage } = useSnackbar()
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
@@ -74,19 +81,75 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		})
 	}
 
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_slug) return
-		return subscribe<Collection>(
-			HubKey.CollectionUpdated,
-			(payload) => {
-				if (!payload) return
-				setCollection(payload)
-			},
-			{
-				slug: collection_slug,
-			},
+	const toggleCollection = (collection: Collection) => {
+		setCollection((prev) => {
+			if (prev?.id === collection.id) {
+				return undefined
+			}
+			return collection
+		})
+	}
+
+	const toggleOnOffWorld = (state: onOffWorld) => {
+		setOnOffWorld((prev) => {
+			if (prev === state) {
+				return "both"
+			}
+			return state
+		})
+	}
+
+	const renderAssetHashes = (hashes: string[]) => {
+		return (
+			<Box>
+				{hashes.length ? (
+					<Box
+						sx={{
+							flex: 1,
+							display: "grid",
+							gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+							gap: "1rem",
+							height: "100%",
+						}}
+					>
+						{hashes.map((a) => {
+							return <CollectionItemCard key={a} assetHash={a} username={username} />
+						})}
+					</Box>
+				) : (
+					<Box
+						sx={{
+							flex: 1,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							height: "100%",
+							padding: "2rem",
+						}}
+					>
+						<Typography variant="subtitle2" color={colors.darkGrey}>
+							{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
+						</Typography>
+					</Box>
+				)}
+			</Box>
 		)
-	}, [collection_slug, subscribe, state])
+	}
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !send) return
+		;(async () => {
+			setIsLoading(true)
+			try {
+				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
+				setCollections(resp.records)
+			} catch (e) {
+				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error")
+			} finally {
+				setIsLoading(false)
+			}
+		})()
+	}, [send, state, user, displayMessage])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -248,6 +311,59 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 					}}
 				>
 					{renderRarities()}
+				</Box>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: isWiderThan1000px ? "column" : "row",
+						flexWrap: isWiderThan1000px ? "initial" : "wrap",
+						gap: ".5rem",
+					}}
+				>
+					<Typography
+						variant="subtitle1"
+						sx={{
+							marginBottom: ".5rem",
+						}}
+					>
+						Collection
+					</Typography>
+					{collections?.map((c) => {
+						return <FilterChip active={c.id === collection?.id} label={c.name} variant="outlined" onClick={() => toggleCollection(c)} />
+					})}
+				</Box>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: isWiderThan1000px ? "column" : "row",
+						flexWrap: isWiderThan1000px ? "initial" : "wrap",
+						gap: ".5rem",
+					}}
+				>
+					<Typography
+						variant="subtitle1"
+						sx={{
+							marginBottom: ".5rem",
+						}}
+					>
+						On World / Off World
+					</Typography>
+					<FilterChip
+						active={onOffWorld === "off only"}
+						label="Off World Only"
+						variant="outlined"
+						onClick={() => {
+							toggleOnOffWorld("off only")
+						}}
+					/>
+					<FilterChip
+						active={onOffWorld === "on only"}
+						label="On World Only"
+						variant="outlined"
+						onClick={() => {
+							toggleOnOffWorld("on only")
+						}}
+					/>
 				</Box>
 			</Box>
 		</>
@@ -434,37 +550,13 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{assetHashes.length ? (
-								<Paper
-									sx={{
-										flex: 1,
-										display: "grid",
-										gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-										gap: "1rem",
-										height: "100%",
-										padding: "2rem",
-									}}
-								>
-									{assetHashes.map((a) => {
-										return <CollectionItemCard key={a} assetHash={a} username={username} />
-									})}
-								</Paper>
-							) : (
-								<Paper
-									sx={{
-										flex: 1,
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										height: "100%",
-										padding: "2rem",
-									}}
-								>
-									<Typography variant="subtitle2" color={colors.darkGrey}>
-										{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
-									</Typography>
-								</Paper>
-							)}
+							<Paper sx={{ padding: "2rem" }}>
+								<Box sx={onOffWorld !== "off only" ? { display: "block" } : { display: "none" }}>
+									<Typography variant="h2">On World Assets</Typography>
+									<Divider />
+									{renderAssetHashes(assetHashes)}
+								</Box>
+							</Paper>
 						</Box>
 					</Box>
 				</Box>
