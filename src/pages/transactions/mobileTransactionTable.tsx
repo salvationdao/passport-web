@@ -3,6 +3,7 @@ import { Box, Button, Chip, Skeleton, styled, Typography, TypographyProps } from
 import { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
+import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
@@ -73,6 +74,10 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					<EntryData color={colors.darkerGrey}>{error}</EntryData>
 				</EntryDataRow>
 				<EntryDataRow>
+					<EntryLabel>Amount</EntryLabel>
+					<EntryData color={colors.darkerGrey}>{error}</EntryData>
+				</EntryDataRow>
+				<EntryDataRow>
 					<EntryLabel>Description</EntryLabel>
 					<EntryData color={colors.darkerGrey}>{error}</EntryData>
 				</EntryDataRow>
@@ -114,6 +119,10 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
 				</EntryDataRow>
 				<EntryDataRow>
+					<EntryLabel>Amount</EntryLabel>
+					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
+				</EntryDataRow>
+				<EntryDataRow>
 					<EntryLabel>Description</EntryLabel>
 					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
 				</EntryDataRow>
@@ -151,6 +160,10 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				>
 					<EntryData>{entry.transactionReference}</EntryData>
 				</Button>
+			</EntryDataRow>
+			<EntryDataRow>
+				<EntryLabel>Amount</EntryLabel>
+				<EntryData>{supFormatter(entry.amount)} SUPS</EntryData>
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>Description</EntryLabel>

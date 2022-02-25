@@ -3,6 +3,7 @@ import { Box, Button, Chip, styled, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
+import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
@@ -22,6 +23,7 @@ export const DesktopTransactionTable = ({ transactionIDs }: TransactionTableProp
 			<EntryHeader>
 				<EntryRow>
 					<th align="left">Transaction Ref.</th>
+					<th align="right">Amount</th>
 					<th align="left">Description</th>
 					<th align="left">To</th>
 					<th align="left">From</th>
@@ -59,18 +61,20 @@ const EntryRow = styled("tr")({
 		minWidth: "150px",
 		maxWidth: "150px",
 	},
-	// Description
+	// Amount
 	"& > *:nth-of-type(2)": {},
-	// To
+	// Description
 	"& > *:nth-of-type(3)": {},
-	// From
+	// To
 	"& > *:nth-of-type(4)": {},
-	// Status
+	// From
 	"& > *:nth-of-type(5)": {
 		textTransform: "capitalize",
 	},
-	// Date
+	// Status
 	"& > *:nth-of-type(6)": {},
+	// Date
+	"& > *:nth-of-type(7)": {},
 })
 
 const EntryData = styled(Typography)({
@@ -119,6 +123,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				}}
 			>
 				<td align="left">An error occurred while loading this entry</td>
+				<td align="right"></td>
 				<td align="left"></td>
 				<td align="left"></td>
 				<td align="left"></td>
@@ -137,6 +142,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				}}
 			>
 				<td align="left">Loading transaction entry...</td>
+				<td align="right"></td>
 				<td align="left"></td>
 				<td align="left"></td>
 				<td align="left"></td>
@@ -166,6 +172,9 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 						{entry.transactionReference}
 					</EntryData>
 				</Button>
+			</td>
+			<td align="right">
+				<EntryData variant="caption">{supFormatter(entry.amount)} SUPS</EntryData>
 			</td>
 			<td align="left">
 				<EntryData
