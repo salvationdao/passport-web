@@ -118,8 +118,8 @@ export interface Collection {
 	name: string
 	slug: string
 	image: string
-	mintAddress: string
-	stakingAddress: string
+	mintContract: string
+	stakeContract: string
 	createdAt: Date
 	updatedAt: Date
 	frozenAt?: Date
@@ -143,6 +143,8 @@ export interface Collection {
 
 export interface Asset {
 	hash: string
+	mintContract: string
+	stakeContract: string
 	externalTokenID: number
 	userID: string
 	username: string
