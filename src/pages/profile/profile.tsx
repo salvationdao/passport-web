@@ -867,6 +867,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 			return subscribe<Asset>(
 				HubKey.AssetUpdated,
 				(payload) => {
+					console.log(payload)
 					if (!payload) return
 					let assetAttributes = new Array<Attribute>()
 					let numberAttributes = new Array<Attribute>()
@@ -920,9 +921,20 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 		)
 	}
 
+	console.log(asset.mintContract)
+
 	return (
 		<>
-			<MintModal open={mintWindowOpen} onClose={() => setMintWindowOpen(false)} assetHash={asset.hash} mintingSignature={asset.mintingSignature} />
+			{asset.mintContract && asset.mintContract !== "" && (
+				<MintModal
+					open={mintWindowOpen}
+					onClose={() => setMintWindowOpen(false)}
+					mintContract={asset.mintContract}
+					assetExternalTokenID={asset.hash}
+					mintingSignature={asset.mintingSignature}
+					collectionSlug={asset.collection.slug}
+				/>
+			)}
 			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
 			<Paper
 				sx={{
@@ -1695,8 +1707,8 @@ const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 	// 		setUnstakingLoading(true)
 	// 		const abi = ["function unstake(uint256)"]
 	// 		const signer = provider.getSigner()
-	// 		const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
-	// 		const tx = await nftStakingContract.unstake(asset.tokenID)
+	// 		const nftstakeContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
+	// 		const tx = await nftstakeContract.unstake(asset.tokenID)
 	// 		await tx.wait()
 	// 		setUnstakingSuccess(true)
 	// 	} catch (e) {
@@ -1798,8 +1810,8 @@ const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			const abi = ["function stake(uint256)"]
 			const signer = provider.getSigner()
 			// TODO: fix for collection contract
-			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
-			const tx = await nftStakingContract.stake(asset.externalTokenID)
+			const nftstakeContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
+			const tx = await nftstakeContract.stake(asset.externalTokenID)
 			await tx.wait()
 			setStakingSuccess(true)
 		} catch (e) {
