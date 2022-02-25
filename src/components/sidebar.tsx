@@ -1,23 +1,28 @@
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import AppsIcon from "@mui/icons-material/Apps"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
+import PlayArrowIcon from "@mui/icons-material/PlayArrow"
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
 import { Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
-import { formatUnits } from "ethers/lib/utils"
 import { BigNumber } from "ethers"
+import { formatUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import SupsToken from "../assets/images/sup-token.svg"
 import SupsTokenLogo from "../assets/images/sups-token-logo.png"
+import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK, TOKEN_SALE_ENDPOINT } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { useSnackbar } from "../containers/snackbar"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { supFormatter } from "../helpers/items"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
@@ -27,10 +32,6 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import PlayArrowIcon from "@mui/icons-material/PlayArrow"
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
-import { BATTLE_ARENA_LINK, API_ENDPOINT_HOSTNAME, TOKEN_SALE_ENDPOINT } from "../config"
-import { supFormatter } from "../helpers/items"
 
 const drawerWidth = 250
 
@@ -358,6 +359,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				<NavButton to="/withdraw" startIcon={<AccountBalanceWalletIcon />}>
 					Withdraw
+				</NavButton>
+				<NavButton to="/transactions" startIcon={<ReceiptLongIcon />}>
+					Transactions
 				</NavButton>
 			</Box>
 
