@@ -134,15 +134,10 @@ export const StoresPage = () => {
 							padding: "2rem",
 						}}
 					>
-						{canEnter ? (
+						{canEnter &&
 							collections.map((c) => {
 								return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
-							})
-						) : (
-							<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-								<Typography variant="h3">Please enlist to a faction to view store items</Typography>
-							</Box>
-						)}
+							})}
 					</Paper>
 				)}
 			</Box>

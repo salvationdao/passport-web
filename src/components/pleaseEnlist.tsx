@@ -3,6 +3,8 @@ import Locker from "../assets/images/locker.png"
 import { Navbar } from "../components/home/navbar"
 
 export const PleaseEnlist = () => {
+	console.log("herboi")
+
 	return (
 		<div>
 			<Navbar
