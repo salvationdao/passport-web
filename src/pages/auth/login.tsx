@@ -1,17 +1,12 @@
-import { Box, IconButton, Link, styled, Typography } from "@mui/material"
+import { Box, Link, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
-import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, MailIcon, MetaMaskIcon, WalletConnectIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../../assets"
-import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../../components/discordLogin"
-import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../../components/facebookLogin"
+import { MetaMaskIcon, WalletConnectIcon, XSYNLogo } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { InputField } from "../../components/form/inputField"
 import { Loading } from "../../components/loading"
 import { MetaMaskLogin } from "../../components/loginMetaMask"
-import { ReactTwitchFailureResponse, ReactTwitchLoginResponse, TwitchLogin } from "../../components/twitchLogin"
-import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } from "../../components/twitterLogin"
 import { AuthContainer, useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
@@ -28,7 +23,7 @@ export const LoginPage: React.FC = () => {
 	const { setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
 
-	const { loginGoogle, loginFacebook, loginTwitch, loginTwitter, loginDiscord, loginPassword } = AuthContainer.useContainer()
+	const { loginPassword } = AuthContainer.useContainer()
 
 	const { control, handleSubmit, reset } = useForm<LogInInput>()
 	const [loading, setLoading] = useState(false)
@@ -49,82 +44,6 @@ export const LoginPage: React.FC = () => {
 			setLoading(false)
 		}
 	})
-
-	// OAuth login
-	const onGoogleLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-		try {
-			if (!!response.code) {
-				displayMessage(`Couldn't connect to Google: ${response.code}`, "error")
-				return
-			}
-			const r = response as GoogleLoginResponse
-			const resp = await loginGoogle(r.tokenId)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onGoogleLoginFailure = (error: Error) => {
-		displayMessage(error.message, "error")
-	}
-
-	const onFacebookLogin = async (response: any) => {
-		try {
-			if (!!response && !!response.status) {
-				displayMessage(`Couldn't connect to Facebook: ${response.status}`, "error")
-				return
-			}
-			const r = response as ReactFacebookLoginInfo
-			const resp = await loginFacebook(r.accessToken)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
-		displayMessage(error.status || "Failed to login with Facebook.", "error")
-	}
-
-	const onTwitchLogin = async (response: ReactTwitchLoginResponse) => {
-		try {
-			const resp = await loginTwitch(response.token)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
-		displayMessage(error.status || "Failed to login with Twitch.", "error")
-	}
-
-	const onTwitterLogin = async (response: ReactTwitterLoginResponse) => {
-		try {
-			const resp = await loginTwitter(response.token, response.verifier)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onTwitterLoginFailure = (error: ReactTwitterFailureResponse) => {
-		displayMessage(error.status || "Failed to login with Twitter.", "error")
-	}
-
-	const onDiscordLogin = async (response: ReactDiscordLoginResponse) => {
-		try {
-			const resp = await loginDiscord(response.code)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onDiscordLoginFailure = (error: ReactDiscordFailureResponse) => {
-		displayMessage(error.status || "Failed to login with Discord.", "error")
-	}
 
 	useEffect(() => {
 		setSidebarOpen(false)
@@ -302,15 +221,3 @@ export const LoginPage: React.FC = () => {
 		</Box>
 	)
 }
-
-const StyledIconButton = styled(IconButton)({
-	borderRadius: ".5rem",
-	":disabled": {
-		filter: "grayscale(100%)",
-	},
-})
-
-const BlurBox = styled(Box)((props: { disable: boolean }) => ({
-	filter: props.disable ? "blur(5px)" : "blue(0px)",
-	opacity: props.disable ? "30%" : "100%",
-}))
