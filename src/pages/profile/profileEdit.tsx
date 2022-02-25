@@ -10,6 +10,7 @@ import { ImageUpload } from "../../components/form/imageUpload"
 import { InputField } from "../../components/form/inputField"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
@@ -241,7 +242,7 @@ const ProfileEdit: React.FC = () => {
 
 		// Get avatar as file
 		if (!!user.avatarID)
-			fetch(`/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}`).then((r) =>
+			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}`).then((r) =>
 				r.blob().then((b) => setAvatar(new File([b], "avatar.jpg", { type: b.type }))),
 			)
 	}, [user, reset, token])

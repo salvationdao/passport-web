@@ -18,6 +18,7 @@ import {
 	USDC_CONTRACT_ADDRESS,
 	WALLET_CONNECT_RPC,
 	SIGN_MESSAGE,
+	API_ENDPOINT_HOSTNAME,
 } from "../config"
 import HubKey from "../keys"
 import { GetNonceResponse } from "../types/auth"
@@ -468,7 +469,7 @@ export const Web3Container = createContainer(() => {
 	)
 
 	const getNonce = useCallback(async (publicAddress: string): Promise<string> => {
-		const resp = await fetch(`/api/get-nonce?public-address=${publicAddress}`)
+		const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/get-nonce?public-address=${publicAddress}`)
 		if (resp.status !== 200) {
 			const err = await resp.json()
 			throw (err as any).message
@@ -478,7 +479,7 @@ export const Web3Container = createContainer(() => {
 	}, [])
 
 	const getNonceFromID = useCallback(async (userId: string): Promise<string> => {
-		const resp = await fetch(`/api/get-nonce?user-id=${userId}`)
+		const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/get-nonce?user-id=${userId}`)
 		if (resp.status !== 200) {
 			const err = await resp.json()
 			throw (err as any).message
