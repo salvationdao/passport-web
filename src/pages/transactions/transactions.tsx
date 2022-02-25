@@ -20,7 +20,9 @@ export const TransactionsPage = () => {
 
 	// Transaction data
 	const [search, setSearch] = useState("")
-	const [condensedTransactions, setCondensedTransactions] = useState<{ id: string; groupID: string }[]>([])
+	const [condensedTransactions, setCondensedTransactions] = useState<{ id: string; groupID?: string }[]>([])
+	const [ungroupedTransactions, setUngroupedTransactions] = useState<string[]>([])
+	const [groupedTransactions, setGroupedTransactions] = useState<Map<string, string[]>>(new Map())
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
 
@@ -29,10 +31,24 @@ export const TransactionsPage = () => {
 		;(async () => {
 			setLoading(true)
 			try {
-				const resp = await send<{ total: number; transactions: { id: string; groupID: string }[] }>(HubKey.TransactionList, {
+				const resp = await send<{ total: number; transactions: { id: string; groupID?: string }[] }>(HubKey.TransactionList, {
 					pageSize: 10,
 					search,
 				})
+				const grouped = new Map<string, string[]>()
+				const ungrouped: string[] = []
+				resp.transactions.forEach((t) => {
+					if (t.groupID) {
+						let transactions = grouped.get(t.groupID)
+						if (!transactions) transactions = []
+						transactions.push(t.id)
+						grouped.set(t.groupID, transactions)
+					} else {
+						ungrouped.push(t.id)
+					}
+				})
+				setGroupedTransactions(grouped)
+				setUngroupedTransactions(ungrouped)
 				setCondensedTransactions(resp.transactions)
 			} catch (e) {
 				if (typeof e === "string") {
@@ -133,10 +149,23 @@ export const TransactionsPage = () => {
 						/>
 					</Box>
 					<TransactionGroup>
+						<Typography
+							variant="h3"
+							component="h2"
+							sx={{
+								marginBottom: ".5rem",
+								fontFamily: fonts.bizmoblack,
+								fontStyle: "italic",
+								letterSpacing: "2px",
+								textTransform: "uppercase",
+							}}
+						>
+							Ungrouped
+						</Typography>
 						{isWiderThan1000px ? (
-							<DesktopTransactionTable transactions={condensedTransactions} />
+							<DesktopTransactionTable transactionIDs={ungroupedTransactions} />
 						) : (
-							<MobileTransactionTable transactions={condensedTransactions} />
+							<MobileTransactionTable transactionIDs={ungroupedTransactions} />
 						)}
 						{condensedTransactions.length === 0 && (
 							<Box
@@ -153,6 +182,42 @@ export const TransactionsPage = () => {
 							</Box>
 						)}
 					</TransactionGroup>
+					{Array.from(groupedTransactions.keys()).map((g) => (
+						<TransactionGroup key={g}>
+							<Typography
+								variant="h3"
+								component="h2"
+								sx={{
+									marginBottom: ".5rem",
+									fontFamily: fonts.bizmoblack,
+									fontStyle: "italic",
+									letterSpacing: "2px",
+									textTransform: "uppercase",
+								}}
+							>
+								{g}
+							</Typography>
+							{isWiderThan1000px ? (
+								<DesktopTransactionTable transactionIDs={groupedTransactions.get(g)!} />
+							) : (
+								<MobileTransactionTable transactionIDs={groupedTransactions.get(g)!} />
+							)}
+							{condensedTransactions.length === 0 && (
+								<Box
+									sx={{
+										flex: 1,
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+									}}
+								>
+									<Typography variant="subtitle2" color={colors.darkerGrey}>
+										{!loading && error ? error : "No transaction history"}
+									</Typography>
+								</Box>
+							)}
+						</TransactionGroup>
+					))}
 				</Paper>
 			</Box>
 		</Box>

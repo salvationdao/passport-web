@@ -1,13 +1,13 @@
-import { Box, Skeleton, styled, Typography, TypographyProps } from "@mui/material"
+import { Box, Chip, Skeleton, styled, Typography, TypographyProps } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
-import { colors } from "../../theme"
+import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
 import { TransactionEntryProps, TransactionTableProps } from "./desktopTransactionTable"
 
-export const MobileTransactionTable = ({ transactions }: TransactionTableProps) => {
+export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps) => {
 	return (
 		<Box>
 			<Box
@@ -23,8 +23,8 @@ export const MobileTransactionTable = ({ transactions }: TransactionTableProps) 
 				<EntryData>Label</EntryData>
 				<EntryData>Data</EntryData>
 			</Box>
-			{transactions.map((t, index) => (
-				<TransactionEntry key={`${t.id}-${index}`} transactionID={t.id} />
+			{transactionIDs.map((t, index) => (
+				<TransactionEntry key={`${t}-${index}`} transactionID={t} />
 			))}
 		</Box>
 	)
@@ -147,15 +147,52 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>To</EntryLabel>
-				<EntryData>{entry.to.username}</EntryData>
+				<EntryData
+					sx={{
+						textTransform: "uppercase",
+						fontFamily: entry.to.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						"&::after":
+							entry.to.username === user?.username
+								? {
+										content: '"(You)"',
+										marginLeft: ".2rem",
+										color: colors.darkerGrey,
+								  }
+								: undefined,
+					}}
+				>
+					{entry.to.username}
+				</EntryData>
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>From</EntryLabel>
-				<EntryData>{entry.from.username}</EntryData>
+				<EntryData
+					sx={{
+						textTransform: "uppercase",
+						fontFamily: entry.from.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						"&::after":
+							entry.from.username === user?.username
+								? {
+										content: '"(You)"',
+										marginLeft: ".2rem",
+										color: colors.darkerGrey,
+								  }
+								: undefined,
+					}}
+				>
+					{entry.from.username}
+				</EntryData>
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>Status</EntryLabel>
-				<EntryData>{entry.status}</EntryData>
+				<Box
+					sx={{
+						minWidth: "50%",
+						textTransform: "capitalize",
+					}}
+				>
+					<Chip label={entry.status} size="small" color={entry.status === "success" ? "success" : "error"} />
+				</Box>
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>Date</EntryLabel>

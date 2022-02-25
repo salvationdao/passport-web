@@ -7,10 +7,10 @@ import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
 
 export interface TransactionTableProps {
-	transactions: { id: string; groupID: string }[]
+	transactionIDs: string[]
 }
 
-export const DesktopTransactionTable = ({ transactions }: TransactionTableProps) => {
+export const DesktopTransactionTable = ({ transactionIDs }: TransactionTableProps) => {
 	return (
 		<Box
 			component="table"
@@ -28,15 +28,15 @@ export const DesktopTransactionTable = ({ transactions }: TransactionTableProps)
 					<th align="right">Date</th>
 				</EntryRow>
 			</EntryHeader>
-			{transactions.length > 0 && (
+			{transactionIDs.length > 0 && (
 				<Box
 					component="tbody"
 					sx={{
 						height: "100%",
 					}}
 				>
-					{transactions.map((t, index) => (
-						<TransactionEntry key={`${t.id}-${index}`} transactionID={t.id} />
+					{transactionIDs.map((t, index) => (
+						<TransactionEntry key={`${t}-${index}`} transactionID={t} />
 					))}
 				</Box>
 			)}
@@ -65,7 +65,9 @@ const EntryRow = styled("tr")({
 	// From
 	"& > *:nth-of-type(4)": {},
 	// Status
-	"& > *:nth-of-type(5)": {},
+	"& > *:nth-of-type(5)": {
+		textTransform: "capitalize",
+	},
 	// Date
 	"& > *:nth-of-type(6)": {},
 })
@@ -110,7 +112,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 		return (
 			<EntryRow
 				sx={{
-					"&:nth-of-type(even)": {
+					"&:nth-of-type(odd)": {
 						backgroundColor: "#160d45",
 					},
 				}}
@@ -128,7 +130,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 		return (
 			<EntryRow
 				sx={{
-					"&:nth-of-type(even)": {
+					"&:nth-of-type(odd)": {
 						backgroundColor: "#160d45",
 					},
 				}}
@@ -145,7 +147,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 	return (
 		<EntryRow
 			sx={{
-				"&:nth-of-type(even)": {
+				"&:nth-of-type(odd)": {
 					backgroundColor: "#160d45",
 				},
 			}}
