@@ -39,7 +39,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 	return (
 		<Box
 			component="button"
-			onClick={() => history.push(`/stores/${item.collection.name}/${item.ID}`)}
+			onClick={() => history.push(`/stores/${item.collection.slug}/${item.ID}`)}
 			onMouseOver={() => setShowPreview(true)}
 			onMouseLeave={() => setShowPreview(false)}
 			onFocus={() => setShowPreview(true)}

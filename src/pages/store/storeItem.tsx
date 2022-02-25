@@ -15,12 +15,10 @@ import { colors, fonts } from "../../theme"
 import { Attribute, StoreItem } from "../../types/types"
 import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
 
-
 export const StoreItemPage = () => {
-	const { store_item_id: id } = useParams<{ store_item_id: string }>()
+	const { store_item_id: id } = useParams<{ store_item_id: string; collection_slug: string }>()
 	const history = useHistory()
-	const { subscribe, send, state } = useWebsocket()
-	const { displayMessage } = useSnackbar()
+	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -560,7 +558,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 		} finally {
 			setLoading(false)
 		}
-	}, [send, state, storeItem, displayMessage])
+	}, [send, state, storeItem, displayMessage, onClose])
 
 	return (
 		<Dialog onClose={() => onClose()} open={open}>

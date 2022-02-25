@@ -50,7 +50,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	const history = useHistory()
 	const { search } = useLocation()
 	const skipUsername = new URLSearchParams(search).get("skip_username") === "true"
-	const { user } = useAuth()
+	const { user, loading: authLoading } = useAuth()
 	const { displayMessage } = useSnackbar()
 
 	// Username form
@@ -168,6 +168,9 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
 
+	if (authLoading) {
+		return <Loading text="Loading. Please wait..." />
+	}
 	if (!user) {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}

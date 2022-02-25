@@ -112,28 +112,24 @@ export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (pr
 		if (matches) setShow(false)
 	}, [matches])
 
-	// const navbarControl = () => {
-	// 	if (window.scrollY) {
-	// 		setShow(true)
-	// 	} else {
-	// 		setShow(false)
-	// 	}
-	// }
+	const navbarControl = () => {
+		if (window.scrollY) {
+			setShow(true)
+		} else {
+			setShow(false)
+		}
+	}
 
-	// useEffect(() => {
-	// 	if (!loading) {
-	// 		window.document.getElementById("sup-navbar")?.addEventListener("mouseover", () => setShow(true))
-	// 	} else {
-	// 		window.document.getElementById("sup-navbar")?.removeEventListener("mouseover", () => setShow(false))
-	// 	}
-	// 	window.addEventListener("scroll", navbarControl)
-	// 	return () => window.removeEventListener("scroll", navbarControl)
-	// }, [loading])
+	useEffect(() => {
+		window.document.getElementById("sup-navbar")?.addEventListener("mouseover", () => setShow(true))
+		window.addEventListener("scroll", navbarControl)
+		return () => window.removeEventListener("scroll", navbarControl)
+	}, [])
 
 	const navbarPaths: { label: string; path: string; newTab?: boolean }[] = [
 		{
 			label: "token sale",
-			path: TOKEN_SALE_ENDPOINT,
+			path: "/",
 		},
 		{
 			label: "utility token",
@@ -402,7 +398,7 @@ export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (pr
 								}}
 							>
 								<LogoLink
-									href="https://supremacy.game"
+									href="https://supremacy.game/home"
 									onClick={handleClose}
 									sx={{
 										zIndex: open ? 3333 : 1,
