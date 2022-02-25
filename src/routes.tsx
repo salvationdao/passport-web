@@ -25,7 +25,7 @@ import { LootBoxPage } from "./pages/store/lootBox"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
-import { TransactionsPage } from "./pages/transactions"
+import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw"
 
 export const Routes = () => {
