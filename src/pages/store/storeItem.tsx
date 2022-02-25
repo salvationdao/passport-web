@@ -18,8 +18,6 @@ import { Attribute, StoreItem } from "../../types/types"
 import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
 
 export const StoreItemPage = () => {
-	console.log("here!!!!!!!!!!")
-
 	const { store_item_id: id } = useParams<{ store_item_id: string; collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
@@ -107,7 +105,6 @@ export const StoreItemPage = () => {
 		)
 	}
 
-	console.log(canAccessStore)
 	if (canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
 		return <WhiteListCheck />
 	}
