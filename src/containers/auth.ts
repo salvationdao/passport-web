@@ -44,7 +44,7 @@ export enum VerificationType {
  * A Container that handles Authorisation
  */
 export const AuthContainer = createContainer(() => {
-	const { metaMaskState, sign, signWalletConnect, account, connect } = useWeb3()
+	const { metaMaskState, sign, signWalletConnect, account, connect, wcProvider, provider } = useWeb3()
 	const [user, setUser] = useState<User>()
 	const [authorised, setAuthorised] = useState(false)
 	const [reconnecting, setReconnecting] = useState(false)
@@ -68,16 +68,24 @@ export const AuthContainer = createContainer(() => {
 	/**
 	 * Logs user out by removing the stored login token and reloading the page.
 	 */
-	const logout = useCallback(() => {
-		const token = localStorage.getItem("token")
-		return send(HubKey.AuthLogout, { token, sessionID }).then(() => {
+	const logout = useCallback(async () => {
+		try {
+			const token = localStorage.getItem("token")
+			await send(HubKey.AuthLogout, { token, sessionID })
 			localStorage.removeItem("token")
+
+			// Wallet connect
+			await wcProvider?.disconnect()
+
 			if (!isLogoutPage) {
 				window.location.reload()
 			}
+
 			return true
-		})
-	}, [send, isLogoutPage, sessionID])
+		} catch (error) {
+			console.error()
+		}
+	}, [send, isLogoutPage, sessionID, wcProvider])
 
 	/**
 	 * Logs a User in using their email and password.
@@ -201,11 +209,8 @@ export const AuthContainer = createContainer(() => {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
-			if (typeof e == "string") {
-				setShowSimulation(true)
-			}
 		}
-	}, [send, state, sign, sessionID, connect, displayMessage])
+	}, [send, state, sign, sessionID, connect])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -233,11 +238,8 @@ export const AuthContainer = createContainer(() => {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
-			if (typeof e === "string") {
-				setShowSimulation(true)
-			}
 		}
-	}, [send, state, account, sessionID, signWalletConnect, displayMessage])
+	}, [send, state, account, sessionID, signWalletConnect])
 
 	/**
 	 * Signs a user up using a Google oauth token
