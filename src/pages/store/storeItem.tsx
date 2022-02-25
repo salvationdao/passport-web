@@ -46,7 +46,7 @@ export const StoreItemPage = () => {
 					let numberAttributes = new Array<Attribute>()
 					let regularAttributes = new Array<Attribute>()
 					payload.attributes.forEach((a) => {
-						if (a.token_id) {
+						if (a.assetHash) {
 							// If is an asset attribute
 							assetAttributes.push(a)
 						} else if (a.display_type === "number") {

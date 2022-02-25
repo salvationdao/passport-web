@@ -168,7 +168,7 @@ export interface Asset {
 export interface Attribute {
 	display_type?: "number"
 	trait_type: string
-	token_id?: number
+	assetHash?: string
 	value: string | number
 }
 
@@ -215,7 +215,7 @@ export interface QueuedWarMachine {
 }
 
 export interface WarMachineMetadata {
-	tokenID: number
+	assetHash: string
 	isInsured: boolean
 	contractReward: string
 }

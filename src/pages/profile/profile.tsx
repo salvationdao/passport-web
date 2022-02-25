@@ -50,7 +50,7 @@ import { Asset, Attribute, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 
 export const ProfilePage: React.FC = () => {
-	const { username, token_id } = useParams<{ username: string; token_id: string }>()
+	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
 	const history = useHistory()
 	const { state, send } = useWebsocket()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
@@ -284,7 +284,7 @@ export const ProfilePage: React.FC = () => {
 						<Box minHeight="2rem" minWidth="2rem" />
 					</>
 				)}
-				{!!token_id ? <AssetView user={user} tokenID={parseInt(token_id)} /> : <CollectionView user={user} />}
+				{!!asset_hash ? <AssetView user={user} assetHash={asset_hash} /> : <CollectionView user={user} />}
 			</Box>
 		</Box>
 	)
@@ -752,7 +752,7 @@ export const FilterChip = ({ color = colors.white, active, ...props }: FilterChi
 
 interface AssetViewProps {
 	user: User
-	tokenID: number
+	assetHash: string
 }
 
 enum AssetState {
@@ -763,7 +763,7 @@ enum AssetState {
 	OffWorldStaked,
 }
 
-const AssetView = ({ user, tokenID }: AssetViewProps) => {
+const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	const history = useHistory()
 	const { state, subscribe, send } = useWebsocket()
 	const { user: loggedInUser } = useAuth()
@@ -781,7 +781,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 
 	// Asset actions
 	const { queuedWarMachine, queuingContractReward } = useAsset()
-	const queueDetail = queuedWarMachine(tokenID)
+	const queueDetail = queuedWarMachine(assetHash)
 	const [submitting, setSubmitting] = useState(false)
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
 	const [renameWindowOpen, setRenameWindowOpen] = useState(false)
@@ -800,10 +800,10 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	}
 
 	const onDeploy = async () => {
-		if (!tokenID) return
+		if (!assetHash) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetJoinQueue, { assetTokenID: tokenID })
+			await send(HubKey.AssetJoinQueue, { assetHash: assetHash })
 			displayMessage(`Successfully deployed ${asset?.name}`, "success")
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
@@ -813,10 +813,10 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	}
 
 	const leaveQueue = async () => {
-		if (!tokenID) return
+		if (!assetHash) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetLeaveQue, { assetTokenID: tokenID })
+			await send(HubKey.AssetLeaveQue, { assetHash: assetHash })
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
@@ -825,10 +825,10 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	}
 
 	const payInsurance = async () => {
-		if (!tokenID) return
+		if (!assetHash) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetInsurancePay, { assetTokenID: tokenID })
+			await send(HubKey.AssetInsurancePay, { assetHash: assetHash })
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
@@ -873,7 +873,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 					let numberAttributes = new Array<Attribute>()
 					let regularAttributes = new Array<Attribute>()
 					payload.attributes.forEach((a) => {
-						if (a.token_id) {
+						if (a.assetHash) {
 							// If is an asset attribute
 							assetAttributes.push(a)
 						} else if (a.display_type === "number") {
@@ -890,12 +890,12 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 					setAsset(payload)
 					setLoading(false)
 				},
-				{ tokenID },
+				{ assetHash },
 			)
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching asset data. Please try again.")
 		}
-	}, [state, tokenID, subscribe])
+	}, [state, assetHash, subscribe])
 
 	if (error) {
 		return (
