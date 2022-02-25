@@ -128,7 +128,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		query({
 			search,
 			attributeFilter: {
-				linkOperator: "and",
+				linkOperator: "or",
 				items: attributeFilterItems,
 			},
 			filter: {
