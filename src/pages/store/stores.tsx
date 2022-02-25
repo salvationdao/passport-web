@@ -1,4 +1,5 @@
 import { Box, Divider, Paper, Skeleton, Typography } from "@mui/material"
+import Locker from "../../assets/images/locker.png"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
@@ -16,6 +17,7 @@ import { colors } from "../../theme"
 import { Collection, Faction, User } from "../../types/types"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 
 // Displays all stores available to the user
 export const StoresPage = () => {
@@ -36,6 +38,8 @@ export const StoresPage = () => {
 				setCanEnter(true)
 				setUserLoad(false)
 			}
+		} else {
+			setUserLoad(false)
 		} else {
 			setUserLoad(false)
 		}
@@ -71,8 +75,12 @@ export const StoresPage = () => {
 		})()
 	}, [send, state, displayMessage])
 
-	if (userLoad) return <Loading text={"Getting shop data"} />
-
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
+	if (userLoad) {
+		return <Loading text={"Getting shop data"} />
+	}
 	return (
 		<Box
 			sx={{
