@@ -1,4 +1,3 @@
-import { parseFixed } from "@ethersproject/bignumber"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
 import { Box, Button, LinearProgress, Link, Stack, TextField, Tooltip, Typography, useTheme } from "@mui/material"
@@ -36,7 +35,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		sendNativeTransfer,
 		sendTransferToPurchaseAddress,
 		metaMaskState,
-		supBalance,
 		setCurrentToken,
 		currentToken,
 		tokenOptions,
