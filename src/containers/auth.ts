@@ -46,6 +46,7 @@ export enum VerificationType {
 export const AuthContainer = createContainer(() => {
 	const { metaMaskState, sign, signWalletConnect, account, connect } = useWeb3()
 	const [user, setUser] = useState<User>()
+	const [recheckAuth, _] = useState(!!localStorage.getItem("token"))
 	const [authorised, setAuthorised] = useState(false)
 	const [reconnecting, setReconnecting] = useState(false)
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
@@ -963,6 +964,7 @@ export const AuthContainer = createContainer(() => {
 		verify,
 		hideVerifyComplete: () => setVerifyCompleteType(undefined),
 		hasPermission,
+		recheckAuth,
 		user: user,
 		userID: user?.id,
 		factionID: user?.factionID,

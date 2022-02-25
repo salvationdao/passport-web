@@ -24,7 +24,7 @@ interface LogInInput {
 
 export const LoginPage: React.FC = () => {
 	const history = useHistory()
-	const { user } = useAuth()
+	const { user, recheckAuth, loading: authLoading } = useAuth()
 	const { setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
 
@@ -139,8 +139,14 @@ export const LoginPage: React.FC = () => {
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
 
+	if (loading) {
+		return <Loading text="Loading. Please wait..." />
+	}
 	if (user) {
-		return <Loading text="You are already logged in, redirecting to your profile..." />
+		if (recheckAuth) {
+			return <Loading text="You are already logged in, redirecting to your profile..." />
+		}
+		return <Loading text="You have successfully logged in, redirecting to your profile..." />
 	}
 
 	return (
