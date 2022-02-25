@@ -33,7 +33,6 @@ export const LoginPage: React.FC = () => {
 	const { control, handleSubmit, reset } = useForm<LogInInput>()
 	const [loading, setLoading] = useState(false)
 	const [showEmailLogin, setShowEmailLogin] = useState(false)
-	const [onlyWalletConnection, setOnlyWalletConnection] = useState(true)
 
 	const onMetaMaskLoginFailure = (error: string) => {
 		displayMessage(error, "error")
@@ -139,14 +138,6 @@ export const LoginPage: React.FC = () => {
 		}, 2000)
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
-
-	useEffect(() => {
-		fetch(`/api/whitelist/check`).then((res) => {
-			res.json().then((data) => {
-				setOnlyWalletConnection(data)
-			})
-		})
-	}, [])
 
 	if (user) {
 		return <Loading text="You are already logged in, redirecting to your profile..." />
@@ -305,125 +296,6 @@ export const LoginPage: React.FC = () => {
 								</FancyButton>
 							)}
 						/>
-
-						<Box sx={{ position: onlyWalletConnection ? "relative" : "unset" }}>
-							{onlyWalletConnection && (
-								<Typography
-									variant="subtitle1"
-									sx={{
-										textAlign: "center",
-										position: "absolute",
-										maxWidth: "20rem",
-										width: "100%",
-										margin: "auto",
-										top: "4em",
-										bottom: "0",
-										left: "0",
-										right: "0",
-										color: (theme) => theme.palette.primary.main,
-										textTransform: "uppercase",
-										fontFamily: fonts.bizmosemi_bold,
-										zIndex: 100,
-									}}
-								>
-									Only wallet connections are allowed during early access
-								</Typography>
-							)}
-							<BlurBox disable={onlyWalletConnection}>
-								<Typography
-									variant="subtitle1"
-									sx={{
-										color: (theme) => theme.palette.primary.main,
-										textAlign: "center",
-										textTransform: "uppercase",
-										fontFamily: fonts.bizmosemi_bold,
-									}}
-								>
-									Or Sign In With
-								</Typography>
-								<Box
-									sx={{
-										display: "grid",
-										gridTemplateColumns: "repeat(3, minmax(3rem, 1fr))",
-										gap: "1rem",
-									}}
-								>
-									<StyledIconButton
-										onClick={() => {
-											setShowEmailLogin(true)
-										}}
-										disabled={onlyWalletConnection}
-									>
-										<MailIcon />
-									</StyledIconButton>
-									<GoogleLogin
-										clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
-										buttonText="Login"
-										onSuccess={onGoogleLogin}
-										onFailure={onGoogleLoginFailure}
-										cookiePolicy={"single_host_origin"}
-										disabled={onlyWalletConnection}
-										render={(props) => (
-											<StyledIconButton onClick={props.onClick} disabled={onlyWalletConnection} title={"Login with Google"}>
-												<GoogleIcon />
-											</StyledIconButton>
-										)}
-									/>
-									<FacebookLogin
-										callback={onFacebookLogin}
-										onFailure={onFacebookLoginFailure}
-										render={(props) => (
-											<StyledIconButton
-												onClick={props.onClick}
-												disabled={onlyWalletConnection || !props.isSdkLoaded || props.isProcessing}
-												title="Login with Facebook"
-											>
-												<FacebookIcon />
-											</StyledIconButton>
-										)}
-									/>
-									<TwitchLogin
-										callback={onTwitchLogin}
-										onFailure={onTwitchLoginFailure}
-										render={(props) => (
-											<StyledIconButton
-												onClick={props.onClick}
-												disabled={onlyWalletConnection || props.isProcessing}
-												title="Log in with Twitch"
-											>
-												<TwitchIcon />
-											</StyledIconButton>
-										)}
-									/>
-									<TwitterLogin
-										callback={onTwitterLogin}
-										onFailure={onTwitterLoginFailure}
-										render={(props) => (
-											<StyledIconButton
-												onClick={props.onClick}
-												disabled={onlyWalletConnection || props.isProcessing}
-												title="Log in with Twitter"
-											>
-												<TwitterIcon />
-											</StyledIconButton>
-										)}
-									/>
-									<DiscordLogin
-										callback={onDiscordLogin}
-										onFailure={onDiscordLoginFailure}
-										render={(props) => (
-											<StyledIconButton
-												onClick={props.onClick}
-												disabled={onlyWalletConnection || props.isProcessing}
-												title="Log in with Discord"
-											>
-												<DiscordIcon />
-											</StyledIconButton>
-										)}
-									/>
-								</Box>
-							</BlurBox>
-						</Box>
 					</Box>
 				)}
 			</Box>
