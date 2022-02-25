@@ -1647,7 +1647,7 @@ interface StakeModelProps {
 // 			}
 //
 // 			const nonce = await mintContract.nonces(account)
-// 			const resp = await fetch(`/api/mint-nft/${account}/${nonce}/${tokenID}`)
+// 			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/mint-nft/${account}/${nonce}/${tokenID}`)
 // 			const respJson: GetSignatureResponse = await resp.json()
 // 			await mintContract.signedMint(tokenID, respJson.messageSignature, respJson.expiry)
 // 			setErrorMinting(undefined)

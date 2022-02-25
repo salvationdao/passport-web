@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react"
 import { useWeb3, MetaMaskState } from "../containers/web3"
 import { ethers } from "ethers"
 import { FancyButton } from "./fancyButton"
-import { ETHEREUM_CHAIN_ID, NFT_CONTRACT_ADDRESS } from "../config"
+import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID, NFT_CONTRACT_ADDRESS } from "../config"
 import { ConnectWallet } from "./connectWallet"
 
 interface MintModalProps {
@@ -61,7 +61,7 @@ export const MintModal = ({ open, onClose, tokenID, mintingSignature }: MintModa
 			}
 
 			const nonce = await mintContract.nonces(account)
-			const resp = await fetch(`/api/mint-nft/${account}/${nonce}/${tokenID}`)
+			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/mint-nft/${account}/${nonce}/${tokenID}`)
 			const respJson: GetSignatureResponse = await resp.json()
 			await mintContract.signedMint(tokenID, respJson.messageSignature, respJson.expiry)
 			setErrorMinting(undefined)

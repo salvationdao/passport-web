@@ -8,7 +8,7 @@ import { supFormatter } from "../helpers/items"
 import { FancyButton } from "./fancyButton"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { useAuth } from "../containers/auth"
-import { BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
 import { ConnectWallet } from "./connectWallet"
 import { formatUnits, parseUnits } from "@ethersproject/units"
 
@@ -120,7 +120,7 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 			const signer = provider.getSigner()
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
-			const resp = await fetch(`/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
+			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
 			const respJson: GetSignatureResponse = await resp.json()
 
 			await withdrawContract.withdrawSUPS(withdrawAmount, respJson.messageSignature, respJson.expiry)
