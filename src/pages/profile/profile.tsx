@@ -477,12 +477,13 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						gap: ".5rem",
 					}}
 				>
+					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
 					<FilterChip
-						active={rarities.has("Common")}
-						label="Common"
-						color={colors.rarity.common}
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.colossal}
 						variant="outlined"
-						onClick={() => toggleRarity("Common")}
+						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
 					<FilterChip
@@ -491,14 +492,6 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						color={colors.rarity.legendary}
 						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
-					/>
-					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
-					<FilterChip
-						active={rarities.has("Colossal")}
-						label="Colossal"
-						color={colors.rarity.colossal}
-						variant="outlined"
-						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip
 						active={rarities.has("Elite Legendary")}
@@ -1405,23 +1398,20 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	)
 }
 
-export type Rarity = "Common" | "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex"
+export type Rarity = "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex"
 
 export const rarityTextStyles: { [key in Rarity]: any } = {
-	Common: {
-		color: colors.rarity.common,
+	Mega: {
+		color: colors.rarity.mega,
+	},
+	Colossal: {
+		color: colors.rarity.colossal,
 	},
 	Rare: {
 		color: colors.rarity.rare,
 	},
 	Legendary: {
 		color: colors.rarity.legendary,
-	},
-	Mega: {
-		color: colors.rarity.mega,
-	},
-	Colossal: {
-		color: colors.rarity.colossal,
 	},
 	"Elite Legendary": {
 		color: colors.rarity.eliteLegendary,

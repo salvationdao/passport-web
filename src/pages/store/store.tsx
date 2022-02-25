@@ -223,12 +223,13 @@ export const StorePage: React.FC = () => {
 						gap: ".5rem",
 					}}
 				>
+					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
 					<FilterChip
-						active={rarities.has("Common")}
-						label="Common"
-						color={colors.rarity.common}
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.colossal}
 						variant="outlined"
-						onClick={() => toggleRarity("Common")}
+						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
 					<FilterChip
@@ -237,14 +238,6 @@ export const StorePage: React.FC = () => {
 						color={colors.rarity.legendary}
 						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
-					/>
-					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
-					<FilterChip
-						active={rarities.has("Colossal")}
-						label="Colossal"
-						color={colors.rarity.colossal}
-						variant="outlined"
-						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip
 						active={rarities.has("Elite Legendary")}
