@@ -8,7 +8,7 @@ import StorefrontIcon from "@mui/icons-material/Storefront"
 import { Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { formatUnits } from "ethers/lib/utils"
 import { BigNumber } from "ethers"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import SupsToken from "../assets/images/sup-token.svg"
@@ -519,6 +519,9 @@ interface NavButtonProps {
 }
 
 const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClick, children }) => {
+	const { setSidebarOpen } = useSidebarState()
+	const mobileScreen = useMediaQuery("(max-width:600px)")
+
 	return (
 		<Button
 			sx={{
@@ -529,7 +532,14 @@ const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClic
 			component={RouterLink}
 			to={to}
 			startIcon={startIcon}
-			onClick={onClick}
+			onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+				if (mobileScreen) {
+					setSidebarOpen(false)
+				}
+				if (onClick) {
+					onClick(e)
+				}
+			}}
 		>
 			{children}
 		</Button>

@@ -1,8 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import { Box, Button, CircularProgress, IconButton, IconButtonProps, Link, Paper, styled, Typography } from "@mui/material"
+import { Box, Button, Link, Paper, styled, Typography } from "@mui/material"
 import { User } from "@sentry/react"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
@@ -14,7 +14,6 @@ import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
 import { fetching } from "../../fetching"
-import { middleTruncate } from "../../helpers"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Organisation, Role } from "../../types/types"
@@ -23,11 +22,15 @@ import { PasswordRequirement } from "./../auth/onboarding"
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const { user } = useAuth()
+	const { user, loading: authLoading } = useAuth()
 
 	const [loadingText, setLoadingText] = useState<string>()
 
 	useEffect(() => {
+		if (authLoading) {
+			setLoadingText("Loading. Please wait...")
+			return
+		}
 		let userTimeout: NodeJS.Timeout
 		if (!user) {
 			setLoadingText("You need to be logged in to view this page. Redirecting to login page...")
@@ -45,7 +48,7 @@ export const ProfileEditPage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [user, history, username])
+	}, [user, history, username, authLoading])
 
 	if (!user || user.username !== username) {
 		return <Loading text={loadingText} />
@@ -196,17 +199,17 @@ const ProfileEdit: React.FC = () => {
 		}
 	})
 
-	const removeWalletAddress = useCallback(async () => {
-		if (!user) return
-		try {
-			setSubmitting(true)
-			await send(HubKey.UserRemoveWallet, { id: user.id })
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		} finally {
-			setSubmitting(false)
-		}
-	}, [user, send, displayMessage])
+	// const removeWalletAddress = useCallback(async () => {
+	// 	if (!user) return
+	// 	try {
+	// 		setSubmitting(true)
+	// 		await send(HubKey.UserRemoveWallet, { id: user.id })
+	// 	} catch (e) {
+	// 		displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+	// 	} finally {
+	// 		setSubmitting(false)
+	// 	}
+	// }, [user, send, displayMessage])
 
 	const onAvatarChange = (file?: File) => {
 		if (!avatarChanged) setAvatarChanged(true)
@@ -660,140 +663,140 @@ const Section = styled("div")({
 	},
 })
 
-interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
-	icon: React.ElementType
-	value?: string
-	loading?: boolean
-	remove?: boolean
-}
+// interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
+// 	icon: React.ElementType
+// 	value?: string
+// 	loading?: boolean
+// 	remove?: boolean
+// }
 
-const ConnectionButton = ({ icon, value, loading, remove, disabled, sx, ...props }: ConnectionButtonProps) => {
-	if (remove) {
-		return (
-			<Box
-				sx={{
-					overflowX: "hidden",
-					position: "relative",
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					justifyContent: "center",
-					padding: "1rem",
-					borderRadius: 0,
-					border: `2px solid ${colors.skyBlue}`,
-					...sx,
-				}}
-				tabIndex={-1}
-			>
-				<IconButton
-					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						opacity: 0,
-						width: "100%",
-						borderRadius: 0,
-						transition: "opacity .2s ease-out",
-						":hover": {
-							opacity: 1,
-						},
-						":focus": {
-							opacity: 1,
-						},
-						"::after": {
-							content: '""',
-							position: "absolute",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							backgroundColor: "rgba(0, 0, 0, .6)",
-						},
-					}}
-					disabled={disabled || !!loading}
-					{...props}
-				>
-					<Typography
-						color={colors.white}
-						sx={{
-							zIndex: 1,
-						}}
-					>
-						Remove Wallet
-					</Typography>
-				</IconButton>
+// const ConnectionButton = ({ icon, value, loading, remove, disabled, sx, ...props }: ConnectionButtonProps) => {
+// 	if (remove) {
+// 		return (
+// 			<Box
+// 				sx={{
+// 					overflowX: "hidden",
+// 					position: "relative",
+// 					display: "flex",
+// 					flexDirection: "column",
+// 					alignItems: "center",
+// 					justifyContent: "center",
+// 					padding: "1rem",
+// 					borderRadius: 0,
+// 					border: `2px solid ${colors.skyBlue}`,
+// 					...sx,
+// 				}}
+// 				tabIndex={-1}
+// 			>
+// 				<IconButton
+// 					sx={{
+// 						position: "absolute",
+// 						top: 0,
+// 						left: 0,
+// 						right: 0,
+// 						bottom: 0,
+// 						opacity: 0,
+// 						width: "100%",
+// 						borderRadius: 0,
+// 						transition: "opacity .2s ease-out",
+// 						":hover": {
+// 							opacity: 1,
+// 						},
+// 						":focus": {
+// 							opacity: 1,
+// 						},
+// 						"::after": {
+// 							content: '""',
+// 							position: "absolute",
+// 							top: 0,
+// 							left: 0,
+// 							right: 0,
+// 							bottom: 0,
+// 							backgroundColor: "rgba(0, 0, 0, .6)",
+// 						},
+// 					}}
+// 					disabled={disabled || !!loading}
+// 					{...props}
+// 				>
+// 					<Typography
+// 						color={colors.white}
+// 						sx={{
+// 							zIndex: 1,
+// 						}}
+// 					>
+// 						Remove Wallet
+// 					</Typography>
+// 				</IconButton>
 
-				{!!loading && (
-					<Box
-						sx={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							backgroundColor: "rgba(0, 0, 0, .6)",
-						}}
-					>
-						<CircularProgress />
-					</Box>
-				)}
-				<Box
-					component={icon}
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				/>
-				<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
-			</Box>
-		)
-	}
+// 				{!!loading && (
+// 					<Box
+// 						sx={{
+// 							position: "absolute",
+// 							top: 0,
+// 							left: 0,
+// 							right: 0,
+// 							bottom: 0,
+// 							display: "flex",
+// 							alignItems: "center",
+// 							justifyContent: "center",
+// 							backgroundColor: "rgba(0, 0, 0, .6)",
+// 						}}
+// 					>
+// 						<CircularProgress />
+// 					</Box>
+// 				)}
+// 				<Box
+// 					component={icon}
+// 					sx={{
+// 						marginBottom: ".5rem",
+// 					}}
+// 				/>
+// 				<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
+// 			</Box>
+// 		)
+// 	}
 
-	return (
-		<IconButton
-			sx={{
-				overflowX: "hidden",
-				position: "relative",
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				justifyContent: "center",
-				padding: "1rem",
-				borderRadius: 0,
-				border: `2px solid ${colors.skyBlue}`,
-				...sx,
-			}}
-			disabled={disabled || !!loading}
-			{...props}
-		>
-			{!!loading && (
-				<Box
-					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						backgroundColor: "rgba(0, 0, 0, .6)",
-					}}
-				>
-					<CircularProgress />
-				</Box>
-			)}
-			<Box
-				component={icon}
-				sx={{
-					marginBottom: ".5rem",
-				}}
-			/>
-			<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
-		</IconButton>
-	)
-}
+// 	return (
+// 		<IconButton
+// 			sx={{
+// 				overflowX: "hidden",
+// 				position: "relative",
+// 				display: "flex",
+// 				flexDirection: "column",
+// 				alignItems: "center",
+// 				justifyContent: "center",
+// 				padding: "1rem",
+// 				borderRadius: 0,
+// 				border: `2px solid ${colors.skyBlue}`,
+// 				...sx,
+// 			}}
+// 			disabled={disabled || !!loading}
+// 			{...props}
+// 		>
+// 			{!!loading && (
+// 				<Box
+// 					sx={{
+// 						position: "absolute",
+// 						top: 0,
+// 						left: 0,
+// 						right: 0,
+// 						bottom: 0,
+// 						display: "flex",
+// 						alignItems: "center",
+// 						justifyContent: "center",
+// 						backgroundColor: "rgba(0, 0, 0, .6)",
+// 					}}
+// 				>
+// 					<CircularProgress />
+// 				</Box>
+// 			)}
+// 			<Box
+// 				component={icon}
+// 				sx={{
+// 					marginBottom: ".5rem",
+// 				}}
+// 			/>
+// 			<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
+// 		</IconButton>
+// 	)
+// }

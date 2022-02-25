@@ -17,7 +17,7 @@ import { FilterChip, SortChip } from "../collections/collection"
 import { StoreItemCard } from "./storeItemCard"
 
 export const StorePage: React.FC = () => {
-	const { collection_name } = useParams<{ collection_name: string }>()
+	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
@@ -52,7 +52,7 @@ export const StorePage: React.FC = () => {
 	}
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_name) return
+		if (state !== SocketState.OPEN || !collection_slug) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -60,10 +60,10 @@ export const StorePage: React.FC = () => {
 				setCollection(payload)
 			},
 			{
-				name: collection_name,
+				slug: collection_slug,
 			},
 		)
-	}, [collection_name, subscribe, state])
+	}, [collection_slug, subscribe, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -122,10 +122,7 @@ export const StorePage: React.FC = () => {
 
 	const renderFilters = () => (
 		<>
-			<Box sx={{
-				position: 'sticky',
-				top: '20px',
-			}}>
+			<Box>
 				<Typography
 					variant="subtitle1"
 					sx={{
@@ -139,7 +136,8 @@ export const StorePage: React.FC = () => {
 				<Box
 					sx={{
 						display: "flex",
-						flexDirection: "column",
+						flexDirection: isWiderThan1000px ? "column" : "row",
+						flexWrap: isWiderThan1000px ? "initial" : "wrap",
 						gap: ".5rem",
 					}}
 				>
@@ -225,12 +223,13 @@ export const StorePage: React.FC = () => {
 						gap: ".5rem",
 					}}
 				>
+					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
 					<FilterChip
-						active={rarities.has("Common")}
-						label="Common"
-						color={colors.rarity.common}
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.colossal}
 						variant="outlined"
-						onClick={() => toggleRarity("Common")}
+						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
 					<FilterChip
@@ -239,14 +238,6 @@ export const StorePage: React.FC = () => {
 						color={colors.rarity.legendary}
 						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
-					/>
-					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
-					<FilterChip
-						active={rarities.has("Colossal")}
-						label="Colossal"
-						color={colors.rarity.colossal}
-						variant="outlined"
-						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip
 						active={rarities.has("Elite Legendary")}

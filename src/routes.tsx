@@ -21,9 +21,11 @@ import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
 import { ProfileEditPage } from "./pages/profile/profileEdit"
 import { SalePage } from "./pages/sale/salePage"
+import { LootBoxPage } from "./pages/store/lootBox"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
+import { TransactionsPage } from "./pages/transactions"
 import { WithdrawPage } from "./pages/withdraw"
 
 export const Routes = () => {
@@ -34,8 +36,8 @@ export const Routes = () => {
 	const sessionID = searchParams.get("sessionID")
 
 	/* Get subdomain name  */
-	const parts = window.location.hostname.split(".")
-	const sndleveldomain = parts.slice(-2).join(".")
+	// const parts = window.location.hostname.split(".")
+	// const sndleveldomain = parts.slice(-2).join(".")
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
@@ -57,12 +59,12 @@ export const Routes = () => {
 					{...snackbarProps}
 				>
 					<Alert severity={alertSeverity || "info"}>{message}</Alert>
-				</Snackbar>{" "}
+				</Snackbar>
 				<Switch>
 					<Route path="/nosidebar/login">
 						<LoginPage />
 					</Route>
-					<Route path="/nosidebar/:username/:collection_name">
+					<Route path="/nosidebar/:username/:collection_slug">
 						<CollectionPage />
 					</Route>
 					<Route path="/nosidebar/logout">
@@ -88,8 +90,29 @@ export const Routes = () => {
 						<Route path="/terms-and-conditions">
 							<Home />
 						</Route>
+
+						<Route path="/transactions">
+							<TransactionsPage />
+						</Route>
 						<Route path="/withdraw">
 							<WithdrawPage />
+						</Route>
+						<Route path="/mystery">
+							<LootBoxPage />
+						</Route>
+
+						{/* Supremacy */}
+						<Switch>
+							<Route path="/battle_arena">
+								<BattleArenaPage />
+							</Route>
+						</Switch>
+
+						<Route path="/buy">
+							<BuyPage />
+						</Route>
+						<Route path="/if-buy">
+							<IFrameBuyPage />
 						</Route>
 
 						{/* User-authenticated routes */}
@@ -109,19 +132,12 @@ export const Routes = () => {
 							</Route>
 						</Switch>
 
-						<Route path="/buy">
-							<BuyPage />
-						</Route>
-						<Route path="/if-buy">
-							<IFrameBuyPage />
-						</Route>
-
 						{/* stores */}
 						<Switch>
-							<Route path="/stores/:store_id/:store_item_id">
+							<Route path="/stores/:collection_slug/:store_item_id">
 								<StoreItemPage />
 							</Route>
-							<Route path="/stores/:collection_name">
+							<Route path="/stores/:collection_slug">
 								<StorePage />
 							</Route>
 							<Route path="/stores">
@@ -138,7 +154,7 @@ export const Routes = () => {
 
 						{/* collections */}
 						<Switch>
-							<Route path="/collections/:username/:collection_name">
+							<Route path="/collections/:username/:collection_slug">
 								<CollectionPage />
 							</Route>
 							<Route path={["/collections/:username", "/collections"]}>
@@ -151,6 +167,9 @@ export const Routes = () => {
 						</Route>
 					</Sidebar>
 				</Switch>
+				<Route path="/sale-sup">
+					<SalePage />
+				</Route>
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
