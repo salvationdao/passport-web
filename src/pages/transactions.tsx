@@ -329,6 +329,14 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
+						fontFamily: entry.to.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						"&::after":
+							entry.to.username === user?.username
+								? {
+										content: '"(You)"',
+										marginLeft: "1ch",
+								  }
+								: undefined,
 					}}
 				>
 					{entry.to.username}
@@ -339,6 +347,15 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
+						fontFamily: entry.from.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						"&::after":
+							entry.from.username === user?.username
+								? {
+										content: '"(You)"',
+										marginLeft: ".2rem",
+										color: colors.darkerGrey,
+								  }
+								: undefined,
 					}}
 				>
 					{entry.from.username}
