@@ -142,7 +142,7 @@ export const SalePage = () => {
 								},
 							}}
 						>
-							<Stack alignItems="center">
+							<Stack alignItems="center" gap="1em">
 								<a href="https://supremacy.game/home">
 									<Box
 										component="img"
@@ -159,7 +159,10 @@ export const SalePage = () => {
 										}}
 									/>
 								</a>
-								<Title>Whitelist TOKEN SALE</Title>
+								<Stack gap="0">
+									<Title sx={{ lineHeight: 0.7 }}>Public TOKEN SALE</Title>
+									<SubHeading>LIMITED</SubHeading>
+								</Stack>
 							</Stack>
 
 							<Box
@@ -232,7 +235,7 @@ export const SalePage = () => {
 											</Typography>
 										</Box>
 									</Box>
-									{countdown && <CountdownTimer date={countdown} publicSale />}
+									{/* {countdown && <CountdownTimer date={countdown} publicSale />} */}
 									<Box
 										sx={{
 											"& p": {

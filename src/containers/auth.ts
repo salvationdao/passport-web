@@ -203,7 +203,6 @@ export const AuthContainer = createContainer(() => {
 			console.error(e)
 			if (typeof e == "string") {
 				setShowSimulation(true)
-				displayMessage(e, "error")
 			}
 		}
 	}, [send, state, sign, sessionID, connect, displayMessage])
@@ -236,7 +235,6 @@ export const AuthContainer = createContainer(() => {
 			console.error(e)
 			if (typeof e === "string") {
 				setShowSimulation(true)
-				displayMessage(e, "error")
 			}
 		}
 	}, [send, state, account, sessionID, signWalletConnect, displayMessage])
