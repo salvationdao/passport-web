@@ -1,9 +1,10 @@
 import { Box, Divider, Paper, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
-import { Link as RouterLink } from "react-router-dom"
+import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { Loading } from "../../components/loading"
 import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -21,6 +22,24 @@ export const StoresPage = () => {
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
+	const [userLoad, setUserLoad] = useState(true)
+	const history = useHistory()
+
+	useEffect(() => {
+		if (user) {
+			if (!user.faction) {
+				displayMessage("Please enlist to a faction before entering store", "error")
+				history.push("/profile")
+				setUserLoad(false)
+			} else {
+				setUserLoad(false)
+			}
+		} else {
+			displayMessage("Please login before entering store", "error")
+			history.push("/profile")
+			setUserLoad(false)
+		}
+	}, [userLoad])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
@@ -38,6 +57,8 @@ export const StoresPage = () => {
 			}
 		})()
 	}, [send, state, displayMessage])
+
+	if (userLoad) return <Loading text={"Getting shop data"} />
 
 	return (
 		<Box
