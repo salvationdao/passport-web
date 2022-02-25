@@ -1,54 +1,55 @@
 import { Box, Divider, Paper, Skeleton, Typography } from "@mui/material"
-import Locker from "../../assets/images/locker.png"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
-import { EnlistButton } from "../../components/supremacy/enlistButton"
-import { API_ENDPOINT_HOSTNAME } from "../../config"
+import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
-import { Collection, Faction, User } from "../../types/types"
+import { Collection, Faction } from "../../types/types"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
-import { PleaseEnlist } from "../../components/pleaseEnlist"
 
 // Displays all stores available to the user
 export const StoresPage = () => {
 	const { user } = useAuth()
-	const { send, state } = useWebsocket()
+	const { send, state, subscribe } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
 	const [userLoad, setUserLoad] = useState(true)
 	const [canEnter, setCanEnter] = useState(false)
 	const [factionsData, setFactionsData] = useState<Faction[]>([])
+	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
 
 	useEffect(() => {
 		if (user) {
 			if (!user.faction) {
 				setUserLoad(false)
-			} else {
-				setCanEnter(true)
-				setUserLoad(false)
+				return
 			}
-		} else {
-			setUserLoad(false)
+			if (ENABLE_WHITELIST_CHECK && (!canAccessStore || !canAccessStore.isAllowed)) {
+				setUserLoad(false)
+				return
+			}
 		}
-	}, [userLoad, user])
+
+		setCanEnter(true)
+		setUserLoad(false)
+	}, [userLoad, user, canAccessStore])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		;(async () => {
 			try {
 				const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
-
 				setFactionsData(resp)
 			} catch (e) {
 				setFactionsData([])
@@ -73,12 +74,32 @@ export const StoresPage = () => {
 		})()
 	}, [send, state, displayMessage])
 
-	if (user && !user.faction) {
-		return <PleaseEnlist />
-	}
-	if (userLoad) {
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !user || !user.publicAddress || userLoad) return
+		return subscribe<{ isAllowed: boolean; message: string }>(
+			HubKey.CheckUserCanAccessStore,
+			(payload) => {
+				if (userLoad) return
+				setCanAccessStore(payload)
+			},
+			{
+				walletAddress: user.publicAddress,
+			},
+		)
+	}, [user, subscribe, state, userLoad])
+
+	if (!user || userLoad) {
 		return <Loading text={"Getting shop data"} />
 	}
+
+	if (!userLoad && user && !user.faction) {
+		return <PleaseEnlist />
+	}
+
+	if (!userLoad && canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
+		return <WhiteListCheck />
+	}
+
 	return (
 		<Box
 			sx={{
@@ -113,15 +134,10 @@ export const StoresPage = () => {
 							padding: "2rem",
 						}}
 					>
-						{canEnter ? (
+						{canEnter &&
 							collections.map((c) => {
 								return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
-							})
-						) : (
-							<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-								<Typography variant="h3">Please enlist to a faction to view store items</Typography>
-							</Box>
-						)}
+							})}
 					</Paper>
 				)}
 			</Box>

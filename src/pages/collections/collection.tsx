@@ -211,6 +211,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	if (user && !user.faction) {
 		return <PleaseEnlist />
 	}
+
 	const renderFilters = () => (
 		<>
 			<Box>
