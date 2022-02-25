@@ -163,6 +163,7 @@ export interface Asset {
 	lockedByID?: string
 	deletedAt?: Date
 	mintingSignature?: string
+	signatureExpiry?: string
 	txHistory: any[]
 	minted: boolean
 }
