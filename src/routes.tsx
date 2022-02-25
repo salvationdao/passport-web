@@ -47,7 +47,8 @@ export const Routes = () => {
 			setLoadingText("Loading...")
 			return
 		}
-	})
+	}, [authLoading])
+
 	if (!user && authLoading) {
 		return <Loading text={loadingText} />
 	}
