@@ -80,7 +80,7 @@ export const StorePage: React.FC = () => {
 
 		filtersItems.push({
 			columnField: "faction_id",
-			operatorValue: "=",
+			operatorValue: !user?.factionID ? "isnull" :  "=",
 			value: user?.factionID,
 		})
 
