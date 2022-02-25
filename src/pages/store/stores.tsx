@@ -1,18 +1,23 @@
 import { Box, Divider, Paper, Skeleton, Typography } from "@mui/material"
+import Locker from "../../assets/images/locker.png"
 import { useEffect, useState } from "react"
-import { Link as RouterLink } from "react-router-dom"
+import { Link as RouterLink, useHistory } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { Loading } from "../../components/loading"
 import { SearchBar } from "../../components/searchBar"
+import { EnlistButton } from "../../components/supremacy/enlistButton"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
-import { Collection, Faction } from "../../types/types"
+import { Collection, Faction, User } from "../../types/types"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 
 // Displays all stores available to the user
 export const StoresPage = () => {
@@ -21,6 +26,35 @@ export const StoresPage = () => {
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
+	const [userLoad, setUserLoad] = useState(true)
+	const [canEnter, setCanEnter] = useState(false)
+	const [factionsData, setFactionsData] = useState<Faction[]>([])
+
+	useEffect(() => {
+		if (user) {
+			if (!user.faction) {
+				setUserLoad(false)
+			} else {
+				setCanEnter(true)
+				setUserLoad(false)
+			}
+		} else {
+			setUserLoad(false)
+		}
+	}, [userLoad, user])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+		;(async () => {
+			try {
+				const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
+
+				setFactionsData(resp)
+			} catch (e) {
+				setFactionsData([])
+			}
+		})()
+	}, [send, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
@@ -39,6 +73,12 @@ export const StoresPage = () => {
 		})()
 	}, [send, state, displayMessage])
 
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
+	if (userLoad) {
+		return <Loading text={"Getting shop data"} />
+	}
 	return (
 		<Box
 			sx={{
@@ -73,9 +113,15 @@ export const StoresPage = () => {
 							padding: "2rem",
 						}}
 					>
-						{collections.map((c) => {
-							return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
-						})}
+						{canEnter ? (
+							collections.map((c) => {
+								return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
+							})
+						) : (
+							<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+								<Typography variant="h3">Please enlist to a faction to view store items</Typography>
+							</Box>
+						)}
 					</Paper>
 				)}
 			</Box>
@@ -238,7 +284,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 				}}
 			>
 				<RouterLink component={StyledFancyButton} to={`/stores/${collection.slug}`}>
-					View Entire Store
+					View Collection
 				</RouterLink>
 			</Box>
 			{storeItemIDs.length || collection.name === "Supremacy Genesis" ? (

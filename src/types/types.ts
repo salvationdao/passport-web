@@ -238,6 +238,7 @@ export interface ExchangeRates {
 }
 
 export type tokenName = "eth" | "usdc" | "bnb" | "busd"
+
 export interface tokenSelect {
 	name: tokenName
 	networkName: string
@@ -248,4 +249,10 @@ export interface tokenSelect {
 	contractAddr: string
 	scanSite: string
 	gasFee: number
+}
+
+export interface metamaskError {
+	code: number
+	message: string
+	stack?: unknown
 }

@@ -276,7 +276,8 @@ const ProfileEdit: React.FC = () => {
 					Edit Profile
 				</Typography>
 
-				<Section>
+				{/* Temporarily removed for public sale */}
+				{/* <Section>
 					<Typography variant="subtitle1">Avatar</Typography>
 					<ImageUpload
 						label="Upload Avatar"
@@ -291,7 +292,7 @@ const ProfileEdit: React.FC = () => {
 							},
 						}}
 					/>
-				</Section>
+				</Section> */}
 
 				<Section>
 					<Typography variant="subtitle1">User Details</Typography>
@@ -332,7 +333,8 @@ const ProfileEdit: React.FC = () => {
 					/>
 				</Section>
 
-				<Section>
+				{/* Temporarily removed for public sale */}
+				{/* <Section>
 					<Typography variant="subtitle1">Password</Typography>
 					{changePassword && (
 						<InputField
@@ -368,9 +370,9 @@ const ProfileEdit: React.FC = () => {
 									<PasswordRequirement fulfilled={!!password && password.length >= 8}>be 8 or more characters long</PasswordRequirement>
 									<PasswordRequirement fulfilled={!!password && password.toUpperCase() !== password && password.toLowerCase() !== password}>
 										contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
-									</PasswordRequirement>
-									{/* eslint-disable-next-line */}
-									<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
+									</PasswordRequirement> */}
+				{/* eslint-disable-next-line */}
+				{/* <PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
 										contain at least <strong>1 number</strong>
 									</PasswordRequirement>
 									<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)}>
@@ -392,7 +394,7 @@ const ProfileEdit: React.FC = () => {
 							</Button>
 						</>
 					)}
-				</Section>
+				</Section> */}
 
 				<Box
 					sx={{

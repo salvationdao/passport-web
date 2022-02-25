@@ -16,6 +16,7 @@ import { colors } from "../../theme"
 import { Collection } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
 import { useSnackbar } from "../../containers/snackbar"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 
 type onOffWorld = "on only" | "off only" | "both"
 
@@ -191,7 +192,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		query({
 			search,
 			attributeFilter: {
-				linkOperator: "and",
+				linkOperator: "or",
 				items: attributeFilterItems,
 			},
 			filter: {
@@ -207,6 +208,9 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		setAssetHashes(payload.assetHashes)
 	}, [payload, loading, error])
 
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
 	const renderFilters = () => (
 		<>
 			<Box>

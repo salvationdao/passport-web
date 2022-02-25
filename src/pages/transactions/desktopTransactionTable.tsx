@@ -1,4 +1,5 @@
-import { Box, Chip, styled, Typography } from "@mui/material"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
+import { Box, Button, Chip, styled, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -7,10 +8,10 @@ import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
 
 export interface TransactionTableProps {
-	transactions: { id: string; groupID: string }[]
+	transactionIDs: string[]
 }
 
-export const DesktopTransactionTable = ({ transactions }: TransactionTableProps) => {
+export const DesktopTransactionTable = ({ transactionIDs }: TransactionTableProps) => {
 	return (
 		<Box
 			component="table"
@@ -28,15 +29,15 @@ export const DesktopTransactionTable = ({ transactions }: TransactionTableProps)
 					<th align="right">Date</th>
 				</EntryRow>
 			</EntryHeader>
-			{transactions.length > 0 && (
+			{transactionIDs.length > 0 && (
 				<Box
 					component="tbody"
 					sx={{
 						height: "100%",
 					}}
 				>
-					{transactions.map((t, index) => (
-						<TransactionEntry key={`${t.id}-${index}`} transactionID={t.id} />
+					{transactionIDs.map((t, index) => (
+						<TransactionEntry key={`${t}-${index}`} transactionID={t} />
 					))}
 				</Box>
 			)}
@@ -55,8 +56,8 @@ const EntryRow = styled("tr")({
 	},
 	// Transaction Ref.
 	"& > *:nth-of-type(1)": {
-		minWidth: "220px",
-		maxWidth: "220px",
+		minWidth: "150px",
+		maxWidth: "150px",
 	},
 	// Description
 	"& > *:nth-of-type(2)": {},
@@ -65,7 +66,9 @@ const EntryRow = styled("tr")({
 	// From
 	"& > *:nth-of-type(4)": {},
 	// Status
-	"& > *:nth-of-type(5)": {},
+	"& > *:nth-of-type(5)": {
+		textTransform: "capitalize",
+	},
 	// Date
 	"& > *:nth-of-type(6)": {},
 })
@@ -110,7 +113,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 		return (
 			<EntryRow
 				sx={{
-					"&:nth-of-type(even)": {
+					"&:nth-of-type(odd)": {
 						backgroundColor: "#160d45",
 					},
 				}}
@@ -128,7 +131,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 		return (
 			<EntryRow
 				sx={{
-					"&:nth-of-type(even)": {
+					"&:nth-of-type(odd)": {
 						backgroundColor: "#160d45",
 					},
 				}}
@@ -145,20 +148,24 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 	return (
 		<EntryRow
 			sx={{
-				"&:nth-of-type(even)": {
+				"&:nth-of-type(odd)": {
 					backgroundColor: "#160d45",
 				},
 			}}
 		>
 			<td align="left">
-				<EntryData
-					variant="caption"
-					sx={{
-						textTransform: "uppercase",
-					}}
-				>
-					{entry.transactionReference}
-				</EntryData>
+				<Button onClick={() => navigator.clipboard.writeText(entry.transactionReference)} endIcon={<ContentCopyIcon />} variant="text" fullWidth>
+					<EntryData
+						variant="caption"
+						sx={{
+							overflowX: "hidden",
+							textTransform: "uppercase",
+							textOverflow: "ellipsis",
+						}}
+					>
+						{entry.transactionReference}
+					</EntryData>
+				</Button>
 			</td>
 			<td align="left">
 				<EntryData

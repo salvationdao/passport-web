@@ -1,4 +1,8 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Paper, styled, Typography, useMediaQuery } from "@mui/material"
+import Accordion from "@mui/material/Accordion"
+import AccordionDetails from "@mui/material/AccordionDetails"
+import AccordionSummary, { AccordionSummaryProps } from "@mui/material/AccordionSummary"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../../assets"
@@ -20,7 +24,9 @@ export const TransactionsPage = () => {
 
 	// Transaction data
 	const [search, setSearch] = useState("")
-	const [condensedTransactions, setCondensedTransactions] = useState<{ id: string; groupID: string }[]>([])
+	const [condensedTransactions, setCondensedTransactions] = useState<{ id: string; groupID?: string }[]>([])
+	const [ungroupedTransactions, setUngroupedTransactions] = useState<string[]>([])
+	const [groupedTransactions, setGroupedTransactions] = useState<Map<string, string[]>>(new Map())
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
 
@@ -29,10 +35,24 @@ export const TransactionsPage = () => {
 		;(async () => {
 			setLoading(true)
 			try {
-				const resp = await send<{ total: number; transactions: { id: string; groupID: string }[] }>(HubKey.TransactionList, {
+				const resp = await send<{ total: number; transactions: { id: string; groupID?: string }[] }>(HubKey.TransactionList, {
 					pageSize: 10,
 					search,
 				})
+				const grouped = new Map<string, string[]>()
+				const ungrouped: string[] = []
+				resp.transactions.forEach((t) => {
+					if (t.groupID) {
+						let transactions = grouped.get(t.groupID)
+						if (!transactions) transactions = []
+						transactions.push(t.id)
+						grouped.set(t.groupID, transactions)
+					} else {
+						ungrouped.push(t.id)
+					}
+				})
+				setGroupedTransactions(grouped)
+				setUngroupedTransactions(ungrouped)
 				setCondensedTransactions(resp.transactions)
 			} catch (e) {
 				if (typeof e === "string") {
@@ -133,10 +153,23 @@ export const TransactionsPage = () => {
 						/>
 					</Box>
 					<TransactionGroup>
+						<Typography
+							variant="h3"
+							component="h2"
+							sx={{
+								marginBottom: ".5rem",
+								fontFamily: fonts.bizmoblack,
+								fontStyle: "italic",
+								letterSpacing: "2px",
+								textTransform: "uppercase",
+							}}
+						>
+							Ungrouped
+						</Typography>
 						{isWiderThan1000px ? (
-							<DesktopTransactionTable transactions={condensedTransactions} />
+							<DesktopTransactionTable transactionIDs={ungroupedTransactions} />
 						) : (
-							<MobileTransactionTable transactions={condensedTransactions} />
+							<MobileTransactionTable transactionIDs={ungroupedTransactions} />
 						)}
 						{condensedTransactions.length === 0 && (
 							<Box
@@ -153,6 +186,48 @@ export const TransactionsPage = () => {
 							</Box>
 						)}
 					</TransactionGroup>
+					{Array.from(groupedTransactions.keys()).map((g) => (
+						<TransactionGroup key={g}>
+							<GroupAccordion>
+								<StyledAccordionSummary>
+									<Typography
+										variant="h3"
+										component="h2"
+										sx={{
+											marginBottom: ".5rem",
+											fontFamily: fonts.bizmoblack,
+											fontStyle: "italic",
+											letterSpacing: "2px",
+											textTransform: "uppercase",
+										}}
+									>
+										{g}
+									</Typography>
+								</StyledAccordionSummary>
+								<StyledAccordionDetails>
+									{isWiderThan1000px ? (
+										<DesktopTransactionTable transactionIDs={groupedTransactions.get(g)!} />
+									) : (
+										<MobileTransactionTable transactionIDs={groupedTransactions.get(g)!} />
+									)}
+									{condensedTransactions.length === 0 && (
+										<Box
+											sx={{
+												flex: 1,
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+											}}
+										>
+											<Typography variant="subtitle2" color={colors.darkerGrey}>
+												{!loading && error ? error : "No transaction history"}
+											</Typography>
+										</Box>
+									)}
+								</StyledAccordionDetails>
+							</GroupAccordion>
+						</TransactionGroup>
+					))}
 				</Paper>
 			</Box>
 		</Box>
@@ -168,4 +243,18 @@ const TransactionGroup = styled("div")({
 	"&:not(:last-child)": {
 		marginBottom: "2rem",
 	},
+})
+
+const GroupAccordion = styled(Accordion)({
+	alignSelf: "stretch",
+})
+
+const StyledAccordionSummary = styled((props: AccordionSummaryProps) => <AccordionSummary expandIcon={<ExpandMoreIcon />} {...props} />)({
+	padding: 0,
+})
+
+const StyledAccordionDetails = styled(AccordionDetails)({
+	display: "flex",
+	flexDirection: "column",
+	padding: 0,
 })

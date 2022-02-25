@@ -80,7 +80,7 @@ export const StorePage: React.FC = () => {
 
 		filtersItems.push({
 			columnField: "faction_id",
-			operatorValue: !user?.factionID ? "isnull" :  "=",
+			operatorValue: !user?.factionID ? "isnull" : "=",
 			value: user?.factionID,
 		})
 
@@ -103,7 +103,7 @@ export const StorePage: React.FC = () => {
 		query({
 			search,
 			attributeFilter: {
-				linkOperator: "and",
+				linkOperator: "or",
 				items: attributeFilterItems,
 			},
 			filter: {
