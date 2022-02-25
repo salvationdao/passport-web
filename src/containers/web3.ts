@@ -266,6 +266,8 @@ export const Web3Container = createContainer(() => {
 	}, [account, handleWalletSups])
 
 	const createWcProvider = useCallback(async (showQrCode: boolean = true) => {
+		const acceptedWallets = ["metamask", "rainbow", "gnosis", "trust", "argent", "ledgerlive"]
+
 		//  Create WalletConnect Provider
 		const walletConnectProvider = new WalletConnectProvider({
 			rpc: {
@@ -275,6 +277,10 @@ export const Web3Container = createContainer(() => {
 				97: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/testnet`,
 			},
 			qrcode: showQrCode,
+			qrcodeModalOptions: {
+				mobileLinks: acceptedWallets,
+				desktopLinks: acceptedWallets,
+			},
 		})
 
 		//  Wrap with Web3Provider from ethers.js
@@ -394,7 +400,7 @@ export const Web3Container = createContainer(() => {
 		return ""
 	}, [displayMessage, provider, handleAccountChange])
 
-	const wcConnect = useCallback(async () => {
+	const wcConnect = useCallback(async (): Promise<WalletConnectProvider | undefined> => {
 		let walletConnectProvider
 		try {
 			walletConnectProvider = await createWcProvider()
@@ -402,7 +408,7 @@ export const Web3Container = createContainer(() => {
 			const connector = await walletConnectProvider.getWalletConnector()
 			const acc = connector.accounts[0]
 			setAccount(acc)
-			return { walletConnectProvider }
+			return walletConnectProvider
 		} catch (error) {
 			await walletConnectProvider?.disconnect()
 		}
@@ -510,9 +516,9 @@ export const Web3Container = createContainer(() => {
 
 	const signWalletConnect = useCallback(
 		async (userID?: string): Promise<string> => {
-			await wcConnect()
-			if (wcProvider) {
-				const connector = await wcProvider.getWalletConnector()
+			const walletConnectProvider = await wcConnect()
+			if (walletConnectProvider) {
+				const connector = await walletConnectProvider.getWalletConnector()
 				let nonce: string
 				if (userID) {
 					nonce = await getNonceFromID(userID)
@@ -528,7 +534,7 @@ export const Web3Container = createContainer(() => {
 				return signature
 			} else return ""
 		},
-		[wcProvider, getNonce, getNonceFromID, account, wcConnect],
+		[getNonce, getNonceFromID, account, wcConnect],
 	)
 
 	const changeChain = async (chain: number) => {
@@ -632,6 +638,7 @@ export const Web3Container = createContainer(() => {
 		amountRemaining,
 		loadingAmountRemaining,
 		setLoadingAmountRemaining,
+		wcProvider,
 	}
 })
 
