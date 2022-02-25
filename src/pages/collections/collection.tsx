@@ -1,24 +1,22 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Chip, ChipProps, Divider, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Chip, ChipProps, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
+import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
-import { useSnackbar } from "../../containers/snackbar"
-import { PleaseEnlist } from "../../components/pleaseEnlist"
-
-type onOffWorld = "on only" | "off only" | "both"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const { username } = useParams<{ username: string }>()
@@ -30,11 +28,17 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	const [collection, setCollection] = useState<Collection>()
 	const [collections, setCollections] = useState<Collection[]>()
 	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
+	const {
+		loading: offWorldLoading,
+		error: offWorldError,
+		payload: offWorldPayload,
+		query: offWorldQuery,
+	} = useQuery<{ assetHashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
 
 	// search and filter
 	const [search, setSearch] = useState("")
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
-	const [onOffWorld, setOnOffWorld] = useState<onOffWorld>("both")
+	const [showOffWorldOnly, setShowOffWorld] = useState(false)
 	const [assetType, setAssetType] = useState<string>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
@@ -58,30 +62,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		})
 	}
 
-	const renderRarities = () => {
-		const rarityArray: string[] = []
-
-		for (const rarityType in colors.rarity) {
-			rarityArray.push(rarityType)
-		}
-
-		return rarityArray.map((rarity) => {
-			const rarityUppercase = rarity.charAt(0).toUpperCase() + rarity.slice(1)
-			const rarityName = rarityUppercase.split(/(?=[A-Z])/).join(" ")
-			const colorValue = colors.rarity[rarity as keyof typeof colors.rarity]
-
-			return (
-				<FilterChip
-					active={rarities.has(rarityName)}
-					label={rarityName}
-					color={colorValue}
-					variant="outlined"
-					onClick={() => toggleRarity(rarityName)}
-				/>
-			)
-		})
-	}
-
 	const toggleCollection = (collection: Collection) => {
 		setCollection((prev) => {
 			if (prev?.id === collection.id) {
@@ -91,50 +71,8 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		})
 	}
 
-	const toggleOnOffWorld = (state: onOffWorld) => {
-		setOnOffWorld((prev) => {
-			if (prev === state) {
-				return "both"
-			}
-			return state
-		})
-	}
-
-	const renderAssetHashes = (hashes: string[]) => {
-		return (
-			<Box>
-				{hashes.length ? (
-					<Box
-						sx={{
-							flex: 1,
-							display: "grid",
-							gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-							gap: "1rem",
-							height: "100%",
-						}}
-					>
-						{hashes.map((a) => {
-							return <CollectionItemCard key={a} assetHash={a} username={username} />
-						})}
-					</Box>
-				) : (
-					<Box
-						sx={{
-							flex: 1,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							height: "100%",
-							padding: "2rem",
-						}}
-					>
-						<Typography variant="subtitle2" color={colors.darkGrey}>
-							{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
-						</Typography>
-					</Box>
-				)}
-			</Box>
-		)
+	const toggleOnOffWorld = (state: boolean) => {
+		setShowOffWorld(state)
 	}
 
 	useEffect(() => {
@@ -189,41 +127,82 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 			}),
 		)
 
-		query({
-			search,
-			attributeFilter: {
-				linkOperator: "or",
-				items: attributeFilterItems,
-			},
-			filter: {
-				linkOperator: "and",
-				items: filtersItems,
-			},
-			...sort,
-		})
-	}, [user, query, collection, state, assetType, rarities, search, username, sort])
+		if (showOffWorldOnly) {
+			offWorldQuery({
+				username,
+				attributeFilter: {
+					linkOperator: "and",
+					items: attributeFilterItems,
+				},
+			})
+		} else {
+			query({
+				search,
+				attributeFilter: {
+					linkOperator: "or",
+					items: attributeFilterItems,
+				},
+				filter: {
+					linkOperator: "and",
+					items: filtersItems,
+				},
+				...sort,
+			})
+		}
+	}, [user, query, collection, state, assetType, rarities, search, username, sort, showOffWorldOnly, offWorldQuery])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
 		setAssetHashes(payload.assetHashes)
 	}, [payload, loading, error])
 
+	useEffect(() => {
+		if (!offWorldPayload || offWorldLoading || offWorldError) return
+
+		setAssetHashes(Array.from(new Set(offWorldPayload.assetHashes)))
+	}, [offWorldPayload, offWorldLoading, offWorldError])
+
 	if (user && !user.faction) {
 		return <PleaseEnlist />
 	}
+
+	const renderRarities = () => {
+		const rarityArray: string[] = []
+
+		for (const rarityType in colors.rarity) {
+			rarityArray.push(rarityType)
+		}
+
+		return rarityArray.map((rarity) => {
+			const rarityUppercase = rarity.charAt(0).toUpperCase() + rarity.slice(1)
+			const rarityName = rarityUppercase.split(/(?=[A-Z])/).join(" ")
+			const colorValue = colors.rarity[rarity as keyof typeof colors.rarity]
+
+			return (
+				<FilterChip
+					key={rarity}
+					active={rarities.has(rarityName)}
+					label={rarityName}
+					color={colorValue}
+					variant="outlined"
+					onClick={() => toggleRarity(rarityName)}
+				/>
+			)
+		})
+	}
+
 	const renderFilters = () => (
 		<>
 			<Box>
 				<Typography
 					variant="subtitle1"
 					sx={{
-						display: "flex",
-						alignItems: "center",
 						marginBottom: ".5rem",
 					}}
 				>
-					Sort By
+					On World / Off World
 				</Typography>
+
 				<Box
 					sx={{
 						display: "flex",
@@ -232,144 +211,154 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						gap: ".5rem",
 					}}
 				>
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Oldest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Newest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical (reverse)"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Rarity
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					{renderRarities()}
-				</Box>
-				<Box
-					sx={{
-						display: "flex",
-						flexDirection: isWiderThan1000px ? "column" : "row",
-						flexWrap: isWiderThan1000px ? "initial" : "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<Typography
-						variant="subtitle1"
-						sx={{
-							marginBottom: ".5rem",
-						}}
-					>
-						Collection
-					</Typography>
-					{collections?.map((c) => {
-						return <FilterChip active={c.id === collection?.id} label={c.name} variant="outlined" onClick={() => toggleCollection(c)} />
-					})}
-				</Box>
-				<Box
-					sx={{
-						display: "flex",
-						flexDirection: isWiderThan1000px ? "column" : "row",
-						flexWrap: isWiderThan1000px ? "initial" : "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<Typography
-						variant="subtitle1"
-						sx={{
-							marginBottom: ".5rem",
-						}}
-					>
-						On World / Off World
-					</Typography>
 					<FilterChip
-						active={onOffWorld === "off only"}
+						active={showOffWorldOnly}
 						label="Off World Only"
 						variant="outlined"
 						onClick={() => {
-							toggleOnOffWorld("off only")
+							toggleOnOffWorld(true)
 						}}
 					/>
 					<FilterChip
-						active={onOffWorld === "on only"}
+						active={!showOffWorldOnly}
 						label="On World Only"
 						variant="outlined"
 						onClick={() => {
-							toggleOnOffWorld("on only")
+							toggleOnOffWorld(false)
 						}}
 					/>
 				</Box>
 			</Box>
+			{!showOffWorldOnly && (
+				<>
+					<Box>
+						<Typography
+							variant="subtitle1"
+							sx={{
+								display: "flex",
+								alignItems: "center",
+								marginBottom: ".5rem",
+							}}
+						>
+							Sort By
+						</Typography>
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: isWiderThan1000px ? "column" : "row",
+								flexWrap: isWiderThan1000px ? "initial" : "wrap",
+								gap: ".5rem",
+							}}
+						>
+							{(() => {
+								const newSort = {
+									sortBy: "created_at",
+									sortDir: "asc",
+								}
+								return (
+									<SortChip
+										active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+										label="Oldest first"
+										variant="outlined"
+										onClick={() => {
+											setSort(newSort)
+										}}
+									/>
+								)
+							})()}
+							{(() => {
+								const newSort = {
+									sortBy: "created_at",
+									sortDir: "desc",
+								}
+								return (
+									<SortChip
+										active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+										label="Newest first"
+										variant="outlined"
+										onClick={() => {
+											setSort(newSort)
+										}}
+									/>
+								)
+							})()}
+							{(() => {
+								const newSort = {
+									sortBy: "name",
+									sortDir: "asc",
+								}
+								return (
+									<SortChip
+										active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+										label="Name: Alphabetical"
+										variant="outlined"
+										onClick={() => {
+											setSort(newSort)
+										}}
+									/>
+								)
+							})()}
+							{(() => {
+								const newSort = {
+									sortBy: "name",
+									sortDir: "desc",
+								}
+								return (
+									<SortChip
+										active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+										label="Name: Alphabetical (reverse)"
+										variant="outlined"
+										onClick={() => {
+											setSort(newSort)
+										}}
+									/>
+								)
+							})()}
+						</Box>
+					</Box>
+					<Box>
+						<Typography
+							variant="subtitle1"
+							sx={{
+								marginBottom: ".5rem",
+							}}
+						>
+							Rarity
+						</Typography>
+						<Box
+							sx={{
+								display: "flex",
+								flexWrap: "wrap",
+								gap: ".5rem",
+							}}
+						>
+							{renderRarities()}
+						</Box>
+					</Box>
+					<Box>
+						<Typography
+							variant="subtitle1"
+							sx={{
+								marginBottom: ".5rem",
+							}}
+						>
+							Collection
+						</Typography>
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: isWiderThan1000px ? "column" : "row",
+								flexWrap: isWiderThan1000px ? "initial" : "wrap",
+								gap: ".5rem",
+							}}
+						>
+							{collections?.map((c) => {
+								return <FilterChip active={c.id === collection?.id} label={c.name} variant="outlined" onClick={() => toggleCollection(c)} />
+							})}
+						</Box>
+					</Box>
+				</>
+			)}{" "}
 		</>
 	)
 
@@ -555,11 +544,40 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
 							<Paper sx={{ padding: "2rem" }}>
-								<Box sx={onOffWorld !== "off only" ? { display: "block" } : { display: "none" }}>
-									<Typography variant="h2">On World Assets</Typography>
-									<Divider />
-									{renderAssetHashes(assetHashes)}
-								</Box>
+								{
+									<Box>
+										{assetHashes.length > 0 ? (
+											<Box
+												sx={{
+													flex: 1,
+													display: "grid",
+													gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+													gap: "1rem",
+													height: "100%",
+												}}
+											>
+												{assetHashes.map((a, index) => {
+													return <CollectionItemCard key={`${a}-${index}`} assetHash={a} username={username} />
+												})}
+											</Box>
+										) : (
+											<Box
+												sx={{
+													flex: 1,
+													display: "flex",
+													alignItems: "center",
+													justifyContent: "center",
+													height: "100%",
+													padding: "2rem",
+												}}
+											>
+												<Typography variant="subtitle2" color={colors.darkGrey}>
+													{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
+												</Typography>
+											</Box>
+										)}
+									</Box>
+								}
 							</Paper>
 						</Box>
 					</Box>
