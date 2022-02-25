@@ -143,8 +143,8 @@ export interface Collection {
 
 export interface Asset {
 	hash: string
-	mintContract: string
-	stakeContract: string
+	// mintContract: string
+	// stakeContract: string
 	externalTokenID: number
 	userID: string
 	username: string
@@ -163,6 +163,7 @@ export interface Asset {
 	lockedByID?: string
 	deletedAt?: Date
 	mintingSignature?: string
+	signatureExpiry?: string
 	txHistory: any[]
 	minted: boolean
 }

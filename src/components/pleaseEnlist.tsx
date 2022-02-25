@@ -11,7 +11,17 @@ export const PleaseEnlist = () => {
 				}}
 			/>
 			<Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", margin: "2rem" }}>
-				<Paper sx={{ width: "100%", padding: "2rem", display: "flex", flexDirection: "column", alignItems: "center", height: "85vh" }}>
+				<Paper
+					sx={{
+						width: "100%",
+						padding: "2rem",
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+						height: "85vh",
+						justifyContent: "center",
+					}}
+				>
 					<Box
 						component="img"
 						src={Locker}

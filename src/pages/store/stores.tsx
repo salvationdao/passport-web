@@ -284,7 +284,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 				}}
 			>
 				<RouterLink component={StyledFancyButton} to={`/stores/${collection.slug}`}>
-					View Entire Store
+					View Collection
 				</RouterLink>
 			</Box>
 			{storeItemIDs.length || collection.name === "Supremacy Genesis" ? (
