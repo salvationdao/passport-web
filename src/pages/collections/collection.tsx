@@ -173,14 +173,14 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 			rarityArray.push(rarityType)
 		}
 
-		return rarityArray.map((rarity) => {
+		return rarityArray.map((rarity, index) => {
 			const rarityUppercase = rarity.charAt(0).toUpperCase() + rarity.slice(1)
 			const rarityName = rarityUppercase.split(/(?=[A-Z])/).join(" ")
 			const colorValue = colors.rarity[rarity as keyof typeof colors.rarity]
 
 			return (
 				<FilterChip
-					key={rarity}
+					key={`${rarity}-${index}`}
 					active={rarities.has(rarityName)}
 					label={rarityName}
 					color={colorValue}
@@ -352,8 +352,16 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								gap: ".5rem",
 							}}
 						>
-							{collections?.map((c) => {
-								return <FilterChip active={c.id === collection?.id} label={c.name} variant="outlined" onClick={() => toggleCollection(c)} />
+							{collections?.map((c, index) => {
+								return (
+									<FilterChip
+										key={`${c.id}-${index}`}
+										active={c.id === collection?.id}
+										label={c.name}
+										variant="outlined"
+										onClick={() => toggleCollection(c)}
+									/>
+								)
 							})}
 						</Box>
 					</Box>
