@@ -20,7 +20,7 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery,
+	useMediaQuery
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
@@ -34,6 +34,7 @@ import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
 import { SearchBar } from "../../components/searchBar"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -868,7 +869,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 			return subscribe<Asset>(
 				HubKey.AssetUpdated,
 				(payload) => {
-					console.log(payload)
 					if (!payload) return
 					let assetAttributes = new Array<Attribute>()
 					let numberAttributes = new Array<Attribute>()
@@ -934,7 +934,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					collectionSlug={asset.collection.slug}
 				/>
 			)}
-			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
+			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} setAsset={setAsset} userID={user.id} />
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -1533,8 +1533,14 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 	)
 }
 
-const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Asset; userID: string }) => {
-	const { open, onClose, asset, userID } = props
+const UpdateNameModal = (props: {
+	open: boolean
+	onClose: () => void
+	asset: Asset
+	setAsset: React.Dispatch<React.SetStateAction<Asset | undefined>>
+	userID: string
+}) => {
+	const { open, onClose, asset, userID, setAsset } = props
 	const { send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
@@ -1557,6 +1563,10 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Ass
 				userID,
 				name,
 			})
+			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${asset.hash}`)
+			const updatedAsset: Asset = await assetResponse.json()
+			setAsset(updatedAsset)
+
 			displayMessage("Asset successfully updated", "success")
 			onClose()
 		} catch (e) {

@@ -1,10 +1,8 @@
 import { useState, useCallback } from "react"
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip } from "@mui/material"
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip, Alert, Box } from "@mui/material"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { Alert } from "@mui/material"
 import { Perm } from "../types/enums"
 import { AuthContainer } from "../containers"
-import { Box } from "@mui/material"
 import HubKey from "../keys"
 import { useWebsocket } from "../containers/socket"
 

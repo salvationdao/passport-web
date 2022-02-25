@@ -43,3 +43,41 @@ export const PleaseEnlist = () => {
 		</div>
 	)
 }
+export const WhiteListCheck = () => {
+	return (
+		<div>
+			<Navbar
+				sx={{
+					marginBottom: "2rem",
+				}}
+			/>
+			<Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", margin: "2rem" }}>
+				<Paper
+					sx={{
+						width: "100%",
+						padding: "2rem",
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+						height: "85vh",
+						justifyContent: "center",
+					}}
+				>
+					<Box
+						component="img"
+						src={Locker}
+						alt="Image of a Safe"
+						sx={{
+							height: "12rem",
+							marginBottom: "1.5rem",
+						}}
+					/>
+
+					<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: "1rem" }}>
+						You must be Whitelisted to access the store
+					</Typography>
+				</Paper>
+			</Box>
+		</div>
+	)
+}

@@ -1,10 +1,13 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, keyframes, Paper, Typography, useMediaQuery, useTheme, Zoom } from "@mui/material"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import LootboxVideo from "../../components/lootboxVideo"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
+import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
@@ -20,6 +23,38 @@ export const LootBoxPage = () => {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const theme = useTheme()
+	const [open, setOpen] = useState(false)
+	const { setSidebarOpen } = useSidebarState()
+	const [imgURL, setImg] = useState("")
+	const [videoURL, setVideoURL] = useState("")
+
+	useEffect(() => {
+		if (user && user.faction) {
+			switch (user.faction.label) {
+				case "Red Mountain Offworld Mining Corporation":
+					setImg("https://afiles.ninja-cdn.com/passport/rm_crate.png")
+					setVideoURL(
+						"https://player.vimeo.com/progressive_redirect/playback/681923579/rendition/1080p?loc=external&signature=7e9fff2e4ea09ee28997c53f80f28dd581269d8af04195885821f65e5f533f10",
+					)
+					break
+				case "Boston Cybernetics":
+					setImg("https://afiles.ninja-cdn.com/passport/boston_crate.png")
+					setVideoURL(
+						"https://player.vimeo.com/progressive_redirect/playback/681930319/rendition/1080p?loc=external&signature=11bf8ce5eb133e5e53b12d05894f991157672b2aa9661455230c948f7b823e89",
+					)
+					break
+				case "Zaibatsu Heavy Industries":
+					setImg("https://afiles.ninja-cdn.com/passport/zaibatsu_crate.png")
+					setVideoURL(
+						"https://player.vimeo.com/progressive_redirect/playback/681917273/rendition/1080p?loc=external&signature=e0c40d7d63d7019bcf9b7b789107bf1eb716479e5e3cd4e9d9e5a9c4c38ede2d",
+					)
+					break
+				default:
+					setImg(GradientSafeIconImagePath)
+					break
+			}
+		}
+	}, [user])
 
 	const purchase = async () => {
 		if (state !== SocketState.OPEN || !user) return
@@ -33,6 +68,8 @@ export const LootBoxPage = () => {
 			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${resp}`)
 			const mysteryAsset: Asset = await assetResponse.json()
 			setAsset(mysteryAsset)
+			setSidebarOpen(false)
+			setOpen(true)
 
 			setTimeout(() => {
 				setDialogOpen(true)
@@ -47,7 +84,13 @@ export const LootBoxPage = () => {
 		}
 	}
 
-	return (
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
+
+	return open ? (
+		<LootboxVideo setOpen={setOpen} srcURL={videoURL} open={open} />
+	) : (
 		<Box
 			sx={{
 				display: "flex",
@@ -107,11 +150,11 @@ export const LootBoxPage = () => {
 						<Zoom in={true}>
 							<Box
 								component="img"
-								src={GradientSafeIconImagePath}
+								src={imgURL}
 								alt="Mystery Crate Icon"
 								sx={{
-									width: "200px",
-									height: "200px",
+									width: "300px",
+									height: "300px",
 									animation: loading ? `${slowJiggle} 0.2s infinite` : `${jiggle} 0.82s cubic-bezier(.36,.07,.19,.97) both`,
 								}}
 							/>
@@ -151,9 +194,8 @@ export const LootBoxPage = () => {
 							src={asset?.image}
 							alt="Asset Image"
 							sx={{
-								display: isWiderThan1000px ? "block" : "none",
 								width: "100%",
-								maxWidth: "350px",
+								maxWidth: isWiderThan1000px ? "350px" : "250px",
 								margin: "1rem 0",
 							}}
 						/>

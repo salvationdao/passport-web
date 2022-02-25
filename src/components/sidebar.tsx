@@ -122,6 +122,20 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				"& > *:not(:last-child)": {
 					marginBottom: "1rem",
 				},
+				overflowY: "auto",
+				overflowX: "hidden",
+				scrollbarWidth: "none",
+				"::-webkit-scrollbar": {
+					width: 4,
+				},
+				"::-webkit-scrollbar-track": {
+					boxShadow: `inset 0 0 5px ${colors.darkNavyBackground}`,
+					borderRadius: 3,
+				},
+				"::-webkit-scrollbar-thumb": {
+					background: colors.darkNeonBlue,
+					borderRadius: 3,
+				},
 			}}
 		>
 			<Box
@@ -321,6 +335,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					{user?.faction ? "Your Syndicate" : "Choose Your Syndicate"}
 				</Typography>
 				<RenderEnlist factionsData={factionsData} user={user} />
+				<FactionWarMachineRemain />
 				<Divider />
 				<Button
 					sx={{
@@ -344,7 +359,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to="/stores/supremacy-genesis" startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
-				<FactionWarMachineRemain />
 			</Box>
 
 			<Divider />
@@ -478,7 +492,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			<Box
 				component="main"
 				sx={(theme) => ({
-					overflowX: "auto",
 					flexGrow: 1,
 					transition: theme.transitions.create("margin", {
 						easing: theme.transitions.easing.sharp,
@@ -626,7 +639,6 @@ const FactionWarMachineRemain = () => {
 		if (state !== WebSocket.OPEN || !subscribe) return
 		return subscribe<FactionAvailable[]>(HubKey.FactionAvailables, (payload) => {
 			if (!payload) return
-			console.log(payload)
 			setFactionAvailables(payload)
 		})
 	}, [state, subscribe])
@@ -634,12 +646,12 @@ const FactionWarMachineRemain = () => {
 	return (
 		<Stack spacing={1}>
 			<Typography sx={{ py: 1.2, px: 1, textAlign: "center", color: colors.supremacy.neonBlue, backgroundColor: "#00000099" }} variant="h6">
-				MECHS REMAINING
+				WAR MACHINES REMAINING
 			</Typography>
 
 			<Stack direction="row" justifyContent="space-around" spacing="1">
 				{factionAvailables.map((fa) => {
-					const { id, label, logoBlobID, theme, amountAvailable } = fa
+					const { id, logoBlobID, theme, amountAvailable } = fa
 
 					return (
 						<Stack key={id} alignItems="center" justifyContent="center" spacing={0.5} sx={{ px: 1 }}>
