@@ -46,7 +46,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 				temp.delete(rarity)
 				return temp
 			}
-			temp.clear()
 			return temp.add(rarity)
 		})
 	}
@@ -547,7 +546,6 @@ export const FilterChip = ({ color = colors.white, active, ...props }: FilterChi
 				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
 			},
 		}}
-		onDelete={active ? props.onClick : undefined}
 		{...props}
 	/>
 )
