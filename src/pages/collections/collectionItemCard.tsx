@@ -9,12 +9,13 @@ import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Asset } from "../../types/types"
 import { Rarity, rarityTextStyles } from "../profile/profile"
+
 export interface CollectionItemCardProps {
-	tokenID: number
+	assetHash: string
 	username: string
 }
 
-export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ tokenID, username }) => {
+export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ assetHash, username }) => {
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<Asset>()
@@ -24,7 +25,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	useEffect(() => {
 		;(async () => {
 			try {
-				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${tokenID}`)
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${assetHash}`)
 				if (!resp.ok || resp.status !== 200) {
 					setNoAsset(true)
 				}
@@ -32,7 +33,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 				setNoAsset(true)
 			}
 		})()
-	}, [history, tokenID])
+	}, [history, assetHash])
 
 	useEffect(() => {
 		if (!subscribe) return
@@ -41,9 +42,9 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			(payload) => {
 				setItem(payload)
 			},
-			{ tokenID },
+			{ assetHash },
 		)
-	}, [subscribe, tokenID])
+	}, [subscribe, assetHash])
 
 	if (noAsset) return <></>
 
@@ -54,7 +55,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	return (
 		<Box
 			component="button"
-			onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}
+			onClick={() => history.push(`/profile/${username}/asset/${item?.assetHash}`)}
 			onMouseOver={() => setShowPreview(true)}
 			onMouseLeave={() => setShowPreview(false)}
 			onFocus={() => setShowPreview(true)}

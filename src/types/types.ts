@@ -118,29 +118,32 @@ export interface Collection {
 	name: string
 	slug: string
 	image: string
+	mintAddress: string
+	stakingAddress: string
 	createdAt: Date
 	updatedAt: Date
 	frozenAt?: Date
 	deletedAt?: Date
 }
 
-export interface NFTOwner {
-	token_address: string
-	token_id: string
-	contract_type: string
-	owner_of: string
-	block_number: string
-	block_number_minted: string
-	token_uri: string
-	metadata: string
-	synced_at: string
-	amount: string
-	name: string
-	symbol: string
-}
+// export interface NFTOwner {
+// 	token_address: string
+// 	token_id: string
+// 	contract_type: string
+// 	owner_of: string
+// 	block_number: string
+// 	block_number_minted: string
+// 	token_uri: string
+// 	metadata: string
+// 	synced_at: string
+// 	amount: string
+// 	name: string
+// 	symbol: string
+// }
 
 export interface Asset {
-	tokenID: number
+	assetHash: string
+	externalTokenID: number
 	userID: string
 	username: string
 	name: string

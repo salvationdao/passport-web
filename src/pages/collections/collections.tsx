@@ -12,7 +12,7 @@ import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { Collection, NFTOwner } from "../../types/types"
+import { Collection } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
 
 export const CollectionsPage: React.FC = () => {
@@ -23,7 +23,7 @@ export const CollectionsPage: React.FC = () => {
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
-	const [walletTokenIDs, setWalletTokenIDs] = useState<number[]>([])
+	const [walletAssetHashes, setWalletAssetHashes] = useState<string[]>([])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
@@ -40,39 +40,40 @@ export const CollectionsPage: React.FC = () => {
 		})()
 	}, [send, state, user, displayMessage])
 
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !send) return
-		;(async () => {
-			setLoading(true)
-			try {
-				const resp = await send<{ NFTOwners: NFTOwner[] }>(HubKey.WalletCollectionList)
-				if (resp.NFTOwners) {
-					const filter = resp.NFTOwners.filter((x) => {
-						return x.owner_of === user?.publicAddress
-					})
-
-					if (!filter) return
-
-					let itemIDs: number[] = []
-					filter.forEach((item) => {
-						fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${item.token_id}`).then((resp) => {
-							if (resp.ok && resp.status !== 200) {
-								const num = parseInt(item.token_id)
-								itemIDs.push(num)
-							}
-						})
-					})
-					setWalletTokenIDs(itemIDs)
-				}
-			} catch (e) {
-				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
-					autoHideDuration: null,
-				})
-			} finally {
-				setLoading(false)
-			}
-		})()
-	}, [send, state, user, displayMessage])
+	// TODO: commented out by vinnie 25/02/22, think we're moving nfts be retrived with asset list
+	// useEffect(() => {
+	// 	if (state !== SocketState.OPEN || !send) return
+	// 	;(async () => {
+	// 		setLoading(true)
+	// 		try {
+	// 			const resp = await send<{ NFTOwners: NFTOwner[] }>(HubKey.WalletCollectionList)
+	// 			if (resp.NFTOwners) {
+	// 				const filter = resp.NFTOwners.filter((x) => {
+	// 					return x.owner_of === user?.publicAddress
+	// 				})
+	//
+	// 				if (!filter) return
+	//
+	// 				let itemIDs: number[] = []
+	// 				filter.forEach((item) => {
+	// 					fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${item.token_id}`).then((resp) => {
+	// 						if (resp.ok && resp.status !== 200) {
+	// 							const num = parseInt(item.token_id)
+	// 							itemIDs.push(num)
+	// 						}
+	// 					})
+	// 				})
+	// 				setWalletTokenIDs(itemIDs)
+	// 			}
+	// 		} catch (e) {
+	// 			displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
+	// 				autoHideDuration: null,
+	// 			})
+	// 		} finally {
+	// 			setLoading(false)
+	// 		}
+	// 	})()
+	// }, [send, state, user, displayMessage])
 
 	useEffect(() => {
 		if (user || username) return
@@ -125,7 +126,9 @@ export const CollectionsPage: React.FC = () => {
 						}}
 					>
 						{collections.map((c, i) => {
-							return <CollectionPreview key={i} collection={c} username={username || user?.username || ""} walletTokenIDs={walletTokenIDs} />
+							return (
+								<CollectionPreview key={i} collection={c} username={username || user?.username || ""} walletAssetHashes={walletAssetHashes} />
+							)
 						})}
 					</Paper>
 				)}
@@ -178,10 +181,10 @@ const CollectionPreviewSkeleton: React.VoidFunctionComponent = () => {
 interface CollectionPreviewProps {
 	collection: Collection
 	username: string
-	walletTokenIDs: number[]
+	walletAssetHashes: string[]
 }
 
-const renderCollection = (tokenIDs: number[], username: string) => {
+const renderCollection = (assetHashes: string[], username: string) => {
 	return (
 		<Box
 			sx={{
@@ -192,17 +195,17 @@ const renderCollection = (tokenIDs: number[], username: string) => {
 				maskImage: "linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 100%)",
 			}}
 		>
-			{tokenIDs.slice(0, 6).map((a) => {
-				return <CollectionItemCard key={a} tokenID={a} username={username} />
+			{assetHashes.slice(0, 6).map((a) => {
+				return <CollectionItemCard key={a} assetHash={a} username={username} />
 			})}
 		</Box>
 	)
 }
 
-const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = ({ collection, username, walletTokenIDs }) => {
+const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = ({ collection, username, walletAssetHashes }) => {
 	const { user } = useAuth()
 	const { state, send } = useWebsocket()
-	const [tokenIDs, setTokenIDs] = useState<number[]>([])
+	const [assetHashes, setAssetHashes] = useState<string[]>([])
 	const [search, setSearch] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
@@ -212,7 +215,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 		;(async () => {
 			setLoading(true)
 			try {
-				const resp = await send<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, {
+				const resp = await send<{ assetHashes: string[]; total: number }>(HubKey.AssetList, {
 					pageSize: 6,
 					search,
 					filter: {
@@ -233,7 +236,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 						],
 					},
 				})
-				setTokenIDs(resp.tokenIDs)
+				setAssetHashes(resp.assetHashes)
 			} catch (e) {
 				setError(typeof e === "string" ? e : "An error occurred while loading items for this store.")
 			} finally {
@@ -311,8 +314,8 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				>
 					On World Assets
 				</Typography>
-				{tokenIDs.length ? (
-					renderCollection(tokenIDs, username)
+				{assetHashes.length ? (
+					renderCollection(assetHashes, username)
 				) : (
 					<Box>
 						<Typography variant="subtitle2" color={colors.darkGrey}>
@@ -335,8 +338,8 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				>
 					Off World Assets
 				</Typography>
-				{walletTokenIDs.length ? (
-					renderCollection(walletTokenIDs, username)
+				{walletAssetHashes.length ? (
+					renderCollection(walletAssetHashes, username)
 				) : (
 					<Box>
 						<Typography variant="subtitle2" color={colors.darkGrey}>

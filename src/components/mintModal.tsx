@@ -9,7 +9,7 @@ import { ConnectWallet } from "./connectWallet"
 interface MintModalProps {
 	open: boolean
 	onClose: () => void
-	tokenID: string
+	assetHash: string
 	mintingSignature?: string | undefined
 }
 
@@ -18,7 +18,7 @@ interface GetSignatureResponse {
 	expiry: number
 }
 
-export const MintModal = ({ open, onClose, tokenID, mintingSignature }: MintModalProps) => {
+export const MintModal = ({ open, onClose, assetHash, mintingSignature }: MintModalProps) => {
 	const { account, provider, currentChainId, changeChain, metaMaskState } = useWeb3()
 	const [loadingMint, setLoadingMint] = useState<boolean>(false)
 	const [errorMinting, setErrorMinting] = useState<string>()
@@ -55,15 +55,15 @@ export const MintModal = ({ open, onClose, tokenID, mintingSignature }: MintModa
 			const signer = provider.getSigner()
 			const mintContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
 			if (mintingSignature && mintingSignature !== "") {
-				await mintContract.signedMint(tokenID, mintingSignature)
+				await mintContract.signedMint(assetHash, mintingSignature)
 				setErrorMinting(undefined)
 				return
 			}
 
 			const nonce = await mintContract.nonces(account)
-			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/mint-nft/${account}/${nonce}/${tokenID}`)
+			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/mint-nft/${account}/${nonce}/${assetHash}`)
 			const respJson: GetSignatureResponse = await resp.json()
-			await mintContract.signedMint(tokenID, respJson.messageSignature, respJson.expiry)
+			await mintContract.signedMint(assetHash, respJson.messageSignature, respJson.expiry)
 			setErrorMinting(undefined)
 			onClose()
 		} catch (e) {
@@ -71,7 +71,7 @@ export const MintModal = ({ open, onClose, tokenID, mintingSignature }: MintModa
 		} finally {
 			setLoadingMint(false)
 		}
-	}, [provider, account, tokenID, mintingSignature, currentChainId, onClose])
+	}, [provider, account, assetHash, mintingSignature, currentChainId, onClose])
 
 	return (
 		<Dialog open={open} onClose={onClose} maxWidth={"xl"}>

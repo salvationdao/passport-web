@@ -302,12 +302,12 @@ interface CollectionViewProps {
 
 const CollectionView = ({ user }: CollectionViewProps) => {
 	const { state } = useWebsocket()
-	const { loading, error, payload, query } = useQuery<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
 	const history = useHistory()
 
 	// Collection data
 	const [search, setSearch] = useState("")
-	const [tokenIDs, setTokenIDs] = useState<number[]>([])
+	const [assetHashes, setAssetHashes] = useState<string[]>([])
 
 	// Filter/Sort
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
@@ -372,7 +372,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 
 	useEffect(() => {
 		if (!payload || loading || error) return
-		setTokenIDs(payload.tokenIDs)
+		setAssetHashes(payload.assetHashes)
 	}, [payload, loading, error])
 
 	const renderFilters = () => (
@@ -642,7 +642,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						Filters / Sort
 					</FancyButton>
 				</Box>
-				{tokenIDs.length ? (
+				{assetHashes.length ? (
 					<Box
 						sx={{
 							display: "grid",
@@ -650,8 +650,8 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							gap: "1rem",
 						}}
 					>
-						{tokenIDs.map((a) => {
-							return <CollectionItemCard key={a} tokenID={a} username={user.username} />
+						{assetHashes.map((a) => {
+							return <CollectionItemCard key={a} assetHash={a} username={user.username} />
 						})}
 					</Box>
 				) : (
@@ -836,28 +836,30 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 		}
 	}
 
-	useEffect(() => {
-		if (!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
-		;(async () => {
-			try {
-				const abi = ["function ownerOf(uint256) view returns (address)"]
-				const signer = provider.getSigner()
-				const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
-				const owner = await nftContract.ownerOf(asset.tokenID)
+	// TODO: fix - vinnie - 25/02/22
+	// useEffect(() => {
+	// 	if (!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+	// 	;(async () => {
+	// 		try {
+	// 			const abi = ["function ownerOf(uint256) view returns (address)"]
+	// 			const signer = provider.getSigner()
+	// 			const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+	// 			const owner = await nftContract.ownerOf(asset.tokenID)
+	//
+	// 			if (owner === NFT_STAKING_CONTRACT_ADDRESS && asset.userID === loggedInUser.id) {
+	// 				setAssetState(AssetState.OffWorldStaked)
+	// 			} else if (
+	// 				(owner !== loggedInUser.publicAddress && owner !== NFT_STAKING_CONTRACT_ADDRESS) ||
+	// 				(owner === loggedInUser.publicAddress && asset.userID === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
+	// 			) {
+	// 				setAssetState(AssetState.OffWorldNotStaked)
+	// 			} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+	// 				setAssetState(AssetState.OffWorldStaked)
+	// 			}
+	// 		} catch (e) {}
+	// 	})()
+	// }, [asset, provider, loggedInUser])
 
-				if (owner === NFT_STAKING_CONTRACT_ADDRESS && asset.userID === loggedInUser.id) {
-					setAssetState(AssetState.OffWorldStaked)
-				} else if (
-					(owner !== loggedInUser.publicAddress && owner !== NFT_STAKING_CONTRACT_ADDRESS) ||
-					(owner === loggedInUser.publicAddress && asset.userID === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
-				) {
-					setAssetState(AssetState.OffWorldNotStaked)
-				} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
-					setAssetState(AssetState.OffWorldStaked)
-				}
-			} catch (e) {}
-		})()
-	}, [asset, provider, loggedInUser])
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 
@@ -921,12 +923,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 
 	return (
 		<>
-			<MintModal
-				open={mintWindowOpen}
-				onClose={() => setMintWindowOpen(false)}
-				tokenID={asset.tokenID.toString()}
-				mintingSignature={asset.mintingSignature}
-			/>
+			<MintModal open={mintWindowOpen} onClose={() => setMintWindowOpen(false)} assetHash={asset.assetHash} mintingSignature={asset.mintingSignature} />
 			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
 			<Paper
 				sx={{
@@ -1363,8 +1360,8 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 											component={"a"}
 											href={
 												NFT_CONTRACT_ADDRESS === "0xC1ce98F52E771Bd82938c4Cb6CCaA40Dc2B3258D"
-													? `https://testnets.opensea.io/assets/goerli/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}`
-													: `https://opensea.io/assets/${NFT_CONTRACT_ADDRESS}/${asset.tokenID}`
+													? `https://testnets.opensea.io/assets/goerli/${NFT_CONTRACT_ADDRESS}/${asset.externalTokenID}`
+													: `https://opensea.io/assets/${NFT_CONTRACT_ADDRESS}/${asset.externalTokenID}`
 											}
 											target="_blank"
 											rel="noopener noreferrer"
@@ -1546,7 +1543,7 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Ass
 		setLoading(true)
 		try {
 			await send<Asset>(HubKey.AssetUpdateName, {
-				tokenID: asset.tokenID,
+				assetHash: asset.assetHash,
 				userID,
 				name,
 			})
@@ -1693,22 +1690,23 @@ const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
 	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
 
-	const unstake = useCallback(async () => {
-		try {
-			setUnstakingLoading(true)
-			const abi = ["function unstake(uint256)"]
-			const signer = provider.getSigner()
-			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
-			const tx = await nftStakingContract.unstake(asset.tokenID)
-			await tx.wait()
-			setUnstakingSuccess(true)
-		} catch (e) {
-			console.log(e)
-			// setError(e)
-		} finally {
-			setUnstakingLoading(false)
-		}
-	}, [provider, asset])
+	// TODO: fix unstaking vinnie - 25/02/22
+	// const unstake = useCallback(async () => {
+	// 	try {
+	// 		setUnstakingLoading(true)
+	// 		const abi = ["function unstake(uint256)"]
+	// 		const signer = provider.getSigner()
+	// 		const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
+	// 		const tx = await nftStakingContract.unstake(asset.tokenID)
+	// 		await tx.wait()
+	// 		setUnstakingSuccess(true)
+	// 	} catch (e) {
+	// 		console.log(e)
+	// 		// setError(e)
+	// 	} finally {
+	// 		setUnstakingLoading(false)
+	// 	}
+	// }, [provider, asset])
 
 	return (
 		<Dialog onClose={() => onClose()} open={open}>
@@ -1730,11 +1728,12 @@ const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 					</Typography>
 				</>
 
-				<FancyButton disabled={unstakingSuccess || unstakingLoading} fullWidth onClick={unstake}>
-					{unstakingLoading && <CircularProgress />}
-					{!unstakingLoading && unstakingSuccess && "Successfully Transitioned"}
-					{!unstakingLoading && !unstakingSuccess && "Transition"}
-				</FancyButton>
+				{/*TODO: fix unstaking */}
+				{/*<FancyButton disabled={unstakingSuccess || unstakingLoading} fullWidth onClick={unstake}>*/}
+				{/*	{unstakingLoading && <CircularProgress />}*/}
+				{/*	{!unstakingLoading && unstakingSuccess && "Successfully Transitioned"}*/}
+				{/*	{!unstakingLoading && !unstakingSuccess && "Transition"}*/}
+				{/*</FancyButton>*/}
 			</DialogContent>
 			<DialogActions>
 				{!!error && <Alert severity="error">{error}</Alert>}
@@ -1781,8 +1780,9 @@ const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			setApprovalLoading(true)
 			const abi = ["function approve(address, uint256)"]
 			const signer = provider.getSigner()
+			// TODO: fix for collection contract
 			const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
-			const tx = await nftContract.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.tokenID)
+			const tx = await nftContract.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.externalTokenID)
 			await tx.wait()
 			setApprovalSuccess(true)
 		} catch (e) {
@@ -1798,8 +1798,9 @@ const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			setStakingLoading(true)
 			const abi = ["function stake(uint256)"]
 			const signer = provider.getSigner()
+			// TODO: fix for collection contract
 			const nftStakingContract = new ethers.Contract(NFT_STAKING_CONTRACT_ADDRESS, abi, signer)
-			const tx = await nftStakingContract.stake(asset.tokenID)
+			const tx = await nftStakingContract.stake(asset.externalTokenID)
 			await tx.wait()
 			setStakingSuccess(true)
 		} catch (e) {

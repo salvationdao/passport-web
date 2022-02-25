@@ -22,9 +22,9 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
 
-	const [tokenIDs, setTokenIDs] = useState<number[]>([])
+	const [assetHashes, setAssetHashes] = useState<string[]>([])
 	const [collection, setCollection] = useState<Collection>()
-	const { loading, error, payload, query } = useQuery<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
 
 	// search and filter
 	const [search, setSearch] = useState("")
@@ -117,7 +117,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 	useEffect(() => {
 		if (!payload || loading || error) return
-		setTokenIDs(payload.tokenIDs)
+		setAssetHashes(payload.assetHashes)
 	}, [payload, loading, error])
 
 	const renderFilters = () => (
@@ -467,7 +467,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{tokenIDs.length ? (
+							{assetHashes.length ? (
 								<Paper
 									sx={{
 										flex: 1,
@@ -478,8 +478,8 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 										padding: "2rem",
 									}}
 								>
-									{tokenIDs.map((a) => {
-										return <CollectionItemCard key={a} tokenID={a} username={username} />
+									{assetHashes.map((a) => {
+										return <CollectionItemCard key={a} assetHash={a} username={username} />
 									})}
 								</Paper>
 							) : (
