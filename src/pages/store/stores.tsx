@@ -18,14 +18,29 @@ import { StoreItemCard } from "./storeItemCard"
 // Displays all stores available to the user
 export const StoresPage = () => {
 	const { user } = useAuth()
-	const { send, state } = useWebsocket()
+	const { send, state, subscribe } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
 	const [userLoad, setUserLoad] = useState(true)
+
+	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
+
 	const history = useHistory()
 
 	useEffect(() => {
+		// if between 26th 12am - 27 12am only whitelisted and secondary holders and early contributors
+		// if after 27 12am included deathlisted
+		// after 27 12 pm everyone included
+		console.log(canAccessStore)
+
+		if (!canAccessStore) return
+		if (!canAccessStore.isAllowed) {
+			displayMessage(canAccessStore?.message || "waht", "error")
+			history.push("/profile")
+			setUserLoad(false)
+			return
+		}
 		if (user) {
 			if (!user.faction) {
 				displayMessage("Please enlist to a faction before entering store", "error")
@@ -39,7 +54,7 @@ export const StoresPage = () => {
 			history.push("/profile")
 			setUserLoad(false)
 		}
-	}, [userLoad])
+	}, [userLoad, canAccessStore])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
@@ -57,6 +72,20 @@ export const StoresPage = () => {
 			}
 		})()
 	}, [send, state, displayMessage])
+
+	// check if user is white listed
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !user || !user.publicAddress) return
+		return subscribe<{ isAllowed: boolean; message: string }>(
+			HubKey.CheckUserCanAccessStore,
+			(payload) => {
+				setCanAccessStore(payload)
+			},
+			{
+				walletAddress: user.publicAddress,
+			},
+		)
+	}, [user, subscribe, state])
 
 	if (userLoad) return <Loading text={"Getting shop data"} />
 

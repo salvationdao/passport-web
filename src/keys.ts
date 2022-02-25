@@ -111,6 +111,8 @@ enum HubKey {
 	SupTotalRemaining = "SUPS:TREASURY",
 	SupExchangeRates = "SUPS:EXCHANGE",
 	SupsWithdraw = "SUPS:WITHDRAW",
+
+	CheckUserCanAccessStore = "USER:CHECK:CAN_ACCESS_STORE",
 }
 
 export default HubKey

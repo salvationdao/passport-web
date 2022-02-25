@@ -17,6 +17,8 @@ import { FilterChip, SortChip } from "../collections/collection"
 import { StoreItemCard } from "./storeItemCard"
 
 export const StorePage: React.FC = () => {
+	console.log("in store page")
+
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
