@@ -46,7 +46,7 @@ export enum VerificationType {
 export const AuthContainer = createContainer(() => {
 	const { metaMaskState, sign, signWalletConnect, account, connect } = useWeb3()
 	const [user, setUser] = useState<User>()
-	const [recheckAuth, _] = useState(!!localStorage.getItem("token"))
+	const [recheckAuth, setRecheckAuth] = useState(!!localStorage.getItem("token"))
 	const [authorised, setAuthorised] = useState(false)
 	const [reconnecting, setReconnecting] = useState(false)
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
@@ -73,6 +73,7 @@ export const AuthContainer = createContainer(() => {
 		const token = localStorage.getItem("token")
 		return send(HubKey.AuthLogout, { token, sessionID }).then(() => {
 			localStorage.removeItem("token")
+			setRecheckAuth(false)
 			if (!isLogoutPage) {
 				window.location.reload()
 			}
