@@ -1,5 +1,6 @@
-import { Box, Paper, Skeleton, Typography } from "@mui/material"
+import { Box, Chip, Paper, styled, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
+import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../assets"
 import { Navbar } from "../components/home/navbar"
 import { Loading } from "../components/loading"
@@ -11,6 +12,7 @@ import { colors, fonts } from "../theme"
 import { Transaction } from "../types/types"
 
 export const TransactionsPage = () => {
+	const history = useHistory()
 	const { user } = useAuth()
 	const { send, state } = useWebsocket()
 	const [search, setSearch] = useState("")
@@ -40,7 +42,20 @@ export const TransactionsPage = () => {
 		})()
 	}, [send, state, search, user])
 
+	useEffect(() => {
+		if (user) return
+
+		const userTimeout = setTimeout(() => {
+			history.push("/login")
+		}, 2000)
+		return () => clearTimeout(userTimeout)
+	}, [user, history])
+
 	if (loading) return <Loading />
+
+	if (!user) {
+		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+	}
 
 	return (
 		<Box
@@ -115,97 +130,105 @@ export const TransactionsPage = () => {
 					</Box>
 					<Box
 						sx={{
+							flex: "1",
 							display: "flex",
 							flexDirection: "column",
 							width: "100%",
 							maxWidth: "1000px",
+							overflowX: "auto",
 						}}
 					>
 						<Box
+							component="table"
 							sx={{
-								display: "grid",
-								gridTemplateColumns:
-									"minmax(150px, 1fr) minmax(300px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr)",
-								gap: "1rem",
-								padding: ".5rem .5rem",
-								borderBottom: `1px solid ${colors.navyBlue}`,
-								"& > *": {
-									overflowX: "auto",
-									whiteSpace: "nowrap",
-								},
+								borderCollapse: "collapse",
 							}}
 						>
-							<Box>
-								<Typography
-									variant="subtitle1"
+							<Box
+								component="thead"
+								sx={{
+									borderBottom: `1px solid ${colors.navyBlue}`,
+									width: "100%",
+								}}
+							>
+								<EntryRow>
+									<th align="left">Transaction Ref.</th>
+									<th align="left">Description</th>
+									<th align="left">To</th>
+									<th align="left">From</th>
+									<th align="center">Status</th>
+									<th align="right">Date</th>
+								</EntryRow>
+							</Box>
+							{transactionIDs.length > 0 && (
+								<Box
+									component="tbody"
 									sx={{
-										textTransform: "uppercase",
+										height: "100%",
 									}}
 								>
-									Transaction #
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="subtitle1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									Transaction Description
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="subtitle1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									To
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="subtitle1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									From
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="subtitle1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									Status
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="subtitle1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									Date
-								</Typography>
-							</Box>
+									{transactionIDs.map((t, index) => (
+										<TransactionEntry key={`${t}-${index}`} transactionID={t} />
+									))}
+								</Box>
+							)}
 						</Box>
-
-						{transactionIDs.map((t, index) => (
-							<TransactionEntry key={`${t}-${index}`} transactionID={t} />
-						))}
+						{transactionIDs.length === 0 && (
+							<Box
+								sx={{
+									flex: 1,
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+								}}
+							>
+								<Typography variant="subtitle2" color={colors.darkerGrey}>
+									{!loading && error ? error : "No transaction history"}
+								</Typography>
+							</Box>
+						)}
 					</Box>
 				</Paper>
 			</Box>
 		</Box>
 	)
 }
+
+const EntryRow = styled("tr")({
+	"& > *": {
+		padding: ".5rem",
+	},
+	"& > *:nth-of-type(1)": {
+		minWidth: "220px",
+		maxWidth: "220px",
+	},
+	"& > *:nth-of-type(2)": {
+		minWidth: "300px",
+		maxWidth: "300px",
+	},
+	"& > *:nth-of-type(3)": {
+		minWidth: "150px",
+		maxWidth: "150px",
+	},
+	"& > *:nth-of-type(4)": {
+		minWidth: "150px",
+		maxWidth: "150px",
+	},
+	"& > *:nth-of-type(5)": {
+		minWidth: "100px",
+		maxWidth: "100px",
+	},
+	"& > *:nth-of-type(6)": {
+		minWidth: "200px",
+		maxWidth: "200px",
+	},
+})
+
+const EntryData = styled(Typography)({
+	overflowX: "auto",
+	display: "block",
+	whiteSpace: "nowrap",
+})
 
 interface TransactionEntryProps {
 	transactionID: number
@@ -215,7 +238,6 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 	const { user } = useAuth()
 	const { state, subscribe } = useWebsocket()
 	const [entry, setEntry] = useState<Transaction>()
-	const [search, setSearch] = useState("")
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
@@ -236,129 +258,107 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				setError(e.message)
 			}
 		}
-	}, [subscribe, state, user])
+	}, [subscribe, state, user, transactionID])
 
 	if (error)
 		return (
-			<Box
+			<EntryRow
 				sx={{
-					padding: ".5rem .5rem",
 					"&:nth-of-type(even)": {
 						backgroundColor: "#160d45",
 					},
 				}}
 			>
-				<Typography
-					variant="caption"
-					sx={{
-						textTransform: "uppercase",
-					}}
-				>
-					{error}
-				</Typography>
-			</Box>
+				<td align="left">An error occurred while loading this entry</td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="center"></td>
+				<td align="right"></td>
+			</EntryRow>
 		)
 
 	if (!entry)
 		return (
-			<Skeleton
+			<EntryRow
 				sx={{
-					maxWidth: "unset",
-					padding: ".5rem .5rem",
-					borderRadius: 0,
-					transform: "none",
 					"&:nth-of-type(even)": {
 						backgroundColor: "#160d45",
 					},
 				}}
 			>
-				<Typography
-					variant="caption"
-					sx={{
-						textTransform: "uppercase",
-					}}
-				>
-					Loading transaction entry...
-				</Typography>
-			</Skeleton>
+				<td align="left">Loading transaction entry...</td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="center"></td>
+				<td align="right"></td>
+			</EntryRow>
 		)
 
 	return (
-		<Box
+		<EntryRow
 			sx={{
-				display: "grid",
-				gridTemplateColumns: "minmax(150px, 1fr) minmax(300px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr)",
-				gap: "1rem",
-				padding: ".5rem .5rem",
 				"&:nth-of-type(even)": {
 					backgroundColor: "#160d45",
 				},
-				"& > *": {
-					overflowX: "auto",
-					whiteSpace: "nowrap",
-				},
 			}}
 		>
-			<Box>
-				<Typography
+			<td align="left">
+				<EntryData
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
 					}}
 				>
 					{entry.transactionReference}
-				</Typography>
-			</Box>
-			<Box>
-				<Typography
+				</EntryData>
+			</td>
+			<td align="left">
+				<EntryData
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
 					}}
 				>
 					{entry.description}
-				</Typography>
-			</Box>
-			<Box>
-				<Typography
+				</EntryData>
+			</td>
+			<td align="left">
+				<EntryData
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
 					}}
 				>
 					{entry.to.username}
-				</Typography>
-			</Box>
-			<Box>
-				<Typography
+				</EntryData>
+			</td>
+			<td align="left">
+				<EntryData
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
 					}}
 				>
 					{entry.from.username}
-				</Typography>
-			</Box>
-			<Box>
-				<Typography
+				</EntryData>
+			</td>
+			<td align="center">
+				<Chip label={entry.status} size="small" color={entry.status === "success" ? "success" : "error"} />
+			</td>
+			<td align="right">
+				<EntryData
 					variant="caption"
 					sx={{
-						textTransform: "uppercase",
-					}}
-				>
-					{entry.status}
-				</Typography>
-			</Box>
-			<Box>
-				<Typography
-					variant="caption"
-					sx={{
+						display: "block",
+						textAlign: "end",
 						textTransform: "uppercase",
 					}}
 				>
 					{entry.created_at.toLocaleString()}
-				</Typography>
-			</Box>
-		</Box>
+				</EntryData>
+			</td>
+		</EntryRow>
 	)
 }

@@ -134,7 +134,7 @@ const lightTheme = createTheme({
 			contrastText: colors.white,
 		},
 		success: {
-			main: "#44b700",
+			main: "#67D388",
 		},
 		error: {
 			main: colors.errorRed,
