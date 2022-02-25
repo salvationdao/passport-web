@@ -40,8 +40,6 @@ export const StoresPage = () => {
 			}
 		} else {
 			setUserLoad(false)
-		} else {
-			setUserLoad(false)
 		}
 	}, [userLoad, user])
 
