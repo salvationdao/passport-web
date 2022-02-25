@@ -143,8 +143,8 @@ export interface Collection {
 
 export interface Asset {
 	hash: string
-	mintContract: string
-	stakeContract: string
+	// mintContract: string
+	// stakeContract: string
 	externalTokenID: number
 	userID: string
 	username: string

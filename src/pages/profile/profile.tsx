@@ -921,16 +921,14 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 		)
 	}
 
-	console.log(asset.mintContract)
-
 	return (
 		<>
-			{asset.mintContract && asset.mintContract !== "" && (
+			{asset.collection && asset.collection.mintContract !== "" && (
 				<MintModal
 					open={mintWindowOpen}
 					onClose={() => setMintWindowOpen(false)}
-					mintContract={asset.mintContract}
-					assetExternalTokenID={asset.hash}
+					mintContract={asset.collection.mintContract}
+					assetExternalTokenID={asset.externalTokenID}
 					mintingSignature={asset.mintingSignature}
 					collectionSlug={asset.collection.slug}
 				/>
@@ -970,13 +968,13 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 							marginBottom: "1rem",
 						}}
 					>
-						{assetState === AssetState.OffWorldNotStaked && (
+						{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mintContract !== "" && (
 							<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
 								Transition In Asset
 							</FancyButton>
 						)}
 
-						{assetState === AssetState.OffWorldStaked && (
+						{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mintContract !== "" && (
 							<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
 								Transition out Asset
 							</FancyButton>
@@ -988,7 +986,10 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 							</FancyButton>
 						)}
 						{isOwner ? (
-							(asset.mintingSignature || asset.mintingSignature !== "") && !asset.minted ? (
+							(asset.mintingSignature || asset.mintingSignature !== "") &&
+							!asset.minted &&
+							asset.collection &&
+							asset.collection.mintContract !== "" ? (
 								<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 									Continue Transition Off World
 								</FancyButton>
@@ -1201,13 +1202,13 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										gap: ".5rem",
 									}}
 								>
-									{assetState === AssetState.OffWorldNotStaked && (
+									{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mintContract !== "" && (
 										<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
 											Transition In Asset
 										</FancyButton>
 									)}
 
-									{assetState === AssetState.OffWorldStaked && (
+									{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mintContract !== "" && (
 										<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
 											Transition out Asset
 										</FancyButton>
@@ -1220,7 +1221,10 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										</FancyButton>
 									)}
 									{loggedInUser?.id === asset.userID ? (
-										(asset.mintingSignature || asset.mintingSignature !== "") && !asset.minted ? (
+										(asset.mintingSignature || asset.mintingSignature !== "") &&
+										asset.collection &&
+										asset.collection.mintContract !== "" &&
+										!asset.minted ? (
 											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 												Continue Transition Off World
 											</FancyButton>
