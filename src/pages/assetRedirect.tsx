@@ -6,14 +6,14 @@ import { useSnackbar } from "../containers/snackbar"
 import { Asset } from "../types/types"
 
 export const AssetRedirectPage = () => {
-	const { assetHash } = useParams<{ assetHash: string }>()
+	const { asset_hash } = useParams<{ asset_hash: string }>()
 	const history = useHistory()
 	const { displayMessage } = useSnackbar()
 
 	useEffect(() => {
 		;(async () => {
 			try {
-				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${assetHash}`)
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${asset_hash}`)
 
 				if (!resp.ok || resp.status !== 200) throw new Error("Something went wrong while fetching asset data.")
 				const json = (await resp.json()) as Asset
@@ -23,7 +23,7 @@ export const AssetRedirectPage = () => {
 				else if (e instanceof Error) displayMessage(e.message, "error")
 			}
 		})()
-	}, [history, assetHash, displayMessage])
+	}, [history, asset_hash, displayMessage])
 
 	return <Loading text="Redirecting you to the asset..." />
 }
