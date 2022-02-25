@@ -994,9 +994,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 								</FancyButton>
 							) : !asset.frozenAt && isWarMachine() ? (
 								<>
-									<FancyButton size="small" onClick={() => onDeploy()}>
-										Deploy
-									</FancyButton>
 									{!asset.minted && (
 										<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 											Transition Off World
@@ -1226,9 +1223,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 											</FancyButton>
 										) : !asset.frozenAt && isWarMachine() ? (
 											<>
-												<FancyButton size="small" onClick={() => onDeploy()}>
-													Deploy
-												</FancyButton>
 												{!asset.minted && (
 													<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 														Transition Off World
