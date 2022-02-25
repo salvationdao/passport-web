@@ -111,6 +111,8 @@ enum HubKey {
 	SupTotalRemaining = "SUPS:TREASURY",
 	SupExchangeRates = "SUPS:EXCHANGE",
 	SupsWithdraw = "SUPS:WITHDRAW",
+
+	FactionAvailables = "AVAILABLE:ITEM:AMOUNT",
 }
 
 export default HubKey

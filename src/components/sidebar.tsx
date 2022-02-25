@@ -8,7 +8,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
+import { Box, Button, Divider, Drawer, Stack, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
@@ -26,7 +26,7 @@ import { supFormatter } from "../helpers/items"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { Faction, User } from "../types/types"
+import { Faction, FactionTheme, User } from "../types/types"
 import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
@@ -344,6 +344,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
+				<FactionWarMachineRemain />
 			</Box>
 
 			<Divider />
@@ -581,16 +582,24 @@ const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?:
 				<Typography
 					sx={{
 						display: "flex",
-						alignItems: "start",
+						alignItems: "center",
+						color: user.faction.theme.primary,
+						fontWeight: "fontWeightBold",
 					}}
 				>
 					<Box
-						component="img"
-						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID}`}
-						alt="Faction Logo"
 						sx={{
 							height: "2rem",
+							width: "2rem",
 							marginRight: ".5rem",
+							flexShrink: 0,
+							backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID})`,
+							backgroundRepeat: "no-repeat",
+							backgroundPosition: "center",
+							backgroundSize: "contain",
+							backgroundColor: user.faction.theme.primary,
+							borderRadius: 0.8,
+							border: `${user.faction.theme.primary} 1px solid`,
 						}}
 					/>
 					<span>{user.faction.label}</span>
@@ -599,4 +608,62 @@ const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?:
 		)
 	}
 	return <EnlistButtonGroup factionsData={factionsData} />
+}
+
+interface FactionAvailable {
+	id: string
+	label: string
+	logoBlobID: string
+	theme: FactionTheme
+	amountAvailable: string
+}
+
+const FactionWarMachineRemain = () => {
+	const { state, subscribe } = useWebsocket()
+	const [factionAvailables, setFactionAvailables] = useState<FactionAvailable[]>([])
+
+	useEffect(() => {
+		if (state !== WebSocket.OPEN || !subscribe) return
+		return subscribe<FactionAvailable[]>(HubKey.FactionAvailables, (payload) => {
+			if (!payload) return
+			console.log(payload)
+			setFactionAvailables(payload)
+		})
+	}, [state, subscribe])
+
+	return (
+		<Stack spacing={1}>
+			<Typography sx={{ py: 1.2, px: 1, textAlign: "center", color: colors.supremacy.neonBlue, backgroundColor: "#00000099" }} variant="h6">
+				MECHS REMAINING
+			</Typography>
+
+			<Stack direction="row" justifyContent="space-around" spacing="1">
+				{factionAvailables.map((fa) => {
+					const { id, label, logoBlobID, theme, amountAvailable } = fa
+
+					return (
+						<Stack key={id} alignItems="center" justifyContent="center" spacing={0.5} sx={{ px: 1 }}>
+							<Box
+								sx={{
+									width: 41,
+									height: 41,
+									flexShrink: 0,
+									backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logoBlobID})`,
+									backgroundRepeat: "no-repeat",
+									backgroundPosition: "center",
+									backgroundSize: "contain",
+									backgroundColor: theme.primary,
+									borderRadius: 0.8,
+									border: `${theme.primary} 1px solid`,
+								}}
+							/>
+							<Typography variant="h6" sx={{ color: theme.primary, textAlign: "center", fontWeight: "fontWeightLight" }}>
+								{amountAvailable}
+							</Typography>
+						</Stack>
+					)
+				})}
+			</Stack>
+		</Stack>
+	)
 }
