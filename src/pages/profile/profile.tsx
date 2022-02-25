@@ -20,7 +20,7 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery,
+	useMediaQuery
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
@@ -869,7 +869,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 			return subscribe<Asset>(
 				HubKey.AssetUpdated,
 				(payload) => {
-					console.log(payload)
 					if (!payload) return
 					let assetAttributes = new Array<Attribute>()
 					let numberAttributes = new Array<Attribute>()

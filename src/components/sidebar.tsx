@@ -626,7 +626,6 @@ const FactionWarMachineRemain = () => {
 		if (state !== WebSocket.OPEN || !subscribe) return
 		return subscribe<FactionAvailable[]>(HubKey.FactionAvailables, (payload) => {
 			if (!payload) return
-			console.log(payload)
 			setFactionAvailables(payload)
 		})
 	}, [state, subscribe])
