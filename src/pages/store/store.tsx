@@ -20,8 +20,6 @@ import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 
 export const StorePage: React.FC = () => {
-	console.log("here!!!!!!!!!!")
-
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
@@ -31,6 +29,8 @@ export const StorePage: React.FC = () => {
 	const [collection, setCollection] = useState<Collection>()
 	const { loading: queryLoading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
 	const [tabLoading, setTabLoading] = useState(true)
+
+	const [canEnter, setCanEnter] = useState(false)
 
 	// search and filter
 	const [search, setSearch] = useState("")
@@ -78,12 +78,13 @@ export const StorePage: React.FC = () => {
 			HubKey.CheckUserCanAccessStore,
 			(payload) => {
 				setCanAccessStore(payload)
+				setCanEnter(payload.isAllowed)
 			},
 			{
 				walletAddress: user.publicAddress,
 			},
 		)
-	}, [user, subscribe, state])
+	}, [user, subscribe, state, queryLoading])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !collection) return
@@ -144,10 +145,6 @@ export const StorePage: React.FC = () => {
 
 	if (user && !user.faction) {
 		return <PleaseEnlist />
-	}
-
-	if (canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
-		return <WhiteListCheck />
 	}
 
 	const renderFilters = () => (
@@ -319,6 +316,10 @@ export const StorePage: React.FC = () => {
 	const loading = tabLoading || queryLoading
 
 	const showLootBox = collection?.name === "Supremacy Genesis" && (!assetType || assetType === "All")
+
+	if (!canEnter) {
+		return <WhiteListCheck />
+	}
 
 	return (
 		<>
@@ -501,7 +502,7 @@ export const StorePage: React.FC = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{!loading && (storeItemIDs.length || showLootBox) ? (
+							{!loading && canEnter && (storeItemIDs.length || showLootBox) ? (
 								<Paper
 									sx={{
 										flex: 1,
