@@ -321,6 +321,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					{user?.faction ? "Your Syndicate" : "Choose Your Syndicate"}
 				</Typography>
 				<RenderEnlist factionsData={factionsData} user={user} />
+				<FactionWarMachineRemain />
 				<Divider />
 				<Button
 					sx={{
@@ -344,7 +345,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to="/stores/supremacy-genesis" startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
-				<FactionWarMachineRemain />
 			</Box>
 
 			<Divider />
@@ -634,7 +634,7 @@ const FactionWarMachineRemain = () => {
 	return (
 		<Stack spacing={1}>
 			<Typography sx={{ py: 1.2, px: 1, textAlign: "center", color: colors.supremacy.neonBlue, backgroundColor: "#00000099" }} variant="h6">
-				MECHS REMAINING
+				WAR MACHINES REMAINING
 			</Typography>
 
 			<Stack direction="row" justifyContent="space-around" spacing="1">
