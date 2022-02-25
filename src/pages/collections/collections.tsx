@@ -11,7 +11,7 @@ import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
-import { colors } from "../../theme"
+import { colors, fonts } from "../../theme"
 import { Collection, NFTOwner } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
 
@@ -19,7 +19,7 @@ export const CollectionsPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
 	const { state, send } = useWebsocket()
-	const { user } = useAuth()
+	const { user, loading: authLoading } = useAuth()
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
@@ -65,7 +65,6 @@ export const CollectionsPage: React.FC = () => {
 					setWalletTokenIDs(itemIDs)
 				}
 			} catch (e) {
-				console.log(e)
 				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
 					autoHideDuration: null,
 				})
@@ -84,6 +83,9 @@ export const CollectionsPage: React.FC = () => {
 		return () => clearTimeout(userTimeout)
 	}, [user, history, username])
 
+	if (authLoading) {
+		return <Loading text="Loading. Please wait..." />
+	}
 	if (!user && !username) {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
@@ -287,19 +289,24 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 					},
 				}}
 			>
-				<RouterLink component={StyledFancyButton} to={`/collections/${username || user?.username}/${collection.name}`}>
+				<RouterLink component={StyledFancyButton} to={`/collections/${username || user?.username}/${collection.slug}`}>
 					View Entire Collection
 				</RouterLink>
 			</Box>
 
-			<Box>
+			<Box
+				sx={{
+					marginBottom: "1rem",
+				}}
+			>
 				<Typography
-					variant="h2"
+					variant="subtitle1"
 					sx={{
-						marginBottom: "1rem",
-						"@media (max-width: 630px)": {
-							textAlign: "center",
-						},
+						marginBottom: ".5rem",
+						fontFamily: fonts.bizmoblack,
+						fontStyle: "italic",
+						letterSpacing: "2px",
+						textTransform: "uppercase",
 					}}
 				>
 					On World Assets
@@ -309,21 +316,21 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				) : (
 					<Box>
 						<Typography variant="subtitle2" color={colors.darkGrey}>
-							{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
+							{loading ? "Loading assets..." : error ? error : `No on-world assets from ${collection.name}.`}
 						</Typography>
 					</Box>
 				)}
 			</Box>
 
-			<Divider sx={{ margin: "1rem 0" }} />
 			<Box>
 				<Typography
-					variant="h2"
+					variant="subtitle1"
 					sx={{
-						marginBottom: "1rem",
-						"@media (max-width: 630px)": {
-							textAlign: "center",
-						},
+						marginBottom: ".5rem",
+						fontFamily: fonts.bizmoblack,
+						fontStyle: "italic",
+						letterSpacing: "2px",
+						textTransform: "uppercase",
 					}}
 				>
 					Off World Assets
@@ -333,7 +340,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 				) : (
 					<Box>
 						<Typography variant="subtitle2" color={colors.darkGrey}>
-							{loading ? "Loading assets..." : error ? error : `No owned assets from ${collection.name}.`}
+							{loading ? "Loading assets..." : error ? error : `No off-world assets from ${collection.name}.`}
 						</Typography>
 					</Box>
 				)}

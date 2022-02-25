@@ -31,20 +31,12 @@ const Container = styled(Box)({
 
 interface IBackgroundVideo {
 	loading: boolean
-	setLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 	const videoRef = useRef<HTMLVideoElement>(null!)
-	const { setLoading, loading } = props
+	const { loading } = props
 	const largeDesktop = useMediaQuery("(min-width:2000px)")
 	const mobileScreen = useMediaQuery("(max-width:600px)")
-
-	const fallBackPlayVideo = () => {
-		if (loading) setLoading(false)
-		if (videoRef.current.played.length === 0) {
-			videoRef.current.play()
-		}
-	}
 
 	useEffect(() => {
 		const fallBackPlayVideo = () => {
@@ -72,20 +64,11 @@ export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 		videoRef.current.addEventListener(
 			"loadeddata",
 			() => {
-				setLoading(false)
 				if (videoRef.current) videoRef.current.play()
 			},
 			false,
 		)
-		videoRef.current.addEventListener("play", () => {
-			setLoading(false)
-		})
-
-
-		window.document.getElementById("bgVideo")?.addEventListener("play", () => {
-			setLoading(false)
-		})
-	}, [videoRef, setLoading])
+	}, [videoRef])
 
 	return (
 		<Container
@@ -108,9 +91,6 @@ export const BackgroundVideo: React.FC<IBackgroundVideo> = (props) => {
 				muted
 				loop
 				autoPlay
-				onPlay={() => {
-					setLoading(false)
-				}}
 				src={
 					largeDesktop
 						? "https://player.vimeo.com/progressive_redirect/playback/674309643/rendition/1080p?loc=external&signature=ff7173eead0d0940ee7926f5266c01d7050272ba06c2bd22cd07f90ce880bae6"

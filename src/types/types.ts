@@ -116,6 +116,7 @@ export interface Product {
 export interface Collection {
 	id: string
 	name: string
+	slug: string
 	image: string
 	createdAt: Date
 	updatedAt: Date
@@ -225,4 +226,5 @@ export interface tokenSelect {
 	isNative: boolean
 	contractAddr: string
 	scanSite: string
+	gasFee: number
 }

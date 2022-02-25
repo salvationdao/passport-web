@@ -1,6 +1,7 @@
 import WalletConnectProvider from "@walletconnect/web3-provider"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useInterval } from "react-use"
 import { createContainer } from "unstated-next"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
@@ -62,6 +63,7 @@ const tokenOptions: tokenSelect[] = [
 		chainSrc: Ethereum,
 		isNative: true,
 		contractAddr: "0x0",
+		gasFee: 0.005,
 	},
 	{
 		name: "usdc",
@@ -72,6 +74,7 @@ const tokenOptions: tokenSelect[] = [
 		chainSrc: Ethereum,
 		isNative: false,
 		contractAddr: USDC_CONTRACT_ADDRESS,
+		gasFee: 0.005,
 	},
 	{
 		name: "bnb",
@@ -82,6 +85,7 @@ const tokenOptions: tokenSelect[] = [
 		chainSrc: BinanceCoin,
 		isNative: true,
 		contractAddr: "0x0",
+		gasFee: 0.0002,
 	},
 
 	{
@@ -93,6 +97,7 @@ const tokenOptions: tokenSelect[] = [
 		chainSrc: BinanceCoin,
 		isNative: false,
 		contractAddr: BUSD_CONTRACT_ADDRESS,
+		gasFee: 0.0002,
 	},
 ]
 
@@ -100,7 +105,7 @@ const tokenOptions: tokenSelect[] = [
  * A Container that handles Web3
  */
 export const Web3Container = createContainer(() => {
-	const { subscribe, state } = useWebsocket()
+	const { subscribe, state, send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
@@ -111,12 +116,22 @@ export const Web3Container = createContainer(() => {
 	const [supBalance, setSupBalance] = useState<BigNumber>()
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
 	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
+	const [loadingAmountRemaining, setLoadingAmountRemaining] = useState<boolean>(true)
 
 	//Setting up websocket to listen to remaining supply
+	useInterval(() => {
+		if (state !== SocketState.OPEN) return
+		return send<string>(HubKey.SupTotalRemaining, (amount: any) => {
+			setAmountRemaining(BigNumber.from(amount))
+			if (loadingAmountRemaining) setLoadingAmountRemaining(false)
+		})
+	}, 5000)
+
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
 			setAmountRemaining(BigNumber.from(amount))
+			setLoadingAmountRemaining(false)
 		})
 	}, [subscribe, state])
 	const [nativeBalance, setNativeBalance] = useState<BigNumber | null>(null)
@@ -151,8 +166,9 @@ export const Web3Container = createContainer(() => {
 					return
 				}
 				const bal = await signer.getBalance()
+
 				if (!bal) {
-					setStableBalance(BigNumber.from(0))
+					setNativeBalance(BigNumber.from(0))
 					return
 				}
 				setNativeBalance(bal)
@@ -160,7 +176,6 @@ export const Web3Container = createContainer(() => {
 				console.error(e)
 			}
 		}
-		// console.log({ provider, wcProvider, currentChainId })
 		const updateStableBalance = async () => {
 			try {
 				if (!provider) {
@@ -187,8 +202,10 @@ export const Web3Container = createContainer(() => {
 				console.error(e)
 			}
 		}
-		updateNativeBalance()
-		updateStableBalance()
+		;(async () => {
+			await updateNativeBalance()
+			await updateStableBalance()
+		})()
 	}, [provider, currentChainId, account])
 
 	const handleChainChange = useCallback((chainId: string) => {
@@ -359,7 +376,7 @@ export const Web3Container = createContainer(() => {
 		},
 		[provider],
 	)
-	const connect = useCallback(async () => {
+	const connect = useCallback(async (): Promise<string> => {
 		if (provider) {
 			try {
 				await provider.send("eth_requestAccounts", [])
@@ -367,11 +384,13 @@ export const Web3Container = createContainer(() => {
 				const acc = await signer.getAddress()
 				setAccount(acc)
 				handleAccountChange([acc])
+				return acc
 			} catch (error) {
 				if (error instanceof Error) displayMessage(error.message, "error")
 				else displayMessage("Please authenticate your wallet.", "info")
 			}
 		}
+		return ""
 	}, [displayMessage, provider, handleAccountChange])
 
 	const wcConnect = useCallback(async () => {
@@ -571,10 +590,11 @@ export const Web3Container = createContainer(() => {
 				displayMessage("Wallet is not connected.", "error")
 				return
 			}
+
 			const signer = provider.getSigner()
 			const contract = new ethers.Contract(contractAddress, genericABI, signer)
-
-			const hasSufficientFunds = await contract.callStatic.transfer(signer.getAddress(), value)
+			const accVal = value.div(1000000)
+			const hasSufficientFunds = await contract.callStatic.transfer(signer.getAddress(), accVal)
 
 			if (hasSufficientFunds) {
 				return await contract.transfer(PURCHASE_ADDRESS, value)
@@ -609,6 +629,8 @@ export const Web3Container = createContainer(() => {
 		setCurrentToken,
 		checkNeoBalance,
 		amountRemaining,
+		loadingAmountRemaining,
+		setLoadingAmountRemaining,
 	}
 })
 
