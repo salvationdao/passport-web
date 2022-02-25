@@ -6,6 +6,7 @@ import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -18,6 +19,8 @@ import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 
 export const StorePage: React.FC = () => {
+	console.log("in store page")
+
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
@@ -124,6 +127,9 @@ export const StorePage: React.FC = () => {
 		setStoreItemIDs(payload.storeItemIDs)
 	}, [payload, queryLoading, error])
 
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
 	const renderFilters = () => (
 		<>
 			<Box>
