@@ -99,6 +99,9 @@ enum HubKey {
 	StorePurchase = "STORE:PURCHASE",
 	StoreLootBox = "STORE:LOOTBOX",
 
+	TransactionSubscribe = "TRANSACTION:SUBSCRIBE",
+	TransactionList = "TRANSACTION:LIST",
+
 	BlockConfirmation = "BLOCK:CONFIRM",
 	GetFactionsDetail = "FACTION:ALL",
 	FactionEnlist = "FACTION:ENLIST",

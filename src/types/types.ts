@@ -191,6 +191,21 @@ export interface StoreItem {
 	updatedAt: Date
 }
 
+export interface Transaction {
+	id: string
+	credit: string
+	debit: string
+	amount: string
+	status: "failed" | "success"
+	transactionReference: string
+	description: string
+	reason?: string
+	created_at: Date
+	groupID?: string
+	to: User
+	from: User
+}
+
 export interface QueuedWarMachine {
 	position: number
 	warMachineMetadata: WarMachineMetadata

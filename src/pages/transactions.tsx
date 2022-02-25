@@ -1,12 +1,46 @@
-import { Box, Paper, Typography } from "@mui/material"
-import React, { useState } from "react"
+import { Box, Paper, Skeleton, Typography } from "@mui/material"
+import React, { useEffect, useState } from "react"
 import { GradientCardIconImagePath } from "../assets"
 import { Navbar } from "../components/home/navbar"
+import { Loading } from "../components/loading"
 import { SearchBar } from "../components/searchBar"
+import { useAuth } from "../containers/auth"
+import { SocketState, useWebsocket } from "../containers/socket"
+import HubKey from "../keys"
 import { colors, fonts } from "../theme"
+import { Transaction } from "../types/types"
 
 export const TransactionsPage = () => {
+	const { user } = useAuth()
+	const { send, state } = useWebsocket()
 	const [search, setSearch] = useState("")
+	const [transactionIDs, setTransactionIDs] = useState<number[]>([])
+	const [loading, setLoading] = useState(false)
+	const [error, setError] = useState<string>()
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !send || !user) return
+		;(async () => {
+			setLoading(true)
+			try {
+				const resp = await send<{ total: number; transactionIDs: number[] }>(HubKey.TransactionList, {
+					pageSize: 10,
+					search,
+				})
+				setTransactionIDs(resp.transactionIDs)
+			} catch (e) {
+				if (typeof e === "string") {
+					setError(e)
+				} else if (e instanceof Error) {
+					setError(e.message)
+				}
+			} finally {
+				setLoading(false)
+			}
+		})()
+	}, [send, state, search, user])
+
+	if (loading) return <Loading />
 
 	return (
 		<Box
@@ -87,15 +121,6 @@ export const TransactionsPage = () => {
 							maxWidth: "1000px",
 						}}
 					>
-						{/*
-                        // To
-                        // From
-                        // Amount
-                        // Status
-                        // Date/time
-                        // Tx Ref
-                        // Tx Description
-                        */}
 						<Box
 							sx={{
 								display: "grid",
@@ -171,162 +196,168 @@ export const TransactionsPage = () => {
 								</Typography>
 							</Box>
 						</Box>
-						<Box
-							sx={{
-								display: "grid",
-								gridTemplateColumns:
-									"minmax(150px, 1fr) minmax(300px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr)",
-								gap: "1rem",
-								padding: ".5rem .5rem",
-								"&:nth-child(even)": {
-									backgroundColor: "#160d45",
-								},
-								"& > *": {
-									overflowX: "auto",
-									whiteSpace: "nowrap",
-								},
-							}}
-						>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									supremacy|early_contributor|14
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									Supremacy early contributor dispersion.
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									0x0bF823885962361b7D40A2e5bCA0c3C479549Be0
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									XsynSale
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									success
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									2022-02-24 10:53:47
-								</Typography>
-							</Box>
-						</Box>
-						<Box
-							sx={{
-								display: "grid",
-								gridTemplateColumns:
-									"minmax(150px, 1fr) minmax(300px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr)",
-								gap: "1rem",
-								padding: ".5rem .5rem",
-								"&:nth-child(even)": {
-									backgroundColor: "#160d45",
-								},
-								"& > *": {
-									overflowX: "auto",
-									whiteSpace: "nowrap",
-								},
-							}}
-						>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									supremacy|early_contributor|14
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									Supremacy early contributor dispersion.
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									0x0bF823885962361b7D40A2e5bCA0c3C479549Be0
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									XsynSale
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									success
-								</Typography>
-							</Box>
-							<Box>
-								<Typography
-									variant="caption"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									2022-02-24 10:53:47
-								</Typography>
-							</Box>
-						</Box>
+
+						{transactionIDs.map((t, index) => (
+							<TransactionEntry key={`${t}-${index}`} transactionID={t} />
+						))}
 					</Box>
 				</Paper>
+			</Box>
+		</Box>
+	)
+}
+
+interface TransactionEntryProps {
+	transactionID: number
+}
+
+const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
+	const { user } = useAuth()
+	const { state, subscribe } = useWebsocket()
+	const [entry, setEntry] = useState<Transaction>()
+	const [search, setSearch] = useState("")
+	const [error, setError] = useState<string>()
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !subscribe || !user) return
+
+		try {
+			return subscribe<Transaction>(
+				HubKey.TransactionSubscribe,
+				(payload) => {
+					setEntry(payload)
+				},
+				{ transactionID },
+			)
+		} catch (e) {
+			if (typeof e === "string") {
+				setError(e)
+			} else if (e instanceof Error) {
+				setError(e.message)
+			}
+		}
+	}, [subscribe, state, user])
+
+	if (error)
+		return (
+			<Box
+				sx={{
+					padding: ".5rem .5rem",
+					"&:nth-of-type(even)": {
+						backgroundColor: "#160d45",
+					},
+				}}
+			>
+				<Typography
+					variant="caption"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					{error}
+				</Typography>
+			</Box>
+		)
+
+	if (!entry)
+		return (
+			<Skeleton
+				sx={{
+					maxWidth: "unset",
+					padding: ".5rem .5rem",
+					borderRadius: 0,
+					transform: "none",
+					"&:nth-of-type(even)": {
+						backgroundColor: "#160d45",
+					},
+				}}
+			>
+				<Typography
+					variant="caption"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					Loading transaction entry...
+				</Typography>
+			</Skeleton>
+		)
+
+	return (
+		<Box
+			sx={{
+				display: "grid",
+				gridTemplateColumns: "minmax(150px, 1fr) minmax(300px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr)",
+				gap: "1rem",
+				padding: ".5rem .5rem",
+				"&:nth-of-type(even)": {
+					backgroundColor: "#160d45",
+				},
+				"& > *": {
+					overflowX: "auto",
+					whiteSpace: "nowrap",
+				},
+			}}
+		>
+			<Box>
+				<Typography
+					variant="caption"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					{entry.transactionReference}
+				</Typography>
+			</Box>
+			<Box>
+				<Typography
+					variant="caption"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					{entry.description}
+				</Typography>
+			</Box>
+			<Box>
+				<Typography
+					variant="caption"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					{entry.to.username}
+				</Typography>
+			</Box>
+			<Box>
+				<Typography
+					variant="caption"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					{entry.from.username}
+				</Typography>
+			</Box>
+			<Box>
+				<Typography
+					variant="caption"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					{entry.status}
+				</Typography>
+			</Box>
+			<Box>
+				<Typography
+					variant="caption"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					{entry.created_at.toLocaleString()}
+				</Typography>
 			</Box>
 		</Box>
 	)
