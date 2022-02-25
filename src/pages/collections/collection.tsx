@@ -50,6 +50,30 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		})
 	}
 
+	const renderRarities = () => {
+		const rarityArray: string[] = []
+
+		for (const rarityType in colors.rarity) {
+			rarityArray.push(rarityType)
+		}
+
+		return rarityArray.map((rarity) => {
+			const rarityUppercase = rarity.charAt(0).toUpperCase() + rarity.slice(1)
+			const rarityName = rarityUppercase.split(/(?=[A-Z])/).join(" ")
+			const colorValue = colors.rarity[rarity as keyof typeof colors.rarity]
+
+			return (
+				<FilterChip
+					active={rarities.has(rarityName)}
+					label={rarityName}
+					color={colorValue}
+					variant="outlined"
+					onClick={() => toggleRarity(rarityName)}
+				/>
+			)
+		})
+	}
+
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !collection_slug) return
 		return subscribe<Collection>(
@@ -223,64 +247,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						gap: ".5rem",
 					}}
 				>
-					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
-					<FilterChip
-						active={rarities.has("Colossal")}
-						label="Colossal"
-						color={colors.rarity.colossal}
-						variant="outlined"
-						onClick={() => toggleRarity("Colossal")}
-					/>
-					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
-					<FilterChip
-						active={rarities.has("Legendary")}
-						label="Legendary"
-						color={colors.rarity.legendary}
-						variant="outlined"
-						onClick={() => toggleRarity("Legendary")}
-					/>
-					<FilterChip
-						active={rarities.has("Elite Legendary")}
-						label="Elite Legendary"
-						color={colors.rarity.eliteLegendary}
-						variant="outlined"
-						onClick={() => toggleRarity("Elite Legendary")}
-					/>
-					<FilterChip
-						active={rarities.has("Ultra Rare")}
-						label="Ultra Rare"
-						color={colors.rarity.ultraRare}
-						variant="outlined"
-						onClick={() => toggleRarity("Ultra Rare")}
-					/>
-					<FilterChip
-						active={rarities.has("Exotic")}
-						label="Exotic"
-						color={colors.rarity.exotic}
-						variant="outlined"
-						onClick={() => toggleRarity("Exotic")}
-					/>
-					<FilterChip
-						active={rarities.has("Guardian")}
-						label="Guardian"
-						color={colors.rarity.guardian}
-						variant="outlined"
-						onClick={() => toggleRarity("Guardian")}
-					/>
-					<FilterChip
-						active={rarities.has("Mythic")}
-						label="Mythic"
-						color={colors.rarity.mythic}
-						variant="outlined"
-						onClick={() => toggleRarity("Mythic")}
-					/>
-					<FilterChip
-						active={rarities.has("Deus ex")}
-						label="Deus ex"
-						color={colors.rarity.deusEx}
-						variant="outlined"
-						onClick={() => toggleRarity("Deus ex")}
-					/>
+					{renderRarities()}
 				</Box>
 			</Box>
 		</>

@@ -338,7 +338,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
 				</Button>
 				<Divider />
-				<NavButton to={`/collections`} startIcon={<AppsIcon />}>
+				<NavButton to={`/collections/${user?.username}`} startIcon={<AppsIcon />}>
 					My Inventory
 				</NavButton>
 				<NavButton to="/stores" startIcon={<StorefrontIcon />}>

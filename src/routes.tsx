@@ -165,11 +165,8 @@ export const Routes = () => {
 
 							{/* collections */}
 							<Switch>
-								<Route path="/collections/:username/:collection_slug">
+								<Route path={"/collections/:username"}>
 									<CollectionPage />
-								</Route>
-								<Route path={["/collections/:username", "/collections"]}>
-									<CollectionsPage />
 								</Route>
 							</Switch>
 
