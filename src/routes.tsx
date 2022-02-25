@@ -1,8 +1,9 @@
 import { Alert, Snackbar } from "@mui/material"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { BrowserRouter, Route, Switch } from "react-router-dom"
 import { BlockConfirmationSnackList } from "./components/blockConfirmationSnackList"
 import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
+import { Loading } from "./components/loading"
 import { Sidebar } from "./components/sidebar"
 import { useAuth } from "./containers/auth"
 import { useSidebarState } from "./containers/sidebar"
@@ -29,9 +30,10 @@ import { TransactionsPage } from "./pages/transactions"
 import { WithdrawPage } from "./pages/withdraw"
 
 export const Routes = () => {
-	const { setSessionID } = useAuth()
+	const { setSessionID, user, loading: authLoading } = useAuth()
 	const { setSidebarOpen } = useSidebarState()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
+	const [loadingText, setLoadingText] = useState<string>()
 	const searchParams = new URLSearchParams(window.location.search)
 	const sessionID = searchParams.get("sessionID")
 
@@ -41,7 +43,15 @@ export const Routes = () => {
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
-
+	useEffect(() => {
+		if (authLoading) {
+			setLoadingText("Loading...")
+			return
+		}
+	})
+	if (!user && authLoading) {
+		return <Loading text={loadingText} />
+	}
 	return (
 		<>
 			<BrowserRouter>
@@ -60,113 +70,118 @@ export const Routes = () => {
 				>
 					<Alert severity={alertSeverity || "info"}>{message}</Alert>
 				</Snackbar>
-				<Switch>
-					<Route path="/nosidebar/login">
-						<LoginPage />
-					</Route>
-					<Route path="/nosidebar/:username/:collection_slug">
-						<CollectionPage />
-					</Route>
-					<Route path="/nosidebar/logout">
-						<LogoutPage />
-					</Route>
-					<Sidebar onClose={() => setSidebarOpen(false)}>
-						<Route exact path="/">
-							<LogoutPage />
-						</Route>
-						<Route exact path="/login">
+				{user ? (
+					<Switch>
+						<Route path="/nosidebar/login">
 							<LoginPage />
 						</Route>
-						<Route path="/signup">
-							<SignUpPage />
+						<Route path="/nosidebar/:username/:collection_slug">
+							<CollectionPage />
 						</Route>
-						<Route path="/onboarding">
-							<PassportReady />
+						<Route path="/nosidebar/logout">
+							<LogoutPage />
 						</Route>
+						<Sidebar onClose={() => setSidebarOpen(false)}>
+							<Route exact path="/">
+								<LoginPage />
+							</Route>
+							<Route exact path="/login">
+								<LoginPage />
+							</Route>
+							<Route path="/signup">
+								<SignUpPage />
+							</Route>
+							<Route path="/onboarding">
+								<PassportReady />
+							</Route>
 
-						<Route path="/privacy-policy">
-							<Home />
-						</Route>
-						<Route path="/terms-and-conditions">
-							<Home />
-						</Route>
+							<Route path="/privacy-policy">
+								<Home />
+							</Route>
+							<Route path="/terms-and-conditions">
+								<Home />
+							</Route>
 
-						<Route path="/transactions">
-							<TransactionsPage />
-						</Route>
-						<Route path="/withdraw">
-							<WithdrawPage />
-						</Route>
-						<Route path="/mystery">
-							<LootBoxPage />
-						</Route>
+							<Route path="/transactions">
+								<TransactionsPage />
+							</Route>
+							<Route path="/withdraw">
+								<WithdrawPage />
+							</Route>
+							<Route path="/mystery">
+								<LootBoxPage />
+							</Route>
 
-						{/* Supremacy */}
-						<Switch>
-							<Route path="/battle_arena">
-								<BattleArenaPage />
-							</Route>
-						</Switch>
+							{/* Supremacy */}
+							<Switch>
+								<Route path="/battle_arena">
+									<BattleArenaPage />
+								</Route>
+							</Switch>
 
-						<Route path="/buy">
-							<BuyPage />
-						</Route>
-						<Route path="/if-buy">
-							<IFrameBuyPage />
-						</Route>
+							<Route path="/buy">
+								<BuyPage />
+							</Route>
+							<Route path="/if-buy">
+								<IFrameBuyPage />
+							</Route>
 
-						{/* User-authenticated routes */}
-						{/* profile */}
-						<Switch>
-							<Route path="/profile/:username/asset/:asset_hash">
-								<ProfilePage />
-							</Route>
-							<Route path="/profile/:username/edit">
-								<ProfileEditPage />
-							</Route>
-							<Route path="/profile/:username">
-								<ProfilePage />
-							</Route>
-							<Route path="/profile">
-								<ProfilePage />
-							</Route>
-						</Switch>
+							{/* User-authenticated routes */}
+							{/* profile */}
+							<Switch>
+								<Route path="/profile/:username/asset/:asset_hash">
+									<ProfilePage />
+								</Route>
+								<Route path="/profile/:username/edit">
+									<ProfileEditPage />
+								</Route>
+								<Route path="/profile/:username">
+									<ProfilePage />
+								</Route>
+								<Route path="/profile">
+									<ProfilePage />
+								</Route>
+							</Switch>
 
-						{/* stores */}
-						<Switch>
-							<Route path="/stores/:collection_slug/:store_item_id">
-								<StoreItemPage />
-							</Route>
-							<Route path="/stores/:collection_slug">
-								<StorePage />
-							</Route>
-							<Route path="/stores">
-								<StoresPage />
-							</Route>
-						</Switch>
+							{/* stores */}
+							<Switch>
+								<Route path="/stores/:collection_slug/:store_item_id">
+									<StoreItemPage />
+								</Route>
+								<Route path="/stores/:collection_slug">
+									<StorePage />
+								</Route>
+								<Route path="/stores">
+									<StoresPage />
+								</Route>
+							</Switch>
 
-						{/* Supremacy */}
-						<Switch>
-							<Route path="/battle_arena">
-								<BattleArenaPage />
-							</Route>
-						</Switch>
+							{/* Supremacy */}
+							<Switch>
+								<Route path="/battle_arena">
+									<BattleArenaPage />
+								</Route>
+							</Switch>
 
-						{/* collections */}
-						<Switch>
-							<Route path="/collections/:username/:collection_slug">
-								<CollectionPage />
-							</Route>
-							<Route path={["/collections/:username", "/collections"]}>
-								<CollectionsPage />
-							</Route>
-						</Switch>
+							{/* collections */}
+							<Switch>
+								<Route path="/collections/:username/:collection_slug">
+									<CollectionPage />
+								</Route>
+								<Route path={["/collections/:username", "/collections"]}>
+									<CollectionsPage />
+								</Route>
+							</Switch>
 
-						<Route path="/asset/:asset_hash">
-							<AssetRedirectPage />
-						</Route>
-					</Sidebar>
-				</Switch>
+							<Route path="/asset/:asset_hash">
+								<AssetRedirectPage />
+							</Route>
+						</Sidebar>
+					</Switch>
+				) : (
+					<LoginPage />
+				)}
+
 				<Route path="/sale-sup">
 					<SalePage />
 				</Route>
