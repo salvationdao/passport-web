@@ -7,7 +7,6 @@ import Logo from "../../assets/images/supremacy-white.svg"
 import { IMAGE_FOLDER, NAVBAR_HEIGHT } from "../../pages/sale/salePage"
 import { colors } from "../../theme"
 import { HamburgerNav } from "./hamburgerNav"
-import { TOKEN_SALE_ENDPOINT } from "../../config"
 
 const LogoLink = styled("a")({
 	"& img": {
