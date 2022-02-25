@@ -6,6 +6,7 @@ import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -14,6 +15,7 @@ import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
 import { FilterChip, SortChip } from "../collections/collection"
+import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 
 export const StorePage: React.FC = () => {
@@ -26,7 +28,8 @@ export const StorePage: React.FC = () => {
 
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [collection, setCollection] = useState<Collection>()
-	const { loading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
+	const { loading: queryLoading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
+	const [tabLoading, setTabLoading] = useState(true)
 
 	// search and filter
 	const [search, setSearch] = useState("")
@@ -38,6 +41,7 @@ export const StorePage: React.FC = () => {
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
+		setTabLoading(true)
 	}
 
 	const toggleRarity = (rarity: string) => {
@@ -67,7 +71,7 @@ export const StorePage: React.FC = () => {
 	}, [collection_slug, subscribe, state])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN) return
+		if (state !== SocketState.OPEN || !collection) return
 
 		const filtersItems: any[] = []
 
@@ -113,14 +117,19 @@ export const StorePage: React.FC = () => {
 				items: filtersItems,
 			},
 			...sort,
+		}).then(() => {
+			setTabLoading(false)
 		})
 	}, [user, query, collection, state, assetType, rarities, search, sort])
 
 	useEffect(() => {
-		if (!payload || loading || error) return
+		if (!payload || queryLoading || error) return
 		setStoreItemIDs(payload.storeItemIDs)
-	}, [payload, loading, error])
+	}, [payload, queryLoading, error])
 
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
 	const renderFilters = () => (
 		<>
 			<Box>
@@ -286,6 +295,10 @@ export const StorePage: React.FC = () => {
 			</Box>
 		</>
 	)
+
+	const loading = tabLoading || queryLoading
+
+	const showLootBox = collection?.name === "Supremacy Genesis" && (!assetType || assetType === "All")
 
 	return (
 		<>
@@ -468,7 +481,7 @@ export const StorePage: React.FC = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{storeItemIDs.length ? (
+							{!loading && (storeItemIDs.length || showLootBox) ? (
 								<Paper
 									sx={{
 										flex: 1,
@@ -479,6 +492,8 @@ export const StorePage: React.FC = () => {
 										padding: "2rem",
 									}}
 								>
+									{/* NOTE: You might need to remove the lootbox if pagination is added */}
+									{showLootBox && <LootBoxCard />}
 									{storeItemIDs.map((a) => {
 										return <StoreItemCard key={a} storeItemID={a} />
 									})}

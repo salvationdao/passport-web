@@ -113,6 +113,7 @@ enum HubKey {
 	SupsWithdraw = "SUPS:WITHDRAW",
 
 	CheckUserCanAccessStore = "USER:CHECK:CAN_ACCESS_STORE",
+	FactionAvailables = "AVAILABLE:ITEM:AMOUNT",
 }
 
 export default HubKey

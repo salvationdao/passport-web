@@ -1,5 +1,5 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Link, Paper, Typography, useMediaQuery } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Link, Paper, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupTokenIcon } from "../../assets"
@@ -20,6 +20,7 @@ export const StoreItemPage = () => {
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
+
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	// Store item data
@@ -543,6 +544,11 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 	const { send, state } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [loading, setLoading] = useState(false)
+	const [purchasedOpen, setPurchasedOpen] = useState(false)
+
+	const theme = useTheme()
+	const history = useHistory()
+	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	const purchase = useCallback(async () => {
 		if (state !== SocketState.OPEN) return
@@ -552,7 +558,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 				storeItemID: storeItem.ID,
 			})
 			onClose()
-			displayMessage(`Successfully purchased 1 ${storeItem.name}`, "success")
+			setPurchasedOpen(true)
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong. Please try again.", "error")
 		} finally {
@@ -561,25 +567,95 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 	}, [send, state, storeItem, displayMessage, onClose])
 
 	return (
-		<Dialog onClose={() => onClose()} open={open}>
-			<DialogTitle>Confirm Item Purchase</DialogTitle>
-			<DialogContent>Confirm purchase of {storeItem.name}?</DialogContent>
-			<DialogActions>
-				<Button variant="contained" type="submit" color="primary" disabled={loading} onClick={() => purchase()}>
-					Purchase
-				</Button>
-				<Button
-					variant="contained"
-					type="button"
-					color="error"
-					disabled={loading}
-					onClick={() => {
-						onClose()
-					}}
-				>
-					Cancel
-				</Button>
-			</DialogActions>
-		</Dialog>
+		<Box>
+			<Dialog onClose={() => onClose()} open={open}>
+				<Box sx={{ padding: "1rem", border: `4px solid ${colors.darkNavyBackground}` }}>
+					<DialogTitle>
+						<Typography variant="h2" sx={{ textAlign: "center" }}>
+							Confirm Purchase
+						</Typography>
+					</DialogTitle>
+					<DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+						<Typography variant="body1" sx={{ textAlign: "center", lineHeight: "1.3", fontSize: "120%" }}>
+							Please confirm purchase of{" "}
+							<Box component="span" sx={{ color: theme.palette.primary.main }}>
+								{storeItem.name}
+							</Box>
+							<Box component="span">?</Box>
+						</Typography>
+					</DialogContent>
+					<DialogActions sx={{ display: "flex", justifyContent: "center" }}>
+						<Button
+							size="large"
+							variant="contained"
+							type="submit"
+							color="primary"
+							disabled={loading}
+							onClick={() => purchase()}
+							sx={{ marginRight: "1rem" }}
+						>
+							Purchase
+						</Button>
+						<Button
+							size="large"
+							variant="contained"
+							type="button"
+							color="error"
+							disabled={loading}
+							onClick={() => {
+								onClose()
+							}}
+						>
+							Cancel
+						</Button>
+					</DialogActions>
+				</Box>
+			</Dialog>
+
+			<Dialog open={purchasedOpen} onClose={() => setPurchasedOpen(false)}>
+				<Box sx={{ padding: "1rem", border: `4px solid ${colors.darkNavyBackground}` }}>
+					<DialogTitle>
+						<Typography variant="h2" sx={{ textAlign: "center" }}>
+							Confirmation of Purchase
+						</Typography>
+					</DialogTitle>
+					<DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+						<Box
+							component="img"
+							src={storeItem.image}
+							alt="Asset Image"
+							sx={{
+								display: isWiderThan1000px ? "block" : "none",
+								width: "100%",
+								maxWidth: "350px",
+								marginBottom: "1rem",
+							}}
+						/>
+						<Typography variant="h3" sx={{ textAlign: "center", lineHeight: "1.3" }}>
+							Congratulations on your purchase of{" "}
+							<Box component="span" sx={{ color: theme.palette.primary.main }}>
+								{storeItem.name}
+							</Box>
+							<Box component="span">!</Box>
+						</Typography>
+					</DialogContent>
+					<DialogActions sx={{ display: "flex", justifyContent: "center" }}>
+						<Button
+							size="large"
+							variant="contained"
+							type="button"
+							color="error"
+							disabled={loading}
+							onClick={() => {
+								history.push("/stores")
+								setPurchasedOpen(false)
+							}}
+						>
+							Close
+						</Button>
+					</DialogActions>
+				</Box>
+			</Dialog>
+		</Box>
 	)
 }
