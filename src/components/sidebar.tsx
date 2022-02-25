@@ -341,7 +341,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to={`/collections/${user?.username}`} startIcon={<AppsIcon />}>
 					My Inventory
 				</NavButton>
-				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
+				<NavButton to="/stores/supremacy-genesis" startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
 			</Box>
