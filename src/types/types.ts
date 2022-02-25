@@ -142,7 +142,7 @@ export interface Collection {
 // }
 
 export interface Asset {
-	assetHash: string
+	hash: string
 	externalTokenID: number
 	userID: string
 	username: string

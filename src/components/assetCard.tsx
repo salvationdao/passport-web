@@ -27,7 +27,7 @@ interface AssetCardProps extends BoxProps {
 
 export const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
 	const history = useHistory()
-	const { name, attributes, assetHash } = asset
+	const { name, attributes, hash } = asset
 
 	let currencyLogo = EthLogo
 	// if (currency === Currency.Ethereum) {
@@ -180,7 +180,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
 					<Box component="img" src={rarityIcon} alt="Rarity Icon" />
 				</Box>
 			</Box>
-			<ViewPropertiesButton onClick={() => history.push("/collections/assets/" + assetHash)}>
+			<ViewPropertiesButton onClick={() => history.push("/collections/assets/" + hash)}>
 				<Typography
 					variant="h4"
 					sx={{

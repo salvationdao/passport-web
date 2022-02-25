@@ -36,7 +36,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	}, [history, assetHash])
 
 	useEffect(() => {
-		if (!subscribe) return
+		if (!subscribe || assetHash === "") return
 		return subscribe<Asset>(
 			HubKey.AssetUpdated,
 			(payload) => {
@@ -55,7 +55,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	return (
 		<Box
 			component="button"
-			onClick={() => history.push(`/profile/${username}/asset/${item?.assetHash}`)}
+			onClick={() => history.push(`/profile/${username}/asset/${item?.hash}`)}
 			onMouseOver={() => setShowPreview(true)}
 			onMouseLeave={() => setShowPreview(false)}
 			onFocus={() => setShowPreview(true)}

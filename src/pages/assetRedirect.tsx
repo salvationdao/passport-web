@@ -17,7 +17,7 @@ export const AssetRedirectPage = () => {
 
 				if (!resp.ok || resp.status !== 200) throw new Error("Something went wrong while fetching asset data.")
 				const json = (await resp.json()) as Asset
-				history.push(`/profile/${json.username}/asset/${json.assetHash}`)
+				history.push(`/profile/${json.username}/asset/${json.hash}`)
 			} catch (e) {
 				if (typeof e === "string") displayMessage(e, "error")
 				else if (e instanceof Error) displayMessage(e.message, "error")

@@ -770,7 +770,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	const { provider } = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
-
 	// Asset data
 	const [asset, setAsset] = useState<Asset>()
 	const [, setAssetAttributes] = useState<Attribute[]>([])
@@ -861,7 +860,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	// }, [asset, provider, loggedInUser])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN) return
+		if (state !== SocketState.OPEN || assetHash === "") return
 
 		setLoading(true)
 		try {
@@ -923,7 +922,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 
 	return (
 		<>
-			<MintModal open={mintWindowOpen} onClose={() => setMintWindowOpen(false)} assetHash={asset.assetHash} mintingSignature={asset.mintingSignature} />
+			<MintModal open={mintWindowOpen} onClose={() => setMintWindowOpen(false)} assetHash={asset.hash} mintingSignature={asset.mintingSignature} />
 			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
 			<Paper
 				sx={{
@@ -1543,7 +1542,7 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Ass
 		setLoading(true)
 		try {
 			await send<Asset>(HubKey.AssetUpdateName, {
-				assetHash: asset.assetHash,
+				assetHash: asset.hash,
 				userID,
 				name,
 			})
