@@ -219,13 +219,13 @@ const EntryRow = styled("tr")({
 		maxWidth: "100px",
 	},
 	"& > *:nth-of-type(6)": {
-		minWidth: "170px",
-		maxWidth: "170px",
+		minWidth: "200px",
+		maxWidth: "200px",
 	},
 })
 
 const EntryData = styled(Typography)({
-	overflowX: "scroll",
+	overflowX: "auto",
 	display: "block",
 	whiteSpace: "nowrap",
 })
