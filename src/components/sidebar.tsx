@@ -375,7 +375,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			)}
 			<Box flex="1" />
 			<NavButton sx={{ alignSelf: "start", width: "100%" }} to="/profile" startIcon={<FaceIcon />}>
-				Edit Profile
+				Profile
 			</NavButton>
 			<Box>
 				<Button

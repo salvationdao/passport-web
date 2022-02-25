@@ -1,4 +1,5 @@
-import { Box, Chip, Skeleton, styled, Typography, TypographyProps } from "@mui/material"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
+import { Box, Button, Chip, Skeleton, styled, Typography, TypographyProps } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -139,7 +140,17 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 		<EntryBox>
 			<EntryDataRow>
 				<EntryLabel>Transaction Ref.</EntryLabel>
-				<EntryData>{entry.transactionReference}</EntryData>
+				<Button
+					sx={{
+						textAlign: "start",
+						justifyContent: "start",
+					}}
+					endIcon={<ContentCopyIcon />}
+					variant="text"
+					onClick={() => navigator.clipboard.writeText(entry.transactionReference)}
+				>
+					<EntryData>{entry.transactionReference}</EntryData>
+				</Button>
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>Description</EntryLabel>

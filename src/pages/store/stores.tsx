@@ -5,6 +5,7 @@ import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -23,38 +24,34 @@ export const StoresPage = () => {
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
 	const [userLoad, setUserLoad] = useState(true)
-
+	const [canEnter, setCanEnter] = useState(false)
+	const [factionsData, setFactionsData] = useState<Faction[]>([])
 	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
 
-	const history = useHistory()
-
 	useEffect(() => {
-		// if between 26th 12am - 27 12am only whitelisted and secondary holders and early contributors
-		// if after 27 12am included deathlisted
-		// after 27 12 pm everyone included
-		console.log(canAccessStore)
-
-		if (!canAccessStore) return
-		if (!canAccessStore.isAllowed) {
-			displayMessage(canAccessStore?.message || "waht", "error")
-			history.push("/profile")
-			setUserLoad(false)
-			return
-		}
 		if (user) {
 			if (!user.faction) {
-				displayMessage("Please enlist to a faction before entering store", "error")
-				history.push("/profile")
 				setUserLoad(false)
 			} else {
+				setCanEnter(true)
 				setUserLoad(false)
 			}
 		} else {
-			displayMessage("Please login before entering store", "error")
-			history.push("/profile")
 			setUserLoad(false)
 		}
-	}, [userLoad, canAccessStore])
+	}, [userLoad, user, canAccessStore])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+		;(async () => {
+			try {
+				const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
+				setFactionsData(resp)
+			} catch (e) {
+				setFactionsData([])
+			}
+		})()
+	}, [send, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
@@ -73,7 +70,6 @@ export const StoresPage = () => {
 		})()
 	}, [send, state, displayMessage])
 
-	// check if user is white listed
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !user || !user.publicAddress) return
 		return subscribe<{ isAllowed: boolean; message: string }>(
@@ -87,8 +83,17 @@ export const StoresPage = () => {
 		)
 	}, [user, subscribe, state])
 
-	if (userLoad) return <Loading text={"Getting shop data"} />
+	if (!canAccessStore || !canAccessStore.isAllowed) {
+		return <WhiteListCheck />
+	}
 
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
+
+	if (userLoad) {
+		return <Loading text={"Getting shop data"} />
+	}
 	return (
 		<Box
 			sx={{
@@ -123,9 +128,15 @@ export const StoresPage = () => {
 							padding: "2rem",
 						}}
 					>
-						{collections.map((c) => {
-							return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
-						})}
+						{canEnter ? (
+							collections.map((c) => {
+								return <StoreCollection key={c.id} collection={c} faction={user ? user.faction : undefined} />
+							})
+						) : (
+							<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+								<Typography variant="h3">Please enlist to a faction to view store items</Typography>
+							</Box>
+						)}
 					</Paper>
 				)}
 			</Box>
@@ -288,7 +299,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 				}}
 			>
 				<RouterLink component={StyledFancyButton} to={`/stores/${collection.slug}`}>
-					View Entire Store
+					View Collection
 				</RouterLink>
 			</Box>
 			{storeItemIDs.length || collection.name === "Supremacy Genesis" ? (

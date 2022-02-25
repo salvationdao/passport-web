@@ -1,7 +1,7 @@
 import { Alert, Box, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from "@mui/material"
 import React, { useCallback, useEffect, useState } from "react"
 import { useWeb3, MetaMaskState } from "../containers/web3"
-import { ethers } from "ethers"
+import { BigNumber, ethers } from "ethers"
 import { FancyButton } from "./fancyButton"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../config"
 import { ConnectWallet } from "./connectWallet"
@@ -9,9 +9,10 @@ import { ConnectWallet } from "./connectWallet"
 interface MintModalProps {
 	open: boolean
 	onClose: () => void
-	assetExternalTokenID: string
+	assetExternalTokenID: number
 	mintContract: string
 	mintingSignature?: string | undefined
+	signatureExpiry?: string | undefined
 	collectionSlug: string
 }
 
@@ -20,7 +21,7 @@ interface GetSignatureResponse {
 	expiry: number
 }
 
-export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug, mintContract, mintingSignature }: MintModalProps) => {
+export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug, mintContract, mintingSignature, signatureExpiry }: MintModalProps) => {
 	const { account, provider, currentChainId, changeChain, metaMaskState } = useWeb3()
 	const [loadingMint, setLoadingMint] = useState<boolean>(false)
 	const [errorMinting, setErrorMinting] = useState<string>()
@@ -37,15 +38,8 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 	}, [changeChainToETH])
 
 	const mintAttempt = useCallback(
-		async (mintingContract: string, assetExternalTokenID: string, collectionSlug: string, mintingSignature?: string) => {
+		async (mintingContract: string, assetExternalTokenID: number, collectionSlug: string, mintingSignature?: string, signatureExpiry?: string) => {
 			try {
-				console.log()
-				console.log()
-				console.log(mintingContract)
-				console.log(assetExternalTokenID)
-				console.log(collectionSlug)
-				console.log()
-				console.log()
 				if (!mintingContract || mintingContract === "") {
 					setErrorMinting("Missing collection contract information.")
 					return
@@ -54,7 +48,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 					setErrorMinting("Missing collection slug.")
 					return
 				}
-				if (!assetExternalTokenID || assetExternalTokenID === "") {
+				if (!assetExternalTokenID) {
 					setErrorMinting("Item token id.")
 					return
 				}
@@ -76,10 +70,16 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
 				const signer = provider.getSigner()
 				const mintContract = new ethers.Contract(mintingContract, abi, signer)
-				if (mintingSignature && mintingSignature !== "") {
-					await mintContract.signedMint(assetExternalTokenID, mintingSignature)
-					setErrorMinting(undefined)
-					return
+				// TODO: get the expiry/handle it
+				if (signatureExpiry) {
+					const sigExInt = parseInt(signatureExpiry)
+					const expiryDate = new Date(sigExInt * 1000)
+
+					if (mintingSignature && mintingSignature !== "" && expiryDate > new Date()) {
+						await mintContract.signedMint(BigNumber.from(assetExternalTokenID), mintingSignature, sigExInt)
+						setErrorMinting(undefined)
+						return
+					}
 				}
 
 				const nonce = await mintContract.nonces(account)
@@ -87,7 +87,8 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 					`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/mint-nft/${account}/${nonce}/${collectionSlug}/${assetExternalTokenID}`,
 				)
 				const respJson: GetSignatureResponse = await resp.json()
-				await mintContract.signedMint(assetExternalTokenID, respJson.messageSignature, respJson.expiry)
+				const tx = await mintContract.signedMint(assetExternalTokenID, respJson.messageSignature, respJson.expiry)
+				await tx.wait()
 				setErrorMinting(undefined)
 				onClose()
 			} catch (e) {
@@ -137,7 +138,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 			{metaMaskState === MetaMaskState.Active && currentChainId?.toString() === ETHEREUM_CHAIN_ID && (
 				<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}>
 					{!loadingMint && (
-						<FancyButton onClick={() => mintAttempt(mintContract, assetExternalTokenID, collectionSlug, mintingSignature)}>
+						<FancyButton onClick={() => mintAttempt(mintContract, assetExternalTokenID, collectionSlug, mintingSignature, signatureExpiry)}>
 							{mintingSignature !== "" ? "Continue transition" : "Confirm and start transition"}
 						</FancyButton>
 					)}

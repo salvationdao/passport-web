@@ -143,8 +143,8 @@ export interface Collection {
 
 export interface Asset {
 	hash: string
-	mintContract: string
-	stakeContract: string
+	// mintContract: string
+	// stakeContract: string
 	externalTokenID: number
 	userID: string
 	username: string
@@ -163,6 +163,7 @@ export interface Asset {
 	lockedByID?: string
 	deletedAt?: Date
 	mintingSignature?: string
+	signatureExpiry?: string
 	txHistory: any[]
 	minted: boolean
 }
@@ -237,6 +238,7 @@ export interface ExchangeRates {
 }
 
 export type tokenName = "eth" | "usdc" | "bnb" | "busd"
+
 export interface tokenSelect {
 	name: tokenName
 	networkName: string
@@ -247,4 +249,10 @@ export interface tokenSelect {
 	contractAddr: string
 	scanSite: string
 	gasFee: number
+}
+
+export interface metamaskError {
+	code: number
+	message: string
+	stack?: unknown
 }
