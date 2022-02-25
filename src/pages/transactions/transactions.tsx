@@ -1,4 +1,8 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Paper, styled, Typography, useMediaQuery } from "@mui/material"
+import Accordion from "@mui/material/Accordion"
+import AccordionDetails from "@mui/material/AccordionDetails"
+import AccordionSummary, { AccordionSummaryProps } from "@mui/material/AccordionSummary"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../../assets"
@@ -184,38 +188,44 @@ export const TransactionsPage = () => {
 					</TransactionGroup>
 					{Array.from(groupedTransactions.keys()).map((g) => (
 						<TransactionGroup key={g}>
-							<Typography
-								variant="h3"
-								component="h2"
-								sx={{
-									marginBottom: ".5rem",
-									fontFamily: fonts.bizmoblack,
-									fontStyle: "italic",
-									letterSpacing: "2px",
-									textTransform: "uppercase",
-								}}
-							>
-								{g}
-							</Typography>
-							{isWiderThan1000px ? (
-								<DesktopTransactionTable transactionIDs={groupedTransactions.get(g)!} />
-							) : (
-								<MobileTransactionTable transactionIDs={groupedTransactions.get(g)!} />
-							)}
-							{condensedTransactions.length === 0 && (
-								<Box
-									sx={{
-										flex: 1,
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-									}}
-								>
-									<Typography variant="subtitle2" color={colors.darkerGrey}>
-										{!loading && error ? error : "No transaction history"}
+							<GroupAccordion>
+								<StyledAccordionSummary>
+									<Typography
+										variant="h3"
+										component="h2"
+										sx={{
+											marginBottom: ".5rem",
+											fontFamily: fonts.bizmoblack,
+											fontStyle: "italic",
+											letterSpacing: "2px",
+											textTransform: "uppercase",
+										}}
+									>
+										{g}
 									</Typography>
-								</Box>
-							)}
+								</StyledAccordionSummary>
+								<StyledAccordionDetails>
+									{isWiderThan1000px ? (
+										<DesktopTransactionTable transactionIDs={groupedTransactions.get(g)!} />
+									) : (
+										<MobileTransactionTable transactionIDs={groupedTransactions.get(g)!} />
+									)}
+									{condensedTransactions.length === 0 && (
+										<Box
+											sx={{
+												flex: 1,
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+											}}
+										>
+											<Typography variant="subtitle2" color={colors.darkerGrey}>
+												{!loading && error ? error : "No transaction history"}
+											</Typography>
+										</Box>
+									)}
+								</StyledAccordionDetails>
+							</GroupAccordion>
 						</TransactionGroup>
 					))}
 				</Paper>
@@ -233,4 +243,18 @@ const TransactionGroup = styled("div")({
 	"&:not(:last-child)": {
 		marginBottom: "2rem",
 	},
+})
+
+const GroupAccordion = styled(Accordion)({
+	alignSelf: "stretch",
+})
+
+const StyledAccordionSummary = styled((props: AccordionSummaryProps) => <AccordionSummary expandIcon={<ExpandMoreIcon />} {...props} />)({
+	padding: 0,
+})
+
+const StyledAccordionDetails = styled(AccordionDetails)({
+	display: "flex",
+	flexDirection: "column",
+	padding: 0,
 })

@@ -1,4 +1,5 @@
-import { Box, Chip, styled, Typography } from "@mui/material"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
+import { Box, Button, Chip, styled, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -55,8 +56,8 @@ const EntryRow = styled("tr")({
 	},
 	// Transaction Ref.
 	"& > *:nth-of-type(1)": {
-		minWidth: "220px",
-		maxWidth: "220px",
+		minWidth: "150px",
+		maxWidth: "150px",
 	},
 	// Description
 	"& > *:nth-of-type(2)": {},
@@ -153,14 +154,18 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 			}}
 		>
 			<td align="left">
-				<EntryData
-					variant="caption"
-					sx={{
-						textTransform: "uppercase",
-					}}
-				>
-					{entry.transactionReference}
-				</EntryData>
+				<Button onClick={() => navigator.clipboard.writeText(entry.transactionReference)} endIcon={<ContentCopyIcon />} variant="text" fullWidth>
+					<EntryData
+						variant="caption"
+						sx={{
+							overflowX: "hidden",
+							textTransform: "uppercase",
+							textOverflow: "ellipsis",
+						}}
+					>
+						{entry.transactionReference}
+					</EntryData>
+				</Button>
 			</td>
 			<td align="left">
 				<EntryData
