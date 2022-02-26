@@ -1,4 +1,4 @@
-import { Box, Link, Typography } from "@mui/material"
+import { Alert, Box, Link, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
@@ -200,25 +200,28 @@ export const LoginPage: React.FC = () => {
 						<MetaMaskLogin
 							onFailure={onMetaMaskLoginFailure}
 							render={(props) => (
-								<FancyButton
-									onClick={props.onClick}
-									loading={props.isProcessing}
-									title="Connect Wallet to account"
-									sx={{
-										marginBottom: "1rem",
-										padding: "1rem",
-										borderRadius: ".5rem",
-									}}
-									startIcon={
-										typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined" ? (
-											<WalletConnectIcon />
-										) : (
-											<MetaMaskIcon />
-										)
-									}
-								>
-									Connect Wallet to account
-								</FancyButton>
+								<>
+									<FancyButton
+										onClick={props.onClick}
+										loading={props.isProcessing}
+										title="Connect Wallet to account"
+										sx={{
+											marginBottom: "1rem",
+											padding: "1rem",
+											borderRadius: ".5rem",
+										}}
+										startIcon={
+											typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined" ? (
+												<WalletConnectIcon />
+											) : (
+												<MetaMaskIcon />
+											)
+										}
+									>
+										Connect Wallet to account
+									</FancyButton>
+									<Typography sx={{ textAlign: "center" }}>{props.errorMessage}</Typography>
+								</>
 							)}
 						/>
 					</Box>

@@ -8,6 +8,7 @@ interface MetaMaskLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 	metaMaskState: MetaMaskState
 	isProcessing: boolean
+	errorMessage: string | null
 }
 
 interface LoginMetaMaskProps {
@@ -23,7 +24,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 	const { displayMessage } = useSnackbar()
 	const history = useHistory()
 	const [isProcessing, setIsProcessing] = useState(false)
-
+	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 	const click = useCallback(async () => {
 		if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
 			try {
@@ -43,8 +44,12 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 
 			try {
 				const resp = await loginMetamask()
+				if (!resp || !resp.isNew) {
+					setErrorMessage("There was a problem logging you in. Your account may be disabled, please contact support.")
+					setIsProcessing(false)
+					return
+				}
 				setIsProcessing(false)
-				if (!resp || !resp.isNew) return
 				!publicSale && history.push("/onboarding?skip_username=true")
 			} catch (e) {
 				setIsProcessing(false)
@@ -61,6 +66,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 	const propsForRender = useMemo(
 		() => ({
 			onClick: click,
+			errorMessage: errorMessage,
 			isProcessing,
 			metaMaskState,
 		}),
