@@ -1,7 +1,9 @@
 import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
-import { formatUnits } from "ethers/lib/utils"
+import { BigNumber } from "ethers"
+import { formatUnits, parseUnits } from "ethers/lib/utils"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Helmet } from "react-helmet"
+import { useInterval } from "react-use"
 import { SupremacyTC } from "../../assets"
 import BWSupToken from "../../assets/images/BW-sup-token.png"
 import { BuyTokens } from "../../components/buyTokens"
@@ -21,7 +23,9 @@ export const NAVBAR_HEIGHT = 100
 
 export const SalePage = () => {
 	const { showSimulation, setShowSimulation } = useAuth()
-	const { account, checkNeoBalance, amountRemaining, loadingAmountRemaining, setLoadingAmountRemaining } = useWeb3()
+	const { account, checkNeoBalance, setLoadingAmountRemaining } = useWeb3()
+	const { amountRemaining } = useWeb3()
+	const { loadingAmountRemaining } = useWeb3()
 	const [disableSimulation, setDisableSimulation] = useState(true)
 	const [countdown, setCountdown] = useState<Date | undefined>()
 
@@ -60,6 +64,17 @@ export const SalePage = () => {
 	useEffect(() => {
 		;(async () => await fetchTime())()
 	}, [fetchTime])
+
+	let progressAmount = 0
+	let amtRemainingStr = parseInt(formatUnits(amountRemaining, 18))
+		.toString()
+		.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+	progressAmount = 100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100
+	if (amountRemaining.eq(0) || progressAmount === 0) {
+		amtRemainingStr = "???"
+		progressAmount = 32
+	}
+
 	return (
 		<>
 			<Helmet>
@@ -186,15 +201,7 @@ export const SalePage = () => {
 									{/* Progress Bar */}
 
 									<Box sx={{ position: "relative" }}>
-										<FancyLinearProgress
-											variant="determinate"
-											value={
-												!loadingAmountRemaining
-													? 100 - (parseInt(formatUnits(amountRemaining, 18)) / web3Constants.totalSaleSups) * 100
-													: 0
-											}
-											aria-label="Tokens sold progressive bar"
-										/>
+										<FancyLinearProgress variant="determinate" value={progressAmount} aria-label="Tokens sold progressive bar" />
 										<Box
 											sx={{
 												position: "absolute",
@@ -228,10 +235,7 @@ export const SalePage = () => {
 													fontWeight: "600",
 												}}
 											>
-												{parseInt(formatUnits(amountRemaining, 18))
-													.toString()
-													.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-												$SUPS remaining
+												{amtRemainingStr} $SUPS remaining
 											</Typography>
 										</Box>
 									</Box>
