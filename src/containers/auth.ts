@@ -44,7 +44,7 @@ export enum VerificationType {
  * A Container that handles Authorisation
  */
 export const AuthContainer = createContainer(() => {
-	const { metaMaskState, sign, signWalletConnect, account, connect, wcProvider, provider } = useWeb3()
+	const { metaMaskState, sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
 	const [user, setUser] = useState<User>()
 	const [recheckAuth, setRecheckAuth] = useState(!!localStorage.getItem("token"))
 	const [authorised, setAuthorised] = useState(false)
@@ -221,27 +221,38 @@ export const AuthContainer = createContainer(() => {
 	const loginWalletConnect = useCallback(async () => {
 		if (state !== WebSocket.OPEN) return undefined
 		try {
-			const signature = await signWalletConnect()
-			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
-				publicAddress: account as string,
-				signature,
-				sessionID,
-			})
-			if (!resp || !resp.user || !resp.token) {
-				localStorage.clear()
-				setUser(undefined)
-				return
+			if (!wcSignature) await signWalletConnect()
+			else {
+				const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
+					publicAddress: account as string,
+					signature: wcSignature || "",
+					sessionID,
+				})
+				if (!resp || !resp.user || !resp.token) {
+					localStorage.clear()
+					setUser(undefined)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+				return resp
 			}
-			setUser(resp.user)
-			localStorage.setItem("token", resp.token)
-			setAuthorised(true)
-			return resp
 		} catch (e) {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
 		}
-	}, [send, state, account, sessionID, signWalletConnect])
+	}, [send, state, account, sessionID, signWalletConnect, wcSignature])
+
+	// Effect
+	useEffect(() => {
+		if (wcSignature) {
+			;(async () => {
+				await loginWalletConnect()
+			})()
+		}
+	}, [wcSignature, loginWalletConnect])
 
 	/**
 	 * Signs a user up using a Google oauth token

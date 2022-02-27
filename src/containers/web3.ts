@@ -118,6 +118,7 @@ export const Web3Container = createContainer(() => {
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
 	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
 	const [loadingAmountRemaining, setLoadingAmountRemaining] = useState<boolean>(true)
+	const [wcSignature, setWcSignature] = useState<string | undefined>()
 
 	//Setting up websocket to listen to remaining supply
 	useInterval(() => {
@@ -289,6 +290,23 @@ export const Web3Container = createContainer(() => {
 		setCurrentChainId(walletConnectProvider.chainId)
 		setWcProvider(walletConnectProvider)
 
+		// Subscribe to connect
+		walletConnectProvider.on("connect", async () => {
+			const connector = await walletConnectProvider.getWalletConnector()
+			const acc = connector.accounts[0]
+			let nonce: string
+			if (acc) {
+				nonce = await getNonce(acc)
+			} else return ""
+			if (nonce === "") return ""
+			const rawMessage = `${SIGN_MESSAGE}:\n ${nonce}`
+			const rawMessageLength = new Blob([rawMessage]).size
+			const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
+			const signMsg = ethers.utils.keccak256(convertMsg)
+			const signature = await connector.signMessage([acc, signMsg])
+			setWcSignature(signature)
+		})
+
 		// Subscribe to accounts change
 		walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
 			if (accounts.length > 0) {
@@ -306,6 +324,7 @@ export const Web3Container = createContainer(() => {
 			setProvider(undefined)
 			setWcProvider(undefined)
 			setMetaMaskState(MetaMaskState.NotInstalled)
+			localStorage.removeItem("token")
 		})
 		return walletConnectProvider
 	}, [])
@@ -347,6 +366,7 @@ export const Web3Container = createContainer(() => {
 				setCurrentChainId(response.chainId)
 			} else {
 				const walletConnectProvider = await createWcProvider(false)
+				setWcProvider(walletConnectProvider)
 				await walletConnectProvider.enable()
 				return () => walletConnectProvider.removeAllListeners()
 			}
@@ -404,8 +424,8 @@ export const Web3Container = createContainer(() => {
 		let walletConnectProvider
 		try {
 			walletConnectProvider = await createWcProvider()
-			await walletConnectProvider.enable()
 			const connector = await walletConnectProvider.getWalletConnector()
+			await walletConnectProvider.enable()
 			const acc = connector.accounts[0]
 			setAccount(acc)
 			return walletConnectProvider
@@ -514,28 +534,10 @@ export const Web3Container = createContainer(() => {
 		[provider, getNonce, getNonceFromID],
 	)
 
-	const signWalletConnect = useCallback(
-		async (userID?: string): Promise<string> => {
-			const walletConnectProvider = await wcConnect()
-			if (walletConnectProvider) {
-				const connector = await walletConnectProvider.getWalletConnector()
-				let nonce: string
-				if (userID) {
-					nonce = await getNonceFromID(userID)
-				} else if (account) {
-					nonce = await getNonce(account)
-				} else return ""
-				if (nonce === "") return ""
-				const rawMessage = `${SIGN_MESSAGE}:\n ${nonce}`
-				const rawMessageLength = new Blob([rawMessage]).size
-				const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
-				const signMsg = ethers.utils.keccak256(convertMsg)
-				const signature = await connector.signMessage([account, signMsg])
-				return signature
-			} else return ""
-		},
-		[getNonce, getNonceFromID, account, wcConnect],
-	)
+	const signWalletConnect = useCallback(async () => {
+		const walletConnectProvider = await createWcProvider()
+		await walletConnectProvider.subscribeWalletConnector()
+	}, [createWcProvider])
 
 	const changeChain = async (chain: number) => {
 		if (!provider) return
@@ -639,6 +641,7 @@ export const Web3Container = createContainer(() => {
 		loadingAmountRemaining,
 		setLoadingAmountRemaining,
 		wcProvider,
+		wcSignature,
 	}
 })
 
