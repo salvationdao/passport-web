@@ -673,7 +673,9 @@ const FactionWarMachineRemain = () => {
 							<Stack>
 								<Stack direction="row">
 									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mega:&nbsp;</Typography>
-									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{megaAmount}</Typography>
+									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>
+										{id == "880db344-e405-428d-84e5-6ebebab1fe6d" ? 0 : megaAmount}
+									</Typography>
 								</Stack>
 								<Stack direction="row">
 									<Typography sx={{ fontWeight: "fontWeightBold" }}>Lootbox:&nbsp;</Typography>
