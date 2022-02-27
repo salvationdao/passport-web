@@ -75,11 +75,11 @@ export const Routes = () => {
 						<Route path="/nosidebar/login">
 							<LoginPage />
 						</Route>
+						<Route path="/logout">
+							<LogoutPage />
+						</Route>
 						<Route path="/nosidebar/:username/:collection_slug">
 							<CollectionPage />
-						</Route>
-						<Route path="/nosidebar/logout">
-							<LogoutPage />
 						</Route>
 						<Sidebar onClose={() => setSidebarOpen(false)}>
 							<Route exact path="/">
