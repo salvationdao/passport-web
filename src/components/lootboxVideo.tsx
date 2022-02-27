@@ -1,5 +1,5 @@
 import { Box, Button, Fade, styled } from "@mui/material"
-import React, { useEffect } from "react"
+import React, { useCallback, useEffect } from "react"
 
 interface VideoProps {
 	srcURL: string
@@ -16,44 +16,49 @@ const LootboxVideo: React.FC<VideoProps> = ({ srcURL, setOpen, open, setDialogOp
 	}
 
 	useEffect(() => {
-		if (open)
-			setTimeout(() => {
-				if (open) {
-					setDialogOpen(true)
-					setOpen(false)
-				}
-			}, 10000)
+		const fallback = setTimeout(() => {
+			if (open) {
+				setDialogOpen(true)
+				setOpen(false)
+			}
+		}, 10000)
+		return clearTimeout(fallback)
 	}, [open])
 
 	return (
 		<Fade in={open} appear={false} timeout={1000}>
 			<Box sx={{ position: "absolute", height: "100vh", width: "100vw", zIndex: 99 }}>
-				<Video
-					disablePictureInPicture
-					disableRemotePlayback
-					playsInline
-					controlsList="nodownload"
-					controls={false}
-					muted
-					autoPlay
-					onEnded={() => {
-						setDialogOpen(true)
-						setOpen(false)
-					}}
-				>
-					<source src={srcURL} />
-				</Video>
-				<Box sx={{ position: "absolute", top: "95%", right: "5%" }}>
-					<Button
-						variant="outlined"
-						color="primary"
-						onClick={() => {
-							setOpen(false)
-						}}
-					>
-						Skip Video
-					</Button>
-				</Box>
+				{open && (
+					<>
+						<Video
+							disablePictureInPicture
+							disableRemotePlayback
+							playsInline
+							controlsList="nodownload"
+							controls={false}
+							muted
+							autoPlay
+							onEnded={() => {
+								setDialogOpen(true)
+								setOpen(false)
+							}}
+						>
+							<source src={srcURL} />
+						</Video>
+						<Box sx={{ position: "absolute", top: "95%", right: "5%" }}>
+							<Button
+								variant="outlined"
+								color="primary"
+								onClick={() => {
+									setDialogOpen(true)
+									setOpen(false)
+								}}
+							>
+								Skip Video
+							</Button>
+						</Box>
+					</>
+				)}
 			</Box>
 		</Fade>
 	)
