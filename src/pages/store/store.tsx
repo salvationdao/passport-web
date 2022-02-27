@@ -40,7 +40,7 @@ export const StorePage: React.FC = () => {
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
-	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
+	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>({ isAllowed: false, message: "" })
 	const [userLoad, setUserLoad] = useState(true)
 
 	const toggleAssetType = (assetType: string) => {
