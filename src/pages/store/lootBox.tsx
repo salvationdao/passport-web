@@ -1,4 +1,18 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, keyframes, Paper, Typography, useMediaQuery, useTheme, Zoom } from "@mui/material"
+import {
+	Box,
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	keyframes,
+	Paper,
+	Stack,
+	Typography,
+	useMediaQuery,
+	useTheme,
+	Zoom,
+} from "@mui/material"
 import { useEffect, useState } from "react"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
@@ -27,6 +41,7 @@ export const LootBoxPage = () => {
 	const { setSidebarOpen } = useSidebarState()
 	const [imgURL, setImg] = useState("")
 	const [videoURL, setVideoURL] = useState("")
+	const [error, setError] = useState<string>("")
 
 	useEffect(() => {
 		if (user && user.faction) {
@@ -70,15 +85,8 @@ export const LootBoxPage = () => {
 			setAsset(mysteryAsset)
 			setSidebarOpen(false)
 			setOpen(true)
-
-			setTimeout(() => {
-				setDialogOpen(true)
-			}, 1000)
 		} catch (e) {
-			displayMessage(
-				typeof e === "string" ? e : "Something went wrong while purchasing the item. Please contact support if this problem persists.",
-				"error",
-			)
+			setError(typeof e === "string" ? e : "Something went wrong while purchasing the item. Please contact support if this problem persists.")
 		} finally {
 			setLoading(false)
 		}
@@ -88,135 +96,140 @@ export const LootBoxPage = () => {
 		return <PleaseEnlist />
 	}
 
-	return open ? (
-		<LootboxVideo setOpen={setOpen} srcURL={videoURL} open={open} />
-	) : (
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				minHeight: "100vh",
-				overflowX: "hidden",
-			}}
-		>
-			<Navbar
-				sx={{
-					marginBottom: "2rem",
-				}}
-			/>
+	return (
+		<>
+			<LootboxVideo setOpen={setOpen} srcURL={videoURL} open={open} setDialogOpen={setDialogOpen} />
 			<Box
 				sx={{
-					flex: 1,
 					display: "flex",
-					alignItems: "center",
-					padding: "0 3rem",
+					flexDirection: "column",
+					minHeight: "100vh",
+					overflowX: "hidden",
+					opacity: open ? 0 : 1,
 				}}
 			>
-				<Paper
+				<Navbar
 					sx={{
-						position: "relative",
+						marginBottom: "2rem",
+					}}
+				/>
+				<Box
+					sx={{
+						flex: 1,
 						display: "flex",
-						flexDirection: "column",
 						alignItems: "center",
-						justifyContent: "space-between",
-						width: "100%",
-						maxWidth: "max(400px, 50vh)",
-						minHeight: "max(400px, 50vh)",
-						margin: "0 auto",
-						padding: "2rem",
+						padding: "0 3rem",
 					}}
 				>
-					<Typography
-						variant="h1"
+					<Paper
 						sx={{
-							zIndex: 1,
-							fontFamily: fonts.bizmoblack,
-							fontStyle: "italic",
-							letterSpacing: "2px",
-							textTransform: "uppercase",
-							textAlign: "center",
+							position: "relative",
+							display: "flex",
+							flexDirection: "column",
+							alignItems: "center",
+							justifyContent: "space-between",
+							width: "100%",
+							maxWidth: "max(400px, 50vh)",
+							minHeight: "max(400px, 50vh)",
+							margin: "0 auto",
+							padding: "2rem",
 						}}
 					>
-						Mystery Crate
-					</Typography>
-					<Box
-						sx={{
-							position: "absolute",
-							top: "50%",
-							left: "50%",
-							transform: "translate(-50%, -50%)",
-						}}
-					>
-						<Zoom in={true}>
-							<Box
-								component="img"
-								src={imgURL}
-								alt="Mystery Crate Icon"
-								sx={{
-									width: "300px",
-									height: "300px",
-									animation: loading ? `${slowJiggle} 0.2s infinite` : `${jiggle} 0.82s cubic-bezier(.36,.07,.19,.97) both`,
-								}}
-							/>
-						</Zoom>
-					</Box>
-					<FancyButton onClick={() => purchase()} loading={loading}>
-						Purchase for
-						<Box
-							component={SupTokenIcon}
+						<Typography
+							variant="h1"
 							sx={{
 								zIndex: 1,
-								marginLeft: ".2rem",
-								height: "1rem",
-							}}
-						/>
-						2500
-					</FancyButton>
-				</Paper>
-			</Box>
-
-			<Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-				<Box sx={{ padding: "1rem", border: `3px solid ${colors.darkNavyBackground2}` }}>
-					<DialogTitle>
-						<Typography variant="h2" sx={{ textAlign: "center" }}>
-							Mystery Crate Reveals...
-						</Typography>
-					</DialogTitle>
-					<DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-						<Typography variant="h3" sx={{ textAlign: "center", lineHeight: "1.3" }}>
-							<Box component="span" sx={{ color: theme.palette.primary.main }}>
-								{asset?.name}
-							</Box>
-							<Box component="span">!</Box>
-						</Typography>
-						<Box
-							component="img"
-							src={asset?.image}
-							alt="Asset Image"
-							sx={{
-								width: "100%",
-								maxWidth: isWiderThan1000px ? "350px" : "250px",
-								margin: "1rem 0",
-							}}
-						/>
-					</DialogContent>
-					<DialogActions sx={{ display: "flex", justifyContent: "center" }}>
-						<Button
-							size="large"
-							variant="contained"
-							type="button"
-							color="error"
-							disabled={loading}
-							onClick={() => {
-								setDialogOpen(false)
+								fontFamily: fonts.bizmoblack,
+								fontStyle: "italic",
+								letterSpacing: "2px",
+								textTransform: "uppercase",
+								textAlign: "center",
 							}}
 						>
-							Close
-						</Button>
-					</DialogActions>
+							Mystery Crate
+						</Typography>
+						<Box
+							sx={{
+								position: "absolute",
+								top: "50%",
+								left: "50%",
+								transform: "translate(-50%, -50%)",
+							}}
+						>
+							<Zoom in={true}>
+								<Box
+									component="img"
+									src={imgURL}
+									alt="Mystery Crate Icon"
+									sx={{
+										width: "300px",
+										height: "300px",
+										animation: loading ? `${slowJiggle} 0.2s infinite` : `${jiggle} 0.82s cubic-bezier(.36,.07,.19,.97) both`,
+									}}
+								/>
+							</Zoom>
+						</Box>
+						<Stack gap="1em" alignItems="center">
+							<Typography sx={{ color: colors.errorRed }}>{error}</Typography>
+							<FancyButton sx={{ width: "fit-content" }} onClick={purchase} loading={loading}>
+								Purchase for
+								<Box
+									component={SupTokenIcon}
+									sx={{
+										zIndex: 1,
+										marginLeft: ".2rem",
+										height: "1rem",
+									}}
+								/>
+								2500
+							</FancyButton>
+						</Stack>
+					</Paper>
 				</Box>
-			</Dialog>
-		</Box>
+
+				<Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+					<Box sx={{ padding: "1rem", border: `3px solid ${colors.darkNavyBackground2}` }}>
+						<DialogTitle>
+							<Typography variant="h2" sx={{ textAlign: "center" }}>
+								Mystery Crate Reveals...
+							</Typography>
+						</DialogTitle>
+						<DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+							<Typography variant="h3" sx={{ textAlign: "center", lineHeight: "1.3" }}>
+								<Box component="span" sx={{ color: theme.palette.primary.main }}>
+									{asset?.name}
+								</Box>
+								<Box component="span">!</Box>
+							</Typography>
+							<Box
+								component="img"
+								src={asset?.image}
+								alt="Asset Image"
+								sx={{
+									width: "100%",
+									maxWidth: isWiderThan1000px ? "350px" : "250px",
+									margin: "1rem 0",
+								}}
+							/>
+						</DialogContent>
+						<DialogActions sx={{ display: "flex", justifyContent: "center" }}>
+							<Button
+								size="large"
+								variant="contained"
+								type="button"
+								color="error"
+								disabled={loading}
+								onClick={() => {
+									setDialogOpen(false)
+								}}
+							>
+								Close
+							</Button>
+						</DialogActions>
+					</Box>
+				</Dialog>
+			</Box>
+		</>
 	)
 }
 
