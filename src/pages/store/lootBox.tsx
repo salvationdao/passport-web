@@ -22,16 +22,14 @@ import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
-import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
-import { fonts, colors } from "../../theme"
+import { colors, fonts } from "../../theme"
 import { Asset } from "../../types/types"
 
 export const LootBoxPage = () => {
 	const [loading, setLoading] = useState(false)
 	const [asset, setAsset] = useState<Asset | undefined>()
-	const { displayMessage } = useSnackbar()
 	const { state, send } = useWebsocket()
 	const { user } = useAuth()
 	const [dialogOpen, setDialogOpen] = useState(false)
@@ -82,9 +80,11 @@ export const LootBoxPage = () => {
 
 			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${resp}`)
 			const mysteryAsset: Asset = await assetResponse.json()
-			setAsset(mysteryAsset)
-			setSidebarOpen(false)
-			setOpen(true)
+			if (mysteryAsset) {
+				setAsset(mysteryAsset)
+				setSidebarOpen(false)
+				setOpen(true)
+			}
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while purchasing the item. Please contact support if this problem persists.")
 		} finally {
@@ -105,7 +105,7 @@ export const LootBoxPage = () => {
 					flexDirection: "column",
 					minHeight: "100vh",
 					overflowX: "hidden",
-					opacity: open ? 0 : 1,
+					visibility: open ? "hidden" : "unset",
 				}}
 			>
 				<Navbar
