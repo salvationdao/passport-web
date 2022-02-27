@@ -18,10 +18,12 @@ const LootboxVideo: React.FC<VideoProps> = ({ srcURL, setOpen, open, setDialogOp
 	useEffect(() => {
 		if (open)
 			setTimeout(() => {
-				setDialogOpen(true)
-				setOpen(false)
+				if (open) {
+					setDialogOpen(true)
+					setOpen(false)
+				}
 			}, 10000)
-	}, [open, setDialogOpen, setOpen])
+	}, [open])
 
 	return (
 		<Fade in={open} appear={false} timeout={1000}>
