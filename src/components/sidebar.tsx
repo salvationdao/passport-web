@@ -628,7 +628,8 @@ interface FactionAvailable {
 	label: string
 	logoBlobID: string
 	theme: FactionTheme
-	amountAvailable: string
+	megaAmount: number
+	lootboxAmount: number
 }
 
 const FactionWarMachineRemain = () => {
@@ -649,12 +650,12 @@ const FactionWarMachineRemain = () => {
 				WAR MACHINES REMAINING
 			</Typography>
 
-			<Stack direction="row" justifyContent="space-around" spacing="1">
+			<Stack justifyContent="space-around" spacing={1.5}>
 				{factionAvailables.map((fa) => {
-					const { id, logoBlobID, theme, amountAvailable } = fa
+					const { id, logoBlobID, theme, megaAmount, lootboxAmount } = fa
 
 					return (
-						<Stack key={id} alignItems="center" justifyContent="center" spacing={0.5} sx={{ px: 1 }}>
+						<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
 							<Box
 								sx={{
 									width: 41,
@@ -669,13 +670,26 @@ const FactionWarMachineRemain = () => {
 									border: `${theme.primary} 1px solid`,
 								}}
 							/>
-							<Typography variant="h6" sx={{ color: theme.primary, textAlign: "center", fontWeight: "fontWeightLight" }}>
-								{amountAvailable}
-							</Typography>
+							<Stack>
+								<Stack direction="row">
+									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mega:&nbsp;</Typography>
+									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{megaAmount}</Typography>
+								</Stack>
+								<Stack direction="row">
+									<Typography sx={{ fontWeight: "fontWeightBold" }}>Lootbox:&nbsp;</Typography>
+									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{lootboxAmount}</Typography>
+								</Stack>
+							</Stack>
 						</Stack>
 					)
 				})}
 			</Stack>
+
+			<Typography sx={{ pt: 1, fontWeight: "fontWeightBold", color: colors.errorRed }}>
+				Zaibatsu Starter sold out
+				<br />
+				Only crates left!
+			</Typography>
 		</Stack>
 	)
 }
