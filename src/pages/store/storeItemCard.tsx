@@ -115,8 +115,10 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 						autoPlay
 						loop
 						tabIndex={-1}
+						poster={item.image}
 					>
 						<source src={item.animation_url} type="video/webm"></source>
+						<img src={item.image} alt="Mech" />
 					</Box>
 				)}
 			</Box>
