@@ -42,6 +42,7 @@ export const Routes = () => {
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
+
 	useEffect(() => {
 		if (authLoading) {
 			setLoadingText("Loading...")
@@ -52,6 +53,7 @@ export const Routes = () => {
 	if (!user && authLoading) {
 		return <Loading text={loadingText} />
 	}
+
 	return (
 		<>
 			<BrowserRouter>
@@ -75,7 +77,7 @@ export const Routes = () => {
 						<Route path="/nosidebar/login">
 							<LoginPage />
 						</Route>
-						<Route path="/logout">
+						<Route path="/nosidebar/logout">
 							<LogoutPage />
 						</Route>
 						<Route path="/nosidebar/:username/:collection_slug">

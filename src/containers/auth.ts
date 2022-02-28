@@ -79,7 +79,9 @@ export const AuthContainer = createContainer(() => {
 			// Wallet connect
 			await wcProvider?.disconnect()
 
-			if (!isLogoutPage) {
+			if (isLogoutPage) {
+				window.close()
+			} else if (!isLogoutPage) {
 				window.location.reload()
 			}
 
@@ -887,15 +889,15 @@ export const AuthContainer = createContainer(() => {
 
 	// Effect: Login with saved login token when websocket is ready
 	useEffect(() => {
-		if (user || isLogoutPage || state === WebSocket.CLOSED) return
+		if (user || state === WebSocket.CLOSED) return
 
 		const token = localStorage.getItem("token")
-		if (!isLogoutPage && token && token !== "") {
+		if (token && token !== "") {
 			loginToken(token)
 		} else if (loading) {
 			setLoading(false)
 		}
-	}, [loading, user, loginToken, state, isLogoutPage])
+	}, [loading, user, loginToken, state])
 
 	// Effect: Relogin as User after establishing connection again
 	useEffect(() => {
