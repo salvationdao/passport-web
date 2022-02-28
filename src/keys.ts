@@ -98,6 +98,7 @@ enum HubKey {
 	StoreList = "STORE:LIST",
 	StorePurchase = "STORE:PURCHASE",
 	StoreLootBox = "STORE:LOOTBOX",
+	StoreLootBoxAmount = "STORE:LOOTBOX:AMOUNT",
 
 	TransactionSubscribe = "TRANSACTION:SUBSCRIBE",
 	TransactionList = "TRANSACTION:LIST",

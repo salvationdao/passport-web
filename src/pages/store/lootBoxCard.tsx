@@ -1,16 +1,25 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, Typography } from "@mui/material"
-import { useState, useEffect } from "react"
+import { Box, Typography, useTheme } from "@mui/material"
+import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
-import { colors, fonts } from "../../theme"
-import { ViewButton } from "../collections/collectionItemCard"
 import { useAuth } from "../../containers/auth"
+import { useSnackbar } from "../../containers/snackbar"
+import { SocketState, useWebsocket } from "../../containers/socket"
+import HubKey from "../../keys"
+import { fonts } from "../../theme"
+import { ViewButton } from "../collections/collectionItemCard"
+import SoldOut from "../../assets/images/SoldOutTrimmed.png"
 
 export const LootBoxCard: React.VoidFunctionComponent = () => {
 	const [imgURL, setImg] = useState("")
+	const [mcAmount, setMCAmount] = useState(-1)
+	const { displayMessage } = useSnackbar()
 	const { user } = useAuth()
 	const history = useHistory()
+	const theme = useTheme()
+	const { send, state } = useWebsocket()
+
 	useEffect(() => {
 		if (user && user.faction) {
 			switch (user.faction.label) {
@@ -30,101 +39,133 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 		}
 	}, [user])
 
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !user) return
+		;(async () => {
+			try {
+				const resp = await send<number>(HubKey.StoreLootBoxAmount, {
+					factionID: user.factionID,
+				})
+
+				setMCAmount(resp)
+			} catch (e) {
+				displayMessage("Could not get amount of mystery crates left.", "error")
+			}
+		})()
+	}, [user, send, state])
+
 	return (
 		<Box
 			component="button"
+			disabled={mcAmount === 0}
 			onClick={() => history.push(`/mystery`)}
 			sx={{
 				position: "relative",
-				display: "flex",
-				flexDirection: "column",
-				justifyContent: "center",
 				padding: "1rem",
-				paddingBottom: "2rem",
-				paddingRight: "2rem",
 				textAlign: "center",
 				font: "inherit",
 				color: "inherit",
 				border: "none",
 				outline: "none",
 				backgroundColor: "transparent",
-				cursor: "pointer",
-				"&:hover .ViewButton, &:focus .ViewButton": {
-					borderRadius: "50%",
-					backgroundColor: colors.purple,
-					transform: "scale(1.6)",
-					"& > *": {
-						transform: "rotate(0deg)",
-					},
-				},
 			}}
 		>
-			<Typography
-				variant="h5"
-				component="p"
-				sx={{
-					marginBottom: ".3rem",
-					fontFamily: fonts.bizmoblack,
-					fontStyle: "italic",
-					letterSpacing: "2px",
-					textTransform: "uppercase",
-				}}
-			>
-				Mystery Crate
-			</Typography>
-
-			{/* image */}
 			<Box
 				sx={{
-					position: "relative",
-				}}
-			>
-				<Box
-					component="img"
-					src={imgURL}
-					alt="Mech image"
-					sx={{
-						width: "100%",
-						maxWidth: "180px",
-						marginBottom: ".3rem",
-					}}
-				/>
-			</Box>
-			<Typography
-				variant="body1"
-				sx={{
-					textTransform: "uppercase",
-				}}
-			>
-				Special
-			</Typography>
-			<Typography
-				variant="subtitle1"
-				sx={{
-					display: "flex",
+					display: mcAmount === 0 ? "flex" : "none",
+					padding: ".3rem",
 					justifyContent: "center",
-					alignItems: "center",
-					letterSpacing: "1px",
-				}}
-			>
-				<Box
-					component={SupTokenIcon}
-					sx={{
-						height: "1rem",
-						marginRight: ".2rem",
-					}}
-				/>
-				2500
-			</Typography>
-			<ViewButton
-				sx={{
+					zIndex: "1",
 					position: "absolute",
-					right: "1rem",
-					bottom: "1rem",
+					width: "100%",
+					transform: "rotate(-15deg) translate(0,-50%)",
+					textTransform: "uppercase",
+					borderRadius: "2px",
+					top: "45%",
 				}}
 			>
-				<SearchIcon />
-			</ViewButton>
+				<Box component="img" src={SoldOut} sx={{ height: "4.5rem" }} />
+			</Box>
+			<Box
+				sx={{
+					cursor: mcAmount === 0 ? "default" : "pointer",
+					filter: mcAmount === 0 ? "blur(5px) brightness(80%)" : "none",
+					height: "100%",
+					width: "100%",
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "space-around",
+				}}
+			>
+				<Typography
+					variant="h5"
+					component="p"
+					sx={{
+						marginBottom: ".3rem",
+						fontFamily: fonts.bizmoblack,
+						fontStyle: "italic",
+						letterSpacing: "2px",
+						textTransform: "uppercase",
+					}}
+				>
+					Mystery Crate
+				</Typography>
+
+				{/* image */}
+				<Box
+					sx={{
+						position: "relative",
+					}}
+				>
+					<Box
+						component="img"
+						src={imgURL}
+						alt="Mech image"
+						sx={{
+							width: "100%",
+							maxWidth: "180px",
+							marginBottom: ".3rem",
+						}}
+					/>
+				</Box>
+				<Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+					<Typography
+						variant="body1"
+						sx={{
+							textTransform: "uppercase",
+						}}
+					>
+						Special
+					</Typography>
+					<Typography
+						variant="subtitle1"
+						sx={{
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							letterSpacing: "1px",
+						}}
+					>
+						<Box
+							component={SupTokenIcon}
+							sx={{
+								height: "1rem",
+								marginRight: ".2rem",
+							}}
+						/>
+						2500
+					</Typography>
+				</Box>
+				<ViewButton
+					sx={{
+						position: "absolute",
+						right: "1rem",
+						bottom: "1rem",
+					}}
+				>
+					<SearchIcon />
+				</ViewButton>
+			</Box>
 		</Box>
 	)
 }

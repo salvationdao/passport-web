@@ -395,8 +395,11 @@ export const StoreItemPage = () => {
 												</Typography>
 											</Box>
 										</Box>
-										<FancyButton onClick={() => setShowPurchaseModal(true)} fancy>
-											Purchase Item
+										<FancyButton
+											disabled={storeItem.amountAvailable - storeItem.amountSold <= 0}
+											onClick={() => setShowPurchaseModal(true)}
+										>
+											{storeItem.amountAvailable - storeItem.amountSold <= 0 ? "Sold out" : "Purchase Item"}
 										</FancyButton>
 									</>
 								)}
@@ -546,8 +549,8 @@ export const StoreItemPage = () => {
 										</Typography>
 									</Box>
 								</Box>
-								<FancyButton onClick={() => setShowPurchaseModal(true)} size="small" fancy>
-									Purchase Item
+								<FancyButton disabled={storeItem.amountAvailable - storeItem.amountSold <= 0} onClick={() => setShowPurchaseModal(true)}>
+									{storeItem.amountAvailable - storeItem.amountSold <= 0 ? "Sold out" : "Purchase Item"}
 								</FancyButton>
 							</Box>
 						</>
@@ -609,7 +612,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 							variant="contained"
 							type="submit"
 							color="primary"
-							disabled={loading}
+							disabled={loading || storeItem.amountAvailable - storeItem.amountSold === 0}
 							onClick={() => purchase()}
 							sx={{ marginRight: "1rem" }}
 						>
