@@ -20,7 +20,7 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery
+	useMediaQuery,
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
@@ -934,7 +934,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					collectionSlug={asset.collection.slug}
 				/>
 			)}
-			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} setAsset={setAsset} userID={user.id} />
+			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -1533,14 +1533,8 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 	)
 }
 
-const UpdateNameModal = (props: {
-	open: boolean
-	onClose: () => void
-	asset: Asset
-	setAsset: React.Dispatch<React.SetStateAction<Asset | undefined>>
-	userID: string
-}) => {
-	const { open, onClose, asset, userID, setAsset } = props
+const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Asset; userID: string }) => {
+	const { open, onClose, asset, userID } = props
 	const { send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
@@ -1552,6 +1546,7 @@ const UpdateNameModal = (props: {
 		if (attr.length > 0) {
 			result = `${attr[0].value}`
 		}
+
 		return result
 	}, [asset])
 
@@ -1563,9 +1558,6 @@ const UpdateNameModal = (props: {
 				userID,
 				name,
 			})
-			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${asset.hash}`)
-			const updatedAsset: Asset = await assetResponse.json()
-			setAsset(updatedAsset)
 
 			displayMessage("Asset successfully updated", "success")
 			onClose()
@@ -1598,6 +1590,7 @@ const UpdateNameModal = (props: {
 						style={{ width: "300px" }}
 						autoFocus
 						disabled={loading}
+						inputProps={{ maxlength: 10 }}
 					/>
 					<DialogActions>
 						<>
