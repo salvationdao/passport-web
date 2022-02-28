@@ -221,8 +221,10 @@ export const AuthContainer = createContainer(() => {
 	const loginWalletConnect = useCallback(async () => {
 		if (state !== WebSocket.OPEN) return undefined
 		try {
-			if (!wcSignature) await signWalletConnect()
-			else {
+			if (!wcSignature) {
+				localStorage.clear()
+				await signWalletConnect()
+			} else {
 				const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 					publicAddress: account as string,
 					signature: wcSignature || "",
