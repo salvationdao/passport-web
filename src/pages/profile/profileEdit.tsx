@@ -19,6 +19,7 @@ import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Organisation, Role } from "../../types/types"
 import { PasswordRequirement } from "./../auth/onboarding"
+import { PrivacyPolicy, TermsAndConditions } from "../../assets"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -106,10 +107,10 @@ export const ProfileEditPage: React.FC = () => {
 						marginTop: "auto",
 					}}
 				>
-					<Link component={RouterLink} to="/privacy-policy">
+					<Link href={TermsAndConditions} target="_blank">
 						Privacy Policy
 					</Link>
-					<Link component={RouterLink} to="/terms-and-conditions">
+					<Link href={PrivacyPolicy} target="_blank">
 						Terms And Conditions
 					</Link>
 				</Box>
