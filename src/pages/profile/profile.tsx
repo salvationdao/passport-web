@@ -921,7 +921,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 			</Paper>
 		)
 	}
-
 	return (
 		<>
 			{asset.collection && asset.collection.mintContract !== "" && (
@@ -932,6 +931,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					assetExternalTokenID={asset.externalTokenID}
 					mintingSignature={asset.mintingSignature}
 					collectionSlug={asset.collection.slug}
+					signatureExpiry={asset.signatureExpiry}
 				/>
 			)}
 			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
