@@ -68,6 +68,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		return str1 === str2
 	}
 
+	useEffect(()=>{
+		if (userSups) {
+			setXsynSups(BigNumber.from(userSups))
+		}
+	},[userSups])
+
 	useEffect(() => {
 		// not logged in
 		if (!user || !account) {
@@ -75,9 +81,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			setWalletSups(undefined)
 			return
 		}
-		if (userSups) {
-			setXsynSups(BigNumber.from(userSups))
-		}
+
 
 		// no wallet connected
 		if (!user.publicAddress) {
@@ -89,7 +93,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
 		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : undefined)
-	}, [userSups, supBalance, account, user, userPublicAddress, metaMaskState])
+	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
