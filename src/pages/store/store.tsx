@@ -6,7 +6,6 @@ import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
-import { Loading } from "../../components/loading"
 import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { ENABLE_WHITELIST_CHECK } from "../../config"
@@ -16,7 +15,7 @@ import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
-import { FilterChip, SortChip } from "../collections/collection"
+import { FilterChip, SortChip } from "../profile/profile"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 
@@ -333,6 +332,13 @@ export const StorePage: React.FC = () => {
 						color={colors.rarity.deusEx}
 						variant="outlined"
 						onClick={() => toggleRarity("Deus ex")}
+					/>
+					<FilterChip
+						active={rarities.has("Titan")}
+						label="Titan"
+						color={colors.rarity.titan}
+						variant="outlined"
+						onClick={() => toggleRarity("Titan")}
 					/>
 				</Box>
 			</Box>

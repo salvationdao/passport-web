@@ -100,8 +100,9 @@ enum HubKey {
 	StoreLootBox = "STORE:LOOTBOX",
 	StoreLootBoxAmount = "STORE:LOOTBOX:AMOUNT",
 
-	TransactionSubscribe = "TRANSACTION:SUBSCRIBE",
+	TransactionGroups = "TRANSACTION:GROUPS",
 	TransactionList = "TRANSACTION:LIST",
+	TransactionSubscribe = "TRANSACTION:SUBSCRIBE",
 
 	BlockConfirmation = "BLOCK:CONFIRM",
 	GetFactionsDetail = "FACTION:ALL",

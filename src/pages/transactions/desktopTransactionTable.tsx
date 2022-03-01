@@ -160,7 +160,13 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 			}}
 		>
 			<td align="left">
-				<Button onClick={() => navigator.clipboard.writeText(entry.transactionReference)} endIcon={<ContentCopyIcon />} variant="text" fullWidth>
+				<Button
+					title={entry.transactionReference}
+					onClick={() => navigator.clipboard.writeText(entry.transactionReference)}
+					endIcon={<ContentCopyIcon />}
+					variant="text"
+					fullWidth
+				>
 					<EntryData
 						variant="caption"
 						sx={{

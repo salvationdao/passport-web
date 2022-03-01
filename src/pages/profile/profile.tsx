@@ -535,6 +535,13 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						variant="outlined"
 						onClick={() => toggleRarity("Deus ex")}
 					/>
+					<FilterChip
+						active={rarities.has("Titan")}
+						label="Titan"
+						color={colors.rarity.titan}
+						variant="outlined"
+						onClick={() => toggleRarity("Titan")}
+					/>
 				</Box>
 			</Box>
 		</>
@@ -1405,7 +1412,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	)
 }
 
-export type Rarity = "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex"
+export type Rarity = "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex" | "Titan"
 
 export const rarityTextStyles: { [key in Rarity]: any } = {
 	Mega: {
@@ -1439,6 +1446,10 @@ export const rarityTextStyles: { [key in Rarity]: any } = {
 	"Deus ex": {
 		color: colors.rarity.deusEx,
 		textShadow: `0 0 2px ${colors.rarity.deusEx}`,
+	},
+	Titan: {
+		color: colors.rarity.titan,
+		textShadow: `0 0 2px ${colors.rarity.titan}`,
 	},
 }
 

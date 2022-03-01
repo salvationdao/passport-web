@@ -64,7 +64,7 @@ export const colors = {
 		guardian: "#4dcfff",
 		mythic: "#a1e6ff",
 		deusEx: "#fffa4e",
-		titan: "#00c911",
+		titan: "#5eff75",
 	},
 	supremacy: {
 		text: "#FFFFFF",

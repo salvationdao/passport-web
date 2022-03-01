@@ -1,24 +1,24 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Chip, ChipProps, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
+import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
-import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
-
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
+import { FilterChip, SortChip } from "../profile/profile"
 import { CollectionItemCard } from "./collectionItemCard"
-import { ENABLE_WHITELIST_CHECK } from "../../config"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const { username } = useParams<{ username: string }>()
@@ -621,53 +621,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		</>
 	)
 }
-
-interface SortChipProps extends Omit<ChipProps, "color" | "onDelete"> {
-	color?: string
-	active: boolean
-}
-export const SortChip = ({ color = colors.white, active, ...props }: SortChipProps) => (
-	<Chip
-		sx={{
-			color: active ? colors.darkerNavyBlue : color,
-			borderColor: color,
-			backgroundColor: active ? color : "transparent",
-			"&&:hover": {
-				color: colors.darkerNavyBlue,
-				backgroundColor: color,
-			},
-			"&&:focus": {
-				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
-			},
-		}}
-		{...props}
-	/>
-)
-
-interface FilterChipProps extends Omit<ChipProps, "color" | "onDelete"> {
-	color?: string
-	active: boolean
-}
-export const FilterChip = ({ color = colors.white, active, ...props }: FilterChipProps) => (
-	<Chip
-		sx={{
-			color: active ? colors.darkerNavyBlue : color,
-			borderColor: color,
-			backgroundColor: active ? color : "transparent",
-			"&&:hover": {
-				color: colors.darkerNavyBlue,
-				backgroundColor: color,
-			},
-			"&&:focus": {
-				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
-				borderColor: color,
-				color: active ? colors.darkerNavyBlue : color,
-				backgroundColor: active ? color : "transparent",
-			},
-		}}
-		{...props}
-	/>
-)
 
 const StyledTab = styled((props: TabProps) => <Tab {...props} />)(({ theme }) => ({
 	textTransform: "uppercase",
