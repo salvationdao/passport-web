@@ -686,12 +686,6 @@ const FactionWarMachineRemain = () => {
 					)
 				})}
 			</Stack>
-
-			<Typography sx={{ pt: 1, fontWeight: "fontWeightBold", color: colors.errorRed }}>
-				Zaibatsu Starter sold out
-				<br />
-				Only crates left!
-			</Typography>
 		</Stack>
 	)
 }
