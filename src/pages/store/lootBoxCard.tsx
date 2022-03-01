@@ -89,7 +89,6 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 			<Box
 				sx={{
 					cursor: mcAmount === 0 ? "default" : "pointer",
-					filter: mcAmount === 0 ? "blur(5px) brightness(80%)" : "none",
 					height: "100%",
 					width: "100%",
 					display: "flex",

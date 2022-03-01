@@ -91,7 +91,6 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 			<Box
 				sx={{
 					cursor: item.amountAvailable - item.amountSold <= 0 ? "default" : "pointer",
-					filter: item.amountAvailable - item.amountSold <= 0 ? "blur(5px) brightness(80%)" : "none",
 				}}
 			>
 				<Typography
