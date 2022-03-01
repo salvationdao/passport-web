@@ -34,7 +34,7 @@ import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
 import { SearchBar } from "../../components/searchBar"
-import { API_ENDPOINT_HOSTNAME } from "../../config"
+import { Sort } from "../../components/sort"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -301,8 +301,7 @@ interface CollectionViewProps {
 }
 
 const CollectionView = ({ user }: CollectionViewProps) => {
-	const { state } = useWebsocket()
-	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
 	const history = useHistory()
 
 	// Collection data
@@ -311,241 +310,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 
 	// Filter/Sort
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
-	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType] = useState<string>()
-	const [rarities, setRarities] = useState<Set<string>>(new Set())
-
-	const toggleRarity = (rarity: string) => {
-		setRarities((prev) => {
-			const exists = prev.has(rarity)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(rarity)
-				return temp
-			}
-			temp.clear()
-			return temp.add(rarity)
-		})
-	}
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-
-		const filterItems: any[] = [
-			// filter by user id
-			{
-				columnField: "username",
-				operatorValue: "=",
-				value: user.username,
-			},
-		]
-
-		const attributeFilterItems: any[] = []
-		if (assetType && assetType !== "All") {
-			attributeFilterItems.push({
-				trait: "Asset Type",
-				value: assetType,
-				operatorValue: "contains",
-			})
-		}
-		rarities.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Rarity",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
-
-		query({
-			search,
-			filter: {
-				linkOperator: "and",
-				items: filterItems,
-			},
-			attributeFilter: {
-				linkOperator: "and",
-				items: attributeFilterItems,
-			},
-			...sort,
-		})
-	}, [user, query, state, search, assetType, rarities, sort])
-
-	useEffect(() => {
-		if (!payload || loading || error) return
-		setAssetHashes(payload.assetHashes)
-	}, [payload, loading, error])
-
-	const renderFilters = () => (
-		<>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						marginBottom: ".5rem",
-					}}
-				>
-					Sort By
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Oldest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Newest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical (reverse)"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Rarity
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
-					<FilterChip
-						active={rarities.has("Colossal")}
-						label="Colossal"
-						color={colors.rarity.colossal}
-						variant="outlined"
-						onClick={() => toggleRarity("Colossal")}
-					/>
-					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
-					<FilterChip
-						active={rarities.has("Legendary")}
-						label="Legendary"
-						color={colors.rarity.legendary}
-						variant="outlined"
-						onClick={() => toggleRarity("Legendary")}
-					/>
-					<FilterChip
-						active={rarities.has("Elite Legendary")}
-						label="Elite Legendary"
-						color={colors.rarity.eliteLegendary}
-						variant="outlined"
-						onClick={() => toggleRarity("Elite Legendary")}
-					/>
-					<FilterChip
-						active={rarities.has("Ultra Rare")}
-						label="Ultra Rare"
-						color={colors.rarity.ultraRare}
-						variant="outlined"
-						onClick={() => toggleRarity("Ultra Rare")}
-					/>
-					<FilterChip
-						active={rarities.has("Exotic")}
-						label="Exotic"
-						color={colors.rarity.exotic}
-						variant="outlined"
-						onClick={() => toggleRarity("Exotic")}
-					/>
-					<FilterChip
-						active={rarities.has("Guardian")}
-						label="Guardian"
-						color={colors.rarity.guardian}
-						variant="outlined"
-						onClick={() => toggleRarity("Guardian")}
-					/>
-					<FilterChip
-						active={rarities.has("Mythic")}
-						label="Mythic"
-						color={colors.rarity.mythic}
-						variant="outlined"
-						onClick={() => toggleRarity("Mythic")}
-					/>
-					<FilterChip
-						active={rarities.has("Deus ex")}
-						label="Deus ex"
-						color={colors.rarity.deusEx}
-						variant="outlined"
-						onClick={() => toggleRarity("Deus ex")}
-					/>
-					<FilterChip
-						active={rarities.has("Titan")}
-						label="Titan"
-						color={colors.rarity.titan}
-						variant="outlined"
-						onClick={() => toggleRarity("Titan")}
-					/>
-				</Box>
-			</Box>
-		</>
-	)
 
 	return (
 		<>
@@ -565,7 +330,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 					},
 				}}
 			>
-				{renderFilters()}
+				<Sort pillSizeSmall={true} showOffWorldFilter={false} assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
 			</SwipeableDrawer>
 			<Paper
 				sx={{
