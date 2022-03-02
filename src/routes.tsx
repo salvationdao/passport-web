@@ -57,21 +57,15 @@ export const Routes = () => {
 
 	useEffect(() => {
 		// Maintenance timeout after all websocket checks
-		const TIMEOUT = MAX_RECONNECT_ATTEMPTS * MAX_COUNTDOWN_SECONDS * 1000
-		const serverCheck = setTimeout(async () => {
-			try {
-				const res = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/check`)
-				if (res.status === 200) {
-					setOkCheck(true)
-				} else {
-					setOkCheck(false)
-				}
-			} catch (error) {
+		try {
+			const res = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/check`)
+			if (res.status === 200) {
+				setOkCheck(true)
+			} else {
 				setOkCheck(false)
 			}
-		}, TIMEOUT)
-		if (state === WebSocket.OPEN) {
-			clearTimeout(serverCheck)
+		} catch (error) {
+			setOkCheck(false)
 		}
 	}, [state])
 
