@@ -133,11 +133,35 @@ export const ProfileEditPage: React.FC = () => {
 						</Typography>
 					</DialogTitle>
 					<DialogContent>
-						<Typography>
+						<Typography
+							sx={{
+								marginBottom: ".5rem",
+							}}
+						>
 							{successful
 								? "Your Profile has successfully been updated! Redirecting you back to your profile page."
 								: "Something went wrong, please try again."}
 						</Typography>
+						{!successful && (
+							<Box
+								sx={{
+									fontSize: ".8em",
+									color: colors.darkGrey,
+								}}
+							>
+								Your username must:
+								<Box
+									component="ul"
+									sx={{
+										margin: 0,
+									}}
+								>
+									<li>be between 3 and 15 characters long</li>
+									<li>not contain any special characters (excluding underscores)</li>
+									<li>not contain any spaces</li>
+								</Box>
+							</Box>
+						)}
 					</DialogContent>
 					<DialogActions>
 						<Button size="large" variant="contained" onClick={() => setDisplayResult(false)}>
@@ -245,6 +269,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 		}
 	})
 
+	// This will be readded in when other connections are made available to the user
 	// const removeWalletAddress = useCallback(async () => {
 	// 	if (!user) return
 	// 	try {
@@ -461,6 +486,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					</Button>
 				</Box>
 			</Box>
+			{/* Temporarily removed for public sale */}
 			{/* <Box
 				sx={{
 					display: "flex",
@@ -711,6 +737,7 @@ const Section = styled("div")({
 	},
 })
 
+// This will be readded in when other connections are made available to the user
 // interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
 // 	icon: React.ElementType
 // 	value?: string
