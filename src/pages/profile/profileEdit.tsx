@@ -1,12 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import { Box, Button, Link, Paper, styled, Typography } from "@mui/material"
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, Paper, styled, Typography } from "@mui/material"
 import { User } from "@sentry/react"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
 import { useForm } from "react-hook-form"
-import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { ImageUpload } from "../../components/form/imageUpload"
+import { useHistory, useParams } from "react-router-dom"
+import { PrivacyPolicy, TermsAndConditions } from "../../assets"
 import { InputField } from "../../components/form/inputField"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
@@ -18,17 +20,20 @@ import { fetching } from "../../fetching"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Organisation, Role } from "../../types/types"
-import { PasswordRequirement } from "./../auth/onboarding"
-import { PrivacyPolicy, TermsAndConditions } from "../../assets"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
 	const { user, loading: authLoading } = useAuth()
+	const [newUsername, setNewUsername] = useState<string | undefined>(user?.username)
+	const [displayResult, setDisplayResult] = useState<boolean>(false)
+	const [successful, setSuccessful] = useState<boolean>(false)
 
 	const [loadingText, setLoadingText] = useState<string>()
 
 	useEffect(() => {
+		if (user?.username === username || user?.username === newUsername) return
+
 		if (authLoading) {
 			setLoadingText("Loading. Please wait...")
 			return
@@ -39,7 +44,7 @@ export const ProfileEditPage: React.FC = () => {
 			userTimeout = setTimeout(() => {
 				history.push("/login")
 			}, 2000)
-		} else if (user.username !== username) {
+		} else if (user.username !== username && user.username !== newUsername) {
 			setLoadingText("You do not have permission view this page. Redirecting to profile page...")
 			userTimeout = setTimeout(() => {
 				history.push("/profile")
@@ -50,9 +55,9 @@ export const ProfileEditPage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [user, history, username, authLoading])
+	}, [user, history, username, authLoading, newUsername])
 
-	if (!user || user.username !== username) {
+	if (!user || (user.username !== username && user.username !== newUsername)) {
 		return <Loading text={loadingText} />
 	}
 
@@ -97,7 +102,7 @@ export const ProfileEditPage: React.FC = () => {
 						Go Back
 					</Link>
 				</Box>
-				<ProfileEdit />
+				<ProfileEdit setNewUsername={setNewUsername} setDisplayResult={setDisplayResult} setSuccessful={setSuccessful} />
 				<Box
 					sx={{
 						display: "flex",
@@ -115,6 +120,32 @@ export const ProfileEditPage: React.FC = () => {
 					</Link>
 				</Box>
 			</Box>
+			<Dialog open={displayResult} onClose={() => setDisplayResult(false)}>
+				<Box sx={{ border: `4px solid ${colors.darkNavyBackground}`, padding: ".5rem", maxWidth: "500px" }}>
+					<DialogTitle sx={{ display: "flex", width: "100%", alignItems: "center" }}>
+						{successful ? (
+							<CheckCircleOutlineIcon sx={{ fontSize: "2.5rem" }} color="success" />
+						) : (
+							<ErrorOutlineIcon sx={{ fontSize: "2.5rem" }} color="error" />
+						)}
+						<Typography variant="h2" sx={{ padding: "1rem" }}>
+							{successful ? "Success!" : "Error"}
+						</Typography>
+					</DialogTitle>
+					<DialogContent>
+						<Typography>
+							{successful
+								? "Your Profile has successfully been updated! Redirecting you back to your profile page."
+								: "Something went wrong, please try again."}
+						</Typography>
+					</DialogContent>
+					<DialogActions>
+						<Button size="large" variant="contained" onClick={() => setDisplayResult(false)}>
+							Close
+						</Button>
+					</DialogActions>
+				</Box>
+			</Dialog>
 		</Box>
 	)
 }
@@ -137,11 +168,18 @@ interface UserInput {
 	twoFactorAuthenticationActivated: boolean
 }
 
-const ProfileEdit: React.FC = () => {
+interface ProfileEditProps {
+	setNewUsername: React.Dispatch<React.SetStateAction<string | undefined>>
+	setDisplayResult: React.Dispatch<React.SetStateAction<boolean>>
+	setSuccessful: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
 	const { user } = useAuth()
 	const { send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
+	const history = useHistory()
 
 	// Setup form
 	const { control, handleSubmit, reset, watch, formState } = useForm<UserInput>()
@@ -157,8 +195,9 @@ const ProfileEdit: React.FC = () => {
 
 	const onSaveForm = handleSubmit(async (data) => {
 		if (!user) return
+		const { newUsername, newPassword, ...input } = data
 		setSubmitting(true)
-
+		setNewUsername(newUsername)
 		try {
 			let avatarID: string | undefined = user.avatarID
 			if (avatarChanged) {
@@ -177,7 +216,6 @@ const ProfileEdit: React.FC = () => {
 				}
 			}
 
-			const { newUsername, newPassword, ...input } = data
 			const payload = {
 				...input,
 				newUsername: user.username !== newUsername ? newUsername : undefined,
@@ -191,11 +229,17 @@ const ProfileEdit: React.FC = () => {
 			})
 
 			if (resp) {
-				displayMessage("Profile successfully updated.", "success")
+				setDisplayResult(true)
+				setSuccessful(true)
 			}
 			setChangePassword(false)
+			setDisplayResult(true)
+			setTimeout(() => {
+				history.push(`/profile`)
+			}, 3000)
 		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+			setDisplayResult(true)
+			setSuccessful(false)
 		} finally {
 			setSubmitting(false)
 		}
