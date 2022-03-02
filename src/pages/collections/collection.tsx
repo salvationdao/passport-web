@@ -41,6 +41,20 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		query: offWorldQuery,
 	} = useQuery<{ assetHashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
 
+	// search and filter
+
+	const [search, setSearch] = useState("")
+	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
+	const [showOffWorldOnly, setShowOffWorld] = useState(false)
+	const [assetType, setAssetType] = useState<string>()
+	const [rarities, setRarities] = useState<Set<string>>(new Set())
+	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
+	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
+	const [isLoading, setIsLoading] = useState(false)
+	const [userLoad, setUserLoad] = useState(true)
+
+	const { displayMessage } = useSnackbar()
+
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
 	}
@@ -58,6 +72,107 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 			},
 		)
 	}, [user, subscribe, state, userLoad])
+
+	const toggleRarity = (rarity: string) => {
+		setRarities((prev) => {
+			const exists = prev.has(rarity)
+			const temp = new Set(prev)
+			if (exists) {
+				temp.delete(rarity)
+				return temp
+			}
+			return temp.add(rarity)
+		})
+	}
+
+	const toggleCollection = (collection: Collection) => {
+		setCollection((prev) => {
+			if (prev?.id === collection.id) {
+				return undefined
+			}
+			return collection
+		})
+	}
+
+	const toggleOnOffWorld = (state: boolean) => {
+		setShowOffWorld(state)
+	}
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !send) return
+		;(async () => {
+			setIsLoading(true)
+			try {
+				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
+				setCollections(resp.records)
+			} catch (e) {
+				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error")
+			} finally {
+				setIsLoading(false)
+			}
+		})()
+	}, [send, state, user, displayMessage])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN) return
+
+		const filtersItems: any[] = [
+			// filter by user id
+			{
+				columnField: "username",
+				operatorValue: "=",
+				value: username || user?.username,
+			},
+		]
+
+		if (collection && collection.id) {
+			filtersItems.push({
+				// filter by collection id
+				columnField: "collection_id",
+				operatorValue: "=",
+				value: collection.id,
+			})
+		}
+
+		const attributeFilterItems: any[] = []
+		if (assetType && assetType !== "All") {
+			attributeFilterItems.push({
+				trait: "Asset Type",
+				value: assetType,
+				operatorValue: "contains",
+			})
+		}
+		rarities.forEach((v) =>
+			attributeFilterItems.push({
+				trait: "Rarity",
+				value: v,
+				operatorValue: "contains",
+			}),
+		)
+
+		if (showOffWorldOnly) {
+			offWorldQuery({
+				username,
+				attributeFilter: {
+					linkOperator: "and",
+					items: attributeFilterItems,
+				},
+			})
+		} else {
+			query({
+				search,
+				attributeFilter: {
+					linkOperator: "or",
+					items: attributeFilterItems,
+				},
+				filter: {
+					linkOperator: "and",
+					items: filtersItems,
+				},
+				...sort,
+			})
+		}
+	}, [user, query, collection, state, assetType, rarities, search, username, sort, showOffWorldOnly, offWorldQuery])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
