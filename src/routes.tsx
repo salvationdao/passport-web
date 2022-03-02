@@ -36,7 +36,7 @@ export const Routes = () => {
 	const { state } = useWebsocket()
 	const { setSidebarOpen } = useSidebarState()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
-	const [okCheck, setOkCheck] = useState(true)
+	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
 	const [loadingText, setLoadingText] = useState<string>()
 	const searchParams = new URLSearchParams(window.location.search)
 	const sessionID = searchParams.get("sessionID")
@@ -75,11 +75,7 @@ export const Routes = () => {
 		}
 	}, [state])
 
-	if (!user && authLoading) {
-		return <Loading text={loadingText} />
-	}
-
-	if (!okCheck) {
+	if (okCheck === false) {
 		return (
 			<>
 				<BrowserRouter>
@@ -92,6 +88,10 @@ export const Routes = () => {
 				</BrowserRouter>
 			</>
 		)
+	}
+
+	if (!user && authLoading) {
+		return <Loading text={loadingText} />
 	}
 
 	return (
