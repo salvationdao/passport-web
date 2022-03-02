@@ -1,13 +1,16 @@
 import { Alert, Snackbar } from "@mui/material"
 import { useEffect, useState } from "react"
-import { BrowserRouter, Route, Switch } from "react-router-dom"
+import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom"
 import { BlockConfirmationSnackList } from "./components/blockConfirmationSnackList"
-import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
+import { ConnectionLostSnackbar, MAX_COUNTDOWN_SECONDS, MAX_RECONNECT_ATTEMPTS } from "./components/connectionLostSnackbar"
 import { Loading } from "./components/loading"
+import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
+import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
+import { useWebsocket } from "./containers/socket"
 import { AssetRedirectPage } from "./pages/assetRedirect"
 import { LoginPage } from "./pages/auth/login"
 import { LogoutPage } from "./pages/auth/logout"
@@ -30,8 +33,10 @@ import { WithdrawPage } from "./pages/withdraw"
 
 export const Routes = () => {
 	const { setSessionID, user, loading: authLoading } = useAuth()
+	const { state } = useWebsocket()
 	const { setSidebarOpen } = useSidebarState()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
+	const [okCheck, setOkCheck] = useState(true)
 	const [loadingText, setLoadingText] = useState<string>()
 	const searchParams = new URLSearchParams(window.location.search)
 	const sessionID = searchParams.get("sessionID")
@@ -50,8 +55,43 @@ export const Routes = () => {
 		}
 	}, [authLoading])
 
+	useEffect(() => {
+		// Maintenance timeout after all websocket checks
+		const TIMEOUT = MAX_RECONNECT_ATTEMPTS * MAX_COUNTDOWN_SECONDS * 1000
+		const serverCheck = setTimeout(async () => {
+			try {
+				const res = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/check`)
+				if (res.status === 200) {
+					setOkCheck(true)
+				} else {
+					setOkCheck(false)
+				}
+			} catch (error) {
+				setOkCheck(false)
+			}
+		}, TIMEOUT)
+		if (state === WebSocket.OPEN) {
+			clearTimeout(serverCheck)
+		}
+	}, [state])
+
 	if (!user && authLoading) {
 		return <Loading text={loadingText} />
+	}
+
+	if (!okCheck) {
+		return (
+			<>
+				<BrowserRouter>
+					<Route path="/">
+						<Maintenance />
+						<ConnectionLostSnackbar app="public" />
+						<BlockConfirmationSnackList />
+					</Route>
+					<Redirect to="/" />
+				</BrowserRouter>
+			</>
+		)
 	}
 
 	return (
