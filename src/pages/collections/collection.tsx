@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
@@ -12,7 +12,6 @@ import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
 import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
-import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
@@ -107,7 +106,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 					display: "flex",
 					flexDirection: "column",
 					minHeight: "100vh",
-					overflowX: "hidden",
 				}}
 			>
 				<Navbar />
@@ -198,16 +196,16 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						</Link>
 						{!isWiderThan1000px && (
 							<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small" endIcon={<FilterAltIcon />}>
-								Filters
+								Filters / Sort
 							</FancyButton>
 						)}
 					</Box>
 
 					<Box
 						sx={{
+							flex: 1,
 							display: "flex",
 							width: "100%",
-							marginBottom: "3rem",
 						}}
 					>
 						{isWiderThan1000px && (
@@ -237,7 +235,9 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						)}
 						<Box
 							sx={{
-								flexGrow: 1,
+								flex: 1,
+								display: "flex",
+								flexDirection: "column",
 								minWidth: 0,
 							}}
 						>
@@ -253,6 +253,12 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								variant="scrollable"
 								scrollButtons="auto"
 								allowScrollButtonsMobile
+								sx={{
+									maxWidth: "calc(100vw - 6rem)",
+									[`& .${tabsClasses.scrollButtons}`]: {
+										"&.Mui-disabled": { opacity: 0.3 },
+									},
+								}}
 							>
 								<StyledTab value="All" label="All" />
 								<StyledTab value="Land" label="Land" />
@@ -261,42 +267,38 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							<Paper sx={{ padding: "2rem" }}>
-								{
-									<Box>
-										{assetHashes.length > 0 ? (
-											<Box
-												sx={{
-													flex: 1,
-													display: "grid",
-													gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-													gap: "1rem",
-													height: "100%",
-												}}
-											>
-												{assetHashes.map((a, index) => {
-													return <CollectionItemCard key={`${a}-${index}`} assetHash={a} username={username} />
-												})}
-											</Box>
-										) : (
-											<Box
-												sx={{
-													flex: 1,
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "center",
-													height: "100%",
-													padding: "2rem",
-												}}
-											>
-												<Typography variant="subtitle2" color={colors.darkGrey}>
-													{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
-												</Typography>
-											</Box>
-										)}
-									</Box>
-								}
-							</Paper>
+							{assetHashes.length > 0 ? (
+								<Paper
+									sx={{
+										flex: 1,
+										display: "grid",
+										gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+										gridAutoRows: "min-content",
+										gap: "1rem",
+										height: "100%",
+										padding: "2rem",
+									}}
+								>
+									{assetHashes.map((a, index) => {
+										return <CollectionItemCard key={`${a}-${index}`} assetHash={a} username={username} />
+									})}
+								</Paper>
+							) : (
+								<Paper
+									sx={{
+										flex: 1,
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										height: "100%",
+										padding: "2rem",
+									}}
+								>
+									<Typography variant="subtitle2" color={colors.darkGrey}>
+										{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
+									</Typography>
+								</Paper>
+							)}
 						</Box>
 					</Box>
 				</Box>

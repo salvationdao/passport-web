@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
@@ -375,7 +375,11 @@ export const StorePage: React.FC = () => {
 					overflowX: "hidden",
 				}}
 			>
-				<Navbar />
+				<Navbar
+					sx={{
+						marginBottom: "2rem",
+					}}
+				/>
 				<Box
 					sx={{
 						display: "flex",
@@ -463,16 +467,16 @@ export const StorePage: React.FC = () => {
 						</Link>
 						{!isWiderThan1000px && (
 							<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small" endIcon={<FilterAltIcon />}>
-								Filters
+								Filters / Sort
 							</FancyButton>
 						)}
 					</Box>
 
 					<Box
 						sx={{
+							flex: 1,
 							display: "flex",
 							width: "100%",
-							marginBottom: "3rem",
 						}}
 					>
 						{isWiderThan1000px && (
@@ -502,8 +506,9 @@ export const StorePage: React.FC = () => {
 						)}
 						<Box
 							sx={{
-								flexGrow: 1,
-								minWidth: 0,
+								flex: 1,
+								display: "flex",
+								flexDirection: "column",
 							}}
 						>
 							<Tabs
@@ -515,9 +520,15 @@ export const StorePage: React.FC = () => {
 									hidden: true,
 								}}
 								aria-label="Filter tabs"
-								variant="scrollable"
+								variant={isWiderThan1000px ? "standard" : "scrollable"}
 								scrollButtons="auto"
 								allowScrollButtonsMobile
+								sx={{
+									maxWidth: "calc(100vw - 6rem)",
+									[`& .${tabsClasses.scrollButtons}`]: {
+										"&.Mui-disabled": { opacity: 0.3 },
+									},
+								}}
 							>
 								<StyledTab value="All" label="All" />
 								<StyledTab value="Land" label="Land" />
@@ -532,6 +543,7 @@ export const StorePage: React.FC = () => {
 										flex: 1,
 										display: "grid",
 										gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+										gridAutoRows: "min-content",
 										gap: "1rem",
 										height: "100%",
 										padding: "2rem",

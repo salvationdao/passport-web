@@ -1,16 +1,16 @@
+import ExpandLessIcon from "@mui/icons-material/ExpandLess"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
+import { useParams } from "react-router-dom"
 import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { SocketState, useWebsocket } from "../containers/socket"
+import { useQuery } from "../hooks/useSend"
 import HubKey from "../keys"
 import { FilterChip, SortChip } from "../pages/profile/profile"
-import { Collection } from "../types/types"
-import { useQuery } from "../hooks/useSend"
-import { useParams } from "react-router-dom"
 import { colors } from "../theme"
-import ExpandLessIcon from "@mui/icons-material/ExpandLess"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import { Collection } from "../types/types"
 
 interface SortProps {
 	assetType?: string
@@ -301,7 +301,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 							sx={{
 								display: "flex",
 								alignItems: "center",
-								marginBottom: ".5rem",
+								margin: ".5rem 0",
 							}}
 						>
 							Sort By

@@ -95,10 +95,10 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 					transition: "transform .2s cubic-bezier(.3, .7, .4, 1.5)",
 				},
 				"&:hover .Avatar": {
-					transform: "translate3d(-2px, -2px, 0)",
+					transform: "translate3d(-1px, -1px, 0)",
 				},
 				"&:hover .Avatar-border": {
-					transform: "translate3d(2px, 2px, 0)",
+					transform: "translate3d(1px, 1px, 0)",
 				},
 				"&:active .Avatar": {
 					transform: "translate3d(1px, 1px, 0)",
@@ -108,13 +108,13 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 				},
 				"&:disabled": {
 					"&:hover .Avatar": {
-						transform: "translate3d(-2px, -2px, 0)",
+						transform: "translate3d(0, 0, 0)",
 					},
 					"&:hover .Avatar-border": {
-						transform: "translate3d(2px, 2px, 0)",
+						transform: "translate3d(0, 0, 0)",
 					},
 					"&:active .Avatar": {
-						transform: "translate3d(1px, 1px, 0)",
+						transform: "translate3d(0, 0, 0)",
 					},
 					"&:active .Avatar-border": {
 						transform: "translate3d(0, 0, 0)",
@@ -139,7 +139,14 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 				})}
 			/>
 			{!!user && user.faction && !user.avatarID ? (
-				RenderFaction(size)
+				<Avatar
+					className="Avatar"
+					src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID}`}
+					sx={{
+						height: size,
+						width: size,
+					}}
+				/>
 			) : (
 				<Avatar
 					className="Avatar"

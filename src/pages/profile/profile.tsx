@@ -201,6 +201,7 @@ export const ProfilePage: React.FC = () => {
 									</IconButton>
 								</Box>
 							)}
+							{/* This will be used in the future when we allow non-wallet connections */}
 							{/* {loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
@@ -364,9 +365,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							alt="Heart icon"
 							sx={{
 								marginRight: ".5rem",
-								"@media (max-width: 630px)": {
-									height: "4rem",
-								},
+								height: "4rem",
 							}}
 						/>
 						<Typography
@@ -1218,13 +1217,6 @@ export const rarityTextStyles: { [key in Rarity]: any } = {
 	},
 }
 
-// const StyledIconButton = styled(({ navigate, ...props }: IconButtonProps & { navigate?: any }) => <IconButton {...props} />)({
-// 	borderRadius: ".5rem",
-// 	"& svg": {
-// 		height: "2rem",
-// 	},
-// })
-
 const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)({})
 
 const StyledDisabledButton = styled(({ navigate, ...props }: ButtonProps & { navigate?: any }) => <Button {...props} variant="text" disabled />)({
@@ -1366,7 +1358,7 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Ass
 						style={{ width: "300px" }}
 						autoFocus
 						disabled={loading}
-						inputProps={{ maxlength: 10 }}
+						inputProps={{ maxLength: 10 }}
 					/>
 					<DialogActions>
 						<>

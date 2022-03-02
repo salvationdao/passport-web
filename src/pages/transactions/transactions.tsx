@@ -1,5 +1,5 @@
 import SortIcon from "@mui/icons-material/Sort"
-import { Box, CircularProgress, Pagination, Paper, Stack, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
+import { Box, CircularProgress, Pagination, Paper, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../../assets"
@@ -120,8 +120,8 @@ export const TransactionsPage = () => {
 					<Box
 						sx={{
 							display: "flex",
-							flexDirection: isWiderThan1000px ? "column" : "row",
-							flexWrap: isWiderThan1000px ? "initial" : "wrap",
+							flexDirection: "row",
+							flexWrap: "wrap",
 							gap: ".5rem",
 						}}
 					>
@@ -258,31 +258,35 @@ export const TransactionsPage = () => {
 							/>
 						</Box>
 						<TransactionGroupBox>
-							<Stack
-								direction="row"
-								justifyContent="space-between"
-								spacing="1rem"
+							<Box
 								sx={{
+									display: "flex",
+									justifyContent: "space-between",
+									flexWrap: "wrap",
 									marginBottom: ".5rem",
+									"@media (max-width: 500px)": {
+										flexDirection: "column",
+										alignItems: "start",
+										marginBottom: "1rem",
+									},
 								}}
 							>
 								<Typography
 									variant="h3"
 									component="h2"
 									sx={{
-										marginBottom: ".5rem",
 										fontFamily: fonts.bizmoblack,
 										fontStyle: "italic",
 										letterSpacing: "2px",
 										textTransform: "uppercase",
 									}}
 								>
-									Ungrouped
+									Uncategorized
 								</Typography>
 								<FancyButton size="small" onClick={() => setOpenFilterDrawer(true)} endIcon={<SortIcon />}>
 									Sort By
 								</FancyButton>
-							</Stack>
+							</Box>
 							{isWiderThan1000px ? (
 								<DesktopTransactionTable transactionIDs={ungroupedTransactionIDs} />
 							) : (
@@ -296,13 +300,14 @@ export const TransactionsPage = () => {
 										alignItems: "center",
 										justifyContent: "center",
 										padding: "1rem",
+										minHeight: "200px",
 									}}
 								>
 									{loading ? (
 										<CircularProgress />
 									) : (
 										<Typography variant="subtitle2" color={colors.darkerGrey}>
-											{error ? error : "No ungrouped transaction history"}
+											{error ? error : "No transaction history"}
 										</Typography>
 									)}
 								</Box>
@@ -412,8 +417,8 @@ const TransactionGroup = ({ groupID, search }: TransactionGroupProps) => {
 					<Box
 						sx={{
 							display: "flex",
-							flexDirection: isWiderThan1000px ? "column" : "row",
-							flexWrap: isWiderThan1000px ? "initial" : "wrap",
+							flexDirection: "row",
+							flexWrap: "wrap",
 							gap: ".5rem",
 						}}
 					>
@@ -476,19 +481,23 @@ const TransactionGroup = ({ groupID, search }: TransactionGroupProps) => {
 				{renderFilters()}
 			</SwipeableDrawer>
 			<TransactionGroupBox>
-				<Stack
-					direction="row"
-					justifyContent="space-between"
-					spacing="1rem"
+				<Box
 					sx={{
+						display: "flex",
+						justifyContent: "space-between",
+						flexWrap: "wrap",
 						marginBottom: ".5rem",
+						"@media (max-width: 500px)": {
+							flexDirection: "column",
+							alignItems: "start",
+							marginBottom: "1rem",
+						},
 					}}
 				>
 					<Typography
 						variant="h3"
 						component="h2"
 						sx={{
-							marginBottom: ".5rem",
 							fontFamily: fonts.bizmoblack,
 							fontStyle: "italic",
 							letterSpacing: "2px",
@@ -500,7 +509,7 @@ const TransactionGroup = ({ groupID, search }: TransactionGroupProps) => {
 					<FancyButton size="small" onClick={() => setOpenFilterDrawer(true)} endIcon={<SortIcon />}>
 						Sort By
 					</FancyButton>
-				</Stack>
+				</Box>
 
 				{isWiderThan1000px ? <DesktopTransactionTable transactionIDs={transactionIDs} /> : <MobileTransactionTable transactionIDs={transactionIDs} />}
 				{transactionIDs.length === 0 && (
@@ -511,13 +520,14 @@ const TransactionGroup = ({ groupID, search }: TransactionGroupProps) => {
 							alignItems: "center",
 							justifyContent: "center",
 							padding: "1rem",
+							minHeight: "200px",
 						}}
 					>
 						{loading ? (
 							<CircularProgress />
 						) : (
 							<Typography variant="subtitle2" color={colors.darkerGrey}>
-								{error ? error : "No ungrouped transaction history"}
+								{error ? error : `No transaction history for ${groupID}`}
 							</Typography>
 						)}
 					</Box>
