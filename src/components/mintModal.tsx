@@ -70,12 +70,12 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
 				const signer = provider.getSigner()
 				const mintContract = new ethers.Contract(mintingContract, abi, signer)
-				// TODO: get the expiry/handle it
 				if (signatureExpiry) {
 					const sigExInt = parseInt(signatureExpiry)
 					const expiryDate = new Date(sigExInt * 1000)
 
 					if (mintingSignature && mintingSignature !== "" && expiryDate > new Date()) {
+						// if theres minting signature and hasn't expired.
 						await mintContract.signedMint(BigNumber.from(assetExternalTokenID), mintingSignature, sigExInt)
 						setErrorMinting(undefined)
 						return
@@ -86,7 +86,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				const resp = await fetch(
 					`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/mint-nft/${account}/${nonce}/${collectionSlug}/${assetExternalTokenID}`,
 				)
-				const respJson: GetSignatureResponse = await resp.json()
+				const respJson: GetSignatureResponse = await resp.clone().json()
 				const tx = await mintContract.signedMint(assetExternalTokenID, respJson.messageSignature, respJson.expiry)
 				await tx.wait()
 				setErrorMinting(undefined)

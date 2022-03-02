@@ -69,14 +69,17 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}
 
 	useEffect(() => {
+		if (userSups) {
+			setXsynSups(BigNumber.from(userSups))
+		}
+	}, [userSups])
+
+	useEffect(() => {
 		// not logged in
 		if (!user || !account) {
 			setWalletMsg("")
 			setWalletSups(undefined)
 			return
-		}
-		if (userSups) {
-			setXsynSups(BigNumber.from(userSups))
 		}
 
 		// no wallet connected
@@ -89,7 +92,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
 		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : undefined)
-	}, [userSups, supBalance, account, user, userPublicAddress, metaMaskState])
+	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -237,9 +240,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 							window.open(TOKEN_SALE_ENDPOINT, "_blank")?.focus()
 						}}
 						borderColor={colors.skyBlue}
-						sx={{ width: "100%", marginTop: "1rem" }}
+						sx={{ fontWeight: 400, width: "100%", marginTop: "1rem" }}
 					>
-						<Typography sx={{ textTransform: "uppercase" }}>Token Sale</Typography>
+						Token Sale
 					</FancyButton>
 				</Box>
 				{
@@ -392,21 +395,19 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			<NavButton sx={{ alignSelf: "start", width: "100%" }} to="/profile" startIcon={<FaceIcon />}>
 				Profile
 			</NavButton>
-			<Box>
-				<Button
-					startIcon={<LogoutIcon />}
-					onClick={() => logout()}
-					sx={(theme) => ({
-						justifyContent: "flex-start",
-						width: "100%",
-						":hover": {
-							backgroundColor: theme.palette.error.main,
-						},
-					})}
-				>
-					Logout
-				</Button>
-			</Box>
+			<Button
+				startIcon={<LogoutIcon />}
+				onClick={() => logout()}
+				sx={(theme) => ({
+					justifyContent: "flex-start",
+					width: "100%",
+					":hover": {
+						backgroundColor: theme.palette.error.main,
+					},
+				})}
+			>
+				Logout
+			</Button>
 		</Box>
 	) : (
 		<Box
@@ -601,15 +602,15 @@ const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?:
 					}}
 				>
 					<Box
+						component="img"
+						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID}`}
+						alt={`${user.faction.label} Faction Logo`}
 						sx={{
 							height: "2rem",
 							width: "2rem",
 							marginRight: ".5rem",
 							flexShrink: 0,
-							backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID})`,
-							backgroundRepeat: "no-repeat",
-							backgroundPosition: "center",
-							backgroundSize: "contain",
+							objectFit: "contain",
 							backgroundColor: user.faction.theme.primary,
 							borderRadius: 0.8,
 							border: `${user.faction.theme.primary} 1px solid`,

@@ -1,4 +1,5 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Link, Paper, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
@@ -6,10 +7,7 @@ import { SupTokenIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { WhiteListCheck } from "../../components/pleaseEnlist"
-import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
-import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue, supFormatter, usdFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
@@ -18,7 +16,7 @@ import { Attribute, StoreItem } from "../../types/types"
 import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
 
 export const StoreItemPage = () => {
-	const { store_item_id: id } = useParams<{ store_item_id: string; collection_slug: string }>()
+	const { store_item_id: id, collection_slug } = useParams<{ store_item_id: string; collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
@@ -27,28 +25,13 @@ export const StoreItemPage = () => {
 
 	// Store item data
 	const [storeItem, setStoreItem] = useState<StoreItem>()
-	// const [, setRegularAttributes] = useState<Attribute[]>([])
 	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
-	// const [, setAssetAttributes] = useState<Attribute[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
-	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
 
 	// Purchase store item
 	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !user || !user.publicAddress) return
-		return subscribe<{ isAllowed: boolean; message: string }>(
-			HubKey.CheckUserCanAccessStore,
-			(payload) => {
-				setCanAccessStore(payload)
-			},
-			{
-				walletAddress: user.publicAddress,
-			},
-		)
-	}, [user, subscribe, state])
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !user) return
 
@@ -105,17 +88,18 @@ export const StoreItemPage = () => {
 		)
 	}
 
-	if (canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
-		return <WhiteListCheck />
-	}
-
 	if (loading || !storeItem) {
 		return <Loading />
 	}
 
 	return (
 		<>
-			<PurchaseStoreItemModal open={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} storeItem={storeItem} />
+			<PurchaseStoreItemModal
+				open={showPurchaseModal}
+				onClose={() => setShowPurchaseModal(false)}
+				storeItem={storeItem}
+				collection_slug={collection_slug}
+			/>
 			<Box
 				sx={{
 					display: "flex",
@@ -395,8 +379,11 @@ export const StoreItemPage = () => {
 												</Typography>
 											</Box>
 										</Box>
-										<FancyButton onClick={() => setShowPurchaseModal(true)} fancy>
-											Purchase Item
+										<FancyButton
+											disabled={storeItem.amountAvailable - storeItem.amountSold <= 0}
+											onClick={() => setShowPurchaseModal(true)}
+										>
+											{storeItem.amountAvailable - storeItem.amountSold <= 0 ? "Sold out" : "Purchase Item"}
 										</FancyButton>
 									</>
 								)}
@@ -546,8 +533,8 @@ export const StoreItemPage = () => {
 										</Typography>
 									</Box>
 								</Box>
-								<FancyButton onClick={() => setShowPurchaseModal(true)} size="small" fancy>
-									Purchase Item
+								<FancyButton disabled={storeItem.amountAvailable - storeItem.amountSold <= 0} onClick={() => setShowPurchaseModal(true)}>
+									{storeItem.amountAvailable - storeItem.amountSold <= 0 ? "Sold out" : "Purchase Item"}
 								</FancyButton>
 							</Box>
 						</>
@@ -558,12 +545,13 @@ export const StoreItemPage = () => {
 	)
 }
 
-const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; storeItem: StoreItem }) => {
-	const { open, onClose, storeItem } = props
+const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; storeItem: StoreItem; collection_slug: string }) => {
+	const { open, onClose, storeItem, collection_slug } = props
 	const { send, state } = useWebsocket()
-	const { displayMessage } = useSnackbar()
 	const [loading, setLoading] = useState(false)
 	const [purchasedOpen, setPurchasedOpen] = useState(false)
+	const [errorOpen, setErrorOpen] = useState(false)
+	const [errorString, setErrorString] = useState<string>("")
 
 	const theme = useTheme()
 	const history = useHistory()
@@ -579,11 +567,15 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 			onClose()
 			setPurchasedOpen(true)
 		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong. Please try again.", "error")
+			if (typeof e === "string") {
+				setErrorString(e)
+			}
+			setErrorOpen(true)
+			onClose()
 		} finally {
 			setLoading(false)
 		}
-	}, [send, state, storeItem, displayMessage, onClose])
+	}, [send, state, storeItem, onClose])
 
 	return (
 		<Box>
@@ -609,7 +601,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 							variant="contained"
 							type="submit"
 							color="primary"
-							disabled={loading}
+							disabled={loading || storeItem.amountAvailable - storeItem.amountSold === 0}
 							onClick={() => purchase()}
 							sx={{ marginRight: "1rem" }}
 						>
@@ -666,10 +658,30 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 							color="error"
 							disabled={loading}
 							onClick={() => {
-								history.push("/stores")
+								history.push(`/stores/${collection_slug}`)
 								setPurchasedOpen(false)
 							}}
 						>
+							Close
+						</Button>
+					</DialogActions>
+				</Box>
+			</Dialog>
+
+			<Dialog open={errorOpen} onClose={() => setErrorOpen(false)}>
+				<Box sx={{ border: `4px solid ${colors.darkNavyBackground}`, padding: ".5rem", maxWidth: "500px" }}>
+					<DialogTitle sx={{ display: "flex", width: "100%", alignItems: "center" }}>
+						<ErrorOutlineIcon sx={{ fontSize: "2.5rem" }} color="error" />
+
+						<Typography variant="h2" sx={{ padding: "1rem" }}>
+							Error
+						</Typography>
+					</DialogTitle>
+					<DialogContent>
+						<Typography>{errorString ? errorString : "Something went wrong, please try again."}</Typography>
+					</DialogContent>
+					<DialogActions>
+						<Button size="large" variant="contained" onClick={() => setErrorOpen(false)}>
 							Close
 						</Button>
 					</DialogActions>

@@ -223,14 +223,6 @@ export interface WarMachineMetadata {
 	contractReward: string
 }
 
-export enum Rarity {
-	Common,
-	Uncommon,
-	Rare,
-	Epic,
-	Legendary,
-}
-
 export interface ExchangeRates {
 	ETHtoUSD: number
 	BNBtoUSD: number

@@ -92,7 +92,7 @@ export const Home = () => {
 					<Link href={PrivacyPolicy} target="_blank" underline="none" color="white">
 						Privacy Policy
 					</Link>
-					<Link href={TermsAndConditions} underline="none" color="white">
+					<Link href={TermsAndConditions} target="_blank" underline="none" color="white">
 						Terms And Conditions
 					</Link>
 				</Box>

@@ -20,7 +20,7 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery
+	useMediaQuery,
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
@@ -34,7 +34,7 @@ import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
 import { SearchBar } from "../../components/searchBar"
-import { API_ENDPOINT_HOSTNAME } from "../../config"
+import { Sort } from "../../components/sort"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -201,6 +201,7 @@ export const ProfilePage: React.FC = () => {
 									</IconButton>
 								</Box>
 							)}
+							{/* This will be used in the future when we allow non-wallet connections */}
 							{/* {loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
@@ -301,8 +302,7 @@ interface CollectionViewProps {
 }
 
 const CollectionView = ({ user }: CollectionViewProps) => {
-	const { state } = useWebsocket()
-	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
 	const history = useHistory()
 
 	// Collection data
@@ -311,234 +311,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 
 	// Filter/Sort
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
-	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType] = useState<string>()
-	const [rarities, setRarities] = useState<Set<string>>(new Set())
-
-	const toggleRarity = (rarity: string) => {
-		setRarities((prev) => {
-			const exists = prev.has(rarity)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(rarity)
-				return temp
-			}
-			temp.clear()
-			return temp.add(rarity)
-		})
-	}
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-
-		const filterItems: any[] = [
-			// filter by user id
-			{
-				columnField: "username",
-				operatorValue: "=",
-				value: user.username,
-			},
-		]
-
-		const attributeFilterItems: any[] = []
-		if (assetType && assetType !== "All") {
-			attributeFilterItems.push({
-				trait: "Asset Type",
-				value: assetType,
-				operatorValue: "contains",
-			})
-		}
-		rarities.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Rarity",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
-
-		query({
-			search,
-			filter: {
-				linkOperator: "and",
-				items: filterItems,
-			},
-			attributeFilter: {
-				linkOperator: "and",
-				items: attributeFilterItems,
-			},
-			...sort,
-		})
-	}, [user, query, state, search, assetType, rarities, sort])
-
-	useEffect(() => {
-		if (!payload || loading || error) return
-		setAssetHashes(payload.assetHashes)
-	}, [payload, loading, error])
-
-	const renderFilters = () => (
-		<>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						marginBottom: ".5rem",
-					}}
-				>
-					Sort By
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Oldest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Newest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical (reverse)"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Rarity
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
-					<FilterChip
-						active={rarities.has("Colossal")}
-						label="Colossal"
-						color={colors.rarity.colossal}
-						variant="outlined"
-						onClick={() => toggleRarity("Colossal")}
-					/>
-					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
-					<FilterChip
-						active={rarities.has("Legendary")}
-						label="Legendary"
-						color={colors.rarity.legendary}
-						variant="outlined"
-						onClick={() => toggleRarity("Legendary")}
-					/>
-					<FilterChip
-						active={rarities.has("Elite Legendary")}
-						label="Elite Legendary"
-						color={colors.rarity.eliteLegendary}
-						variant="outlined"
-						onClick={() => toggleRarity("Elite Legendary")}
-					/>
-					<FilterChip
-						active={rarities.has("Ultra Rare")}
-						label="Ultra Rare"
-						color={colors.rarity.ultraRare}
-						variant="outlined"
-						onClick={() => toggleRarity("Ultra Rare")}
-					/>
-					<FilterChip
-						active={rarities.has("Exotic")}
-						label="Exotic"
-						color={colors.rarity.exotic}
-						variant="outlined"
-						onClick={() => toggleRarity("Exotic")}
-					/>
-					<FilterChip
-						active={rarities.has("Guardian")}
-						label="Guardian"
-						color={colors.rarity.guardian}
-						variant="outlined"
-						onClick={() => toggleRarity("Guardian")}
-					/>
-					<FilterChip
-						active={rarities.has("Mythic")}
-						label="Mythic"
-						color={colors.rarity.mythic}
-						variant="outlined"
-						onClick={() => toggleRarity("Mythic")}
-					/>
-					<FilterChip
-						active={rarities.has("Deus ex")}
-						label="Deus ex"
-						color={colors.rarity.deusEx}
-						variant="outlined"
-						onClick={() => toggleRarity("Deus ex")}
-					/>
-				</Box>
-			</Box>
-		</>
-	)
 
 	return (
 		<>
@@ -558,7 +331,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 					},
 				}}
 			>
-				{renderFilters()}
+				<Sort pillSizeSmall={true} showOffWorldFilter={false} assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
 			</SwipeableDrawer>
 			<Paper
 				sx={{
@@ -592,9 +365,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							alt="Heart icon"
 							sx={{
 								marginRight: ".5rem",
-								"@media (max-width: 630px)": {
-									height: "4rem",
-								},
+								height: "4rem",
 							}}
 						/>
 						<Typography
@@ -921,7 +692,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 			</Paper>
 		)
 	}
-
 	return (
 		<>
 			{asset.collection && asset.collection.mintContract !== "" && (
@@ -932,9 +702,10 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					assetExternalTokenID={asset.externalTokenID}
 					mintingSignature={asset.mintingSignature}
 					collectionSlug={asset.collection.slug}
+					signatureExpiry={asset.signatureExpiry}
 				/>
 			)}
-			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} setAsset={setAsset} userID={user.id} />
+			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -1405,7 +1176,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	)
 }
 
-export type Rarity = "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex"
+export type Rarity = "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex" | "Titan"
 
 export const rarityTextStyles: { [key in Rarity]: any } = {
 	Mega: {
@@ -1440,14 +1211,11 @@ export const rarityTextStyles: { [key in Rarity]: any } = {
 		color: colors.rarity.deusEx,
 		textShadow: `0 0 2px ${colors.rarity.deusEx}`,
 	},
+	Titan: {
+		color: colors.rarity.titan,
+		textShadow: `0 0 2px ${colors.rarity.titan}`,
+	},
 }
-
-// const StyledIconButton = styled(({ navigate, ...props }: IconButtonProps & { navigate?: any }) => <IconButton {...props} />)({
-// 	borderRadius: ".5rem",
-// 	"& svg": {
-// 		height: "2rem",
-// 	},
-// })
 
 const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)({})
 
@@ -1533,14 +1301,8 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 	)
 }
 
-const UpdateNameModal = (props: {
-	open: boolean
-	onClose: () => void
-	asset: Asset
-	setAsset: React.Dispatch<React.SetStateAction<Asset | undefined>>
-	userID: string
-}) => {
-	const { open, onClose, asset, userID, setAsset } = props
+const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Asset; userID: string }) => {
+	const { open, onClose, asset, userID } = props
 	const { send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
@@ -1552,6 +1314,7 @@ const UpdateNameModal = (props: {
 		if (attr.length > 0) {
 			result = `${attr[0].value}`
 		}
+
 		return result
 	}, [asset])
 
@@ -1563,9 +1326,6 @@ const UpdateNameModal = (props: {
 				userID,
 				name,
 			})
-			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${asset.hash}`)
-			const updatedAsset: Asset = await assetResponse.json()
-			setAsset(updatedAsset)
 
 			displayMessage("Asset successfully updated", "success")
 			onClose()
@@ -1598,6 +1358,7 @@ const UpdateNameModal = (props: {
 						style={{ width: "300px" }}
 						autoFocus
 						disabled={loading}
+						inputProps={{ maxLength: 10 }}
 					/>
 					<DialogActions>
 						<>

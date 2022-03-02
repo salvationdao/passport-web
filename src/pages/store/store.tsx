@@ -1,22 +1,20 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
-import { Loading } from "../../components/loading"
-import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
-import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
-import { FilterChip, SortChip } from "../collections/collection"
+import { FilterChip, SortChip } from "../profile/profile"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 
@@ -40,7 +38,6 @@ export const StorePage: React.FC = () => {
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
-	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>({ isAllowed: false, message: "" })
 	const [userLoad, setUserLoad] = useState(true)
 
 	const toggleAssetType = (assetType: string) => {
@@ -61,7 +58,7 @@ export const StorePage: React.FC = () => {
 	}
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_slug || !canAccessStore || !canAccessStore.isAllowed) return
+		if (state !== SocketState.OPEN || !collection_slug) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -72,7 +69,7 @@ export const StorePage: React.FC = () => {
 				slug: collection_slug,
 			},
 		)
-	}, [collection_slug, canAccessStore, subscribe, state])
+	}, [collection_slug, subscribe, state])
 
 	useEffect(() => {
 		if (user) {
@@ -80,29 +77,10 @@ export const StorePage: React.FC = () => {
 				setUserLoad(false)
 				return
 			}
-			if (ENABLE_WHITELIST_CHECK && (!canAccessStore || !canAccessStore.isAllowed)) {
-				setUserLoad(false)
-				return
-			}
 		}
 
 		setUserLoad(false)
-	}, [userLoad, user, canAccessStore])
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !user || !user.publicAddress) return
-		return subscribe<{ isAllowed: boolean; message: string }>(
-			HubKey.CheckUserCanAccessStore,
-			(payload) => {
-				if (!user) return
-				setCanAccessStore(payload)
-				setCanEnter(payload.isAllowed)
-			},
-			{
-				walletAddress: user.publicAddress,
-			},
-		)
-	}, [user, subscribe, state])
+	}, [userLoad, user])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !collection) return
@@ -168,10 +146,6 @@ export const StorePage: React.FC = () => {
 	const loading = tabLoading || queryLoading
 
 	const showLootBox = collection?.name === "Supremacy Genesis" && (!assetType || assetType === "All")
-
-	if (!userLoad && canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
-		return <WhiteListCheck />
-	}
 
 	const renderFilters = () => (
 		<>
@@ -334,6 +308,13 @@ export const StorePage: React.FC = () => {
 						variant="outlined"
 						onClick={() => toggleRarity("Deus ex")}
 					/>
+					<FilterChip
+						active={rarities.has("Titan")}
+						label="Titan"
+						color={colors.rarity.titan}
+						variant="outlined"
+						onClick={() => toggleRarity("Titan")}
+					/>
 				</Box>
 			</Box>
 		</>
@@ -369,7 +350,11 @@ export const StorePage: React.FC = () => {
 					overflowX: "hidden",
 				}}
 			>
-				<Navbar />
+				<Navbar
+					sx={{
+						marginBottom: "2rem",
+					}}
+				/>
 				<Box
 					sx={{
 						display: "flex",
@@ -457,16 +442,16 @@ export const StorePage: React.FC = () => {
 						</Link>
 						{!isWiderThan1000px && (
 							<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small" endIcon={<FilterAltIcon />}>
-								Filters
+								Filters / Sort
 							</FancyButton>
 						)}
 					</Box>
 
 					<Box
 						sx={{
+							flex: 1,
 							display: "flex",
 							width: "100%",
-							marginBottom: "3rem",
 						}}
 					>
 						{isWiderThan1000px && (
@@ -496,8 +481,9 @@ export const StorePage: React.FC = () => {
 						)}
 						<Box
 							sx={{
-								flexGrow: 1,
-								minWidth: 0,
+								flex: 1,
+								display: "flex",
+								flexDirection: "column",
 							}}
 						>
 							<Tabs
@@ -509,9 +495,15 @@ export const StorePage: React.FC = () => {
 									hidden: true,
 								}}
 								aria-label="Filter tabs"
-								variant="scrollable"
+								variant={isWiderThan1000px ? "standard" : "scrollable"}
 								scrollButtons="auto"
 								allowScrollButtonsMobile
+								sx={{
+									maxWidth: "calc(100vw - 6rem)",
+									[`& .${tabsClasses.scrollButtons}`]: {
+										"&.Mui-disabled": { opacity: 0.3 },
+									},
+								}}
 							>
 								<StyledTab value="All" label="All" />
 								<StyledTab value="Land" label="Land" />
@@ -526,6 +518,7 @@ export const StorePage: React.FC = () => {
 										flex: 1,
 										display: "grid",
 										gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+										gridAutoRows: "min-content",
 										gap: "1rem",
 										height: "100%",
 										padding: "2rem",

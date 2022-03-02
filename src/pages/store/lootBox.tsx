@@ -23,9 +23,11 @@ import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { SocketState, useWebsocket } from "../../containers/socket"
+import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Asset } from "../../types/types"
+import { rarityTextStyles, Rarity } from "../profile/profile"
 
 export const LootBoxPage = () => {
 	const [loading, setLoading] = useState(false)
@@ -211,6 +213,20 @@ export const LootBoxPage = () => {
 									margin: "1rem 0",
 								}}
 							/>
+							{asset ? (
+								<Typography
+									variant="h4"
+									sx={{
+										fontFamily: fonts.bizmoblack,
+										fontStyle: "italic",
+										letterSpacing: "2px",
+										textTransform: "uppercase",
+										...rarityTextStyles[getItemAttributeValue(asset.attributes, "Rarity") as Rarity],
+									}}
+								>
+									{getItemAttributeValue(asset.attributes, "Rarity")}
+								</Typography>
+							) : null}
 						</DialogContent>
 						<DialogActions sx={{ display: "flex", justifyContent: "center" }}>
 							<Button
