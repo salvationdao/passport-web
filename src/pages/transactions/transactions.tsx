@@ -52,8 +52,8 @@ export const TransactionsPage = () => {
 						items: [
 							{
 								columnField: "group_id",
-								operatorValue: "isnull",
-								value: "null",
+								operatorValue: "=",
+								value: "''",
 							},
 						],
 					},
