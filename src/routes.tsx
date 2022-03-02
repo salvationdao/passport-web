@@ -58,13 +58,17 @@ export const Routes = () => {
 	useEffect(() => {
 		// Maintenance timeout after all websocket checks
 		try {
-			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/check`).then((res) => {
-				if (res.status === 200) {
-					setOkCheck(true)
-				} else {
+			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/check`)
+				.then((res) => {
+					if (res.status === 200) {
+						setOkCheck(true)
+					} else {
+						setOkCheck(false)
+					}
+				})
+				.catch(() => {
 					setOkCheck(false)
-				}
-			})
+				})
 		} catch (error) {
 			setOkCheck(false)
 		}
