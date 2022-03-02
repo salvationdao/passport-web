@@ -7,9 +7,8 @@ import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
-import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
-import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -49,8 +48,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
 	const [isLoading, setIsLoading] = useState(false)
 	const [userLoad, setUserLoad] = useState(true)
-	const [canEnter, setCanEnter] = useState(false)
-	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
 
 	const { displayMessage } = useSnackbar()
 
@@ -97,20 +94,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 			}
 		})()
 	}, [send, state, user, displayMessage])
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !user || !user.publicAddress || userLoad) return
-		return subscribe<{ isAllowed: boolean; message: string }>(
-			HubKey.CheckUserCanAccessStore,
-			(payload) => {
-				if (userLoad) return
-				setCanAccessStore(payload)
-			},
-			{
-				walletAddress: user.publicAddress,
-			},
-		)
-	}, [user, subscribe, state, userLoad])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -183,11 +166,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 		setAssetHashes(Array.from(new Set(offWorldPayload.assetHashes)))
 	}, [offWorldPayload, offWorldLoading, offWorldError])
-
-	console.log(canAccessStore)
-	if (!userLoad && canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
-		return <WhiteListCheck />
-	}
 
 	if (user && !user.faction) {
 		return <PleaseEnlist />

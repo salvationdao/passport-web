@@ -1,13 +1,12 @@
 import { Box, Divider, Paper, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
-import { Link as RouterLink, useHistory } from "react-router-dom"
+import { Link as RouterLink } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { PleaseEnlist, WhiteListCheck } from "../../components/pleaseEnlist"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
-import { ENABLE_WHITELIST_CHECK } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -20,14 +19,13 @@ import { StoreItemCard } from "./storeItemCard"
 // Displays all stores available to the user
 export const StoresPage = () => {
 	const { user } = useAuth()
-	const { send, state, subscribe } = useWebsocket()
+	const { send, state } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
 	const [userLoad, setUserLoad] = useState(true)
 	const [canEnter, setCanEnter] = useState(false)
 	const [factionsData, setFactionsData] = useState<Faction[]>([])
-	const [canAccessStore, setCanAccessStore] = useState<{ isAllowed: boolean; message: string }>()
 
 	useEffect(() => {
 		if (user) {
@@ -35,15 +33,11 @@ export const StoresPage = () => {
 				setUserLoad(false)
 				return
 			}
-			if (ENABLE_WHITELIST_CHECK && (!canAccessStore || !canAccessStore.isAllowed)) {
-				setUserLoad(false)
-				return
-			}
 		}
 
 		setCanEnter(true)
 		setUserLoad(false)
-	}, [userLoad, user, canAccessStore])
+	}, [userLoad, user])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -74,30 +68,12 @@ export const StoresPage = () => {
 		})()
 	}, [send, state, displayMessage])
 
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !user || !user.publicAddress || userLoad) return
-		return subscribe<{ isAllowed: boolean; message: string }>(
-			HubKey.CheckUserCanAccessStore,
-			(payload) => {
-				if (userLoad) return
-				setCanAccessStore(payload)
-			},
-			{
-				walletAddress: user.publicAddress,
-			},
-		)
-	}, [user, subscribe, state, userLoad])
-
 	if (!user || userLoad) {
 		return <Loading text={"Getting shop data"} />
 	}
 
 	if (!userLoad && user && !user.faction) {
 		return <PleaseEnlist />
-	}
-
-	if (!userLoad && canAccessStore && !canAccessStore.isAllowed && ENABLE_WHITELIST_CHECK) {
-		return <WhiteListCheck />
 	}
 
 	return (

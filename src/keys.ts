@@ -114,7 +114,6 @@ enum HubKey {
 	SupExchangeRates = "SUPS:EXCHANGE",
 	SupsWithdraw = "SUPS:WITHDRAW",
 
-	CheckUserCanAccessStore = "USER:CHECK:CAN_ACCESS_STORE",
 	FactionAvailables = "AVAILABLE:ITEM:AMOUNT",
 }
 
