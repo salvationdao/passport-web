@@ -85,7 +85,7 @@ export const Routes = () => {
 		)
 	}
 
-	if (!user && authLoading) {
+	if (!user && authLoading && okCheck !== true) {
 		return <Loading text={loadingText} />
 	}
 
