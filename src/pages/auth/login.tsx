@@ -59,13 +59,49 @@ export const LoginPage: React.FC = () => {
 	}, [user, history])
 
 	if (loading) {
-		return <Loading text="Loading. Please wait..." />
+		return (
+			<Box
+				sx={{
+					display: "flex",
+					flex: 1,
+					height: "100%",
+					justifyContent: "center",
+					alignItems: "center",
+				}}
+			>
+				<Loading text="Loading. Please wait..." />
+			</Box>
+		)
 	}
 	if (user) {
 		if (recheckAuth) {
-			return <Loading text="You are already logged in, redirecting to your profile..." />
+			return (
+				<Box
+					sx={{
+						display: "flex",
+						flex: 1,
+						height: "100%",
+						justifyContent: "center",
+						alignItems: "center",
+					}}
+				>
+					<Loading text="You are already logged in, redirecting to your profile..." />
+				</Box>
+			)
 		}
-		return <Loading text="You have successfully logged in, redirecting to your profile..." />
+		return (
+			<Box
+				sx={{
+					display: "flex",
+					flex: 1,
+					height: "100%",
+					justifyContent: "center",
+					alignItems: "center",
+				}}
+			>
+				<Loading text="You have successfully logged in, redirecting to your profile..." />
+			</Box>
+		)
 	}
 
 	return (
