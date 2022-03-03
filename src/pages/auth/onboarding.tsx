@@ -180,7 +180,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 			sx={{
 				overflow: "hidden",
 				position: "relative",
-				minHeight: "100vh",
+				minHeight: "100%",
 			}}
 		>
 			<FadeTransition show={step < Step.SuccessStep || loading}>

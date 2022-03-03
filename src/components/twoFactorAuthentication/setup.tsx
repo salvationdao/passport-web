@@ -41,7 +41,7 @@ export const TwoFactorAuthenticationSetup = () => {
 	return (
 		<Box
 			sx={{
-				minHeight: "100vh",
+				minHeight: "100%",
 				width: "100%",
 				backgroundColor: "primary.main",
 				display: "flex",
@@ -72,9 +72,8 @@ export const TwoFactorAuthenticationSetup = () => {
 				</Box>
 
 				<Typography variant="body2">
-					Scan The following QR code with the two-factor authentication app on your mobile. If you can't use the QR
-					code, click on the button and copy the code
-					instead.
+					Scan The following QR code with the two-factor authentication app on your mobile. If you can't use the QR code, click on the button and copy
+					the code instead.
 				</Typography>
 				{tfaSecret && (
 					<Box
@@ -88,8 +87,7 @@ export const TwoFactorAuthenticationSetup = () => {
 						}}
 					>
 						<Box sx={{ height: "300px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-							{showSecretCode ? <Typography variant="h6">{tfaSecret.secret}</Typography> :
-								<QRCode value={tfaSecret.qrCodeStr} />}
+							{showSecretCode ? <Typography variant="h6">{tfaSecret.secret}</Typography> : <QRCode value={tfaSecret.qrCodeStr} />}
 						</Box>
 						<Box m={1} />
 						<Button variant="contained" onClick={() => setShowSecretCode((e) => !e)}>

@@ -40,12 +40,12 @@ export const Loader = () => {
 	return (
 		<Box
 			sx={{
-				width: "100vw",
+				width: "100%",
 				height: "100%",
 				display: "flex",
 				justifyContent: "center",
 				alignItems: "center",
-				perspective: "100vw",
+				perspective: "100%",
 			}}
 		>
 			<video

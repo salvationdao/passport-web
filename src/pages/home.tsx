@@ -16,7 +16,7 @@ export const Home = () => {
 			<Box
 				sx={{
 					position: "relative",
-					minHeight: "100vh",
+					minHeight: "100%",
 				}}
 			>
 				<GradientCircleThing

@@ -13,15 +13,12 @@ import HubKey from "../keys"
 import { colors } from "../theme"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
+import { Navbar } from "./home/navbar"
+import { GradientCircleThing } from "./home/gradientCircleThing"
 
 BigNumber.config({ EXPONENTIAL_AT: 1e9 })
 
 const UseSignatureMode = true
-
-interface WithdrawModalProps {
-	open: boolean
-	onClose: () => void
-}
 
 interface GetSignatureResponse {
 	messageSignature: string
@@ -154,9 +151,9 @@ export const WithdrawSups: React.FC = () => {
 	}, [provider, send, state, withdrawAmount, user])
 
 	return (
-		<Box component="div" sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3em", width: "100%" }}>
-			<Box component={"img"} src={Safe} alt={"SUPS Safe"} sx={{ height: "150px", width: "150px" }}></Box>
-
+		<Box component="div" sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "3em", width: "100%" }}>
+			<Navbar />
+			<Box component={"img"} src={Safe} alt={"SUPS Safe"} sx={{ height: "150px", width: "150px" }} />
 			<Typography variant="h2" sx={{ color: "primary", textTransform: "uppercase" }}>
 				Withdraw $SUPS
 			</Typography>
@@ -166,19 +163,19 @@ export const WithdrawSups: React.FC = () => {
 				</Box>
 			)}
 			{metaMaskState === MetaMaskState.Active && (
-				<>
+				<Box sx={{ width: "100%", maxWidth: "500px", minWidth: "350px", padding: "2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
 					{currentChainId?.toString() !== BINANCE_CHAIN_ID && (
 						<FancyButton onClick={async () => await changeChainToBSC()}>Switch Network</FancyButton>
 					)}
 					{currentChainId?.toString() === BINANCE_CHAIN_ID && (
 						<>
-							<Box sx={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
-								<Typography variant="h4" sx={{ fontWeight: "bold" }}>
+							<Box sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexWrap: "wrap" }}>
+								<Typography variant="h4" noWrap sx={{ fontWeight: "bold" }}>
 									XSYN Balance
 								</Typography>
 								<Typography
 									variant="h4"
-									sx={{ color: colors.skyBlue }}
+									sx={{ color: colors.skyBlue, marginLeft: "auto" }}
 									onClick={() => {
 										if (userSups) setWithdrawAmount(supFormatter(userSups))
 									}}
@@ -188,11 +185,11 @@ export const WithdrawSups: React.FC = () => {
 							</Box>
 							{loadingWalletBalance && <Skeleton />}
 							{!loadingWalletBalance && (
-								<Box sx={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
-									<Typography variant="h4" sx={{ fontWeight: "bold" }}>
+								<Box sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexWrap: "wrap" }}>
+									<Typography variant="h4" noWrap sx={{ fontWeight: "bold" }}>
 										Available Withdraw Pool
 									</Typography>
-									<Typography variant="h4" sx={{ color: colors.darkNeonPink }}>
+									<Typography variant="h4" sx={{ color: colors.darkNeonPink, marginLeft: "auto" }}>
 										{supFormatter(withdrawContractAmount?.toString() || "0")}
 									</Typography>
 								</Box>
@@ -231,7 +228,7 @@ export const WithdrawSups: React.FC = () => {
 							)}
 						</>
 					)}
-				</>
+				</Box>
 			)}
 		</Box>
 	)

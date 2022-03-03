@@ -1,4 +1,4 @@
-import { Alert, Snackbar } from "@mui/material"
+import { Alert, Snackbar, Box } from "@mui/material"
 import { useEffect, useState } from "react"
 import { BrowserRouter, Route, Switch } from "react-router-dom"
 import { BlockConfirmationSnackList } from "./components/blockConfirmationSnackList"
@@ -26,7 +26,8 @@ import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
 import { TransactionsPage } from "./pages/transactions/transactions"
-import { WithdrawPage } from "./pages/withdraw"
+import { WithdrawPreviewPage } from "./pages/withdrawPreview"
+import { WithdrawSups } from "./components/withdrawSups"
 
 export const Routes = () => {
 	const { setSessionID, user, loading: authLoading } = useAuth()
@@ -53,7 +54,7 @@ export const Routes = () => {
 		return <Loading text={loadingText} />
 	}
 	return (
-		<>
+		<Box sx={{ maxHeight: "100%", maxWidth: "100%" }}>
 			<BrowserRouter>
 				<Snackbar
 					anchorOrigin={{
@@ -106,7 +107,8 @@ export const Routes = () => {
 								<TransactionsPage />
 							</Route>
 							<Route path="/withdraw">
-								<WithdrawPage />
+								<WithdrawPreviewPage />
+								{/*<WithdrawSups /> --- do not enable this until after sale   */}
 							</Route>
 							<Route path="/mystery">
 								<LootBoxPage />
@@ -185,6 +187,6 @@ export const Routes = () => {
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
-		</>
+		</Box>
 	)
 }

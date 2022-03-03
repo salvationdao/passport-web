@@ -32,7 +32,7 @@ export const TransactionsPage = () => {
 	// Sort / Filters / Page size
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [selectedGroupID, setSelectedGroupID] = useState<GroupType>("All")
-	const [pageSize, setPageSize] = useState(5)
+	const [pageSize, setPageSize] = useState(20)
 
 	// Ungrouped transactions
 	const [totalPages, setTotalPages] = useState(0)
@@ -211,7 +211,7 @@ export const TransactionsPage = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					minHeight: "100vh",
+					minHeight: "100%",
 				}}
 			>
 				<Navbar

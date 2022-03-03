@@ -30,7 +30,7 @@ export const BuyPage: React.FC = () => {
 
 	return (
 		<>
-			<Box sx={{ position: "relative", minHeight: "100vh" }}>
+			<Box sx={{ position: "relative", minHeight: "100%" }}>
 				<Navbar />
 				<GradientCircleThing
 					hideInner
