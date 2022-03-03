@@ -1,13 +1,16 @@
 import { Alert, Snackbar, Box } from "@mui/material"
 import { useEffect, useState } from "react"
-import { BrowserRouter, Route, Switch } from "react-router-dom"
+import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom"
 import { BlockConfirmationSnackList } from "./components/blockConfirmationSnackList"
-import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
+import { ConnectionLostSnackbar, MAX_COUNTDOWN_SECONDS, MAX_RECONNECT_ATTEMPTS } from "./components/connectionLostSnackbar"
 import { Loading } from "./components/loading"
+import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
+import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
+import { useWebsocket } from "./containers/socket"
 import { AssetRedirectPage } from "./pages/assetRedirect"
 import { LoginPage } from "./pages/auth/login"
 import { LogoutPage } from "./pages/auth/logout"
@@ -31,8 +34,10 @@ import { WithdrawSups } from "./components/withdrawSups"
 
 export const Routes = () => {
 	const { setSessionID, user, loading: authLoading } = useAuth()
+	const { state } = useWebsocket()
 	const { setSidebarOpen } = useSidebarState()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
+	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
 	const [loadingText, setLoadingText] = useState<string>()
 	const searchParams = new URLSearchParams(window.location.search)
 	const sessionID = searchParams.get("sessionID")
@@ -43,6 +48,7 @@ export const Routes = () => {
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
+
 	useEffect(() => {
 		if (authLoading) {
 			setLoadingText("Loading...")
@@ -50,9 +56,44 @@ export const Routes = () => {
 		}
 	}, [authLoading])
 
-	if (!user && authLoading) {
+	useEffect(() => {
+		// Maintenance timeout after all websocket checks
+		try {
+			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/check`)
+				.then((res) => {
+					if (res.status === 200) {
+						setOkCheck(true)
+					} else {
+						setOkCheck(false)
+					}
+				})
+				.catch(() => {
+					setOkCheck(false)
+				})
+		} catch (error) {
+			setOkCheck(false)
+		}
+	}, [state])
+
+	if (okCheck === false) {
+		return (
+			<>
+				<BrowserRouter>
+					<Route path="/">
+						<Maintenance />
+						<ConnectionLostSnackbar app="public" />
+						<BlockConfirmationSnackList />
+					</Route>
+					<Redirect to="/" />
+				</BrowserRouter>
+			</>
+		)
+	}
+
+	if (!user && authLoading && okCheck !== true) {
 		return <Loading text={loadingText} />
 	}
+
 	return (
 		<Box sx={{ maxHeight: "100%", maxWidth: "100%" }}>
 			<BrowserRouter>
@@ -76,7 +117,7 @@ export const Routes = () => {
 						<Route path="/nosidebar/login">
 							<LoginPage />
 						</Route>
-						<Route path="/logout">
+						<Route path="/nosidebar/logout">
 							<LogoutPage />
 						</Route>
 						<Route path="/nosidebar/:username/:collection_slug">

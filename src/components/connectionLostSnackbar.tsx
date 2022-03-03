@@ -3,8 +3,8 @@ import Alert, { AlertColor } from "@mui/material/Alert"
 import { useEffect, useState } from "react"
 import { useWebsocket } from "../containers/socket"
 
-const MAX_COUNTDOWN_SECONDS = 5
-const MAX_RECONNECT_ATTEMPTS = 3
+export const MAX_COUNTDOWN_SECONDS = 5
+export const MAX_RECONNECT_ATTEMPTS = 3
 
 /**
  * Displays a snack bar if server disconnects and have it reconnect automatically within X seconds.

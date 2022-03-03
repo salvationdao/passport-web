@@ -270,6 +270,13 @@ export const StorePage: React.FC = () => {
 					<FilterChip active={rarities.has("Mythic")} label="Mythic" color={colors.rarity.mythic} onClick={() => toggleRarity("Mythic")} />
 					<FilterChip active={rarities.has("Deus ex")} label="Deus ex" color={colors.rarity.deusEx} onClick={() => toggleRarity("Deus ex")} />
 					<FilterChip active={rarities.has("Titan")} label="Titan" color={colors.rarity.titan} onClick={() => toggleRarity("Titan")} />
+					<FilterChip
+						active={rarities.has("Titan")}
+						label="Titan"
+						color={colors.rarity.titan}
+						variant="outlined"
+						onClick={() => toggleRarity("Titan")}
+					/>
 				</Box>
 			</Box>
 		</>
@@ -425,7 +432,7 @@ export const StorePage: React.FC = () => {
 									hidden: true,
 								}}
 								aria-label="Filter tabs"
-								variant="scrollable"
+								variant={isWiderThan1000px ? "standard" : "scrollable"}
 								scrollButtons="auto"
 								allowScrollButtonsMobile
 								sx={{

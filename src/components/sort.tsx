@@ -256,6 +256,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 					active={rarities.has(rarityName)}
 					label={rarityName}
 					color={colorValue}
+					variant="outlined"
 					onClick={() => toggleRarity(rarityName)}
 				/>
 			)
@@ -285,6 +286,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 					<SortChip
 						active={showOffWorldOnly !== undefined}
 						label={showOffWorldOnly === undefined ? "Both" : showOffWorldOnly === false ? "On World Only" : "Off World Only"}
+						variant="outlined"
 						onClick={() => {
 							toggleOnOffWorld()
 						}}
@@ -317,12 +319,14 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 								icon={aquisitionDir ? <ExpandLessIcon /> : aquisitionDir === false ? <ExpandMoreIcon /> : undefined}
 								active={sort?.sortBy === "created_at"}
 								label={aquisitionDir !== false ? "Newest First" : "Oldest First"}
+								variant="outlined"
 								onClick={toggleAquisitionSort}
 							/>
 							<SortChip
 								icon={alphabetical ? <ExpandLessIcon /> : alphabetical === false ? <ExpandMoreIcon /> : undefined}
 								active={sort?.sortBy === "name"}
 								label={alphabetical !== false ? "Alphabetical" : "Reverse Alphabetical"}
+								variant="outlined"
 								onClick={toggleAlphabeticalSort}
 							/>
 						</Box>
@@ -369,6 +373,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 										key={`${c.id}-${index}`}
 										active={c.id === collection?.id}
 										label={c.name}
+										variant="outlined"
 										onClick={() => toggleCollection(c)}
 									/>
 								)
