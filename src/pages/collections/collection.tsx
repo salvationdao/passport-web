@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
+import { Box, Collapse, IconButton, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
@@ -16,6 +16,8 @@ import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { CollectionItemCard } from "./collectionItemCard"
+import ExpandLess from "@mui/icons-material/ExpandLess"
+import ExpandMore from "@mui/icons-material/ExpandMore"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const [userLoad, setUserLoad] = useState(true)
@@ -85,7 +87,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					minHeight: "100vh",
+					minHeight: "100%",
 				}}
 			>
 				<Navbar />
@@ -174,51 +176,25 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 							<ChevronLeftIcon />
 							Go Back
 						</Link>
-						{!isWiderThan1000px && (
-							<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small" endIcon={<FilterAltIcon />}>
-								Filters / Sort
-							</FancyButton>
-						)}
+						<FancyButton onClick={() => setOpenFilterDrawer((prev) => !prev)} size="small" endIcon={<FilterAltIcon />}>
+							Filters / Sort
+						</FancyButton>
 					</Box>
 
 					<Box
 						sx={{
 							flex: 1,
 							display: "flex",
+							flexDirection: "column",
+							justifyContent: "center",
 							width: "100%",
 						}}
 					>
-						{isWiderThan1000px && (
-							<Box
-								sx={{
-									alignSelf: "start",
-									width: "340px",
-								}}
-							>
-								<Tabs
-									sx={{
-										backgroundColor: "transparent",
-									}}
-								/>
-								<Paper
-									sx={{
-										padding: "2rem",
-										borderRadius: 0,
-										"& > *:not(:last-child)": {
-											marginBottom: "1rem",
-										},
-									}}
-								>
-									<Sort assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
-								</Paper>
-							</Box>
-						)}
 						<Box
 							sx={{
-								flex: 1,
 								display: "flex",
-								flexDirection: "column",
-								minWidth: 0,
+								justifyContent: "center",
+								width: "100%",
 							}}
 						>
 							<Tabs
@@ -234,7 +210,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								scrollButtons="auto"
 								allowScrollButtonsMobile
 								sx={{
-									maxWidth: "calc(100vw - 6rem)",
 									[`& .${tabsClasses.scrollButtons}`]: {
 										"&.Mui-disabled": { opacity: 0.3 },
 									},
@@ -247,38 +222,79 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{assetHashes.length > 0 ? (
-								<Paper
-									sx={{
-										flex: 1,
-										display: "grid",
-										gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-										gridAutoRows: "min-content",
-										gap: "1rem",
-										height: "100%",
-										padding: "2rem",
-									}}
-								>
-									{assetHashes.map((a, index) => {
-										return <CollectionItemCard key={`${a}-${index}`} assetHash={a} username={username} />
-									})}
-								</Paper>
-							) : (
-								<Paper
-									sx={{
-										flex: 1,
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										height: "100%",
-										padding: "2rem",
-									}}
-								>
-									<Typography variant="subtitle2" color={colors.darkGrey}>
-										{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
-									</Typography>
-								</Paper>
+						</Box>
+						<Box
+							sx={{
+								flex: 1,
+								display: "flex",
+								// flexDirection: "columns",
+								width: "100%",
+							}}
+						>
+							{isWiderThan1000px && (
+								<Collapse in={openFilterDrawer} orientation={"horizontal"}>
+									<Box
+										sx={{
+											alignSelf: "start",
+											width: "340px",
+										}}
+									>
+										<Paper
+											sx={{
+												padding: "2rem",
+												borderRadius: 0,
+												"& > *:not(:last-child)": {
+													marginBottom: "1rem",
+												},
+											}}
+										>
+											<Sort assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
+										</Paper>
+									</Box>
+								</Collapse>
 							)}
+
+							<Box
+								sx={{
+									flex: 1,
+									display: "flex",
+									flexDirection: "column",
+									minWidth: 0,
+								}}
+							>
+								{assetHashes.length > 0 ? (
+									<Paper
+										sx={{
+											flex: 1,
+											display: "grid",
+											gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+											gridAutoRows: "min-content",
+											gap: "1rem",
+											height: "100%",
+											padding: "2rem",
+										}}
+									>
+										{assetHashes.map((a, index) => {
+											return <CollectionItemCard key={`${a}-${index}`} assetHash={a} username={username} />
+										})}
+									</Paper>
+								) : (
+									<Paper
+										sx={{
+											flex: 1,
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											height: "100%",
+											padding: "2rem",
+										}}
+									>
+										<Typography variant="subtitle2" color={colors.darkGrey}>
+											{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
+										</Typography>
+									</Paper>
+								)}
+							</Box>
 						</Box>
 					</Box>
 				</Box>

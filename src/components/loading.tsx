@@ -11,7 +11,7 @@ export const Loading: React.FC<LoadingProps> = ({ text }) => {
 				display: "flex",
 				justifyContent: "center",
 				alignItems: "center",
-				height: "100vh",
+				height: "100%",
 			}}
 		>
 			<Box

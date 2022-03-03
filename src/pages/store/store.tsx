@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
+import { Box, Collapse, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
@@ -301,7 +301,7 @@ export const StorePage: React.FC = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					minHeight: "100vh",
+					minHeight: "100%",
 					overflowX: "hidden",
 				}}
 			>
@@ -395,51 +395,25 @@ export const StorePage: React.FC = () => {
 							<ChevronLeftIcon />
 							Go Back
 						</Link>
-						{!isWiderThan1000px && (
-							<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small" endIcon={<FilterAltIcon />}>
-								Filters / Sort
-							</FancyButton>
-						)}
+						<FancyButton onClick={() => setOpenFilterDrawer((prev) => !prev)} size="small" endIcon={<FilterAltIcon />}>
+							Filters / Sort
+						</FancyButton>
 					</Box>
 
 					<Box
 						sx={{
 							flex: 1,
 							display: "flex",
+							flexDirection: "column",
+							justifyContent: "center",
 							width: "100%",
 						}}
 					>
-						{isWiderThan1000px && (
-							<Box
-								sx={{
-									alignSelf: "start",
-									width: "340px",
-								}}
-							>
-								<Tabs
-									sx={{
-										backgroundColor: "transparent",
-									}}
-								/>
-								<Paper
-									sx={{
-										padding: "2rem",
-										borderRadius: 0,
-										"& > *:not(:last-child)": {
-											marginBottom: "1rem",
-										},
-									}}
-								>
-									{renderFilters()}
-								</Paper>
-							</Box>
-						)}
 						<Box
 							sx={{
-								flex: 1,
 								display: "flex",
-								flexDirection: "column",
-								minWidth: 0,
+								justifyContent: "center",
+								width: "100%",
 							}}
 						>
 							<Tabs
@@ -467,6 +441,38 @@ export const StorePage: React.FC = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
+						</Box>
+
+						<Box
+							sx={{
+								flex: 1,
+								display: "flex",
+								// flexDirection: "column",
+								minWidth: 0,
+							}}
+						>
+							{isWiderThan1000px && (
+								<Collapse in={openFilterDrawer} orientation={"horizontal"}>
+									<Box
+										sx={{
+											alignSelf: "start",
+											width: "340px",
+										}}
+									>
+										<Paper
+											sx={{
+												padding: "2rem",
+												borderRadius: 0,
+												"& > *:not(:last-child)": {
+													marginBottom: "1rem",
+												},
+											}}
+										>
+											{renderFilters()}
+										</Paper>
+									</Box>
+								</Collapse>
+							)}
 							{!loading && canEnter && (storeItemIDs.length || showLootBox) ? (
 								<Paper
 									sx={{

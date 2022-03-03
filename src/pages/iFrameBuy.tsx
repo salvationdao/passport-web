@@ -6,7 +6,7 @@ import { GradientCircleThing } from "../components/home/gradientCircleThing"
 export const IFrameBuyPage: React.FC = () => {
 	return (
 		<>
-			<Box sx={{ position: "relative", minHeight: "100vh" }}>
+			<Box sx={{ position: "relative", minHeight: "100%" }}>
 				<GradientCircleThing
 					hideInner
 					sx={{

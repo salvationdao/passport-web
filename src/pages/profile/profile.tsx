@@ -109,7 +109,7 @@ export const ProfilePage: React.FC = () => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				minHeight: "100vh",
+				minHeight: "100%",
 			}}
 		>
 			<Navbar
@@ -137,7 +137,6 @@ export const ProfilePage: React.FC = () => {
 							sx={{
 								display: "flex",
 								flexDirection: "column",
-								width: "100%",
 								maxWidth: "340px",
 								padding: "2rem 0",
 								"& > *:not(:last-child)": {

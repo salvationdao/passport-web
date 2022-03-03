@@ -298,7 +298,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 								)
 								return
 							}
-							setWithdrawDialogOpen(true)
+							history.push("/withdraw")
 						}}
 					>
 						Withdraw

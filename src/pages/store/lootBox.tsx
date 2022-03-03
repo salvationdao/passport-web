@@ -105,7 +105,7 @@ export const LootBoxPage = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					minHeight: "100vh",
+					minHeight: "100%",
 					overflowX: "hidden",
 					visibility: open ? "hidden" : "unset",
 				}}

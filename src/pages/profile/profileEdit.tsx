@@ -66,7 +66,7 @@ export const ProfileEditPage: React.FC = () => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				minHeight: "100vh",
+				minHeight: "100%",
 			}}
 		>
 			<Navbar />
