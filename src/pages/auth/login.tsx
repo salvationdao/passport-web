@@ -71,10 +71,10 @@ export const LoginPage: React.FC = () => {
 	return (
 		<Box
 			sx={{
-				overflow: "hidden",
-				position: "relative",
-				minHeight: "100%",
 				display: "flex",
+				flex: 1,
+				position: "relative",
+				height: "100%",
 				justifyContent: "center",
 				alignItems: "center",
 				flexDirection: "column",

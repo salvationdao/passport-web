@@ -95,7 +95,7 @@ export const Routes = () => {
 	}
 
 	return (
-		<Box sx={{ maxHeight: "100%", maxWidth: "100%" }}>
+		<Box sx={{ height: "100%", width: "100%", maxHeight: "100%", maxWidth: "100%" }}>
 			<BrowserRouter>
 				<Snackbar
 					anchorOrigin={{
