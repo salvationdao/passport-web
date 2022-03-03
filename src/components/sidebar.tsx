@@ -1,31 +1,39 @@
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import AppsIcon from "@mui/icons-material/Apps"
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
-import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi"
+import PlayArrowIcon from "@mui/icons-material/PlayArrow"
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Alert, Box, Button, Divider, Drawer, SxProps, Theme, Typography, useMediaQuery } from "@mui/material"
+import { Box, Button, Divider, Drawer, Stack, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
-import { SupTokenIcon } from "../assets"
+import { MetaMaskIcon, WalletConnectIcon } from "../assets"
+import SupsToken from "../assets/images/sup-token.svg"
+import SupsTokenLogo from "../assets/images/sups-token-logo.png"
+import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK, TOKEN_SALE_ENDPOINT } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { useSnackbar } from "../containers/snackbar"
-import { API_ENDPOINT_HOSTNAME, SocketState, useWebsocket } from "../containers/socket"
-import { useWeb3 } from "../containers/web3"
+import { SocketState, useWebsocket } from "../containers/socket"
+import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { supFormatter } from "../helpers/items"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { Faction, User } from "../types/types"
+import { Faction, FactionTheme, User } from "../types/types"
 import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 
-const drawerWidth = 300
+const drawerWidth = 250
 
 export interface SidebarLayoutProps {
 	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
@@ -34,7 +42,7 @@ export interface SidebarLayoutProps {
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
 	const { send, state } = useWebsocket()
-	const { sidebarOpen, setSidebarOpen } = useSidebarState()
+	const { sidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
 	const { user, logout } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
@@ -44,7 +52,8 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	// Supremacy
 	const [factionsData, setFactionsData] = useState<Faction[]>([])
-	const { supBalance, account } = useWeb3()
+	const { supBalance, account, metaMaskState } = useWeb3()
+	const theme = useTheme()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
@@ -60,27 +69,30 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}
 
 	useEffect(() => {
+		if (userSups) {
+			setXsynSups(BigNumber.from(userSups))
+		}
+	}, [userSups])
+
+	useEffect(() => {
 		// not logged in
 		if (!user || !account) {
 			setWalletMsg("")
-			setWalletSups("N/A")
+			setWalletSups(undefined)
 			return
-		}
-		if (userSups) {
-			setXsynSups(BigNumber.from(userSups))
 		}
 
 		// no wallet connected
 		if (!user.publicAddress) {
 			setWalletMsg("Wallet not connected")
-			setWalletSups("N/A")
+			setWalletSups(undefined)
 			return
 		}
 
 		const correctWallet = correctWalletCheck(user.publicAddress, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
-		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : "N/A")
-	}, [userSups, supBalance, account, user, userPublicAddress])
+		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : undefined)
+	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
@@ -112,6 +124,20 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				padding: "1rem",
 				"& > *:not(:last-child)": {
 					marginBottom: "1rem",
+				},
+				overflowY: "auto",
+				overflowX: "hidden",
+				scrollbarWidth: "none",
+				"::-webkit-scrollbar": {
+					width: 4,
+				},
+				"::-webkit-scrollbar-track": {
+					boxShadow: `inset 0 0 5px ${colors.darkNavyBackground}`,
+					borderRadius: 3,
+				},
+				"::-webkit-scrollbar-thumb": {
+					background: colors.darkNeonBlue,
+					borderRadius: 3,
 				},
 			}}
 		>
@@ -153,56 +179,78 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					},
 				}}
 			>
-				{!!walletMsg && <Alert severity="error">{walletMsg}</Alert>}
+				<Box sx={{ display: "grid", width: "100%", gridTemplateColumns: "1fr 1fr 1fr 1fr", gridTemplateRows: "1fr 1fr" }}>
+					<Box
+						sx={{
+							gridColumnStart: "1",
+							gridColumnEnd: "2",
+							gridRowStart: "1",
+							gridRowEnd: "3",
+							justifySelf: "center",
+							alignSelf: "center",
+							border: `.5px solid ${colors.lightNavyBlue}`,
+							borderRadius: "50%",
+							height: "3.5rem",
+							width: "3.5rem",
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+						}}
+					>
+						<Box component="img" src={SupsTokenLogo} alt="token image" sx={{ height: "2.5rem", margin: ".5rem" }} />
+					</Box>
+					<Box
+						sx={{
+							gridColumnStart: "2",
+							gridColumnEnd: "5",
+							gridRowStart: "1",
+							gridRowEnd: "2",
+						}}
+					>
+						<Box sx={{ display: "flex", alignItems: "center", width: "100%", marginBottom: ".2rem" }}>
+							<SportsEsportsIcon sx={{ fontSize: "1.2rem", color: colors.darkGrey }} />
+							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: " 0 .5rem" }} />
+							<Typography variant="body1">{xsynSups ? supFormatter(xsynSups.toString()) : "--"}</Typography>
+						</Box>
 
-				<Typography
-					sx={{
-						textTransform: "uppercase",
-						fontWeight: 600,
-					}}
-				>
-					My Wallet
-				</Typography>
-				<Typography
-					key={`usersups-${xsynSups.toString()}`}
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						"& svg": {
-							height: ".8rem",
-						},
-						"& > *:not(:last-child)": {
-							marginRight: ".2rem",
-						},
-					}}
-				>
-					<Box component="span" fontWeight={500} color={colors.darkGrey}>
-						XSYN Balance:
+						<Divider />
 					</Box>
-					<SupTokenIcon />
-					{formatUnits(xsynSups, 18)}
-				</Typography>
-				<Typography
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						"& svg": {
-							height: ".8rem",
-						},
-						"& > *:not(:last-child)": {
-							marginRight: ".2rem",
-						},
-					}}
-				>
-					<Box component="span" fontWeight={500} color={colors.darkGrey}>
-						Wallet Balance:
+					<Box
+						sx={{
+							gridColumnStart: "2",
+							gridColumnEnd: "5",
+							gridRowStart: "2",
+							gridRowEnd: "3",
+						}}
+					>
+						<Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+							{metaMaskState === MetaMaskState.NotInstalled ? (
+								<WalletConnectIcon height={"1.2rem"} width={"1.2rem"} />
+							) : (
+								<MetaMaskIcon height={"1.2rem"} width={"1.2rem"} />
+							)}
+							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: "0 .5rem" }} />
+							<Typography variant="body1">{walletSups ? supFormatter(walletSups) : "--"}</Typography>
+						</Box>
 					</Box>
-					<SupTokenIcon />
-					{walletSups ? walletSups : "___"}
-				</Typography>
+				</Box>
+				<Box>
+					<FancyButton
+						onClick={() => {
+							window.open(TOKEN_SALE_ENDPOINT, "_blank")?.focus()
+						}}
+						borderColor={colors.skyBlue}
+						sx={{ fontWeight: 400, width: "100%", marginTop: "1rem" }}
+					>
+						Token Sale
+					</FancyButton>
+				</Box>
+				{
+					//TODO: these buttons to be display: flex after launch
+				}
 				<Box
 					sx={{
-						display: "flex",
+						display: "none",
 						"& > *:not(:last-child)": {
 							marginRight: ".2rem",
 						},
@@ -276,7 +324,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					</FancyButton>
 				</Box>
 			</Box>
-			<Divider />
 			<Box
 				sx={{
 					display: "flex",
@@ -286,60 +333,81 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					},
 				}}
 			>
-				<Typography
-					sx={{
-						marginBottom: ".5rem",
-						textTransform: "uppercase",
-						fontWeight: 600,
-					}}
-				>
-					Supremacy
+				<Divider />
+				<Typography variant="body1" sx={{ textTransform: "uppercase", textAlign: "center", fontWeight: "600" }}>
+					{user?.faction ? "Your Syndicate" : "Choose Your Syndicate"}
 				</Typography>
-				<Divider />
 				<RenderEnlist factionsData={factionsData} user={user} />
+				<FactionWarMachineRemain />
 				<Divider />
-				<NavButton
-					sx={{ color: !xsynSups.eq(0) ? "" : colors.supremacy.grey, cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" } }}
+				<Button
+					sx={{
+						justifyContent: "start",
+						color: !xsynSups.eq(0) ? "" : colors.supremacy.grey,
+						cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" },
+					}}
 					onClick={() => {
 						if (!xsynSups.eq(0)) {
-							window.open("https://staging-watch.supremacy.game", "_blank")?.focus()
+							window.open(BATTLE_ARENA_LINK, "_blank")?.focus()
 						}
 					}}
-					to={`/profile`}
-					startIcon={<SportsKabaddiIcon />}
+					startIcon={<PlayArrowIcon />}
 				>
 					{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
-				</NavButton>
+				</Button>
 				<Divider />
-				<a></a>
-				<NavButton to={`/collections`} startIcon={<AppsIcon />}>
+				<NavButton to={`/collections/${user?.username}`} startIcon={<AppsIcon />}>
 					My Inventory
 				</NavButton>
-				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
+				<NavButton to="/stores/supremacy-genesis" startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
 			</Box>
 
 			<Divider />
+
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					"& > *:not(:last-child)": {
+						marginBottom: ".5rem",
+					},
+				}}
+			>
+				<NavButton to="/withdraw" startIcon={<AccountBalanceWalletIcon />}>
+					Withdraw
+				</NavButton>
+				<NavButton to="/transactions" startIcon={<ReceiptLongIcon />}>
+					Transactions
+				</NavButton>
+			</Box>
+
+			{!!walletMsg && (
+				<Box sx={{ display: "flex" }}>
+					<ErrorOutlineIcon sx={{ fontSize: "2rem", color: theme.palette.error.light, alignSelf: "center" }} />
+					<Typography variant="body1" sx={{ marginLeft: ".2rem" }}>
+						{walletMsg}
+					</Typography>
+				</Box>
+			)}
 			<Box flex="1" />
 			<NavButton sx={{ alignSelf: "start", width: "100%" }} to="/profile" startIcon={<FaceIcon />}>
-				Edit Profile
+				Profile
 			</NavButton>
-			<Box>
-				<Button
-					startIcon={<LogoutIcon />}
-					onClick={() => logout()}
-					sx={(theme) => ({
-						justifyContent: "flex-start",
-						width: "100%",
-						":hover": {
-							backgroundColor: theme.palette.error.main,
-						},
-					})}
-				>
-					Logout
-				</Button>
-			</Box>
+			<Button
+				startIcon={<LogoutIcon />}
+				onClick={() => logout()}
+				sx={(theme) => ({
+					justifyContent: "flex-start",
+					width: "100%",
+					":hover": {
+						backgroundColor: theme.palette.error.main,
+					},
+				})}
+			>
+				Logout
+			</Button>
 		</Box>
 	) : (
 		<Box
@@ -425,7 +493,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			<Box
 				component="main"
 				sx={(theme) => ({
-					overflowX: "auto",
 					flexGrow: 1,
 					transition: theme.transitions.create("margin", {
 						easing: theme.transitions.easing.sharp,
@@ -446,7 +513,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				{children}
 			</Box>
-			<WithdrawSupsModal open={withdrawDialogOpen} onClose={() => setWithdrawDialogOpen(false)} />
+			<WithdrawSupsModal
+				walletBalance={supBalance || BigNumber.from(0)}
+				xsynBalance={xsynSups}
+				open={withdrawDialogOpen}
+				onClose={() => setWithdrawDialogOpen(false)}
+			/>
 			<DepositSupsModal
 				walletBalance={supBalance || BigNumber.from(0)}
 				xsynBalance={xsynSups}
@@ -466,6 +538,9 @@ interface NavButtonProps {
 }
 
 const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClick, children }) => {
+	const { setSidebarOpen } = useSidebarState()
+	const mobileScreen = useMediaQuery("(max-width:600px)")
+
 	return (
 		<Button
 			sx={{
@@ -476,7 +551,14 @@ const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClic
 			component={RouterLink}
 			to={to}
 			startIcon={startIcon}
-			onClick={onClick}
+			onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+				if (mobileScreen) {
+					setSidebarOpen(false)
+				}
+				if (onClick) {
+					onClick(e)
+				}
+			}}
 		>
 			{children}
 		</Button>
@@ -507,23 +589,31 @@ const EnlistButtonGroup: React.VoidFunctionComponent<EnlistButtonGroupProps> = (
 }
 
 const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?: User }) => {
-	if (!factionsData) return <Box>Loadiaang...</Box>
+	if (!factionsData) return <Box>Loading...</Box>
 	if (user?.faction) {
 		return (
 			<>
 				<Typography
 					sx={{
 						display: "flex",
-						alignItems: "start",
+						alignItems: "center",
+						color: user.faction.theme.primary,
+						fontWeight: "fontWeightBold",
 					}}
 				>
 					<Box
 						component="img"
 						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID}`}
-						alt="Faction Logo"
+						alt={`${user.faction.label} Faction Logo`}
 						sx={{
 							height: "2rem",
+							width: "2rem",
 							marginRight: ".5rem",
+							flexShrink: 0,
+							objectFit: "contain",
+							backgroundColor: user.faction.theme.primary,
+							borderRadius: 0.8,
+							border: `${user.faction.theme.primary} 1px solid`,
 						}}
 					/>
 					<span>{user.faction.label}</span>
@@ -532,4 +622,77 @@ const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?:
 		)
 	}
 	return <EnlistButtonGroup factionsData={factionsData} />
+}
+
+interface FactionAvailable {
+	id: string
+	label: string
+	logoBlobID: string
+	theme: FactionTheme
+	megaAmount: number
+	lootboxAmount: number
+}
+
+const FactionWarMachineRemain = () => {
+	const { state, subscribe } = useWebsocket()
+	const [factionAvailables, setFactionAvailables] = useState<FactionAvailable[]>([])
+
+	useEffect(() => {
+		if (state !== WebSocket.OPEN || !subscribe) return
+		return subscribe<FactionAvailable[]>(HubKey.FactionAvailables, (payload) => {
+			if (!payload) return
+			setFactionAvailables(payload)
+		})
+	}, [state, subscribe])
+
+	return (
+		<Stack spacing={1}>
+			<Typography sx={{ py: 1.2, px: 1, textAlign: "center", color: colors.supremacy.neonBlue, backgroundColor: "#00000099" }} variant="h6">
+				WAR MACHINES REMAINING
+			</Typography>
+
+			<Stack justifyContent="space-around" spacing={1.5}>
+				{factionAvailables.map((fa) => {
+					const { id, logoBlobID, theme, megaAmount, lootboxAmount } = fa
+
+					return (
+						<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
+							<Box
+								sx={{
+									width: 41,
+									height: 41,
+									flexShrink: 0,
+									backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logoBlobID})`,
+									backgroundRepeat: "no-repeat",
+									backgroundPosition: "center",
+									backgroundSize: "contain",
+									backgroundColor: theme.primary,
+									borderRadius: 0.8,
+									border: `${theme.primary} 1px solid`,
+								}}
+							/>
+							<Stack>
+								<Stack direction="row">
+									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mega:&nbsp;</Typography>
+									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>
+										{id == "880db344-e405-428d-84e5-6ebebab1fe6d" ? 0 : megaAmount}
+									</Typography>
+								</Stack>
+								<Stack direction="row">
+									<Typography sx={{ fontWeight: "fontWeightBold" }}>Lootbox:&nbsp;</Typography>
+									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{lootboxAmount}</Typography>
+								</Stack>
+							</Stack>
+						</Stack>
+					)
+				})}
+			</Stack>
+
+			<Typography sx={{ pt: 1, fontWeight: "fontWeightBold", color: colors.errorRed }}>
+				Zaibatsu Starter sold out
+				<br />
+				Only crates left!
+			</Typography>
+		</Stack>
+	)
 }

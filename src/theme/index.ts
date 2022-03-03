@@ -26,9 +26,21 @@ export const colors = {
 	darkSkyBlue: "#3b9ebd",
 	darkerSkyBlue: "#3388a3",
 	lightNavyBlue: "#211E33",
+	lightNavyBlue2: "#6E7198",
 	navyBlue: "#402F98",
 	darkNavyBlue: "#0a061f",
 	darkerNavyBlue: "#030208",
+	darkNavyBackground2: "rgba(16, 16, 25, 0.2)",
+	darkNavyBackground: "rgba(16, 16, 25, 0.7)",
+	darkerNavyBackground: "rgb(5, 12, 18,0.95)",
+	black2: "#050C12",
+	black2Background: "rgb(5, 12, 18,0.7)",
+	inputBg: "#211E33",
+	gold: "#ffc400",
+	neonBlue: "#00FFFF",
+	darkNeonBlue: "#176969",
+	darkerNeonBlue: "#073339",
+	darkestNeonBlue: "#050c12",
 	purple: "#351EBA",
 	white: "#fff",
 	black: "#000",
@@ -42,9 +54,17 @@ export const colors = {
 	discordGrey: "#2c2f33",
 	supremacyGold: "#F3D977",
 	rarity: {
-		common: "#c3c3c3",
+		mega: "#e84234",
+		colossal: "#b43328",
 		rare: "#4d90fa",
 		legendary: "#fabd4d",
+		eliteLegendary: "#ffcc4e",
+		ultraRare: "#4e57ff",
+		exotic: "#824dff",
+		guardian: "#4dcfff",
+		mythic: "#a1e6ff",
+		deusEx: "#fffa4e",
+		titan: "#5eff75",
 	},
 	supremacy: {
 		text: "#FFFFFF",
@@ -114,7 +134,7 @@ const lightTheme = createTheme({
 			contrastText: colors.white,
 		},
 		success: {
-			main: "#44b700",
+			main: "#67D388",
 		},
 		error: {
 			main: colors.errorRed,
@@ -202,7 +222,7 @@ const lightTheme = createTheme({
 		MuiCssBaseline: {
 			styleOverrides: {
 				html: {
-					"@media (max-width: 1000px)": {
+					"@media (max-width: 1080px)": {
 						fontSize: "80%",
 					},
 				},
@@ -213,6 +233,9 @@ const lightTheme = createTheme({
 					":focus": {
 						boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
 					},
+				},
+				ul: {
+					paddingLeft: "1em",
 				},
 			},
 		},

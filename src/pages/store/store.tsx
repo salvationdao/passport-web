@@ -1,11 +1,12 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -13,30 +14,35 @@ import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection } from "../../types/types"
-import { FilterChip, SortChip } from "../collections/collection"
+import { FilterChip, SortChip } from "../profile/profile"
+import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 
 export const StorePage: React.FC = () => {
-	const { collection_name } = useParams<{ collection_name: string }>()
+	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
 	const { subscribe, state } = useWebsocket()
 	const { user } = useAuth()
 
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [collection, setCollection] = useState<Collection>()
-	const { loading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
+	const { loading: queryLoading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
+	const [tabLoading, setTabLoading] = useState(true)
+
+	const [canEnter, setCanEnter] = useState(true)
 
 	// search and filter
 	const [search, setSearch] = useState("")
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType, setAssetType] = useState<string>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
-	const [brands, setBrand] = useState<Set<string>>(new Set())
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
+	const [userLoad, setUserLoad] = useState(true)
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
+		setTabLoading(true)
 	}
 
 	const toggleRarity = (rarity: string) => {
@@ -47,26 +53,12 @@ export const StorePage: React.FC = () => {
 				temp.delete(rarity)
 				return temp
 			}
-			temp.clear()
 			return temp.add(rarity)
 		})
 	}
 
-	const toggleBrand = (brand: string) => {
-		setBrand((prev) => {
-			const exists = prev.has(brand)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(brand)
-				return temp
-			}
-			temp.clear()
-			return temp.add(brand)
-		})
-	}
-
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_name) return
+		if (state !== SocketState.OPEN || !collection_slug) return
 		return subscribe<Collection>(
 			HubKey.CollectionUpdated,
 			(payload) => {
@@ -74,13 +66,24 @@ export const StorePage: React.FC = () => {
 				setCollection(payload)
 			},
 			{
-				name: collection_name,
+				slug: collection_slug,
 			},
 		)
-	}, [collection_name, subscribe, state])
+	}, [collection_slug, subscribe, state])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN) return
+		if (user) {
+			if (!user.faction) {
+				setUserLoad(false)
+				return
+			}
+		}
+
+		setUserLoad(false)
+	}, [userLoad, user])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !collection) return
 
 		const filtersItems: any[] = []
 
@@ -95,7 +98,7 @@ export const StorePage: React.FC = () => {
 
 		filtersItems.push({
 			columnField: "faction_id",
-			operatorValue: "=",
+			operatorValue: !user?.factionID ? "isnull" : "=",
 			value: user?.factionID,
 		})
 
@@ -114,18 +117,11 @@ export const StorePage: React.FC = () => {
 				operatorValue: "contains",
 			}),
 		)
-		brands.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Brand",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
 
 		query({
 			search,
 			attributeFilter: {
-				linkOperator: "and",
+				linkOperator: "or",
 				items: attributeFilterItems,
 			},
 			filter: {
@@ -133,13 +129,23 @@ export const StorePage: React.FC = () => {
 				items: filtersItems,
 			},
 			...sort,
+		}).then(() => {
+			setTabLoading(false)
 		})
-	}, [user, query, collection, state, assetType, rarities, brands, search, sort])
+	}, [user, query, collection, state, assetType, rarities, search, sort])
 
 	useEffect(() => {
-		if (!payload || loading || error) return
+		if (!payload || queryLoading || error) return
 		setStoreItemIDs(payload.storeItemIDs)
-	}, [payload, loading, error])
+	}, [payload, queryLoading, error])
+
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
+
+	const loading = tabLoading || queryLoading
+
+	const showLootBox = collection?.name === "Supremacy Genesis" && (!assetType || assetType === "All")
 
 	const renderFilters = () => (
 		<>
@@ -157,7 +163,8 @@ export const StorePage: React.FC = () => {
 				<Box
 					sx={{
 						display: "flex",
-						flexDirection: "column",
+						flexDirection: isWiderThan1000px ? "column" : "row",
+						flexWrap: isWiderThan1000px ? "initial" : "wrap",
 						gap: ".5rem",
 					}}
 				>
@@ -243,12 +250,13 @@ export const StorePage: React.FC = () => {
 						gap: ".5rem",
 					}}
 				>
+					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
 					<FilterChip
-						active={rarities.has("Common")}
-						label="Common"
-						color={colors.rarity.common}
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.colossal}
 						variant="outlined"
-						onClick={() => toggleRarity("Common")}
+						onClick={() => toggleRarity("Colossal")}
 					/>
 					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
 					<FilterChip
@@ -258,46 +266,54 @@ export const StorePage: React.FC = () => {
 						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
 					/>
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Brand
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip color={colors.skyBlue} active={brands.has("Gunn")} label="Gunn" variant="outlined" onClick={() => toggleBrand("Gunn")} />
-					<FilterChip color={colors.skyBlue} active={brands.has("Kaeber")} label="Kaeber" variant="outlined" onClick={() => toggleBrand("Kaeber")} />
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Death Metal")}
-						label="Death Metal"
+						active={rarities.has("Elite Legendary")}
+						label="Elite Legendary"
+						color={colors.rarity.eliteLegendary}
 						variant="outlined"
-						onClick={() => toggleBrand("Death Metal")}
+						onClick={() => toggleRarity("Elite Legendary")}
 					/>
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Daison Avionics")}
-						label="Daison Avionics"
+						active={rarities.has("Ultra Rare")}
+						label="Ultra Rare"
+						color={colors.rarity.ultraRare}
 						variant="outlined"
-						onClick={() => toggleBrand("Daison Avionics")}
+						onClick={() => toggleRarity("Ultra Rare")}
 					/>
 					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Quasar Industries")}
-						label="Quasar Industries"
+						active={rarities.has("Exotic")}
+						label="Exotic"
+						color={colors.rarity.exotic}
 						variant="outlined"
-						onClick={() => toggleBrand("Quasar Industries")}
+						onClick={() => toggleRarity("Exotic")}
+					/>
+					<FilterChip
+						active={rarities.has("Guardian")}
+						label="Guardian"
+						color={colors.rarity.guardian}
+						variant="outlined"
+						onClick={() => toggleRarity("Guardian")}
+					/>
+					<FilterChip
+						active={rarities.has("Mythic")}
+						label="Mythic"
+						color={colors.rarity.mythic}
+						variant="outlined"
+						onClick={() => toggleRarity("Mythic")}
+					/>
+					<FilterChip
+						active={rarities.has("Deus ex")}
+						label="Deus ex"
+						color={colors.rarity.deusEx}
+						variant="outlined"
+						onClick={() => toggleRarity("Deus ex")}
+					/>
+					<FilterChip
+						active={rarities.has("Titan")}
+						label="Titan"
+						color={colors.rarity.titan}
+						variant="outlined"
+						onClick={() => toggleRarity("Titan")}
 					/>
 				</Box>
 			</Box>
@@ -306,7 +322,7 @@ export const StorePage: React.FC = () => {
 
 	return (
 		<>
-			{!isWiderThan1000px && (
+			{!isWiderThan1000px && canEnter && (
 				<SwipeableDrawer
 					open={openFilterDrawer}
 					onClose={() => setOpenFilterDrawer(false)}
@@ -334,7 +350,11 @@ export const StorePage: React.FC = () => {
 					overflowX: "hidden",
 				}}
 			>
-				<Navbar />
+				<Navbar
+					sx={{
+						marginBottom: "2rem",
+					}}
+				/>
 				<Box
 					sx={{
 						display: "flex",
@@ -422,16 +442,16 @@ export const StorePage: React.FC = () => {
 						</Link>
 						{!isWiderThan1000px && (
 							<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small" endIcon={<FilterAltIcon />}>
-								Filters
+								Filters / Sort
 							</FancyButton>
 						)}
 					</Box>
 
 					<Box
 						sx={{
+							flex: 1,
 							display: "flex",
 							width: "100%",
-							marginBottom: "3rem",
 						}}
 					>
 						{isWiderThan1000px && (
@@ -461,8 +481,9 @@ export const StorePage: React.FC = () => {
 						)}
 						<Box
 							sx={{
-								flexGrow: 1,
-								minWidth: 0,
+								flex: 1,
+								display: "flex",
+								flexDirection: "column",
 							}}
 						>
 							<Tabs
@@ -474,9 +495,15 @@ export const StorePage: React.FC = () => {
 									hidden: true,
 								}}
 								aria-label="Filter tabs"
-								variant="scrollable"
+								variant={isWiderThan1000px ? "standard" : "scrollable"}
 								scrollButtons="auto"
 								allowScrollButtonsMobile
+								sx={{
+									maxWidth: "calc(100vw - 6rem)",
+									[`& .${tabsClasses.scrollButtons}`]: {
+										"&.Mui-disabled": { opacity: 0.3 },
+									},
+								}}
 							>
 								<StyledTab value="All" label="All" />
 								<StyledTab value="Land" label="Land" />
@@ -485,17 +512,20 @@ export const StorePage: React.FC = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{storeItemIDs.length ? (
+							{!loading && canEnter && (storeItemIDs.length || showLootBox) ? (
 								<Paper
 									sx={{
 										flex: 1,
 										display: "grid",
 										gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+										gridAutoRows: "min-content",
 										gap: "1rem",
 										height: "100%",
 										padding: "2rem",
 									}}
 								>
+									{/* NOTE: You might need to remove the lootbox if pagination is added */}
+									{showLootBox && <LootBoxCard />}
 									{storeItemIDs.map((a) => {
 										return <StoreItemCard key={a} storeItemID={a} />
 									})}

@@ -1,21 +1,15 @@
-import { Box, IconButton, Link, styled, Typography } from "@mui/material"
+import { Alert, Box, Link, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
-import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, MailIcon, MetaMaskIcon, TwitchIcon, TwitterIcon, XSYNLogo } from "../../assets"
-import { DiscordLogin, ReactDiscordFailureResponse, ReactDiscordLoginResponse } from "../../components/discordLogin"
-import { FacebookLogin, ReactFacebookFailureResponse, ReactFacebookLoginInfo } from "../../components/facebookLogin"
+import { MetaMaskIcon, WalletConnectIcon, XSYNLogo } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { InputField } from "../../components/form/inputField"
 import { Loading } from "../../components/loading"
 import { MetaMaskLogin } from "../../components/loginMetaMask"
-import { ReactTwitchFailureResponse, ReactTwitchLoginResponse, TwitchLogin } from "../../components/twitchLogin"
-import { ReactTwitterFailureResponse, ReactTwitterLoginResponse, TwitterLogin } from "../../components/twitterLogin"
 import { AuthContainer, useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
-import { MetaMaskState } from "../../containers/web3"
 import { fonts } from "../../theme"
 
 interface LogInInput {
@@ -25,11 +19,11 @@ interface LogInInput {
 
 export const LoginPage: React.FC = () => {
 	const history = useHistory()
-	const { user } = useAuth()
+	const { user, recheckAuth, loading: authLoading } = useAuth()
 	const { setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
 
-	const { loginGoogle, loginFacebook, loginTwitch, loginTwitter, loginDiscord, loginPassword } = AuthContainer.useContainer()
+	const { loginPassword } = AuthContainer.useContainer()
 
 	const { control, handleSubmit, reset } = useForm<LogInInput>()
 	const [loading, setLoading] = useState(false)
@@ -51,82 +45,6 @@ export const LoginPage: React.FC = () => {
 		}
 	})
 
-	// OAuth login
-	const onGoogleLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-		try {
-			if (!!response.code) {
-				displayMessage(`Couldn't connect to Google: ${response.code}`, "error")
-				return
-			}
-			const r = response as GoogleLoginResponse
-			const resp = await loginGoogle(r.tokenId)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onGoogleLoginFailure = (error: Error) => {
-		displayMessage(error.message, "error")
-	}
-
-	const onFacebookLogin = async (response: any) => {
-		try {
-			if (!!response && !!response.status) {
-				displayMessage(`Couldn't connect to Facebook: ${response.status}`, "error")
-				return
-			}
-			const r = response as ReactFacebookLoginInfo
-			const resp = await loginFacebook(r.accessToken)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onFacebookLoginFailure = (error: ReactFacebookFailureResponse) => {
-		displayMessage(error.status || "Failed to login with Facebook.", "error")
-	}
-
-	const onTwitchLogin = async (response: ReactTwitchLoginResponse) => {
-		try {
-			const resp = await loginTwitch(response.token)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onTwitchLoginFailure = (error: ReactTwitchFailureResponse) => {
-		displayMessage(error.status || "Failed to login with Twitch.", "error")
-	}
-
-	const onTwitterLogin = async (response: ReactTwitterLoginResponse) => {
-		try {
-			const resp = await loginTwitter(response.token, response.verifier)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onTwitterLoginFailure = (error: ReactTwitterFailureResponse) => {
-		displayMessage(error.status || "Failed to login with Twitter.", "error")
-	}
-
-	const onDiscordLogin = async (response: ReactDiscordLoginResponse) => {
-		try {
-			const resp = await loginDiscord(response.code)
-			if (!resp || !resp.isNew) return
-			history.push("/onboarding")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		}
-	}
-	const onDiscordLoginFailure = (error: ReactDiscordFailureResponse) => {
-		displayMessage(error.status || "Failed to login with Discord.", "error")
-	}
-
 	useEffect(() => {
 		setSidebarOpen(false)
 	}, [setSidebarOpen])
@@ -140,8 +58,14 @@ export const LoginPage: React.FC = () => {
 		return () => clearTimeout(userTimeout)
 	}, [user, history])
 
+	if (loading) {
+		return <Loading text="Loading. Please wait..." />
+	}
 	if (user) {
-		return <Loading text="You are already logged in, redirecting to your profile..." />
+		if (recheckAuth) {
+			return <Loading text="You are already logged in, redirecting to your profile..." />
+		}
+		return <Loading text="You have successfully logged in, redirecting to your profile..." />
 	}
 
 	return (
@@ -276,113 +200,33 @@ export const LoginPage: React.FC = () => {
 						<MetaMaskLogin
 							onFailure={onMetaMaskLoginFailure}
 							render={(props) => (
-								<FancyButton
-									onClick={props.onClick}
-									loading={props.isProcessing}
-									title={
-										props.metaMaskState === MetaMaskState.NotInstalled
-											? "Install MetaMask"
-											: props.metaMaskState === MetaMaskState.NotLoggedIn
-											? "Sign into your MetaMask to continue"
-											: "Login With MetaMask"
-									}
-									sx={{
-										marginBottom: "1rem",
-										padding: "1rem",
-										borderRadius: ".5rem",
-									}}
-									startIcon={<MetaMaskIcon />}
-								>
-									{props.metaMaskState === MetaMaskState.NotInstalled
-										? "Install MetaMask"
-										: props.metaMaskState === MetaMaskState.NotLoggedIn
-										? "Sign into your MetaMask to continue"
-										: "Login With MetaMask"}
-								</FancyButton>
+								<>
+									<FancyButton
+										onClick={props.onClick}
+										loading={props.isProcessing}
+										title="Connect Wallet to account"
+										sx={{
+											marginBottom: "1rem",
+											padding: "1rem",
+											borderRadius: ".5rem",
+										}}
+										startIcon={
+											typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined" ? (
+												<WalletConnectIcon />
+											) : (
+												<MetaMaskIcon />
+											)
+										}
+									>
+										Connect Wallet to account
+									</FancyButton>
+									<Typography sx={{ textAlign: "center" }}>{props.errorMessage}</Typography>
+								</>
 							)}
 						/>
-						<Typography
-							variant="subtitle1"
-							sx={{
-								color: (theme) => theme.palette.primary.main,
-								textAlign: "center",
-								textTransform: "uppercase",
-								fontFamily: fonts.bizmosemi_bold,
-							}}
-						>
-							Or Sign In With
-						</Typography>
-
-						<Box
-							sx={{
-								display: "grid",
-								gridTemplateColumns: "repeat(3, minmax(3rem, 1fr))",
-								gap: "1rem",
-							}}
-						>
-							<StyledIconButton
-								onClick={() => {
-									setShowEmailLogin(true)
-								}}
-							>
-								<MailIcon />
-							</StyledIconButton>
-							<GoogleLogin
-								clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
-								buttonText="Login"
-								onSuccess={onGoogleLogin}
-								onFailure={onGoogleLoginFailure}
-								cookiePolicy={"single_host_origin"}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={props.disabled} title="Login with Google">
-										<GoogleIcon />
-									</StyledIconButton>
-								)}
-							/>
-							<FacebookLogin
-								callback={onFacebookLogin}
-								onFailure={onFacebookLoginFailure}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={!props.isSdkLoaded || props.isProcessing} title="Login with Facebook">
-										<FacebookIcon />
-									</StyledIconButton>
-								)}
-							/>
-							<TwitchLogin
-								callback={onTwitchLogin}
-								onFailure={onTwitchLoginFailure}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={props.isProcessing} title="Log in with Twitch">
-										<TwitchIcon />
-									</StyledIconButton>
-								)}
-							/>
-							<TwitterLogin
-								callback={onTwitterLogin}
-								onFailure={onTwitterLoginFailure}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={props.isProcessing} title="Log in with Twitter">
-										<TwitterIcon />
-									</StyledIconButton>
-								)}
-							/>
-							<DiscordLogin
-								callback={onDiscordLogin}
-								onFailure={onDiscordLoginFailure}
-								render={(props) => (
-									<StyledIconButton onClick={props.onClick} disabled={props.isProcessing} title="Log in with Discord">
-										<DiscordIcon />
-									</StyledIconButton>
-								)}
-							/>
-						</Box>
 					</Box>
 				)}
 			</Box>
 		</Box>
 	)
 }
-
-const StyledIconButton = styled(IconButton)({
-	borderRadius: ".5rem",
-})

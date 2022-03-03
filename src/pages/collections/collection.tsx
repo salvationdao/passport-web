@@ -1,309 +1,63 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Chip, ChipProps, Link, Paper, styled, Tab, TabProps, Tabs, Typography, useMediaQuery } from "@mui/material"
+import { Box, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
+import { Sort } from "../../components/sort"
 import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
+import { useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
-import { Collection } from "../../types/types"
 import { CollectionItemCard } from "./collectionItemCard"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
-	const { username, collection_name } = useParams<{ username: string; collection_name: string }>()
-	const history = useHistory()
-	const { subscribe, state } = useWebsocket()
-	const { user } = useAuth()
-
-	const [tokenIDs, setTokenIDs] = useState<number[]>([])
-	const [collection, setCollection] = useState<Collection>()
-	const { loading, error, payload, query } = useQuery<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, false)
+	const [userLoad, setUserLoad] = useState(true)
+	const [assetHashes, setAssetHashes] = useState<string[]>([])
+	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
 
 	// search and filter
 	const [search, setSearch] = useState("")
-	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType, setAssetType] = useState<string>()
-	const [rarities, setRarities] = useState<Set<string>>(new Set())
-	const [brands, setBrand] = useState<Set<string>>(new Set())
+
+	const { username } = useParams<{ username: string }>()
+	const history = useHistory()
+	const { state, subscribe } = useWebsocket()
+	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
-	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
+	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
+	const {
+		loading: offWorldLoading,
+		error: offWorldError,
+		payload: offWorldPayload,
+		query: offWorldQuery,
+	} = useQuery<{ assetHashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
 	}
 
-	const toggleRarity = (rarity: string) => {
-		setRarities((prev) => {
-			const exists = prev.has(rarity)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(rarity)
-				return temp
-			}
-			temp.clear()
-			return temp.add(rarity)
-		})
-	}
-
-	const toggleBrand = (brand: string) => {
-		setBrand((prev) => {
-			const exists = prev.has(brand)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(brand)
-				return temp
-			}
-			temp.clear()
-			return temp.add(brand)
-		})
-	}
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_name) return
-		return subscribe<Collection>(
-			HubKey.CollectionUpdated,
-			(payload) => {
-				if (!payload) return
-				setCollection(payload)
-			},
-			{
-				name: collection_name,
-			},
-		)
-	}, [collection_name, subscribe, state])
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-
-		const filtersItems: any[] = [
-			// filter by user id
-			{
-				columnField: "username",
-				operatorValue: "=",
-				value: username || user?.username,
-			},
-		]
-
-		if (collection && collection.id) {
-			filtersItems.push({
-				// filter by collection id
-				columnField: "collection_id",
-				operatorValue: "=",
-				value: collection.id,
-			})
-		}
-
-		const attributeFilterItems: any[] = []
-		if (assetType && assetType !== "All") {
-			attributeFilterItems.push({
-				trait: "Asset Type",
-				value: assetType,
-				operatorValue: "contains",
-			})
-		}
-		rarities.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Rarity",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
-		brands.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Brand",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
-
-		query({
-			search,
-			attributeFilter: {
-				linkOperator: "and",
-				items: attributeFilterItems,
-			},
-			filter: {
-				linkOperator: "and",
-				items: filtersItems,
-			},
-			...sort,
-		})
-	}, [user, query, collection, state, assetType, rarities, brands, search, username, sort])
-
 	useEffect(() => {
 		if (!payload || loading || error) return
-		setTokenIDs(payload.tokenIDs)
+
+		setAssetHashes(payload.assetHashes)
 	}, [payload, loading, error])
 
-	const renderFilters = () => (
-		<>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						marginBottom: ".5rem",
-					}}
-				>
-					Sort By
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexDirection: "column",
-						gap: ".5rem",
-					}}
-				>
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Oldest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Newest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical (reverse)"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Rarity
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip
-						active={rarities.has("Common")}
-						label="Common"
-						color={colors.rarity.common}
-						variant="outlined"
-						onClick={() => toggleRarity("Common")}
-					/>
-					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
-					<FilterChip
-						active={rarities.has("Legendary")}
-						label="Legendary"
-						color={colors.rarity.legendary}
-						variant="outlined"
-						onClick={() => toggleRarity("Legendary")}
-					/>
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Brand
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip color={colors.skyBlue} active={brands.has("Gunn")} label="Gunn" variant="outlined" onClick={() => toggleBrand("Gunn")} />
-					<FilterChip color={colors.skyBlue} active={brands.has("Kaeber")} label="Kaeber" variant="outlined" onClick={() => toggleBrand("Kaeber")} />
-					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Death Metal")}
-						label="Death Metal"
-						variant="outlined"
-						onClick={() => toggleBrand("Death Metal")}
-					/>
-					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Daison Avionics")}
-						label="Daison Avionics"
-						variant="outlined"
-						onClick={() => toggleBrand("Daison Avionics")}
-					/>
-					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Quasar Industries")}
-						label="Quasar Industries"
-						variant="outlined"
-						onClick={() => toggleBrand("Quasar Industries")}
-					/>
-				</Box>
-			</Box>
-		</>
-	)
+	useEffect(() => {
+		if (!offWorldPayload || offWorldLoading || offWorldError) return
+
+		setAssetHashes(Array.from(new Set(offWorldPayload.assetHashes)))
+	}, [offWorldPayload, offWorldLoading, offWorldError])
+
+	if (user && !user.faction) {
+		return <PleaseEnlist />
+	}
 
 	return (
 		<>
@@ -324,7 +78,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						},
 					}}
 				>
-					{renderFilters()}
+					<Sort assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
 				</SwipeableDrawer>
 			)}
 			<Box
@@ -332,7 +86,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 					display: "flex",
 					flexDirection: "column",
 					minHeight: "100vh",
-					overflowX: "hidden",
 				}}
 			>
 				<Navbar />
@@ -423,16 +176,16 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						</Link>
 						{!isWiderThan1000px && (
 							<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small" endIcon={<FilterAltIcon />}>
-								Filters
+								Filters / Sort
 							</FancyButton>
 						)}
 					</Box>
 
 					<Box
 						sx={{
+							flex: 1,
 							display: "flex",
 							width: "100%",
-							marginBottom: "3rem",
 						}}
 					>
 						{isWiderThan1000px && (
@@ -456,13 +209,15 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 										},
 									}}
 								>
-									{renderFilters()}
+									<Sort assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
 								</Paper>
 							</Box>
 						)}
 						<Box
 							sx={{
-								flexGrow: 1,
+								flex: 1,
+								display: "flex",
+								flexDirection: "column",
 								minWidth: 0,
 							}}
 						>
@@ -478,6 +233,12 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								variant="scrollable"
 								scrollButtons="auto"
 								allowScrollButtonsMobile
+								sx={{
+									maxWidth: "calc(100vw - 6rem)",
+									[`& .${tabsClasses.scrollButtons}`]: {
+										"&.Mui-disabled": { opacity: 0.3 },
+									},
+								}}
 							>
 								<StyledTab value="All" label="All" />
 								<StyledTab value="Land" label="Land" />
@@ -486,19 +247,20 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
-							{tokenIDs.length ? (
+							{assetHashes.length > 0 ? (
 								<Paper
 									sx={{
 										flex: 1,
 										display: "grid",
 										gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+										gridAutoRows: "min-content",
 										gap: "1rem",
 										height: "100%",
 										padding: "2rem",
 									}}
 								>
-									{tokenIDs.map((a) => {
-										return <CollectionItemCard key={a} tokenID={a} username={username} />
+									{assetHashes.map((a, index) => {
+										return <CollectionItemCard key={`${a}-${index}`} assetHash={a} username={username} />
 									})}
 								</Paper>
 							) : (
@@ -524,51 +286,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		</>
 	)
 }
-
-interface SortChipProps extends Omit<ChipProps, "color" | "onDelete"> {
-	color?: string
-	active: boolean
-}
-export const SortChip = ({ color = colors.white, active, ...props }: SortChipProps) => (
-	<Chip
-		sx={{
-			color: active ? colors.darkerNavyBlue : color,
-			borderColor: color,
-			backgroundColor: active ? color : "transparent",
-			"&&:hover": {
-				color: colors.darkerNavyBlue,
-				backgroundColor: color,
-			},
-			"&&:focus": {
-				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
-			},
-		}}
-		{...props}
-	/>
-)
-
-interface FilterChipProps extends Omit<ChipProps, "color" | "onDelete"> {
-	color?: string
-	active: boolean
-}
-export const FilterChip = ({ color = colors.white, active, ...props }: FilterChipProps) => (
-	<Chip
-		sx={{
-			color: active ? colors.darkerNavyBlue : color,
-			borderColor: color,
-			backgroundColor: active ? color : "transparent",
-			"&&:hover": {
-				color: colors.darkerNavyBlue,
-				backgroundColor: color,
-			},
-			"&&:focus": {
-				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
-			},
-		}}
-		onDelete={active ? props.onClick : undefined}
-		{...props}
-	/>
-)
 
 const StyledTab = styled((props: TabProps) => <Tab {...props} />)(({ theme }) => ({
 	textTransform: "uppercase",

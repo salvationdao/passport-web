@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, Skeleton, Typography } from "@mui/material"
+import { Box, Skeleton, Typography, useTheme } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { SupTokenIcon } from "../../assets"
@@ -9,30 +9,19 @@ import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { StoreItem } from "../../types/types"
 import { ViewButton } from "../collections/collectionItemCard"
-
-export type Rarity = "Common" | "Rare" | "Legendary"
-
-export const rarityTextStyles: { [key in Rarity]: any } = {
-	Common: {
-		color: colors.rarity.common,
-	},
-	Rare: {
-		color: colors.rarity.rare,
-	},
-	Legendary: {
-		color: colors.rarity.legendary,
-		textShadow: `0 0 2px ${colors.rarity.legendary}`,
-	},
-}
+import { Rarity, rarityTextStyles } from "../profile/profile"
+import SoldOut from "../../assets/images/SoldOutTrimmed.png"
 
 interface StoreItemCardProps {
 	storeItemID: string
 }
 
 export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ storeItemID }) => {
+	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<StoreItem>()
-	const history = useHistory()
+	const [showPreview, setShowPreview] = useState(false)
+	const theme = useTheme()
 
 	useEffect(() => {
 		if (!subscribe) return
@@ -51,6 +40,13 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 
 	return (
 		<Box
+			component="button"
+			disabled={item.amountAvailable - item.amountSold <= 0}
+			onClick={() => history.push(`/stores/${item.collection.slug}/${item.ID}`)}
+			onMouseOver={() => setShowPreview(true)}
+			onMouseLeave={() => setShowPreview(false)}
+			onFocus={() => setShowPreview(true)}
+			onBlur={() => setShowPreview(false)}
 			sx={{
 				position: "relative",
 				display: "flex",
@@ -58,71 +54,146 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 				justifyContent: "space-between",
 				padding: "1rem",
 				textAlign: "center",
+				font: "inherit",
+				color: "inherit",
+				border: "none",
+				outline: "none",
+				backgroundColor: "transparent",
+				"&:hover .ViewButton, &:focus .ViewButton":
+					item.amountAvailable - item.amountSold <= 0
+						? null
+						: {
+								borderRadius: "50%",
+								backgroundColor: colors.purple,
+								transform: "scale(1.6)",
+								"& > *": {
+									transform: "rotate(0deg)",
+								},
+						  },
 			}}
 		>
-			<Typography
-				variant="h5"
-				component="p"
-				sx={{
-					marginBottom: ".5",
-					textTransform: "uppercase",
-				}}
-			>
-				{item.name}
-			</Typography>
-
-			{/* image */}
 			<Box
-				component="img"
-				src={item.image}
-				alt="Mech image"
 				sx={{
-					width: "100%",
-					marginBottom: ".3rem",
-				}}
-			/>
-			<Typography
-				variant="body1"
-				sx={{
-					textTransform: "uppercase",
-				}}
-			>
-				{getItemAttributeValue(item.attributes, "Asset Type")}
-			</Typography>
-			<Typography
-				variant="h4"
-				sx={{
-					marginBottom: ".3rem",
-					fontFamily: fonts.bizmoblack,
-					fontStyle: "italic",
-					letterSpacing: "2px",
-					textTransform: "uppercase",
-					...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
-				}}
-			>
-				{getItemAttributeValue(item.attributes, "Rarity")}
-			</Typography>
-			<Typography
-				variant="subtitle1"
-				sx={{
-					display: "flex",
+					display: item.amountAvailable - item.amountSold <= 0 ? "flex" : "none",
+					padding: ".3rem",
 					justifyContent: "center",
-					alignItems: "center",
-					letterSpacing: "1px",
+					zIndex: "1",
+					position: "absolute",
+					width: "100%",
+					transform: "rotate(-15deg) translate(0,-50%)",
+					textTransform: "uppercase",
+					borderRadius: "2px",
+					top: "45%",
 				}}
 			>
-				<Box
-					component={SupTokenIcon}
+				<Box component="img" src={SoldOut} sx={{ height: "4.5rem" }} />
+			</Box>
+			<Box
+				sx={{
+					cursor: item.amountAvailable - item.amountSold <= 0 ? "default" : "pointer",
+				}}
+			>
+				<Typography
+					variant="h5"
+					component="p"
 					sx={{
-						height: "1rem",
-						marginRight: ".2rem",
+						marginBottom: ".5",
+						textTransform: "uppercase",
 					}}
-				/>
-				{supFormatter(item.supCost)}
-			</Typography>
-			<ViewButton onClick={() => history.push(`/stores/${item.collection.name}/${item.ID}`)}>
-				<SearchIcon />
-			</ViewButton>
+				>
+					{item.name}
+				</Typography>
+
+				{/* image */}
+				<Box
+					sx={{
+						position: "relative",
+					}}
+				>
+					<Box
+						component="img"
+						src={item.image}
+						alt="Mech image"
+						sx={{
+							width: "100%",
+							marginBottom: ".3rem",
+							visibility: item.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
+							opacity: item.animation_url ? (showPreview ? 0 : 1) : "visible",
+							transition: "all .2s ease-in",
+						}}
+					/>
+					{item.animation_url && (
+						<Box
+							component="video"
+							sx={{
+								position: "absolute",
+								top: "50%",
+								left: "50%",
+								width: "120%",
+								transform: "translate(-50%, -50%)",
+								visibility: showPreview ? "visible" : "hidden",
+								opacity: showPreview ? 1 : 0,
+								transition: "all .2s ease-in",
+							}}
+							muted
+							autoPlay
+							loop
+							tabIndex={-1}
+							poster={item.image}
+						>
+							<source src={item.animation_url} type="video/webm"></source>
+							<img src={item.image} alt="Mech" />
+						</Box>
+					)}
+				</Box>
+				<Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+					<Typography
+						variant="body1"
+						sx={{
+							textTransform: "uppercase",
+						}}
+					>
+						{getItemAttributeValue(item.attributes, "Asset Type")}
+					</Typography>
+					<Typography
+						variant="h4"
+						sx={{
+							marginBottom: ".3rem",
+							fontFamily: fonts.bizmoblack,
+							fontStyle: "italic",
+							letterSpacing: "2px",
+							textTransform: "uppercase",
+							...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
+						}}
+					>
+						{getItemAttributeValue(item.attributes, "Rarity")}
+					</Typography>
+					<Typography
+						variant="subtitle1"
+						sx={{
+							letterSpacing: "1px",
+						}}
+					>
+						<Box
+							component={SupTokenIcon}
+							sx={{
+								height: "1rem",
+								marginRight: ".2rem",
+							}}
+						/>
+						{supFormatter(item.supCost)}
+					</Typography>
+				</Box>
+				<ViewButton
+					sx={{
+						position: "absolute",
+						right: "1rem",
+						bottom: "1rem",
+					}}
+				>
+					<SearchIcon />
+				</ViewButton>
+			</Box>
 		</Box>
 	)
 }

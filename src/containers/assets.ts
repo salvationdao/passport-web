@@ -11,7 +11,7 @@ export const AssetContainer = createContainer(() => {
 	const { subscribe } = useWebsocket()
 	const [queuingList, setQueuingList] = useState<QueuedWarMachine[]>([])
 	const [queuingContractReward, setQueuingContractReward] = useState<string>("0")
-	// Effect: get/set asset via token id
+	// Effect: get/set asset via assetHash
 	useEffect(() => {
 		if (!factionID || factionID === NilUUID) return
 		return subscribe<QueuedWarMachine[]>(HubKey.UserWarMachineQueuePositionSubscribe, (payload) => {
@@ -28,7 +28,7 @@ export const AssetContainer = createContainer(() => {
 		})
 	}, [factionID, subscribe])
 
-	const queuedWarMachine = useCallback((tokenID: number) => queuingList.find((q) => q.warMachineMetadata.tokenID === tokenID), [queuingList])
+	const queuedWarMachine = useCallback((assetHash: string) => queuingList.find((q) => q.warMachineMetadata.assetHash === assetHash), [queuingList])
 	return {
 		queuedWarMachine,
 		queuingContractReward,

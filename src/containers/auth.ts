@@ -1,5 +1,7 @@
+import { useSnackbar } from "./snackbar"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
+import { API_ENDPOINT_HOSTNAME } from "../config"
 import HubKey from "../keys"
 import {
 	AddDiscordRequest,
@@ -30,7 +32,7 @@ import {
 } from "../types/auth"
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "./socket"
+import { useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
 
 export enum VerificationType {
@@ -42,19 +44,23 @@ export enum VerificationType {
  * A Container that handles Authorisation
  */
 export const AuthContainer = createContainer(() => {
-	const { metaMaskState, sign, account } = useWeb3()
-	const admin = process.env.REACT_APP_BUILD_TARGET === "ADMIN"
+	const { metaMaskState, sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
 	const [user, setUser] = useState<User>()
+	const [recheckAuth, setRecheckAuth] = useState(!!localStorage.getItem("token"))
 	const [authorised, setAuthorised] = useState(false)
 	const [reconnecting, setReconnecting] = useState(false)
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const { state, send, subscribe } = useWebsocket()
+	const { displayMessage } = useSnackbar()
+	const [showSimulation, setShowSimulation] = useState(false)
 
 	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
 
 	const [sessionID, setSessionID] = useState("")
+
+	const isLogoutPage = window.location.pathname.startsWith("/nosidebar/logout")
 
 	/////////////////
 	//  Functions  //
@@ -63,13 +69,25 @@ export const AuthContainer = createContainer(() => {
 	/**
 	 * Logs user out by removing the stored login token and reloading the page.
 	 */
-	const logout = useCallback(() => {
-		const token = localStorage.getItem("token")
-		send(HubKey.AuthLogout, { token }).then(() => {
+	const logout = useCallback(async () => {
+		try {
+			const token = localStorage.getItem("token")
+			await send(HubKey.AuthLogout, { token, sessionID })
 			localStorage.removeItem("token")
-			window.location.reload()
-		})
-	}, [send])
+			setRecheckAuth(false)
+
+			// Wallet connect
+			await wcProvider?.disconnect()
+
+			if (!isLogoutPage) {
+				window.location.reload()
+			}
+
+			return true
+		} catch (error) {
+			console.error()
+		}
+	}, [send, isLogoutPage, sessionID, wcProvider])
 
 	/**
 	 * Logs a User in using their email and password.
@@ -83,7 +101,6 @@ export const AuthContainer = createContainer(() => {
 			const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
 				email,
 				password,
-				admin,
 				sessionID,
 			})
 			if (!resp || !resp.user || !resp.token) {
@@ -95,7 +112,7 @@ export const AuthContainer = createContainer(() => {
 			localStorage.setItem("token", resp.token)
 			setAuthorised(true)
 		},
-		[send, state, admin, sessionID],
+		[send, state, sessionID],
 	)
 
 	/**
@@ -114,7 +131,6 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, {
 					token,
-					admin,
 					sessionID,
 					twitchExtensionJWT: searchParams.get("twitchExtensionJWT"),
 				})
@@ -128,7 +144,7 @@ export const AuthContainer = createContainer(() => {
 				setReconnecting(false)
 			}
 		},
-		[send, state, admin, sessionID],
+		[send, state, sessionID],
 	)
 
 	/**
@@ -169,32 +185,76 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Metamask public address
 	 */
 	const loginMetamask = useCallback(async () => {
-		if (state !== WebSocket.OPEN || metaMaskState !== MetaMaskState.Active || !account) return undefined
+		if (state !== WebSocket.OPEN) return undefined
 
 		try {
+			const acc = await connect()
 			const signature = await sign()
-			const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
-				publicAddress: account,
-				signature,
-				sessionID,
-			})
-			if (!resp || !resp.user || !resp.token) {
-				localStorage.clear()
-				setUser(undefined)
-				return
-			}
-			setUser(resp.user)
-			localStorage.setItem("token", resp.token)
-			setAuthorised(true)
+			if (acc) {
+				const resp: PasswordLoginResponse = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
+					publicAddress: acc,
+					signature,
+					sessionID,
+				})
+				if (!resp || !resp.user || !resp.token) {
+					localStorage.clear()
+					setUser(undefined)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
 
-			return resp
+				return resp
+			}
 		} catch (e) {
 			localStorage.clear()
 			setUser(undefined)
 			console.error(e)
-			throw typeof e === "string" ? e : "Something went wrong, please try again."
 		}
-	}, [send, state, account, metaMaskState, sign, sessionID])
+	}, [send, state, sign, sessionID, connect])
+	/**
+	 * Logs a User in using a Wallet Connect public address
+	 *
+	 * @param token Wallet Connect public address
+	 */
+	const loginWalletConnect = useCallback(async () => {
+		if (state !== WebSocket.OPEN) return undefined
+		try {
+			if (!wcSignature) {
+				localStorage.clear()
+				await signWalletConnect()
+			} else {
+				const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
+					publicAddress: account as string,
+					signature: wcSignature || "",
+					sessionID,
+				})
+				if (!resp || !resp.user || !resp.token) {
+					localStorage.clear()
+					setUser(undefined)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+				return resp
+			}
+		} catch (e) {
+			localStorage.clear()
+			setUser(undefined)
+			console.error(e)
+		}
+	}, [send, state, account, sessionID, signWalletConnect, wcSignature])
+
+	// Effect
+	useEffect(() => {
+		if (wcSignature) {
+			;(async () => {
+				await loginWalletConnect()
+			})()
+		}
+	}, [wcSignature, loginWalletConnect])
 
 	/**
 	 * Signs a user up using a Google oauth token
@@ -827,15 +887,15 @@ export const AuthContainer = createContainer(() => {
 
 	// Effect: Login with saved login token when websocket is ready
 	useEffect(() => {
-		if (user || state === WebSocket.CLOSED) return
+		if (user || isLogoutPage || state === WebSocket.CLOSED) return
 
 		const token = localStorage.getItem("token")
-		if (token && token !== "") {
+		if (!isLogoutPage && token && token !== "") {
 			loginToken(token)
 		} else if (loading) {
 			setLoading(false)
 		}
-	}, [loading, user, loginToken, state])
+	}, [loading, user, loginToken, state, isLogoutPage])
 
 	// Effect: Relogin as User after establishing connection again
 	useEffect(() => {
@@ -880,10 +940,10 @@ export const AuthContainer = createContainer(() => {
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
-		if (authorised && sessionID) {
+		if (authorised && sessionID && !isLogoutPage) {
 			window.close()
 		}
-	}, [authorised, sessionID])
+	}, [authorised, sessionID, isLogoutPage])
 
 	/////////////////
 	//  Container  //
@@ -898,6 +958,7 @@ export const AuthContainer = createContainer(() => {
 		signUpTwitter,
 		signUpDiscord,
 		loginMetamask,
+		loginWalletConnect,
 		loginGoogle,
 		loginFacebook,
 		loginTwitch,
@@ -917,6 +978,7 @@ export const AuthContainer = createContainer(() => {
 		verify,
 		hideVerifyComplete: () => setVerifyCompleteType(undefined),
 		hasPermission,
+		recheckAuth,
 		user: user,
 		userID: user?.id,
 		factionID: user?.factionID,
@@ -927,6 +989,8 @@ export const AuthContainer = createContainer(() => {
 		verifyCompleteType,
 		setSessionID,
 		sessionID,
+		showSimulation,
+		setShowSimulation,
 	}
 })
 

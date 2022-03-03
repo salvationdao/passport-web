@@ -18,7 +18,6 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 
 	const sizeStyles: { [key in ButtonSize]: any } = {
 		small: {
-			padding: ".3rem",
 			fontSize: ".7rem",
 		},
 		medium: {
@@ -41,8 +40,8 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 				background: filled ? borderColor : "transparent",
 				color: filled ? theme.palette.background.default : "inherit",
 				"&:disabled": {
-					color: colors.darkGrey,
-					border: `2px solid ${colors.darkGrey}`,
+					color: colors.darkerGrey,
+					border: `2px solid ${colors.darkerGrey}`,
 					cursor: "not-allowed",
 					"&:hover": {
 						boxShadow: "none",

@@ -2,14 +2,19 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import {
+	Alert,
 	Box,
 	Button,
 	ButtonProps,
 	Chip,
 	ChipProps,
+	CircularProgress,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
 	Divider,
 	IconButton,
-	IconButtonProps,
 	Link,
 	Paper,
 	styled,
@@ -17,18 +22,24 @@ import {
 	Typography,
 	useMediaQuery,
 } from "@mui/material"
-import { useEffect, useState } from "react"
+import { ethers } from "ethers"
+import React, { useCallback, useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, GradientHeartIconImagePath, MetaMaskIcon, SupTokenIcon, TwitchIcon, TwitterIcon } from "../../assets"
+import { GradientHeartIconImagePath, SupTokenIcon } from "../../assets"
+import WarMachine from "../../assets/images/WarMachine.png"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
+import { InputField } from "../../components/form/inputField"
 import { Navbar, ProfileButton } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { MintModal } from "../../components/mintModal"
 import { SearchBar } from "../../components/searchBar"
+import { Sort } from "../../components/sort"
 import { useAsset } from "../../containers/assets"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
+import { useWeb3 } from "../../containers/web3"
 import { middleTruncate } from "../../helpers"
 import { getItemAttributeValue, supFormatter } from "../../helpers/items"
 import { useQuery } from "../../hooks/useSend"
@@ -39,18 +50,22 @@ import { Asset, Attribute, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 
 export const ProfilePage: React.FC = () => {
-	const { username, token_id } = useParams<{ username: string; token_id: string }>()
+	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
 	const history = useHistory()
 	const { state, send } = useWebsocket()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	// User
-	const { user: loggedInUser } = useAuth()
+	const { user: loggedInUser, loading: authLoading } = useAuth()
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
+		if (authLoading) {
+			setLoadingText("Loading. Please wait...")
+			return
+		}
 		let userTimeout: NodeJS.Timeout
 		;(async () => {
 			if (username) {
@@ -79,7 +94,7 @@ export const ProfilePage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [loggedInUser, state, history, send, username])
+	}, [loggedInUser, state, history, send, username, authLoading])
 
 	if (error) {
 		return <Box>{error}</Box>
@@ -186,13 +201,8 @@ export const ProfilePage: React.FC = () => {
 									</IconButton>
 								</Box>
 							)}
-							<Section>
-								<Typography variant="h6" component="p">
-									Bio
-								</Typography>
-								<Typography variant="body1">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor.</Typography>
-							</Section>
-							{loggedInUser?.username === user.username && (
+							{/* This will be used in the future when we allow non-wallet connections */}
+							{/* {loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
 										Connect
@@ -260,7 +270,7 @@ export const ProfilePage: React.FC = () => {
 										)}
 									</Box>
 								</Section>
-							)}
+							)} */}
 							{loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
@@ -275,7 +285,7 @@ export const ProfilePage: React.FC = () => {
 						<Box minHeight="2rem" minWidth="2rem" />
 					</>
 				)}
-				{!!token_id ? <AssetView user={user} tokenID={parseInt(token_id)} /> : <CollectionView user={user} />}
+				{!!asset_hash ? <AssetView user={user} assetHash={asset_hash} /> : <CollectionView user={user} />}
 			</Box>
 		</Box>
 	)
@@ -292,262 +302,16 @@ interface CollectionViewProps {
 }
 
 const CollectionView = ({ user }: CollectionViewProps) => {
-	const { state } = useWebsocket()
-	const { loading, error, payload, query } = useQuery<{ tokenIDs: number[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
+	const history = useHistory()
 
 	// Collection data
 	const [search, setSearch] = useState("")
-	const [tokenIDs, setTokenIDs] = useState<number[]>([])
+	const [assetHashes, setAssetHashes] = useState<string[]>([])
 
 	// Filter/Sort
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
-	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType] = useState<string>()
-	const [rarities, setRarities] = useState<Set<string>>(new Set())
-	const [brands, setBrand] = useState<Set<string>>(new Set())
-
-	const toggleRarity = (rarity: string) => {
-		setRarities((prev) => {
-			const exists = prev.has(rarity)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(rarity)
-				return temp
-			}
-			temp.clear()
-			return temp.add(rarity)
-		})
-	}
-
-	const toggleBrand = (brand: string) => {
-		setBrand((prev) => {
-			const exists = prev.has(brand)
-			const temp = new Set(prev)
-			if (exists) {
-				temp.delete(brand)
-				return temp
-			}
-			temp.clear()
-			return temp.add(brand)
-		})
-	}
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-
-		const filterItems: any[] = [
-			// filter by user id
-			{
-				columnField: "username",
-				operatorValue: "=",
-				value: user.username,
-			},
-		]
-
-		const attributeFilterItems: any[] = []
-		if (assetType && assetType !== "All") {
-			attributeFilterItems.push({
-				trait: "Asset Type",
-				value: assetType,
-				operatorValue: "contains",
-			})
-		}
-		rarities.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Rarity",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
-		brands.forEach((v) =>
-			attributeFilterItems.push({
-				trait: "Brand",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
-
-		query({
-			search,
-			filter: {
-				linkOperator: "and",
-				items: filterItems,
-			},
-			attributeFilter: {
-				linkOperator: "and",
-				items: attributeFilterItems,
-			},
-			...sort,
-		})
-	}, [user, query, state, search, assetType, rarities, brands, sort])
-
-	useEffect(() => {
-		if (!payload || loading || error) return
-		setTokenIDs(payload.tokenIDs)
-	}, [payload, loading, error])
-
-	const renderFilters = () => (
-		<>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						marginBottom: ".5rem",
-					}}
-				>
-					Sort By
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexDirection: "column",
-						gap: ".5rem",
-					}}
-				>
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Oldest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "created_at",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Newest first"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "asc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-					{(() => {
-						const newSort = {
-							sortBy: "name",
-							sortDir: "desc",
-						}
-						return (
-							<SortChip
-								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-								label="Name: Alphabetical (reverse)"
-								variant="outlined"
-								onClick={() => {
-									setSort(newSort)
-								}}
-							/>
-						)
-					})()}
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Rarity
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip
-						active={rarities.has("Common")}
-						label="Common"
-						color={colors.rarity.common}
-						variant="outlined"
-						onClick={() => toggleRarity("Common")}
-					/>
-					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
-					<FilterChip
-						active={rarities.has("Legendary")}
-						label="Legendary"
-						color={colors.rarity.legendary}
-						variant="outlined"
-						onClick={() => toggleRarity("Legendary")}
-					/>
-				</Box>
-			</Box>
-			<Box>
-				<Typography
-					variant="subtitle1"
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				>
-					Brand
-				</Typography>
-				<Box
-					sx={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: ".5rem",
-					}}
-				>
-					<FilterChip color={colors.skyBlue} active={brands.has("Gunn")} label="Gunn" variant="outlined" onClick={() => toggleBrand("Gunn")} />
-					<FilterChip color={colors.skyBlue} active={brands.has("Kaeber")} label="Kaeber" variant="outlined" onClick={() => toggleBrand("Kaeber")} />
-					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Death Metal")}
-						label="Death Metal"
-						variant="outlined"
-						onClick={() => toggleBrand("Death Metal")}
-					/>
-					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Daison Avionics")}
-						label="Daison Avionics"
-						variant="outlined"
-						onClick={() => toggleBrand("Daison Avionics")}
-					/>
-					<FilterChip
-						color={colors.skyBlue}
-						active={brands.has("Quasar Industries")}
-						label="Quasar Industries"
-						variant="outlined"
-						onClick={() => toggleBrand("Quasar Industries")}
-					/>
-				</Box>
-			</Box>
-		</>
-	)
 
 	return (
 		<>
@@ -567,7 +331,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 					},
 				}}
 			>
-				{renderFilters()}
+				<Sort pillSizeSmall={true} showOffWorldFilter={false} assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
 			</SwipeableDrawer>
 			<Paper
 				sx={{
@@ -601,9 +365,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							alt="Heart icon"
 							sx={{
 								marginRight: ".5rem",
-								"@media (max-width: 630px)": {
-									height: "4rem",
-								},
+								height: "4rem",
 							}}
 						/>
 						<Typography
@@ -639,11 +401,19 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						marginBottom: "1rem",
 					}}
 				>
-					<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small">
+					<FancyButton
+						onClick={() => setOpenFilterDrawer(true)}
+						size="small"
+						sx={{
+							"@media (max-width: 630px)": {
+								width: "100%",
+							},
+						}}
+					>
 						Filters / Sort
 					</FancyButton>
 				</Box>
-				{tokenIDs.length ? (
+				{assetHashes.length > 0 ? (
 					<Box
 						sx={{
 							display: "grid",
@@ -651,8 +421,8 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							gap: "1rem",
 						}}
 					>
-						{tokenIDs.map((a) => {
-							return <CollectionItemCard key={a} tokenID={a} username={user.username} />
+						{assetHashes.map((a) => {
+							return <CollectionItemCard key={a} assetHash={a} username={user.username} />
 						})}
 					</Box>
 				) : (
@@ -662,17 +432,49 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
+							flexDirection: "column",
 						}}
 					>
-						<Typography variant="subtitle2" color={colors.darkGrey}>
-							{loading ? "Loading assets..." : error ? "An error occurred while loading assets." : "No results found."}
-						</Typography>
+						{loading ? (
+							<Typography variant="subtitle2" color={colors.darkGrey}>
+								Loading assets...
+							</Typography>
+						) : error ? (
+							<Typography variant="subtitle2" color={colors.darkGrey}>
+								An error occurred while loading assets.
+							</Typography>
+						) : (
+							<Box
+								component={"div"}
+								sx={{
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									gap: "1em",
+									overflow: "wrap",
+								}}
+							>
+								<WarMachineImage src={WarMachine} alt="supremacy war machines" />
+								<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
+									Your Inventory Is Empty
+								</Typography>
+								<StyledFancyButton sx={{ padding: "0.5em 2em" }} onClick={() => history.push("/stores")}>
+									Go To Store
+								</StyledFancyButton>
+							</Box>
+						)}
 					</Box>
 				)}
 			</Paper>
 		</>
 	)
 }
+
+const WarMachineImage = styled("img")({
+	width: "100%",
+	height: "100%",
+})
 
 interface SortChipProps extends Omit<ChipProps, "color" | "onDelete"> {
 	color?: string
@@ -721,15 +523,24 @@ export const FilterChip = ({ color = colors.white, active, ...props }: FilterChi
 
 interface AssetViewProps {
 	user: User
-	tokenID: number
+	assetHash: string
 }
 
-const AssetView = ({ user, tokenID }: AssetViewProps) => {
+enum AssetState {
+	OnWorld,
+	OnWorldLocked,
+	OnWorldFrozen,
+	OffWorldNotStaked,
+	OffWorldStaked,
+}
+
+const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	const history = useHistory()
 	const { state, subscribe, send } = useWebsocket()
+	const { user: loggedInUser } = useAuth()
+	const { provider } = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
-
 	// Asset data
 	const [asset, setAsset] = useState<Asset>()
 	const [, setAssetAttributes] = useState<Attribute[]>([])
@@ -740,9 +551,16 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 
 	// Asset actions
 	const { queuedWarMachine, queuingContractReward } = useAsset()
-	const queueDetail = queuedWarMachine(tokenID)
+	const queueDetail = queuedWarMachine(assetHash)
 	const [submitting, setSubmitting] = useState(false)
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
+	const [renameWindowOpen, setRenameWindowOpen] = useState(false)
+	const [assetState, setAssetState] = useState<AssetState>(AssetState.OnWorld)
+
+	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
+	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
+
+	const isOwner = asset ? loggedInUser?.id === asset?.userID : false
 
 	const isWarMachine = (): boolean => {
 		if (!asset) return false
@@ -752,10 +570,10 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	}
 
 	const onDeploy = async () => {
-		if (!tokenID) return
+		if (!assetHash) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetJoinQueue, { assetTokenID: tokenID })
+			await send(HubKey.AssetJoinQueue, { assetHash: assetHash })
 			displayMessage(`Successfully deployed ${asset?.name}`, "success")
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
@@ -765,10 +583,10 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	}
 
 	const leaveQueue = async () => {
-		if (!tokenID) return
+		if (!assetHash) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetLeaveQue, { assetTokenID: tokenID })
+			await send(HubKey.AssetLeaveQue, { assetHash: assetHash })
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
@@ -777,10 +595,10 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 	}
 
 	const payInsurance = async () => {
-		if (!tokenID) return
+		if (!assetHash) return
 		setSubmitting(true)
 		try {
-			await send(HubKey.AssetInsurancePay, { assetTokenID: tokenID })
+			await send(HubKey.AssetInsurancePay, { assetHash: assetHash })
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {
@@ -788,8 +606,34 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 		}
 	}
 
+	const getOwner = useCallback(async (asset: Asset | undefined, provider: ethers.providers.Web3Provider | undefined, loggedInUser: User | undefined) => {
+		if (!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+		try {
+			const abi = ["function ownerOf(uint256) view returns (address)"]
+			const signer = provider.getSigner()
+			const nftContract = new ethers.Contract(asset.collection.mintContract, abi, signer)
+			const owner = await nftContract.ownerOf(asset.externalTokenID)
+
+			if (owner === asset.collection.stakeContract && asset.userID === loggedInUser.id) {
+				setAssetState(AssetState.OffWorldStaked)
+			} else if (
+				(owner !== loggedInUser.publicAddress && owner !== asset.collection.stakeContract) ||
+				(owner === loggedInUser.publicAddress && asset.userID === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
+			) {
+				setAssetState(AssetState.OffWorldNotStaked)
+			} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+				setAssetState(AssetState.OffWorldStaked)
+			}
+		} catch (e) {}
+	}, [])
+
+	// check the owner every second
 	useEffect(() => {
-		if (state !== SocketState.OPEN) return
+		setInterval(() => getOwner(asset, provider, loggedInUser), 1000)
+	}, [getOwner, asset, provider, loggedInUser])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || assetHash === "") return
 
 		setLoading(true)
 		try {
@@ -801,7 +645,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 					let numberAttributes = new Array<Attribute>()
 					let regularAttributes = new Array<Attribute>()
 					payload.attributes.forEach((a) => {
-						if (a.token_id) {
+						if (a.assetHash) {
 							// If is an asset attribute
 							assetAttributes.push(a)
 						} else if (a.display_type === "number") {
@@ -818,12 +662,12 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 					setAsset(payload)
 					setLoading(false)
 				},
-				{ tokenID },
+				{ assetHash },
 			)
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching asset data. Please try again.")
 		}
-	}, [state, tokenID, subscribe])
+	}, [state, assetHash, subscribe])
 
 	if (error) {
 		return (
@@ -848,15 +692,20 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 			</Paper>
 		)
 	}
-
 	return (
 		<>
-			<MintModal
-				open={mintWindowOpen}
-				onClose={() => setMintWindowOpen(false)}
-				tokenID={asset.tokenID.toString()}
-				mintingSignature={asset.mintingSignature}
-			/>
+			{asset.collection && asset.collection.mintContract !== "" && (
+				<MintModal
+					open={mintWindowOpen}
+					onClose={() => setMintWindowOpen(false)}
+					mintContract={asset.collection.mintContract}
+					assetExternalTokenID={asset.externalTokenID}
+					mintingSignature={asset.mintingSignature}
+					collectionSlug={asset.collection.slug}
+					signatureExpiry={asset.signatureExpiry}
+				/>
+			)}
+			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -886,33 +735,48 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 					<Box
 						sx={{
 							display: "flex",
+							flexWrap: "wrap",
 							gap: ".5rem",
 							marginBottom: "1rem",
 						}}
 					>
-						{user.id === asset.userID ? (
-							asset.mintingSignature || asset.mintingSignature !== "" ? (
-								<FancyButton onClick={() => setMintWindowOpen(true)}>Continue Transition Off World</FancyButton>
+						{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mintContract !== "" && (
+							<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
+								Transition In Asset
+							</FancyButton>
+						)}
+
+						{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mintContract !== "" && (
+							<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
+								Transition out Asset
+							</FancyButton>
+						)}
+
+						{isOwner && isWarMachine() && !asset.frozenAt && (
+							<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
+								Rename Asset
+							</FancyButton>
+						)}
+						{isOwner ? (
+							(asset.mintingSignature || asset.mintingSignature !== "") &&
+							!asset.minted &&
+							asset.collection &&
+							asset.collection.mintContract !== "" ? (
+								<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+									Continue Transition Off World
+								</FancyButton>
 							) : !asset.frozenAt && isWarMachine() ? (
 								<>
-									<FancyButton size="small" onClick={() => onDeploy()}>
-										Deploy
-									</FancyButton>
-									<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-										Transition Off World
-									</FancyButton>
+									{!asset.minted && (
+										<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+											Transition Off World
+										</FancyButton>
+									)}
 								</>
 							) : (
 								<>
 									{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
-										<FancyButton
-											size="small"
-											loading={submitting}
-											onClick={payInsurance}
-											sx={{
-												marginBottom: ".5rem",
-											}}
-										>
+										<FancyButton size="small" loading={submitting} onClick={payInsurance}>
 											Pay Insurance
 										</FancyButton>
 									)}
@@ -967,6 +831,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									<Box
 										component="span"
 										sx={{
+											marginLeft: ".5rem",
 											color: colors.skyBlue,
 											fontSize: "1rem",
 										}}
@@ -1007,7 +872,7 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									margin: ".5rem 0",
 								}}
 							/>
-							{user.id === asset.userID && (
+							{loggedInUser?.id === asset.userID && (
 								<Box
 									sx={{
 										marginBottom: ".5rem",
@@ -1098,45 +963,63 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 									)}
 								</Box>
 							)}
-							<Box
-								sx={{
-									display: "flex",
-									gap: ".5rem",
-								}}
-							>
-								{user.id === asset.userID ? (
-									asset.mintingSignature || asset.mintingSignature !== "" ? (
-										<FancyButton onClick={() => setMintWindowOpen(true)}>Continue Transition Off World</FancyButton>
-									) : !asset.frozenAt && isWarMachine() ? (
-										<>
-											<FancyButton size="small" onClick={() => onDeploy()}>
-												Deploy
-											</FancyButton>
+							{isWiderThan1000px && (
+								<Box
+									sx={{
+										display: "flex",
+										flexWrap: "wrap",
+										gap: ".5rem",
+									}}
+								>
+									{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mintContract !== "" && (
+										<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
+											Transition In Asset
+										</FancyButton>
+									)}
+
+									{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mintContract !== "" && (
+										<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
+											Transition out Asset
+										</FancyButton>
+									)}
+
+									{/*TODO: fix this mess of if statements*/}
+									{loggedInUser?.id === asset.userID && isWarMachine() && !asset.frozenAt && (
+										<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
+											Rename Asset
+										</FancyButton>
+									)}
+									{loggedInUser?.id === asset.userID ? (
+										(asset.mintingSignature || asset.mintingSignature !== "") &&
+										asset.collection &&
+										asset.collection.mintContract !== "" &&
+										!asset.minted ? (
 											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-												Transition Off World
+												Continue Transition Off World
 											</FancyButton>
-										</>
-									) : (
-										<>
-											{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
-												<FancyButton
-													size="small"
-													loading={submitting}
-													onClick={payInsurance}
-													sx={{
-														marginBottom: ".5rem",
-													}}
-												>
-													Pay Insurance
+										) : !asset.frozenAt && isWarMachine() ? (
+											<>
+												{!asset.minted && (
+													<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
+														Transition Off World
+													</FancyButton>
+												)}
+											</>
+										) : (
+											<>
+												{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
+													<FancyButton size="small" loading={submitting} onClick={payInsurance}>
+														Pay Insurance
+													</FancyButton>
+												)}
+												<FancyButton size="small" loading={submitting} onClick={leaveQueue} borderColor={colors.errorRed}>
+													Leave
 												</FancyButton>
-											)}
-											<FancyButton size="small" loading={submitting} onClick={leaveQueue} borderColor={colors.errorRed}>
-												Leave
-											</FancyButton>
-										</>
-									)
-								) : null}
-							</Box>
+											</>
+										)
+									) : null}
+								</Box>
+							)}
 						</Box>
 					</Box>
 					<Box
@@ -1253,9 +1136,22 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 										alignItems: "start",
 									}}
 								>
-									<Button component={"a"} href={asset.externalURL} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNewIcon />}>
-										View on OpenSea
-									</Button>
+									{asset.username === "OnChain" && (
+										<Button
+											component={"a"}
+											href={
+												asset.collection.mintContract === "0xEEfaF47acaa803176F1711c1cE783e790E4E750D"
+													? `https://testnets.opensea.io/assets/goerli/${asset.collection.mintContract}/${asset.externalTokenID}`
+													: `https://opensea.io/assets/${asset.collection.mintContract}/${asset.externalTokenID}`
+											}
+											target="_blank"
+											rel="noopener noreferrer"
+											endIcon={<OpenInNewIcon />}
+										>
+											View on OpenSea
+										</Button>
+									)}
+
 									<StyledDisabledButton>
 										View Battle History Stats
 										<Box component="span" sx={{ marginLeft: ".5rem", color: colors.darkGrey }}>
@@ -1273,32 +1169,53 @@ const AssetView = ({ user, tokenID }: AssetViewProps) => {
 						</Box>
 					</Box>
 				</Box>
+				{provider && asset && <StakeModel open={stakeModelOpen} asset={asset} provider={provider} onClose={() => setStakeModelOpen(false)} />}
+				{provider && asset && <UnstakeModel open={unstakeModelOpen} asset={asset} provider={provider} onClose={() => setUnstakeModelOpen(false)} />}
 			</Paper>
 		</>
 	)
 }
 
-type Rarity = "Common" | "Rare" | "Legendary"
+export type Rarity = "Rare" | "Legendary" | "Mega" | "Colossal" | "Elite Legendary" | "Ultra Rare" | "Exotic" | "Guardian" | "Mythic" | "Deus ex" | "Titan"
 
-const rarityTextStyles: { [key in Rarity]: any } = {
-	Common: {
-		color: colors.rarity.common,
+export const rarityTextStyles: { [key in Rarity]: any } = {
+	Mega: {
+		color: colors.rarity.mega,
+	},
+	Colossal: {
+		color: colors.rarity.colossal,
 	},
 	Rare: {
 		color: colors.rarity.rare,
 	},
 	Legendary: {
 		color: colors.rarity.legendary,
-		textShadow: `0 0 2px ${colors.rarity.legendary}`,
+	},
+	"Elite Legendary": {
+		color: colors.rarity.eliteLegendary,
+	},
+	"Ultra Rare": {
+		color: colors.rarity.ultraRare,
+	},
+	Exotic: {
+		color: colors.rarity.exotic,
+	},
+	Guardian: {
+		color: colors.rarity.guardian,
+	},
+	Mythic: {
+		color: colors.rarity.mythic,
+		textShadow: `0 0 2px ${colors.rarity.mythic}`,
+	},
+	"Deus ex": {
+		color: colors.rarity.deusEx,
+		textShadow: `0 0 2px ${colors.rarity.deusEx}`,
+	},
+	Titan: {
+		color: colors.rarity.titan,
+		textShadow: `0 0 2px ${colors.rarity.titan}`,
 	},
 }
-
-const StyledIconButton = styled(({ navigate, ...props }: IconButtonProps & { navigate?: any }) => <IconButton {...props} />)({
-	borderRadius: ".5rem",
-	"& svg": {
-		height: "2rem",
-	},
-})
 
 const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)({})
 
@@ -1381,5 +1298,336 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 				{label}
 			</Typography>
 		</Box>
+	)
+}
+
+const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Asset; userID: string }) => {
+	const { open, onClose, asset, userID } = props
+	const { send } = useWebsocket()
+	const { displayMessage } = useSnackbar()
+	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
+	const [loading, setLoading] = useState(false)
+
+	const getName = useCallback(() => {
+		let result = ""
+		const attr = asset.attributes.filter((a) => a.trait_type === "Name")
+		if (attr.length > 0) {
+			result = `${attr[0].value}`
+		}
+
+		return result
+	}, [asset])
+
+	const onSubmit = handleSubmit(async ({ name }) => {
+		setLoading(true)
+		try {
+			await send<Asset>(HubKey.AssetUpdateName, {
+				assetHash: asset.hash,
+				userID,
+				name,
+			})
+
+			displayMessage("Asset successfully updated", "success")
+			onClose()
+		} catch (e) {
+			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+		} finally {
+			setLoading(false)
+		}
+	})
+
+	// set default name
+	useEffect(() => {
+		setValue("name", getName())
+	}, [getName, setValue])
+
+	return (
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle>Update Asset Name</DialogTitle>
+			<DialogContent>
+				<form onSubmit={onSubmit}>
+					<InputField
+						name="name"
+						label="Name"
+						type="name"
+						control={control}
+						rules={{
+							required: "Name is required.",
+						}}
+						placeholder="Name"
+						style={{ width: "300px" }}
+						autoFocus
+						disabled={loading}
+						inputProps={{ maxLength: 10 }}
+					/>
+					<DialogActions>
+						<>
+							<Button variant="contained" type="submit" color="primary" disabled={loading}>
+								Save
+							</Button>
+							<Button
+								variant="contained"
+								type="button"
+								color="error"
+								disabled={loading}
+								onClick={() => {
+									onClose()
+								}}
+							>
+								Cancel
+							</Button>
+						</>
+					</DialogActions>
+				</form>
+			</DialogContent>
+		</Dialog>
+	)
+}
+
+interface StakeModelProps {
+	open: boolean
+	onClose: () => void
+	provider: ethers.providers.Web3Provider
+	asset: Asset
+}
+
+//
+// if minted, get on chain wallet owner
+// if user wallet == online wallet
+//     have stake button
+// tell them there are 2 phases
+// approve (show est gas)
+// stake (show est gas)
+//	const mintAttempt = useCallback(async () => {
+// 		try {
+// 			if (currentChainId?.toString() !== ETHEREUM_CHAIN_ID) {
+// 				setErrorMinting("Connected to wrong chain.")
+// 				return
+// 			}
+// 			if (!provider) return
+// 			setLoadingMint(true)
+// 			// get nonce from mint contract
+// 			// send nonce, amount and user wallet addr to server
+// 			// server validates they have enough sups
+// 			// server generates a sig and returns it
+// 			// submit that sig to mint contract mintSups func
+// 			// listen on backend for update
+//
+// 			// A Human-Readable ABI; for interacting with the contract,
+// 			// we must include any fragment we wish to use
+// 			const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
+// 			const signer = provider.getSigner()
+// 			const mintContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+// 			if (mintingSignature && mintingSignature !== "") {
+// 				await mintContract.signedMint(tokenID, mintingSignature)
+// 				setErrorMinting(undefined)
+// 				return
+// 			}
+//
+// 			const nonce = await mintContract.nonces(account)
+// 			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/mint-nft/${account}/${nonce}/${tokenID}`)
+// 			const respJson: GetSignatureResponse = await resp.json()
+// 			await mintContract.signedMint(tokenID, respJson.messageSignature, respJson.expiry)
+// 			setErrorMinting(undefined)
+// 			onClose()
+// 		} catch (e) {
+// 			setErrorMinting(e === "string" ? e : "Issue minting, please try again or contact support.")
+// 		} finally {
+// 			setLoadingMint(false)
+// 		}
+// 	}, [provider, account, tokenID, mintingSignature, currentChainId, onClose])
+
+//	OnWorld, - done
+// 	OnWorldLocked,
+// 	OnWorldFrozen,
+// 	OffWorldNotStaked, - done
+// 	OffWorldStaked,
+
+// //
+// useEffect(()=>{
+// 	if(!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+// 		;(async ()=>{
+// 		try {
+// 			const abi = ["function ownerOf(uint256) view returns (address)"]
+// 			const signer = provider.getSigner()
+// 			const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+//
+// 			const owner = await nftContract.ownerOf(asset.tokenID)
+//
+// 			if ((owner !== loggedInUser.publicAddress) ||
+// 				(owner === loggedInUser.publicAddress && asset.userID === '2fa1a63e-a4fa-4618-921f-4b4d28132069')) {
+// 				setAssetState(AssetState.OffWorldNotStaked)
+// 			} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+// 				setAssetState(AssetState.OffWorldStaked)
+// 			}
+// 		} catch (e) {
+// 		}
+// 	})()
+// },[asset, provider, loggedInUser])
+
+const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
+	const [error, setError] = useState<string>()
+
+	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
+	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
+
+	// TODO: fix unstaking vinnie - 25/02/22
+	const unstake = useCallback(async () => {
+		try {
+			setUnstakingLoading(true)
+			const abi = ["function unstake(address,uint256)"]
+			const signer = provider.getSigner()
+			const nftstakeContract = new ethers.Contract(asset.collection.stakeContract, abi, signer)
+			const tx = await nftstakeContract.unstake(asset.collection.mintContract, asset.externalTokenID)
+			await tx.wait()
+			setUnstakingSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setUnstakingLoading(false)
+		}
+	}, [provider, asset])
+
+	return (
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle
+				sx={(theme) => ({
+					fontSize: theme.typography.h3,
+				})}
+				color={"primary"}
+			>
+				Transition Asset on World
+			</DialogTitle>
+			<DialogContent sx={{ display: "flex", width: "100%", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
+				<>
+					<Typography variant={"h5"} color={"error"}>
+						GABS WARNING:
+					</Typography>
+					<Typography>
+						Once transitioned off world you will be required to pay the fees to approve and transition back, transition with care.
+					</Typography>
+				</>
+
+				<FancyButton disabled={unstakingSuccess || unstakingLoading} fullWidth onClick={unstake}>
+					{unstakingLoading && <CircularProgress />}
+					{!unstakingLoading && unstakingSuccess && "Successfully Transitioned"}
+					{!unstakingLoading && !unstakingSuccess && "Transition"}
+				</FancyButton>
+			</DialogContent>
+			<DialogActions>
+				{!!error && <Alert severity="error">{error}</Alert>}
+				<Button onClick={() => onClose()}>Cancel</Button>
+			</DialogActions>
+		</Dialog>
+	)
+}
+
+const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
+	const [error, setError] = useState<string>()
+	const [approvalLoading, setApprovalLoading] = useState<boolean>(false)
+	const [approvalSuccess, setApprovalSuccess] = useState<boolean>(false)
+
+	const [stakingLoading, setStakingLoading] = useState<boolean>(false)
+	const [stakingSuccess, setStakingSuccess] = useState<boolean>(false)
+
+	// TODO: give our est gas price
+	// useEffect(()=>{
+	// 	;(async ()=>{
+	// 	try {
+	// 		// "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
+	// 		const abi = ["function ownerOf(uint256) view returns (address)", "function approve(address, uint256)"]
+	// 		const signer = provider.getSigner()
+	// 		const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, abi, signer)
+	// 		const estimation = await nftContract.estimateGas.approve(NFT_STAKING_CONTRACT_ADDRESS, asset.tokenID);
+	//
+	// 		setApproveGasEst(estimation)
+	//
+	// 		// if ((owner !== loggedInUser.publicAddress) ||
+	// 		// 	(owner === loggedInUser.publicAddress && asset.userID === '2fa1a63e-a4fa-4618-921f-4b4d28132069')) {
+	// 		// 	setAssetState(AssetState.OffWorldNotStaked)
+	// 		// } else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+	// 		// 	setAssetState(AssetState.OffWorldStaked)
+	// 		// }
+	// 	} catch (e) {
+	// 		console.log(e)
+	// 	}
+	// })()
+	// },[provider, asset])
+
+	const approve = useCallback(async () => {
+		try {
+			setApprovalLoading(true)
+			const abi = ["function approve(address, uint256)"]
+			const signer = provider.getSigner()
+			// TODO: fix for collection contract
+			const nftContract = new ethers.Contract(asset.collection.mintContract, abi, signer)
+			const tx = await nftContract.approve(asset.collection.stakeContract, asset.externalTokenID)
+			await tx.wait()
+			setApprovalSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setApprovalLoading(false)
+		}
+	}, [provider, asset])
+
+	const stake = useCallback(async () => {
+		try {
+			setStakingLoading(true)
+			const abi = ["function stake(address,uint256)"]
+			const signer = provider.getSigner()
+			const nftstakeContract = new ethers.Contract(asset.collection.stakeContract, abi, signer)
+			const tx = await nftstakeContract.stake(asset.collection.mintContract, asset.externalTokenID)
+			await tx.wait()
+			setStakingSuccess(true)
+		} catch (e) {
+			console.log(e)
+			// setError(e)
+		} finally {
+			setStakingLoading(false)
+		}
+	}, [provider, asset])
+
+	return (
+		<Dialog onClose={() => onClose()} open={open}>
+			<DialogTitle
+				sx={(theme) => ({
+					fontSize: theme.typography.h3,
+				})}
+				color={"primary"}
+			>
+				Transition Asset on World
+			</DialogTitle>
+			<DialogContent sx={{ display: "flex", width: "100%", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
+				<>
+					<Typography variant={"h5"} color={"error"}>
+						GABS WARNING:
+					</Typography>
+					<Typography>To transition your items back on world it is a 2 part process, with each part requiring fees.</Typography>
+				</>
+				<Box>
+					<Typography>1. First you need to approve us to transition your item.</Typography>
+					<FancyButton disabled={approvalSuccess || approvalLoading} fullWidth onClick={approve}>
+						{approvalLoading && <CircularProgress />}
+						{!approvalLoading && approvalSuccess && "Successfully Approved"}
+						{!approvalLoading && !approvalSuccess && "Approve"}
+					</FancyButton>
+				</Box>
+				<Box>
+					<Typography>2. Transition your item on world.</Typography>
+					<FancyButton disabled={stakingSuccess || stakingLoading} fullWidth onClick={stake}>
+						{stakingLoading && <CircularProgress />}
+						{!stakingLoading && stakingSuccess && "Successfully Transitioned"}
+						{!stakingLoading && !stakingSuccess && "Transition"}
+					</FancyButton>
+				</Box>
+			</DialogContent>
+			<DialogActions>
+				{!!error && <Alert severity="error">{error}</Alert>}
+				<Button onClick={() => onClose()}>Cancel</Button>
+			</DialogActions>
+		</Dialog>
 	)
 }

@@ -1,47 +1,52 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, ButtonProps, ButtonUnstyled, Skeleton, styled, Typography } from "@mui/material"
+import { Box, BoxProps, Skeleton, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Asset } from "../../types/types"
-import { Rarity } from "../store/storeItemCard"
-
-const rarityTextStyles: { [key in Rarity]: any } = {
-	Common: {
-		color: colors.rarity.common,
-	},
-	Rare: {
-		color: colors.rarity.rare,
-	},
-	Legendary: {
-		color: colors.rarity.legendary,
-		textShadow: `0 0 2px ${colors.rarity.legendary}`,
-	},
-}
+import { Rarity, rarityTextStyles } from "../profile/profile"
 
 export interface CollectionItemCardProps {
-	tokenID: number
+	assetHash: string
 	username: string
 }
 
-export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ tokenID, username }) => {
+export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ assetHash, username }) => {
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<Asset>()
+	const [showPreview, setShowPreview] = useState(false)
+	const [noAsset, setNoAsset] = useState<boolean>(false) //used if asset doesn't exist in our metadata (shouldn't happen, fixes local dev stuff)
 
 	useEffect(() => {
-		if (!subscribe) return
+		;(async () => {
+			try {
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${assetHash}`)
+				if (!resp.ok || resp.status !== 200) {
+					setNoAsset(true)
+				}
+			} catch (e) {
+				setNoAsset(true)
+			}
+		})()
+	}, [history, assetHash])
+
+	useEffect(() => {
+		if (!subscribe || assetHash === "") return
 		return subscribe<Asset>(
 			HubKey.AssetUpdated,
 			(payload) => {
 				setItem(payload)
 			},
-			{ tokenID },
+			{ assetHash },
 		)
-	}, [subscribe, tokenID])
+	}, [subscribe, assetHash])
+
+	if (noAsset) return <></>
 
 	if (!item) {
 		return <CollectionItemCardSkeleton />
@@ -49,13 +54,35 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 
 	return (
 		<Box
+			component="button"
+			onClick={() => history.push(`/profile/${username}/asset/${item?.hash}`)}
+			onMouseOver={() => setShowPreview(true)}
+			onMouseLeave={() => setShowPreview(false)}
+			onFocus={() => setShowPreview(true)}
+			onBlur={() => setShowPreview(false)}
 			sx={{
 				position: "relative",
 				display: "flex",
 				flexDirection: "column",
 				justifyContent: "space-between",
 				padding: "1rem",
+				paddingBottom: "2rem",
+				paddingRight: "2rem",
 				textAlign: "center",
+				font: "inherit",
+				color: "inherit",
+				border: "none",
+				outline: "none",
+				backgroundColor: "transparent",
+				cursor: "pointer",
+				"&:hover .ViewButton, &:focus .ViewButton": {
+					borderRadius: "50%",
+					backgroundColor: colors.purple,
+					transform: "scale(1.6)",
+					"& > *": {
+						transform: "rotate(0deg)",
+					},
+				},
 			}}
 		>
 			<Typography
@@ -71,14 +98,44 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 
 			{/* image */}
 			<Box
-				component="img"
-				src={item.image}
-				alt="Mech image"
 				sx={{
-					width: "100%",
-					marginBottom: ".3rem",
+					position: "relative",
 				}}
-			/>
+			>
+				<Box
+					component="img"
+					src={item.image}
+					alt="Mech image"
+					sx={{
+						width: "100%",
+						marginBottom: ".3rem",
+						visibility: item.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
+						opacity: item.animation_url ? (showPreview ? 0 : 1) : "visible",
+						transition: "all .2s ease-in",
+					}}
+				/>
+				{item.animation_url && (
+					<Box
+						component="video"
+						sx={{
+							position: "absolute",
+							top: "50%",
+							left: "50%",
+							width: "120%",
+							transform: "translate(-50%, -50%)",
+							visibility: showPreview ? "visible" : "hidden",
+							opacity: showPreview ? 1 : 0,
+							transition: "all .2s ease-in",
+						}}
+						muted
+						autoPlay
+						loop
+						tabIndex={-1}
+					>
+						<source src={item.animation_url} type="video/webm"></source>
+					</Box>
+				)}
+			</Box>
 			<Typography
 				variant="body1"
 				sx={{
@@ -99,48 +156,43 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			>
 				{getItemAttributeValue(item.attributes, "Rarity")}
 			</Typography>
-			<ViewButton onClick={() => history.push(`/profile/${username}/asset/${item.tokenID}`)}>
+			<ViewButton
+				sx={{
+					position: "absolute",
+					right: "1rem",
+					bottom: "1rem",
+				}}
+			>
 				<SearchIcon />
 			</ViewButton>
 		</Box>
 	)
 }
 
-const CustomButtonBase = styled("button")({
-	position: "absolute",
-	right: 0,
-	bottom: 0,
-	display: "inline-flex",
-	alignItems: "center",
-	justifyContent: "center",
-	height: "2.6rem",
-	width: "2.6rem",
-	backgroundColor: "transparent",
-	border: `1px solid ${colors.purple}`,
-	color: "inherit",
-	font: "inherit",
-	transform: "rotate(45deg)",
-	transition: "transform .2s ease-out, border-radius .2s ease-out, background-color .2s ease-out",
-	cursor: "pointer",
-	"& > *": {
-		transition: "transform .2s ease-out",
-		transform: "rotate(-45deg)",
-	},
-	":hover, :focus": {
-		borderRadius: "50%",
-		backgroundColor: colors.purple,
-		transform: "scale(1.6)",
-		"& > *": {
-			transform: "rotate(0deg)",
-		},
-	},
-})
-
-interface CustomButtonProps extends ButtonProps {}
-
-export const ViewButton = ({ ...props }: CustomButtonProps) => {
-	return <ButtonUnstyled {...props} component={CustomButtonBase} />
-}
+export const ViewButton = (props: BoxProps) => (
+	<Box
+		{...props}
+		className="ViewButton"
+		sx={{
+			display: "inline-flex",
+			alignItems: "center",
+			justifyContent: "center",
+			height: "2.6rem",
+			width: "2.6rem",
+			backgroundColor: "transparent",
+			border: `1px solid ${colors.purple}`,
+			color: "inherit",
+			font: "inherit",
+			transform: "rotate(45deg)",
+			transition: "transform .2s ease-out, border-radius .2s ease-out, background-color .2s ease-out",
+			"& > *": {
+				transition: "transform .2s ease-out",
+				transform: "rotate(-45deg)",
+			},
+			...props.sx,
+		}}
+	/>
+)
 
 const CollectionItemCardSkeleton: React.VoidFunctionComponent = () => {
 	return (

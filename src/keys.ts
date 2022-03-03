@@ -84,6 +84,7 @@ enum HubKey {
 
 	CollectionList = "COLLECTION:LIST",
 	CollectionUpdated = "COLLECTION:SUBSCRIBE",
+	WalletCollectionList = "COLLECTION:WALLET:LIST",
 
 	AssetList = "ASSET:LIST",
 	AssetUpdated = "ASSET:SUBSCRIBE",
@@ -96,6 +97,12 @@ enum HubKey {
 	StoreItemSubscribe = "STORE:ITEM",
 	StoreList = "STORE:LIST",
 	StorePurchase = "STORE:PURCHASE",
+	StoreLootBox = "STORE:LOOTBOX",
+	StoreLootBoxAmount = "STORE:LOOTBOX:AMOUNT",
+
+	TransactionGroups = "TRANSACTION:GROUPS",
+	TransactionList = "TRANSACTION:LIST",
+	TransactionSubscribe = "TRANSACTION:SUBSCRIBE",
 
 	BlockConfirmation = "BLOCK:CONFIRM",
 	GetFactionsDetail = "FACTION:ALL",
@@ -106,6 +113,8 @@ enum HubKey {
 	SupTotalRemaining = "SUPS:TREASURY",
 	SupExchangeRates = "SUPS:EXCHANGE",
 	SupsWithdraw = "SUPS:WITHDRAW",
+
+	FactionAvailables = "AVAILABLE:ITEM:AMOUNT",
 }
 
 export default HubKey

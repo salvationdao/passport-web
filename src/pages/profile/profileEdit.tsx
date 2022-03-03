@@ -1,48 +1,50 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import { Box, Button, CircularProgress, IconButton, IconButtonProps, Link, Paper, styled, Typography } from "@mui/material"
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, Paper, styled, Typography } from "@mui/material"
 import { User } from "@sentry/react"
-import { useCallback, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useMutation } from "react-fetching-library"
-import GoogleLogin, { GoogleLoginResponse } from "react-google-login"
 import { useForm } from "react-hook-form"
-import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
-import { DiscordIcon, FacebookIcon, GoogleIcon, MetaMaskIcon, TwitchIcon, TwitterIcon } from "../../assets"
-import { DiscordLogin } from "../../components/discordLogin"
-import { FacebookLogin } from "../../components/facebookLogin"
-import { ImageUpload } from "../../components/form/imageUpload"
+import { useHistory, useParams } from "react-router-dom"
+import { PrivacyPolicy, TermsAndConditions } from "../../assets"
 import { InputField } from "../../components/form/inputField"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { MetaMaskLogin } from "../../components/loginMetaMask"
-import { TwitchLogin } from "../../components/twitchLogin"
-import { TwitterLogin } from "../../components/twitterLogin"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
-import { MetaMaskState, useWeb3 } from "../../containers/web3"
 import { fetching } from "../../fetching"
-import { middleTruncate } from "../../helpers"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Organisation, Role } from "../../types/types"
-import { PasswordRequirement } from "./../auth/onboarding"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const { user } = useAuth()
+	const { user, loading: authLoading } = useAuth()
+	const [newUsername, setNewUsername] = useState<string | undefined>(user?.username)
+	const [displayResult, setDisplayResult] = useState<boolean>(false)
+	const [successful, setSuccessful] = useState<boolean>(false)
 
 	const [loadingText, setLoadingText] = useState<string>()
 
 	useEffect(() => {
+		if (user?.username === username || user?.username === newUsername) return
+
+		if (authLoading) {
+			setLoadingText("Loading. Please wait...")
+			return
+		}
 		let userTimeout: NodeJS.Timeout
 		if (!user) {
 			setLoadingText("You need to be logged in to view this page. Redirecting to login page...")
 			userTimeout = setTimeout(() => {
 				history.push("/login")
 			}, 2000)
-		} else if (user.username !== username) {
+		} else if (user.username !== username && user.username !== newUsername) {
 			setLoadingText("You do not have permission view this page. Redirecting to profile page...")
 			userTimeout = setTimeout(() => {
 				history.push("/profile")
@@ -53,9 +55,9 @@ export const ProfileEditPage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [user, history])
+	}, [user, history, username, authLoading, newUsername])
 
-	if (!user || user.username !== username) {
+	if (!user || (user.username !== username && user.username !== newUsername)) {
 		return <Loading text={loadingText} />
 	}
 
@@ -100,7 +102,7 @@ export const ProfileEditPage: React.FC = () => {
 						Go Back
 					</Link>
 				</Box>
-				<ProfileEdit />
+				<ProfileEdit setNewUsername={setNewUsername} setDisplayResult={setDisplayResult} setSuccessful={setSuccessful} />
 				<Box
 					sx={{
 						display: "flex",
@@ -110,14 +112,64 @@ export const ProfileEditPage: React.FC = () => {
 						marginTop: "auto",
 					}}
 				>
-					<Link component={RouterLink} to="/privacy-policy">
+					<Link href={TermsAndConditions} target="_blank">
 						Privacy Policy
 					</Link>
-					<Link component={RouterLink} to="/terms-and-conditions">
+					<Link href={PrivacyPolicy} target="_blank">
 						Terms And Conditions
 					</Link>
 				</Box>
 			</Box>
+			<Dialog open={displayResult} onClose={() => setDisplayResult(false)}>
+				<Box sx={{ border: `4px solid ${colors.darkNavyBackground}`, padding: ".5rem", maxWidth: "500px" }}>
+					<DialogTitle sx={{ display: "flex", width: "100%", alignItems: "center" }}>
+						{successful ? (
+							<CheckCircleOutlineIcon sx={{ fontSize: "2.5rem" }} color="success" />
+						) : (
+							<ErrorOutlineIcon sx={{ fontSize: "2.5rem" }} color="error" />
+						)}
+						<Typography variant="h2" sx={{ padding: "1rem" }}>
+							{successful ? "Success!" : "Error"}
+						</Typography>
+					</DialogTitle>
+					<DialogContent>
+						<Typography
+							sx={{
+								marginBottom: ".5rem",
+							}}
+						>
+							{successful
+								? "Your Profile has successfully been updated! Redirecting you back to your profile page."
+								: "Something went wrong, please try again."}
+						</Typography>
+						{!successful && (
+							<Box
+								sx={{
+									fontSize: ".8em",
+									color: colors.darkGrey,
+								}}
+							>
+								Your username must:
+								<Box
+									component="ul"
+									sx={{
+										margin: 0,
+									}}
+								>
+									<li>be between 3 and 15 characters long</li>
+									<li>not contain any special characters (excluding underscores)</li>
+									<li>not contain any spaces</li>
+								</Box>
+							</Box>
+						)}
+					</DialogContent>
+					<DialogActions>
+						<Button size="large" variant="contained" onClick={() => setDisplayResult(false)}>
+							Close
+						</Button>
+					</DialogActions>
+				</Box>
+			</Dialog>
 		</Box>
 	)
 }
@@ -140,13 +192,18 @@ interface UserInput {
 	twoFactorAuthenticationActivated: boolean
 }
 
-const ProfileEdit: React.FC = () => {
+interface ProfileEditProps {
+	setNewUsername: React.Dispatch<React.SetStateAction<string | undefined>>
+	setDisplayResult: React.Dispatch<React.SetStateAction<boolean>>
+	setSuccessful: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
-	const { metaMaskState, sign, account, connect } = useWeb3()
-	const { user, addFacebook, addGoogle, addTwitch, addTwitter, addDiscord, removeFacebook, removeGoogle, removeTwitch, removeTwitter, removeDiscord } =
-		useAuth()
+	const { user } = useAuth()
 	const { send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
+	const history = useHistory()
 
 	// Setup form
 	const { control, handleSubmit, reset, watch, formState } = useForm<UserInput>()
@@ -162,8 +219,9 @@ const ProfileEdit: React.FC = () => {
 
 	const onSaveForm = handleSubmit(async (data) => {
 		if (!user) return
+		const { newUsername, newPassword, ...input } = data
 		setSubmitting(true)
-
+		setNewUsername(newUsername)
 		try {
 			let avatarID: string | undefined = user.avatarID
 			if (avatarChanged) {
@@ -182,7 +240,6 @@ const ProfileEdit: React.FC = () => {
 				}
 			}
 
-			const { newUsername, newPassword, ...input } = data
 			const payload = {
 				...input,
 				newUsername: user.username !== newUsername ? newUsername : undefined,
@@ -196,27 +253,34 @@ const ProfileEdit: React.FC = () => {
 			})
 
 			if (resp) {
-				displayMessage("Profile successfully updated.", "success")
+				setDisplayResult(true)
+				setSuccessful(true)
 			}
 			setChangePassword(false)
+			setDisplayResult(true)
+			setTimeout(() => {
+				history.push(`/profile`)
+			}, 3000)
 		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+			setDisplayResult(true)
+			setSuccessful(false)
 		} finally {
 			setSubmitting(false)
 		}
 	})
 
-	const removeWalletAddress = useCallback(async () => {
-		if (!user) return
-		try {
-			setSubmitting(true)
-			await send(HubKey.UserRemoveWallet, { id: user.id })
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		} finally {
-			setSubmitting(false)
-		}
-	}, [user, send, displayMessage])
+	// This will be readded in when other connections are made available to the user
+	// const removeWalletAddress = useCallback(async () => {
+	// 	if (!user) return
+	// 	try {
+	// 		setSubmitting(true)
+	// 		await send(HubKey.UserRemoveWallet, { id: user.id })
+	// 	} catch (e) {
+	// 		displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+	// 	} finally {
+	// 		setSubmitting(false)
+	// 	}
+	// }, [user, send, displayMessage])
 
 	const onAvatarChange = (file?: File) => {
 		if (!avatarChanged) setAvatarChanged(true)
@@ -248,7 +312,7 @@ const ProfileEdit: React.FC = () => {
 
 		// Get avatar as file
 		if (!!user.avatarID)
-			fetch(`/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}`).then((r) =>
+			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}`).then((r) =>
 				r.blob().then((b) => setAvatar(new File([b], "avatar.jpg", { type: b.type }))),
 			)
 	}, [user, reset, token])
@@ -272,7 +336,7 @@ const ProfileEdit: React.FC = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					marginBottom: "3rem",
+					// marginBottom: "3rem",
 					"& > *:not(:last-child)": {
 						marginBottom: "1rem",
 					},
@@ -282,7 +346,8 @@ const ProfileEdit: React.FC = () => {
 					Edit Profile
 				</Typography>
 
-				<Section>
+				{/* Temporarily removed for public sale */}
+				{/* <Section>
 					<Typography variant="subtitle1">Avatar</Typography>
 					<ImageUpload
 						label="Upload Avatar"
@@ -297,7 +362,7 @@ const ProfileEdit: React.FC = () => {
 							},
 						}}
 					/>
-				</Section>
+				</Section> */}
 
 				<Section>
 					<Typography variant="subtitle1">User Details</Typography>
@@ -338,7 +403,8 @@ const ProfileEdit: React.FC = () => {
 					/>
 				</Section>
 
-				<Section>
+				{/* Temporarily removed for public sale */}
+				{/* <Section>
 					<Typography variant="subtitle1">Password</Typography>
 					{changePassword && (
 						<InputField
@@ -374,9 +440,9 @@ const ProfileEdit: React.FC = () => {
 									<PasswordRequirement fulfilled={!!password && password.length >= 8}>be 8 or more characters long</PasswordRequirement>
 									<PasswordRequirement fulfilled={!!password && password.toUpperCase() !== password && password.toLowerCase() !== password}>
 										contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
-									</PasswordRequirement>
-									{/* eslint-disable-next-line */}
-									<PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
+									</PasswordRequirement> */}
+				{/* eslint-disable-next-line */}
+				{/* <PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
 										contain at least <strong>1 number</strong>
 									</PasswordRequirement>
 									<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)}>
@@ -398,7 +464,7 @@ const ProfileEdit: React.FC = () => {
 							</Button>
 						</>
 					)}
-				</Section>
+				</Section> */}
 
 				<Box
 					sx={{
@@ -420,7 +486,8 @@ const ProfileEdit: React.FC = () => {
 					</Button>
 				</Box>
 			</Box>
-			<Box
+			{/* Temporarily removed for public sale */}
+			{/* <Box
 				sx={{
 					display: "flex",
 					flexDirection: "column",
@@ -445,7 +512,11 @@ const ProfileEdit: React.FC = () => {
 								await removeWalletAddress()
 							}}
 							title="Remove MetaMask"
-							icon={MetaMaskIcon}
+							icon={
+								typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined"
+									? WalletConnectIcon
+									: MetaMaskIcon
+							}
 							value={user.publicAddress}
 							remove
 						/>
@@ -457,14 +528,12 @@ const ProfileEdit: React.FC = () => {
 							render={(props) => (
 								<ConnectionButton
 									onClick={props.onClick}
-									title={
-										props.metaMaskState === MetaMaskState.NotInstalled
-											? "Install MetaMask"
-											: props.metaMaskState === MetaMaskState.NotLoggedIn
-											? "Sign into your MetaMask to continue"
-											: "Login With MetaMask"
+									title="Connect Wallet"
+									icon={
+										typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined"
+											? WalletConnectIcon
+											: MetaMaskIcon
 									}
-									icon={MetaMaskIcon}
 									value={user.publicAddress}
 									disabled={!!user.publicAddress || props.isProcessing}
 									loading={props.isProcessing}
@@ -655,7 +724,7 @@ const ProfileEdit: React.FC = () => {
 						/>
 					)}
 				</Box>
-			</Box>
+			</Box> */}
 		</Paper>
 	)
 }
@@ -668,140 +737,141 @@ const Section = styled("div")({
 	},
 })
 
-interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
-	icon: React.ElementType
-	value?: string
-	loading?: boolean
-	remove?: boolean
-}
+// This will be readded in when other connections are made available to the user
+// interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
+// 	icon: React.ElementType
+// 	value?: string
+// 	loading?: boolean
+// 	remove?: boolean
+// }
 
-const ConnectionButton = ({ icon, value, loading, remove, disabled, sx, ...props }: ConnectionButtonProps) => {
-	if (remove) {
-		return (
-			<Box
-				sx={{
-					overflowX: "hidden",
-					position: "relative",
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					justifyContent: "center",
-					padding: "1rem",
-					borderRadius: 0,
-					border: `2px solid ${colors.skyBlue}`,
-					...sx,
-				}}
-				tabIndex={-1}
-			>
-				<IconButton
-					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						opacity: 0,
-						width: "100%",
-						borderRadius: 0,
-						transition: "opacity .2s ease-out",
-						":hover": {
-							opacity: 1,
-						},
-						":focus": {
-							opacity: 1,
-						},
-						"::after": {
-							content: '""',
-							position: "absolute",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							backgroundColor: "rgba(0, 0, 0, .6)",
-						},
-					}}
-					disabled={disabled || !!loading}
-					{...props}
-				>
-					<Typography
-						color={colors.white}
-						sx={{
-							zIndex: 1,
-						}}
-					>
-						Remove Wallet
-					</Typography>
-				</IconButton>
+// const ConnectionButton = ({ icon, value, loading, remove, disabled, sx, ...props }: ConnectionButtonProps) => {
+// 	if (remove) {
+// 		return (
+// 			<Box
+// 				sx={{
+// 					overflowX: "hidden",
+// 					position: "relative",
+// 					display: "flex",
+// 					flexDirection: "column",
+// 					alignItems: "center",
+// 					justifyContent: "center",
+// 					padding: "1rem",
+// 					borderRadius: 0,
+// 					border: `2px solid ${colors.skyBlue}`,
+// 					...sx,
+// 				}}
+// 				tabIndex={-1}
+// 			>
+// 				<IconButton
+// 					sx={{
+// 						position: "absolute",
+// 						top: 0,
+// 						left: 0,
+// 						right: 0,
+// 						bottom: 0,
+// 						opacity: 0,
+// 						width: "100%",
+// 						borderRadius: 0,
+// 						transition: "opacity .2s ease-out",
+// 						":hover": {
+// 							opacity: 1,
+// 						},
+// 						":focus": {
+// 							opacity: 1,
+// 						},
+// 						"::after": {
+// 							content: '""',
+// 							position: "absolute",
+// 							top: 0,
+// 							left: 0,
+// 							right: 0,
+// 							bottom: 0,
+// 							backgroundColor: "rgba(0, 0, 0, .6)",
+// 						},
+// 					}}
+// 					disabled={disabled || !!loading}
+// 					{...props}
+// 				>
+// 					<Typography
+// 						color={colors.white}
+// 						sx={{
+// 							zIndex: 1,
+// 						}}
+// 					>
+// 						Remove Wallet
+// 					</Typography>
+// 				</IconButton>
 
-				{!!loading && (
-					<Box
-						sx={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							backgroundColor: "rgba(0, 0, 0, .6)",
-						}}
-					>
-						<CircularProgress />
-					</Box>
-				)}
-				<Box
-					component={icon}
-					sx={{
-						marginBottom: ".5rem",
-					}}
-				/>
-				<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
-			</Box>
-		)
-	}
+// 				{!!loading && (
+// 					<Box
+// 						sx={{
+// 							position: "absolute",
+// 							top: 0,
+// 							left: 0,
+// 							right: 0,
+// 							bottom: 0,
+// 							display: "flex",
+// 							alignItems: "center",
+// 							justifyContent: "center",
+// 							backgroundColor: "rgba(0, 0, 0, .6)",
+// 						}}
+// 					>
+// 						<CircularProgress />
+// 					</Box>
+// 				)}
+// 				<Box
+// 					component={icon}
+// 					sx={{
+// 						marginBottom: ".5rem",
+// 					}}
+// 				/>
+// 				<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
+// 			</Box>
+// 		)
+// 	}
 
-	return (
-		<IconButton
-			sx={{
-				overflowX: "hidden",
-				position: "relative",
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				justifyContent: "center",
-				padding: "1rem",
-				borderRadius: 0,
-				border: `2px solid ${colors.skyBlue}`,
-				...sx,
-			}}
-			disabled={disabled || !!loading}
-			{...props}
-		>
-			{!!loading && (
-				<Box
-					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						backgroundColor: "rgba(0, 0, 0, .6)",
-					}}
-				>
-					<CircularProgress />
-				</Box>
-			)}
-			<Box
-				component={icon}
-				sx={{
-					marginBottom: ".5rem",
-				}}
-			/>
-			<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
-		</IconButton>
-	)
-}
+// 	return (
+// 		<IconButton
+// 			sx={{
+// 				overflowX: "hidden",
+// 				position: "relative",
+// 				display: "flex",
+// 				flexDirection: "column",
+// 				alignItems: "center",
+// 				justifyContent: "center",
+// 				padding: "1rem",
+// 				borderRadius: 0,
+// 				border: `2px solid ${colors.skyBlue}`,
+// 				...sx,
+// 			}}
+// 			disabled={disabled || !!loading}
+// 			{...props}
+// 		>
+// 			{!!loading && (
+// 				<Box
+// 					sx={{
+// 						position: "absolute",
+// 						top: 0,
+// 						left: 0,
+// 						right: 0,
+// 						bottom: 0,
+// 						display: "flex",
+// 						alignItems: "center",
+// 						justifyContent: "center",
+// 						backgroundColor: "rgba(0, 0, 0, .6)",
+// 					}}
+// 				>
+// 					<CircularProgress />
+// 				</Box>
+// 			)}
+// 			<Box
+// 				component={icon}
+// 				sx={{
+// 					marginBottom: ".5rem",
+// 				}}
+// 			/>
+// 			<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
+// 		</IconButton>
+// 	)
+// }

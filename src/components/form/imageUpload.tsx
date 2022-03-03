@@ -4,6 +4,7 @@ import { styled } from "@mui/material/styles"
 import { SxProps, Theme } from "@mui/system"
 import { useCallback, useState } from "react"
 import { useDropzone } from "react-dropzone"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { formatBytes } from "../../helpers"
 import { ImageSelectDialog } from "./imageSelectDialog"
 
@@ -30,7 +31,7 @@ export const ImageUpload = (props: ImageUploadProps) => {
 
 	const [showImageSelectDialog, setShowImageSelectDialog] = useState(false)
 	const onSelectImage = (id: string, fileName: string) => {
-		fetch(`/api/files/${id}?token=${encodeURIComponent(token || "")}`)
+		fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${id}?token=${encodeURIComponent(token || "")}`)
 			.then((r) => r.blob())
 			.then((b) => {
 				onChange(new File([b], fileName, { type: b.type }))
@@ -67,11 +68,15 @@ export const ImageUpload = (props: ImageUploadProps) => {
 				...sx,
 			}}
 		>
-			<Box sx={{
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center"
-			}} {...getRootProps()} onClick={(e) => e.stopPropagation()}>
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+				}}
+				{...getRootProps()}
+				onClick={(e) => e.stopPropagation()}
+			>
 				<input {...getInputProps()} />
 
 				{!!file &&

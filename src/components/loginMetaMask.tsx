@@ -1,55 +1,72 @@
-import MetaMaskOnboarding from "@metamask/onboarding"
 import { useCallback, useMemo, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { AuthContainer } from "../containers"
+import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 
 interface MetaMaskLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 	metaMaskState: MetaMaskState
 	isProcessing: boolean
+	errorMessage: string | null
 }
 
 interface LoginMetaMaskProps {
+	publicSale?: boolean
 	onFailure?: (err: string) => void
 	onClick?: () => Promise<boolean> // return false to stop login
 	render: (props: MetaMaskLoginButtonRenderProps) => JSX.Element
 }
 
-export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ onFailure, onClick, render }) => {
-	const { loginMetamask } = AuthContainer.useContainer()
-	const { metaMaskState, connect } = useWeb3()
+export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ publicSale, onFailure, onClick, render }) => {
+	const { loginMetamask, loginWalletConnect } = AuthContainer.useContainer()
+	const { metaMaskState } = useWeb3()
+	const { displayMessage } = useSnackbar()
 	const history = useHistory()
 	const [isProcessing, setIsProcessing] = useState(false)
-
+	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 	const click = useCallback(async () => {
-		setIsProcessing(true)
-		if (metaMaskState === MetaMaskState.NotLoggedIn) {
-			await connect()
-			return
-		}
-		if (metaMaskState === MetaMaskState.Active) {
+		if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
+			try {
+				displayMessage("Please refer to your wallet for authentication")
+				const resp = await loginWalletConnect()
+				if (!resp || !resp.isNew) return
+				!publicSale && history.push("/onboarding?skip_username=true")
+			} catch (e) {
+				setIsProcessing(false)
+				if (onFailure) {
+					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
+				}
+			}
+		} else {
+			setIsProcessing(true)
 			if (onClick && !(await onClick())) return
 
 			try {
 				const resp = await loginMetamask()
-				if (!resp || !resp.isNew) return
-				history.push("/onboarding?skip_username=true")
+				if (!resp || !resp.isNew) {
+					setErrorMessage("There was a problem logging you in. Your account may be disabled, please contact support.")
+					setIsProcessing(false)
+					return
+				}
+				setIsProcessing(false)
+				!publicSale && history.push("/onboarding?skip_username=true")
 			} catch (e) {
+				setIsProcessing(false)
 				if (onFailure) {
 					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
 				}
 			}
 			return
 		}
-		const onboarding = new MetaMaskOnboarding()
-		onboarding.startOnboarding()
+
 		setIsProcessing(false)
-	}, [onFailure, history, loginMetamask, metaMaskState, onClick, connect])
+	}, [onFailure, history, loginMetamask, onClick, loginWalletConnect, publicSale, displayMessage])
 
 	const propsForRender = useMemo(
 		() => ({
 			onClick: click,
+			errorMessage: errorMessage,
 			isProcessing,
 			metaMaskState,
 		}),

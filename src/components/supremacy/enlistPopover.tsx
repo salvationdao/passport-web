@@ -1,15 +1,16 @@
 import ArrowRightAltSharpIcon from "@mui/icons-material/ArrowRightAltSharp"
-import { Box, Fade, IconButton, Popover, Stack, Typography } from "@mui/material"
+import { Box, Fade, IconButton, Popover, Stack, Typography, useMediaQuery } from "@mui/material"
 import React, { useCallback, useState } from "react"
 import { SupTokenIconPath } from "../../assets"
 import { useSnackbar } from "../../containers/snackbar"
-import { API_ENDPOINT_HOSTNAME, useWebsocket } from "../../containers/socket"
+import { useWebsocket } from "../../containers/socket"
 import useSubscription from "../../hooks/useSubscription"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { DetailedFaction, Faction } from "../../types/types"
 import { ClipThing } from "./clipThing"
 import { FancyButton } from "./fancyButton"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 
 interface StatProps {
 	title: string
@@ -49,6 +50,9 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 	const [page, setPage] = useState(0)
 	const { send, state } = useWebsocket()
 	const { displayMessage } = useSnackbar()
+
+	// Media queries
+	const below780 = useMediaQuery("(max-width:780px)")
 
 	const enlistFaction = useCallback(async () => {
 		if (state !== WebSocket.OPEN) return
@@ -102,46 +106,82 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 
 	return (
 		<Stack
-			direction="row"
+			direction={below780 ? "column" : "row"}
 			sx={{
 				fontFamily: fonts.supremacy.sharetech,
 			}}
 		>
-			<Stack
-				alignItems="center"
-				justifyContent="center"
-				spacing={1.8}
-				sx={{
-					px: 2.6,
-					py: 3,
-					backgroundImage: `url(${backgroundUrl})`,
-					backgroundRepeat: "no-repeat",
-					backgroundPosition: "center",
-					backgroundSize: "cover",
-					width: 190,
-					minHeight: 360,
-				}}
-			>
-				<Box
-					component="img"
-					src={logoUrl}
-					alt={`${label} Logo`}
+			{below780 ? (
+				<Stack
+					direction="row"
+					alignItems="center"
+					justifyContent="center"
+					spacing={1.8}
 					sx={{
-						width: "100%",
-						maxHeight: 250,
-					}}
-				/>
-				<Typography
-					variant="body2"
-					sx={{
-						fontFamily: fonts.supremacy.nostromomedium,
+						px: 2.6,
+						pt: 3,
+						pb: 1.5,
+						backgroundImage: `url(${backgroundUrl})`,
+						backgroundRepeat: "no-repeat",
+						backgroundPosition: "center",
+						backgroundSize: "cover",
 					}}
 				>
-					{label.toUpperCase()}
-				</Typography>
-			</Stack>
+					<Box
+						component="img"
+						src={logoUrl}
+						alt={`${label} Logo`}
+						sx={{
+							minHeight: 30,
+						}}
+					/>
+					<Typography
+						variant="body2"
+						sx={{
+							width: 190,
+							fontFamily: fonts.supremacy.nostromomedium,
+						}}
+					>
+						{label.toUpperCase()}
+					</Typography>
+				</Stack>
+			) : (
+				<Stack
+					alignItems="center"
+					justifyContent="center"
+					spacing={1.8}
+					sx={{
+						px: 2.6,
+						py: 3,
+						backgroundImage: `url(${backgroundUrl})`,
+						backgroundRepeat: "no-repeat",
+						backgroundPosition: "center",
+						backgroundSize: "cover",
+						width: 190,
+						minHeight: 360,
+					}}
+				>
+					<Box
+						component="img"
+						src={logoUrl}
+						alt={`${label} Logo`}
+						sx={{
+							width: "100%",
+							minHeight: 250,
+						}}
+					/>
+					<Typography
+						variant="body2"
+						sx={{
+							fontFamily: fonts.supremacy.nostromomedium,
+						}}
+					>
+						{label.toUpperCase()}
+					</Typography>
+				</Stack>
+			)}
 
-			<Stack sx={{ px: 3, py: 2.8, width: 460 }}>
+			<Stack sx={{ px: 3, pt: below780 ? 1.4 : 2.8, pb: 2.8, width: below780 ? 300 : 460, overflow: "auto" }}>
 				{page === 0 && (
 					<Fade in={true}>
 						<Typography sx={{ fontFamily: "Share Tech" }}>{description}</Typography>

@@ -1,19 +1,12 @@
 import { Alert, Box, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Skeleton, TextField, Typography } from "@mui/material"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
-import HubKey from "../keys"
 
-import React, { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
-import { BigNumber, ethers } from "ethers"
-import { supFormatter } from "../helpers/items"
+import { BigNumber } from "ethers"
 import { FancyButton } from "./fancyButton"
-import { SocketState, useWebsocket } from "../containers/socket"
-import { useAuth } from "../containers/auth"
-import { BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS } from "../config"
 import { ConnectWallet } from "./connectWallet"
 import { formatUnits, parseUnits } from "@ethersproject/units"
-
-const UseSignatureMode = true
 
 interface DepositModalProps {
 	open: boolean
@@ -22,22 +15,15 @@ interface DepositModalProps {
 	xsynBalance: BigNumber
 }
 
-interface GetSignatureResponse {
-	messageSignature: string
-	expiry: number
-}
-
 export const DepositSupsModal = ({ open, onClose, walletBalance, xsynBalance }: DepositModalProps) => {
-	const { account, provider, currentChainId, metaMaskState, changeChain, sendTransferToPurchaseAddress } = useWeb3()
-	const { send, state } = useWebsocket()
-	const { user } = useAuth()
-	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
-	const [depositAmount, setDepositAmount] = useState<BigNumber>(BigNumber.from(0))
-	const [loadingDeposit, setLoadingDeposit] = useState<boolean>(false)
-	const [loadingWalletBalance, setLoadingWalletBalance] = useState<boolean>(false)
-	const [errorWalletBalance, setErrorWalletBalance] = useState<string>()
-	const [errorDepositing, setErrorDepositing] = useState<string>()
-	const [errorAmount, setErrorAmount] = useState<string>()
+	const { currentChainId, metaMaskState, changeChain, sendTransferToPurchaseAddress } = useWeb3()
+	const [depositAmount, setDepositAmount] = useState<BigNumber | null>(null)
+	const [depositDisplay, setDepositDisplay] = useState<string | null>(null)
+	const [loadingDeposit] = useState<boolean>(false)
+	const [loadingWalletBalance] = useState<boolean>(false)
+	const [errorWalletBalance] = useState<string>()
+	const [errorDepositing] = useState<string>()
+	const [errorAmount, setErrorAmount] = useState<string | null>(null)
 
 	const changeChainToBSC = useCallback(async () => {
 		if (open && currentChainId?.toString() !== BINANCE_CHAIN_ID) {
@@ -48,6 +34,19 @@ export const DepositSupsModal = ({ open, onClose, walletBalance, xsynBalance }: 
 	useEffect(() => {
 		changeChainToBSC()
 	}, [changeChainToBSC])
+
+	// check balance on frontend
+	useEffect(() => {
+		if (!depositAmount) {
+			setErrorAmount(null)
+			return
+		}
+		if (depositAmount.gt(walletBalance)) {
+			setErrorAmount("Insufficient SUPS")
+			return
+		}
+		setErrorAmount(null)
+	}, [depositAmount, walletBalance])
 
 	return (
 		<Dialog open={open} onClose={onClose} maxWidth={"xl"} key={currentChainId}>
@@ -81,6 +80,7 @@ export const DepositSupsModal = ({ open, onClose, walletBalance, xsynBalance }: 
 											<Typography
 												sx={{ cursor: "pointer" }}
 												onClick={() => {
+													setDepositDisplay(formatUnits(walletBalance, 18))
 													setDepositAmount(walletBalance)
 												}}
 											>
@@ -93,16 +93,18 @@ export const DepositSupsModal = ({ open, onClose, walletBalance, xsynBalance }: 
 										sx={{ marginTop: "0.5rem" }}
 										variant={"filled"}
 										label={"Amount"}
+										// placeholder={"0.0"}
 										onChange={(e) => {
 											try {
-												if (e.target.value === "") setDepositAmount(BigNumber.from(0)) // if empty allow empty
+												if (e.target.value === "") setDepositDisplay(null) // if empty allow empty
 												const amt = parseUnits(e.target.value, 18)
+												setDepositDisplay(e.target.value.toString())
 												setDepositAmount(amt)
 											} catch (error) {
 												console.error(error)
 											}
 										}}
-										value={formatUnits(depositAmount, 18)}
+										value={depositDisplay ? depositDisplay : ""}
 										error={!!errorAmount}
 										helperText={errorAmount}
 									/>
@@ -117,6 +119,7 @@ export const DepositSupsModal = ({ open, onClose, walletBalance, xsynBalance }: 
 				<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}>
 					{!loadingDeposit && (
 						<FancyButton
+							disabled={!!errorAmount}
 							onClick={async () => {
 								if (depositAmount) await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, depositAmount)
 							}}

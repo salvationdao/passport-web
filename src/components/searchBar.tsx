@@ -28,7 +28,7 @@ export const SearchBar: React.VoidFunctionComponent<SearchBarProps> = ({
 	}
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const delayedQuery = useCallback(
-		debounce((q: string) => initOnChange(q), 100),
+		debounce((q: string) => initOnChange(q), 500),
 		[],
 	)
 

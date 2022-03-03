@@ -2,8 +2,10 @@ import { LoadingButton } from "@mui/lab"
 import { Avatar, Box, BoxProps, IconButton, IconButtonProps, SxProps, Theme } from "@mui/material"
 import React from "react"
 import { Link, useHistory } from "react-router-dom"
-import { XSYNLogo } from "../../assets"
+import { XSYNLogoImagePath } from "../../assets"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { AuthContainer } from "../../containers"
+import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 
 interface NavbarProps extends BoxProps {}
@@ -31,14 +33,39 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 			/>
 			<Link to="/">
 				<Box
-					component={XSYNLogo}
+					component="img"
 					sx={{
-						width: "3rem",
+						height: "4rem",
 					}}
+					src={XSYNLogoImagePath}
+					alt="XSYN Logo"
 				/>
 			</Link>
 		</Box>
 	)
+}
+
+const RenderFaction = (size: string) => {
+	const { user } = useAuth()
+	if (user?.faction) {
+		return (
+			<Box
+				sx={{
+					height: size,
+					width: size,
+					marginRight: ".5rem",
+					flexShrink: 0,
+					backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID})`,
+					backgroundRepeat: "no-repeat",
+					backgroundPosition: "center",
+					backgroundSize: "contain",
+					backgroundColor: user.faction.theme.primary,
+					borderRadius: "50%",
+					border: `${user.faction.theme.primary} 1px solid`,
+				}}
+			/>
+		)
+	}
 }
 
 interface ProfileButtonProps extends Omit<IconButtonProps, "size"> {
@@ -68,10 +95,10 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 					transition: "transform .2s cubic-bezier(.3, .7, .4, 1.5)",
 				},
 				"&:hover .Avatar": {
-					transform: "translate3d(-2px, -2px, 0)",
+					transform: "translate3d(-1px, -1px, 0)",
 				},
 				"&:hover .Avatar-border": {
-					transform: "translate3d(2px, 2px, 0)",
+					transform: "translate3d(1px, 1px, 0)",
 				},
 				"&:active .Avatar": {
 					transform: "translate3d(1px, 1px, 0)",
@@ -81,13 +108,13 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 				},
 				"&:disabled": {
 					"&:hover .Avatar": {
-						transform: "translate3d(-2px, -2px, 0)",
+						transform: "translate3d(0, 0, 0)",
 					},
 					"&:hover .Avatar-border": {
-						transform: "translate3d(2px, 2px, 0)",
+						transform: "translate3d(0, 0, 0)",
 					},
 					"&:active .Avatar": {
-						transform: "translate3d(1px, 1px, 0)",
+						transform: "translate3d(0, 0, 0)",
 					},
 					"&:active .Avatar-border": {
 						transform: "translate3d(0, 0, 0)",
@@ -111,7 +138,16 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 					border: `2px solid ${theme.palette.secondary.main}`,
 				})}
 			/>
-			{!!user && (
+			{!!user && user.faction && !user.avatarID ? (
+				<Avatar
+					className="Avatar"
+					src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID}`}
+					sx={{
+						height: size,
+						width: size,
+					}}
+				/>
+			) : (
 				<Avatar
 					className="Avatar"
 					src={user.avatarID ? `/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}` : undefined}

@@ -11,22 +11,25 @@ const MAX_RECONNECT_ATTEMPTS = 3
  */
 export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
 	const { state, connect } = useWebsocket()
+	const [init, setInit] = useState(true)
 	const [lostConnection, setLostConnection] = useState(false)
 	const [reconnectAttempts, setReconnectAttempts] = useState(MAX_RECONNECT_ATTEMPTS)
 	const [countdown, setCountdown] = useState(MAX_COUNTDOWN_SECONDS)
 
 	useEffect(() => {
-		if (state === WebSocket.CLOSED && !lostConnection) {
+		if (state === WebSocket.CLOSED && !lostConnection && !init) {
 			setLostConnection(true)
 		} else if (state === WebSocket.OPEN) {
 			setReconnectAttempts(MAX_RECONNECT_ATTEMPTS)
 			setLostConnection(false)
+		} else if (state === WebSocket.CONNECTING && !init) {
+			setInit(true)
 		}
 		if (state === WebSocket.CLOSED && countdown === 0 && reconnectAttempts > 0) {
 			setCountdown(MAX_COUNTDOWN_SECONDS)
 			setReconnectAttempts((prev) => prev - 1)
 		}
-	}, [state, lostConnection, reconnectAttempts, countdown])
+	}, [state, init, lostConnection, reconnectAttempts, countdown])
 
 	useEffect(() => {
 		if (state !== WebSocket.CLOSED || reconnectAttempts === 0) {

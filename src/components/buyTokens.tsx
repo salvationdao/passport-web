@@ -1,102 +1,77 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
-import {
-	Box,
-	Button,
-	ButtonGroup,
-	InputAdornment,
-	LinearProgress,
-	Link,
-	MenuItem,
-	outlinedInputClasses,
-	Select,
-	SelectChangeEvent,
-	SelectProps,
-	Stack,
-	styled,
-	TextField,
-	TextFieldProps,
-	Typography,
-	useTheme,
-} from "@mui/material"
-import { BigNumber, ethers } from "ethers"
+import { Box, Button, LinearProgress, Link, Stack, TextField, Tooltip, Typography, useTheme } from "@mui/material"
+import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
-import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
-import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
-import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
-import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
-import SupsToken from "../assets/images/sup-token.svg"
-import { BINANCE_CHAIN_ID, BUSD_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, USDC_CONTRACT_ADDRESS, WBNB_CONTRACT_ADDRESS, WETH_CONTRACT_ADDRESS } from "../config"
+import Arrow from "../assets/images/arrow.png"
+import SupsToken from "../assets/images/supsToken.png"
+import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
+import { useAuth } from "../containers/auth"
 import { SocketState, useWebsocket } from "../containers/socket"
-import { MetaMaskState, useWeb3, web3Constants } from "../containers/web3"
+import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { AddressDisplay } from "../helpers/web3"
+import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
+import { ExchangeRates, tokenSelect } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
-import { ExchangeRates } from "../types/types"
-
-//styled MUI components at root, where sx can't change them
-const StyledSelect = styled(Select)<SelectProps>(
-	({ theme }) =>
-		`& .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.dark};
-		border-width: 2px;
-	  }
-	  &:hover .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.light};
-		border-width: 2px;
-	  }
-	  &.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.main};
-		border-width: 2px;
-	  }
-	  `,
-)
-const StyledTextField = styled(TextField)<TextFieldProps>(
-	({ theme }) =>
-		`
-	& .${outlinedInputClasses.root} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.dark};
-		border-radius: 0;
-	}
-	&:hover .${outlinedInputClasses.root} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.light};
-		border-radius: 0;
-	}
-	& .${outlinedInputClasses.root}.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline} {
-		border-color: ${theme.palette.primary.main};
-		border-radius: 0;
-	}
-	`,
-)
-
+import { MetaMaskLogin } from "./loginMetaMask"
+import { SupFancyButton } from "./supremacy/supFancyButton"
+import { TokenSelect } from "./tokenSelect"
 type conversionType = "supsToTokens" | "tokensToSups"
-type tokenName = "weth" | "usdc" | "wbnb" | "busd"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 
-export const BuyTokens: React.FC = () => {
-	const { subscribe, state } = useWebsocket()
-	const { changeChain, currentChainId, getBalance, sendTransferToPurchaseAddress, metaMaskState } = useWeb3()
+export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
+	const { state, subscribe } = useWebsocket()
+	const { user, logout } = useAuth()
+	const {
+		changeChain,
+		amountRemaining,
+		currentChainId,
+		nativeBalance,
+		stableBalance,
+		sendNativeTransfer,
+		sendTransferToPurchaseAddress,
+		metaMaskState,
+		setCurrentToken,
+		currentToken,
+		tokenOptions,
+		account,
+	} = useWeb3()
 	const theme = useTheme()
 
-	const [selectedChainId, setSelectedChainId] = useState<number>(parseInt(ETHEREUM_CHAIN_ID.toString()))
-	const [isNativeToken, setIsNativeToken] = useState<boolean>(true)
-	const [currentToken, setCurrentToken] = useState<tokenName>("weth")
+	const [showWalletNag, setShowWalletNag] = useState<boolean>(false)
 	const [tokenAmt, setTokenAmt] = useState<BigNumber>(BigNumber.from(0))
 	const [supsAmt, setSupsAmt] = useState<BigNumber>(BigNumber.from(0))
-	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
-	const [userBalance, setUserBalance] = useState<BigNumber>(BigNumber.from(0))
+	const [tokenDisplay, setTokenDisplay] = useState<string | null>(null)
+	const [supsDisplay, setSupsDisplay] = useState<string | null>(null)
 	const [transferState, setTransferState] = useState<transferStateType>("none")
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
-	const [scanSite, setScanSite] = useState<string>("")
 	const [transferError, setTransferError] = useState<any>(null)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
-
-	const [contractAddr, setContractAddr] = useState<string>("")
-
+	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const acceptedChainExceptions = currentChainId?.toString() === ETHEREUM_CHAIN_ID || currentChainId?.toString() === BINANCE_CHAIN_ID
+	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
+
+	const [tokenDecimals, setTokenDecimals] = useState(18)
+	useEffect(() => {
+		if (currentToken.name === "usdc") {
+			setTokenDecimals(6)
+		} else {
+			setTokenDecimals(18)
+		}
+	}, [currentToken])
+
+	useEffect(() => {
+		if (supsAmt.gte(amountRemaining)) {
+			handleConversions("supsToTokens", amountRemaining)
+			setSupsAmt(amountRemaining)
+			setSupsDisplay(formatUnits(amountRemaining, 18))
+		}
+	}, [supsAmt])
 
 	const handleConversions = useCallback(
 		(direction: conversionType, value: BigNumber) => {
@@ -105,21 +80,47 @@ export const BuyTokens: React.FC = () => {
 				setSupsAmt(BigNumber.from(0))
 				return
 			}
-			if (isNativeToken) {
-				switch (currentToken) {
-					case "wbnb":
+
+			if (currentToken.name === "usdc" || currentToken.name === "busd") {
+				switch (direction) {
+					case "tokensToSups":
+						const sups = value.div(12).mul(100)
+						setSupsAmt(sups)
+						setSupsDisplay(formatUnits(sups, tokenDecimals))
+						setTokenAmt(value)
+						setTokenDisplay(formatUnits(value, tokenDecimals))
+						return
+					case "supsToTokens":
+						const v = BigNumber.from(value)
+						const tokens = v.mul(BigNumber.from(12)).div(BigNumber.from(100))
+						const cTokens = tokens.div(BigNumber.from(10 ** 12))
+						const cVal = v.div(BigNumber.from(10 ** 12))
+						setSupsAmt(currentToken.name === "usdc" ? cVal : value)
+						setTokenAmt(currentToken.name === "usdc" ? cTokens : tokens)
+						setTokenDisplay(formatUnits(tokens, 18))
+						setSupsDisplay(formatUnits(value, 18))
+						return
+				}
+			}
+			if (currentToken.isNative && exchangeRates) {
+				switch (currentToken.name) {
+					case "bnb":
 						switch (direction) {
 							case "tokensToSups":
-								const sups = value
-									.mul(parseUnits(web3Constants.bnbToUsdConversion.toString(), 18))
-									.div(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
+								const sups = value.mul(parseUnits(exchangeRates.BNBtoUSD.toString(), 18)).div(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
 								setSupsAmt(BigNumber.from(sups))
+								setSupsDisplay(parseFloat(formatUnits(sups, 18)).toFixed(2))
+								setTokenAmt(value)
+								setTokenDisplay(formatUnits(value, tokenDecimals))
 								break
 							case "supsToTokens":
 								const tokens = value
-									.mul(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
-									.div(parseUnits(web3Constants.bnbToUsdConversion.toString(), 18))
+									.mul(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
+									.div(parseUnits(exchangeRates.BNBtoUSD.toString(), 18))
 								setTokenAmt(BigNumber.from(tokens))
+								setTokenDisplay(parseFloat(formatUnits(tokens, tokenDecimals)).toString())
+								setSupsAmt(value)
+								setSupsDisplay(formatUnits(value, 18))
 								break
 						}
 						break
@@ -127,156 +128,123 @@ export const BuyTokens: React.FC = () => {
 						switch (direction) {
 							case "tokensToSups":
 								const sups = value
-									.mul(parseUnits(web3Constants.ethToUsdConversion.toString(), 18))
-									.div(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
+									.mul(parseUnits(exchangeRates.ETHtoUSD.toString(), tokenDecimals))
+									.div(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
 								setSupsAmt(BigNumber.from(sups))
+								setSupsDisplay(parseFloat(formatUnits(sups, 18)).toFixed(2))
+								setTokenAmt(value)
+								setTokenDisplay(formatUnits(value, tokenDecimals))
 								break
 							case "supsToTokens":
 								const tokens = value
-									.mul(parseUnits(web3Constants.supsToUsdConversion.toString(), 18))
-									.div(parseUnits(web3Constants.ethToUsdConversion.toString(), 18))
+									.mul(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
+									.div(parseUnits(exchangeRates.ETHtoUSD.toString(), tokenDecimals))
 								setTokenAmt(BigNumber.from(tokens))
+								setTokenDisplay(parseFloat(formatUnits(tokens, tokenDecimals)).toString())
+								setSupsAmt(value)
+								setSupsDisplay(formatUnits(value, 18))
 								break
 						}
 						break
 				}
-			} else {
+			} else if (exchangeRates) {
 				switch (direction) {
 					case "tokensToSups":
-						const sups = value.div(web3Constants.supsToUsdConversion)
-						setSupsAmt(BigNumber.from(sups))
+						const sups = parseUnits(value.div(parseUnits(exchangeRates.SUPtoUSD.toString(), 18)).toString(), 18)
+						setSupsAmt(sups)
+						setSupsDisplay(parseFloat(formatUnits(sups, 18)).toFixed(2))
+						setTokenAmt(value)
+						setTokenDisplay(formatUnits(value, tokenDecimals))
 						break
 					case "supsToTokens":
-						const tokens = value.mul(web3Constants.supsToUsdConversion)
-						setTokenAmt(BigNumber.from(tokens))
+						const tokens = value.mul(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
+						setTokenAmt(tokens)
+						setTokenDisplay(parseFloat(formatUnits(tokens, tokenDecimals)).toFixed(2))
+						setSupsAmt(value)
+						setSupsDisplay(formatUnits(value, 18))
 						break
 				}
 			}
 		},
-		[currentToken, isNativeToken],
+		[currentToken, exchangeRates, tokenDecimals],
 	)
 
+	// // handles network switch and default network token name
 	useEffect(() => {
 		if (currentChainId && acceptedChainExceptions) {
-			setSelectedChainId(currentChainId)
+			if (currentChainId === parseInt(BINANCE_CHAIN_ID)) {
+				const filteredChain = tokenOptions.filter((el) => {
+					return el.chainId === parseInt(BINANCE_CHAIN_ID)
+				})
 
-			switch (currentChainId) {
-				case web3Constants.ethereumChainId:
-					setScanSite("etherscan.io")
-					break
-				case web3Constants.binanceChainId:
-					setScanSite("bscscan.com")
-					break
-				case web3Constants.goerliChainId:
-					setScanSite("goerli.etherscan.io")
-					break
-				case web3Constants.bscTestNetChainId:
-					setScanSite("testnet.bscscan.com")
-					break
+				const busdToken = filteredChain.find((el) => {
+					return el.name === currentToken.name
+				})
+
+				if (busdToken) {
+					setCurrentToken(busdToken)
+					return
+				}
+				setCurrentToken(filteredChain[0])
+				return
 			}
+
+			const newToken = tokenOptions.find((el) => {
+				return el.name === currentToken.name
+			})
+
+			if (!newToken) {
+				setCurrentToken(tokenOptions[0])
+				return
+			}
+			setCurrentToken(newToken)
 		} else {
-			setSelectedChainId(parseInt(ETHEREUM_CHAIN_ID))
+			setCurrentToken(tokenOptions[0])
 		}
-	}, [currentChainId, acceptedChainExceptions])
-
-	useEffect(() => {
-		if (tokenAmt && tokenAmt.gt(0)) {
-			handleConversions("tokensToSups", tokenAmt)
-		}
-	}, [handleConversions, tokenAmt])
-
-	//setting current token
-	useEffect(() => {
-		if (currentChainId?.toString() === ETHEREUM_CHAIN_ID && !isNativeToken) {
-			setCurrentToken("usdc")
-			return
-		}
-		if (currentChainId?.toString() === BINANCE_CHAIN_ID && isNativeToken) {
-			setCurrentToken("wbnb")
-			return
-		}
-		if (currentChainId?.toString() === BINANCE_CHAIN_ID && !isNativeToken) {
-			setCurrentToken("busd")
-			return
-		}
-		setCurrentToken("weth")
-		return
-	}, [isNativeToken, currentChainId])
-
-	//getting user balance
-	useEffect(() => {
-		setUserBalance(BigNumber.from(0))
-		setLoading(true)
-		;(async () => {
-			try {
-				const bal = await getBalance(contractAddr)
-				if (bal) setUserBalance(bal)
-			} catch {
-				setUserBalance(BigNumber.from(0))
-			}
-			setLoading(false)
-		})()
-	}, [contractAddr, getBalance])
+	}, [currentChainId, acceptedChainExceptions, setCurrentToken, tokenOptions])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
+			if (rates)
+				if (rates.BNBtoUSD === 0 || rates.ETHtoUSD === 0 || rates.SUPtoUSD === 0) {
+					return
+				}
 			setExchangeRates(rates)
 		})
-	}, [subscribe, state])
-
-	//Setting up websocket to listen to remaining supply
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
-			setAmountRemaining(BigNumber.from(amount))
-		})
-	}, [subscribe, state])
-
-	const handleSelectChange = (event: SelectChangeEvent<unknown>) => {
-		const value = parseInt(event.target.value as string)
-		setSelectedChainId(value)
-	}
+	}, [state])
 
 	const handleNetworkSwitch = async () => {
-		await changeChain(selectedChainId)
-		setIsNativeToken(true)
-		setTokenAmt(BigNumber.from(0))
-		setSupsAmt(BigNumber.from(0))
+		await changeChain(currentToken.chainId)
 	}
 
-	useEffect(() => {
-		switch (currentToken) {
-			case "usdc":
-				setContractAddr(USDC_CONTRACT_ADDRESS)
-				return
-			case "wbnb":
-				setContractAddr(WBNB_CONTRACT_ADDRESS)
-				return
-			case "busd":
-				setContractAddr(BUSD_CONTRACT_ADDRESS)
-				return
-			default:
-				setContractAddr(WETH_CONTRACT_ADDRESS)
-				return
+	const checkBalanceDelta = (value: string) => {
+		if (value.length === 0) {
+			setBalanceDelta(undefined)
+			return
 		}
-	}, [currentToken])
+		const valDelta = (tokenBalance && formatUnits(tokenBalance?.sub(parseUnits(value, tokenDecimals)))) || ""
+		const numDelta = parseFloat(valDelta)
+		setBalanceDelta(numDelta)
+	}
 
 	async function handleTransfer() {
 		if (!supsAmt) return
 		if (!tokenAmt) return
 		if (tokenAmt.lte(0)) return
+		if (!amountRemaining) return
 		if (supsAmt.gt(amountRemaining)) return
-
 		setLoading(true)
 		setTransferState("waiting")
 		try {
 			if (state !== SocketState.OPEN) return
-
-			const tx = await sendTransferToPurchaseAddress(contractAddr, tokenAmt)
-
+			let tx
+			if (currentToken.isNative) {
+				tx = await sendNativeTransfer(tokenAmt)
+			} else {
+				tx = await sendTransferToPurchaseAddress(currentToken.contractAddr, tokenAmt)
+			}
 			setCurrentTransferHash(tx.hash)
-
 			setTransferState("confirm")
 			setTokenAmt(BigNumber.from(0))
 			setSupsAmt(BigNumber.from(0))
@@ -295,408 +263,588 @@ export const BuyTokens: React.FC = () => {
 		handleTransfer()
 	}
 
-	const currencyTextField = () => {
-		let path
-		let currency
-		switch (currentToken) {
-			case "usdc":
-				path = Usdc
-				currency = "USDC"
-				break
-			case "wbnb":
-				path = BinanceCoin
-				currency = "wBNB"
-				break
-			case "busd":
-				path = BinanceUSD
-				currency = "BUSD"
-				break
-			default:
-				path = Ethereum
-				currency = "wETH"
-				break
-		}
-
-		return (
-			<StyledTextField
-				fullWidth
-				value={tokenAmt ? tokenAmt.toString() : null}
-				onChange={(e) => {
-					try {
-						const value = BigNumber.from(e.target.value)
-						setTokenAmt(value)
-						handleConversions("tokensToSups", value)
-					} catch (e) {
-						setTokenAmt(BigNumber.from(0))
-						console.error(e)
-					}
-				}}
-				type="number"
-				sx={{ backgroundColor: colors.darkNavyBlue }}
-				InputProps={{
-					endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
-					startAdornment: (
-						<InputAdornment position="start">
-							<Box
-								component="img"
-								src={path}
-								alt="token image"
-								sx={{
-									height: "1.5rem",
-									marginRight: "1rem",
-								}}
-							/>
-						</InputAdornment>
-					),
-				}}
-				// inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-			/>
-		)
+	let tokenBalance: BigNumber | null = stableBalance || BigNumber.from(0)
+	if (currentToken.isNative) {
+		tokenBalance = nativeBalance
 	}
+	let supsDecimals = 18
 
 	return (
-		<Box sx={{ width: "90vw", minWidth: "300px", maxWidth: "500px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-			{/* Network Select Component */}
-			<StyledSelect
-				disabled={transferState !== "none" || metaMaskState !== MetaMaskState.Active}
-				value={selectedChainId.toString()}
-				onChange={(e) => handleSelectChange(e)}
-				displayEmpty={true}
-				sx={{
-					marginBottom: "1rem",
-					borderRadius: "0",
-					marginLeft: "auto",
-					display: "flex",
-					minWidth: "150px",
-				}}
-				SelectDisplayProps={{ style: { display: "flex", alignItems: "center", padding: "0 32px 0 .5rem" } }}
+		<Box
+			sx={{
+				border: publicSale
+					? `2px solid ${colors.skyBlue}`
+					: {
+							xs: `2px solid ${theme.palette.secondary.main}`,
+							md: "none",
+					  },
+				minWidth: "24rem",
+				minHeight: "20rem",
+				position: "relative",
+			}}
+		>
+			{/* Switch Network Dialog */}
+			<Box
+				sx={
+					acceptedChainExceptions && currentChainId === currentToken.chainId
+						? { display: "none" }
+						: {
+								position: "absolute",
+								zIndex: 5,
+								padding: "1rem",
+								height: "100%",
+								width: "100%",
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+								background: publicSale ? colors.darkNavyBackground2 : "unset",
+						  }
+				}
 			>
-				<MenuItem value={ETHEREUM_CHAIN_ID}>
-					<Box
-						component="img"
-						src={Ethereum}
-						alt="Ethereum token symbol"
-						sx={{
-							height: "1.5rem",
-							marginRight: "1rem",
-						}}
-					/>
-					<p>{ETHEREUM_CHAIN_ID === web3Constants.goerliChainId.toString() ? "Goerli" : "Ethereum"}</p>
-				</MenuItem>
-				<MenuItem value={BINANCE_CHAIN_ID}>
-					<Box
-						component="img"
-						src={BinanceCoin}
-						alt="Binance coin symbol"
-						sx={{
-							height: "1.5rem",
-							marginRight: "1rem",
-						}}
-					/>
-					<p>{BINANCE_CHAIN_ID === web3Constants.bscTestNetChainId.toString() ? "BSC Testnet" : "Binance"}</p>
-				</MenuItem>
-			</StyledSelect>
+				<Typography variant="h2" sx={{ textTransform: "uppercase", textAlign: "center", textDecoration: "underline" }}>
+					Attention!
+				</Typography>
+				<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "1rem" }}>
+					Please switch to a valid network to continue your transaction. Click the button below and follow the prompts.
+				</Typography>
+				<FancyButton borderColor={colors.skyBlue} onClick={handleNetworkSwitch}>
+					Switch Network
+				</FancyButton>
+			</Box>
+
+			{/* Metamask Connection */}
 
 			<Box
-				sx={{
-					border: {
-						xs: `2px solid ${theme.palette.primary.main}`,
-						md: "none",
-					},
-					position: "relative",
-				}}
+				sx={
+					publicSale && !user
+						? {
+								position: "absolute",
+								zIndex: "5",
+								padding: "1rem",
+								height: "100%",
+								width: "100%",
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+								alignItems: "center",
+								gap: "1em",
+
+								background: publicSale ? colors.darkerNavyBackground : "unset",
+						  }
+						: metaMaskState === MetaMaskState.Active
+						? { display: "none" }
+						: {
+								position: "absolute",
+								zIndex: "5",
+								padding: "1rem",
+								height: "100%",
+								width: "100%",
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+								alignItems: "center",
+								gap: "1em",
+
+								background: publicSale ? colors.darkerNavyBackground : "unset",
+						  }
+				}
 			>
-				{/* Switch Network Dialog */}
-				<Box
-					sx={
-						(acceptedChainExceptions && currentChainId === selectedChainId) || metaMaskState !== MetaMaskState.Active
-							? { display: "none" }
-							: {
-									position: "absolute",
-									zIndex: "5",
-									padding: "1rem",
-									height: "100%",
-									width: "100%",
-									display: "flex",
-									flexDirection: "column",
-									justifyContent: "center",
-							  }
-					}
-				>
-					<Typography variant="h2" sx={{ textTransform: "uppercase", textAlign: "center", textDecoration: "underline" }}>
-						Attention!
-					</Typography>
-					<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "1rem" }}>
-						Please switch to a valid network to continue your transaction. Click the button below and follow the prompts.
-					</Typography>
-					<FancyButton onClick={handleNetworkSwitch}>Switch Network</FancyButton>
-				</Box>
-
-				{/* Metamask Connection */}
-				<Box
-					sx={
-						metaMaskState === MetaMaskState.Active
-							? { display: "none" }
-							: {
-									position: "absolute",
-									zIndex: "5",
-									padding: "1rem",
-									height: "100%",
-									width: "100%",
-									display: "flex",
-									flexDirection: "column",
-									justifyContent: "center",
-									alignItems: "center",
-							  }
-					}
-				>
-					<Typography variant="h3" sx={{ textTransform: "uppercase", marginBottom: "2rem" }}>
-						Connect Your MetaMask
-					</Typography>
+				<Typography variant="h3" sx={{ textTransform: "uppercase" }}>
+					{publicSale ? "Enter Token Sale" : "Connect Your Wallet"}
+				</Typography>
+				{publicSale ? (
+					<MetaMaskLogin
+						publicSale={publicSale}
+						render={(props) => (
+							<>
+								<SupFancyButton
+									onClick={(e) => {
+										props.onClick(e)
+										setShowWalletNag(true)
+									}}
+									loading={props.isProcessing}
+									title="Connect Wallet"
+									fullWidth
+									sx={{ height: "3.5rem", fontSize: "1.2rem" }}
+								>
+									Connect Wallet
+								</SupFancyButton>
+								{!account && showWalletNag ? "Check your wallet for a login notification" : null}
+							</>
+						)}
+					/>
+				) : (
 					<ConnectWallet />
-				</Box>
+				)}
+			</Box>
 
-				{/* transferState */}
+			{/* transferState */}
+			<Box
+				sx={
+					transferState === "none" || metaMaskState !== MetaMaskState.Active
+						? { display: "none" }
+						: { position: "absolute", zIndex: "5", width: "100%", height: "100%" }
+				}
+			>
 				<Box
 					sx={
-						transferState === "none" || metaMaskState !== MetaMaskState.Active
-							? { display: "none" }
-							: { position: "absolute", zIndex: "5", width: "100%", height: "100%" }
-					}
-				>
-					<Box
-						sx={
-							transferState === "confirm"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
-					>
-						<CheckCircleIcon sx={{ fontSize: "50px", color: theme.palette.primary.main }} />
-						<Typography variant="h3" sx={{ margin: "2rem 0 0 0", textTransform: "uppercase" }}>
-							Success
-						</Typography>
-						<Typography variant="h4" sx={{ margin: "1rem 0" }}>
-							Transaction has been submitted
-						</Typography>
-						<Typography variant="body1">
-							<Link href={`https://${scanSite}/tx/${currentTransferHash}`} target="_blank">
-								View on Explorer
-							</Link>
-						</Typography>
-						<FancyButton
-							loading={loading}
-							disabled={loading}
-							sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
-							onClick={() => setTransferState("none")}
-						>
-							{loading ? " " : "Close"}
-						</FancyButton>
-						<Typography sx={loading ? { display: "flex", width: "100%", justifyContent: "center" } : { display: "none" }} variant="body1">
-							Please wait, your transaction is pending.
-						</Typography>
-					</Box>
-
-					<Box
-						sx={
-							transferState === "error"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
-					>
-						<ErrorIcon sx={{ fontSize: "50px", color: theme.palette.primary.main }} />
-						<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
-							Error
-						</Typography>
-						<Typography variant="h4">
-							{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}
-						</Typography>
-						<Typography sx={{ marginTop: "1rem" }} variant="body1">
-							{transferError ? (transferError.code === undefined ? transferError : null) : null}
-						</Typography>
-
-						<Box sx={{ margin: "2rem 0", display: "flex", width: "70%", justifyContent: "space-around" }}>
-							<FancyButton sx={{ minWidth: "7rem" }} onClick={() => setTransferState("none")}>
-								Close
-							</FancyButton>
-
-							<FancyButton type="submit" sx={{ minWidth: "7rem" }} onClick={handleTransfer}>
-								Retry
-							</FancyButton>
-						</Box>
-					</Box>
-
-					<Stack
-						sx={
-							transferState === "waiting"
-								? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }
-								: { display: "none" }
-						}
-					>
-						<Box sx={{ width: "100%" }}>
-							<LinearProgress />
-						</Box>
-						<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0" }}>
-							Waiting on Confirmation
-						</Typography>
-
-						<Typography variant="body1">
-							Purchasing {formatUnits(supsAmt, 18)} SUPS with {formatUnits(tokenAmt, 18)} {currentToken.toUpperCase()}
-						</Typography>
-						<Typography variant="body1">Confirm this transaction in your wallet</Typography>
-						<Box sx={{ width: "100%", marginTop: "1rem" }}>
-							<LinearProgress />
-						</Box>
-					</Stack>
-				</Box>
-
-				{/* Purchase Sups Form */}
-				<Box
-					sx={
-						acceptedChainExceptions && currentChainId === selectedChainId && transferState === "none" && metaMaskState === MetaMaskState.Active
+						transferState === "confirm"
 							? {
-									padding: {
-										xs: "1rem",
-										md: "0",
-									},
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									height: "100%",
+									width: "100%",
+									textAlign: "center",
+									background: colors.darkNavyBackground2,
 							  }
-							: {
-									filter: "blur(5px) brightness(20%)",
-									padding: {
-										xs: "1rem",
-										md: "0",
-									},
-							  }
+							: { display: "none" }
 					}
 				>
-					{/* Button Group */}
-					<ButtonGroup sx={{ width: "100%", marginBottom: "1rem" }}>
-						<Button
-							disableRipple
-							onClick={(e) => setIsNativeToken(true)}
-							sx={{ width: "50%", borderRadius: "0" }}
-							variant={isNativeToken ? "contained" : "outlined"}
-						>
-							{currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId ? "WBNB" : "WETH"}
-						</Button>
-						<Button
-							disableRipple
-							onClick={(e) => setIsNativeToken(false)}
-							sx={{ width: "50%", borderRadius: "0" }}
-							variant={isNativeToken ? "outlined" : "contained"}
-						>
-							{currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId ? "BUSD" : "USDC"}
-						</Button>
-					</ButtonGroup>
+					<CheckCircleIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
+					<Typography variant="h3" sx={{ margin: "2rem 0 0 0", textTransform: "uppercase" }}>
+						Success
+					</Typography>
+					<Typography variant="h4" sx={{ margin: "1rem 0" }}>
+						Transaction has been submitted
+					</Typography>
+					<Typography variant="body1">
+						<Link href={`https://${currentToken.scanSite}/tx/${currentTransferHash}`} target="_blank">
+							View on Explorer
+						</Link>
+					</Typography>
+					<FancyButton
+						borderColor={colors.skyBlue}
+						loading={loading}
+						disabled={loading}
+						sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
+						onClick={() => setTransferState("none")}
+					>
+						{loading ? " " : "Close"}
+					</FancyButton>
+					<Typography sx={loading ? { display: "flex", width: "100%", justifyContent: "center" } : { display: "none" }} variant="body1">
+						Please wait, your transaction is pending.
+					</Typography>
+				</Box>
+
+				<Box
+					sx={
+						transferState === "error"
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									height: "100%",
+									background: publicSale ? colors.darkNavyBackground2 : "unset",
+							  }
+							: { display: "none" }
+					}
+				>
+					<ErrorIcon sx={{ fontSize: "50px", color: theme.palette.secondary.main }} />
+					<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
+						Error
+					</Typography>
+					<Typography variant="h4">{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}</Typography>
+					{/* <Typography sx={{ marginTop: "1rem" }} variant="body1">
+						{transferError ? (transferError.code === undefined ? transferError : null) : null}
+					</Typography> */}
+
+					<Box sx={{ margin: "2rem 0", display: "flex", width: "70%", justifyContent: "space-around" }}>
+						<FancyButton borderColor={colors.skyBlue} sx={{ minWidth: "7rem" }} onClick={() => setTransferState("none")}>
+							Close
+						</FancyButton>
+
+						<FancyButton borderColor={colors.skyBlue} type="submit" sx={{ minWidth: "7rem" }} onClick={handleTransfer}>
+							Retry
+						</FancyButton>
+					</Box>
+				</Box>
+
+				<Stack
+					sx={
+						transferState === "waiting"
+							? {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center",
+									justifyContent: "center",
+									width: "100%",
+									height: "100%",
+									padding: "1rem",
+									textAlign: "center",
+									background: publicSale ? colors.darkNavyBackground2 : "unset",
+							  }
+							: { display: "none" }
+					}
+				>
+					<Box sx={{ width: "100%" }}>
+						<LinearProgress color="secondary" />
+					</Box>
+					<Typography variant="h3" sx={{ textTransform: "uppercase", margin: "1rem 0", textAlign: "center" }}>
+						Waiting on Confirmation
+					</Typography>
+
+					<Typography variant="body1">
+						Purchasing {parseFloat(formatUnits(supsAmt, tokenDecimals)).toFixed(2)} SUPS with{" "}
+						{parseFloat(formatUnits(tokenAmt, tokenDecimals)) <= 1
+							? parseFloat(formatUnits(tokenAmt, tokenDecimals)).toPrecision(4)
+							: parseFloat(formatUnits(tokenAmt, tokenDecimals)).toFixed(2)}{" "}
+						{currentToken.name.toUpperCase()}
+					</Typography>
+					<Typography variant="body1">Confirm this transaction in your wallet</Typography>
+					<Box sx={{ width: "100%", marginTop: "1rem" }}>
+						<LinearProgress color="secondary" />
+					</Box>
+				</Stack>
+			</Box>
+
+			{/* Purchase Sups Form */}
+			<Box
+				sx={
+					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none" && metaMaskState === MetaMaskState.Active
+						? {
+								background: publicSale ? colors.darkerNavyBackground : "unset",
+								p: publicSale ? "2em" : "unset",
+								"@media (max-width:400px)": {
+									p: "1rem",
+								},
+								height: "100%",
+						  }
+						: {
+								background: publicSale ? colors.darkerNavyBackground : "unset",
+								p: publicSale ? "2em" : "unset",
+								"@media (max-width:400px)": {
+									p: "1rem",
+								},
+								filter: "blur(5px) brightness(20%)",
+								height: "100%",
+						  }
+				}
+			>
+				<Box
+					sx={{
+						width: "90vw",
+						maxWidth: publicSale ? "24rem" : "550px",
+						display: "flex",
+						flexDirection: "column",
+						justifyContent: "space-between",
+					}}
+				>
 					<Typography
 						variant="h2"
 						align="center"
 						sx={{
+							fontWeight: 800,
+							fontSize: "1.2rem",
 							textTransform: "uppercase",
 							paddingBottom: "1rem",
 						}}
 					>
-						Purchase SUPS
+						Purchase $SUPS
 					</Typography>
-
-					{/* Form */}
 					<form onSubmit={handleSubmit}>
-						<Box sx={{ display: "flex", flexDirection: "column", height: "30vh", justifyContent: "space-between" }}>
-							<Box sx={{ display: "flex", flexDirection: "column" }}>
-								{currencyTextField()}
-								<FancyButton
-									disabled={userBalance.eq(0)}
-									sx={{ borderWidth: "1px", marginTop: ".5rem", marginLeft: "auto" }}
-									variant="outlined"
-									onClick={() => {
-										setTokenAmt(userBalance)
-										handleConversions("tokensToSups", userBalance)
-									}}
-								>
-									<Typography variant="body1">
-										Max: <b>{userBalance ? formatUnits(userBalance, 18) : "--"} </b>
-									</Typography>
-								</FancyButton>
-							</Box>
-							<Box sx={{ margin: "1.5rem 0" }}>
-								<StyledTextField
-									sx={{ backgroundColor: colors.darkNavyBlue }}
-									onChange={(e) => {
-										try {
-											const value = BigNumber.from(e.target.value)
-											setSupsAmt(value)
-											handleConversions("supsToTokens", value)
-										} catch (e) {
-											setSupsAmt(BigNumber.from(0))
-											console.error(e)
-										}
-									}}
-									value={supsAmt ? supsAmt.toString() : null}
-									fullWidth
-									type="number"
-									InputProps={{
-										endAdornment: <InputAdornment position="end">SUPS</InputAdornment>,
-										startAdornment: (
-											<InputAdornment position="start">
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: "column",
+								minHeight: "20rem",
+								justifyContent: "space-between",
+								alignItems: "center",
+								gap: "1em",
+							}}
+						>
+							<Box sx={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", gap: "1em" }}>
+								<Stack sx={{ gap: ".7em" }}>
+									<Box
+										component="img"
+										src={Arrow}
+										alt="token image"
+										sx={{
+											height: "2.5rem",
+											position: "absolute",
+											top: "50%",
+											left: "50%",
+											transform: "translate(-50%,-50%)",
+											zIndex: 2,
+											borderRadius: "50%",
+										}}
+									/>
+									<Box
+										sx={{
+											display: "flex",
+											flexDirection: "column",
+											backgroundColor: colors.inputBg,
+											borderRadius: "10px",
+											padding: ".5rem 1rem",
+										}}
+									>
+										<Box sx={{ display: "flex" }}>
+											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+												From:{" "}
+											</Typography>
+											{/* add or subtract buttons */}
+											{/* <Box></Box> */}
+
+											<TokenSelect
+												currentToken={currentToken}
+												cb={async (newToken: tokenSelect) => {
+													setTokenAmt(BigNumber.from(0))
+													setTokenDisplay(null)
+													setSupsAmt(BigNumber.from(0))
+													setSupsDisplay(null)
+													setCurrentToken(newToken)
+												}}
+											/>
+										</Box>
+										<Tooltip
+											placement="bottom-start"
+											title={`Please leave at least ${currentToken.gasFee} ${
+												currentToken.networkName === "Ethereum" ? "ETH" : "BNB"
+											} for gas`}
+											open={typeof balanceDelta === "number" ? balanceDelta <= 0 : false}
+										>
+											<TextField
+												color="secondary"
+												fullWidth
+												variant="filled"
+												value={tokenDisplay || ""}
+												type="number"
+												onChange={(e) => {
+													try {
+														if (e.target.value === "") setTokenDisplay(null) // if empty allow empty
+														setTokenDisplay(e.target.value)
+														setBalanceDelta(undefined)
+													} catch (e) {
+														console.error(e)
+														setTokenAmt(BigNumber.from(0))
+														setSupsAmt(BigNumber.from(0))
+														setTokenDisplay(null)
+														setSupsDisplay(null)
+													}
+												}}
+												onBlur={(e) => {
+													checkBalanceDelta(e.target.value)
+													const amt = parseUnits(e.target.value === "" ? "0" : e.target.value, tokenDecimals)
+													handleConversions("tokensToSups", amt)
+												}}
+												sx={{
+													background: colors.darkNavyBackground2,
+													borderRadius: "8px",
+													fontWeight: 800,
+													border: "none",
+													mt: ".5em",
+													"& input": {
+														p: ".5em",
+													},
+													"&>div": {
+														background: "none !important",
+														"&::before": {
+															border: "none !important",
+														},
+														"&::after": {
+															border: "none !important",
+														},
+													},
+													"& *::after, & *::before, &:hover": { p: 0, border: "none" },
+													"& 	.MuiTextField-root": {
+														background: "inherit",
+													},
+													"& .MuiFilledInput-underline:after": {
+														borderBottomColor: "none",
+													},
+													"& 	.MuiTextField-root.Mui-disabled": {
+														backgroundColor: colors.lightNavyBlue,
+													},
+													"& 	.MuiTextField-root.Mui-focused": {
+														backgroundColor: colors.lightNavyBlue,
+													},
+													input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, lineHeight: 0.5 },
+												}}
+												inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+											/>
+										</Tooltip>
+
+										<Button
+											sx={{ ml: "auto", width: "fit-content" }}
+											disabled={!tokenBalance}
+											onClick={() => {
+												if (tokenBalance) {
+													setBalanceDelta(0)
+													handleConversions("tokensToSups", tokenBalance)
+												}
+											}}
+										>
+											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
+												Max: <b>{tokenBalance ? parseFloat(formatUnits(tokenBalance, tokenDecimals)).toPrecision(4) : "--"}</b>
+											</Typography>
+										</Button>
+									</Box>
+
+									<Box sx={{ display: "flex", backgroundColor: colors.inputBg, borderRadius: "10px", padding: ".5rem 1rem", gap: ".5em" }}>
+										<Box sx={{ display: "flex", flexDirection: "column", gap: ".5em", width: "100%" }}>
+											<Box sx={{ display: "flex", justifyContent: "space-between" }}>
+												<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+													To:
+												</Typography>
+
+												<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: ".8rem", fontWeight: 600 }}>
+													1 <span style={{ fontSize: ".5rem", marginRight: "0.3rem" }}>x</span> $Sups = 12c
+												</Typography>
+											</Box>
+											<Box sx={{ position: "relative" }}>
 												<Box
 													component="img"
 													src={SupsToken}
 													alt="token image"
 													sx={{
-														height: "1.5rem",
-														marginRight: "1rem",
+														position: "absolute",
+														top: "50%",
+														left: "1em",
+														transform: "translateY(-50%)",
+														height: "24px",
+														marginRight: ".5rem",
+														"@media (max-width:1000px)": {
+															left: ".5em",
+														},
 													}}
 												/>
-											</InputAdornment>
-										),
+												<TextField
+													// disabled
+													variant="filled"
+													value={supsDisplay || ""}
+													type="number"
+													onChange={(e) => {
+														try {
+															if (e.target.value === "") setTokenDisplay(null) // if empty allow empty
+															setSupsDisplay(e.target.value.toString())
+															setBalanceDelta(undefined)
+														} catch (e) {
+															console.error(e)
+															setTokenAmt(BigNumber.from(0))
+															setSupsAmt(BigNumber.from(0))
+															setTokenDisplay(null)
+															setSupsDisplay(null)
+														}
+													}}
+													onBlur={(e) => {
+														if (e.target.value.length > 0) {
+															const amt = parseUnits(e.target.value, 18)
+															handleConversions("supsToTokens", amt)
+														}
+													}}
+													sx={{
+														width: "100%",
+														fontWeight: 800,
+														background: colors.darkNavyBackground2,
+														borderRadius: "8px",
+														"& input": {
+															p: ".5em",
+															pt: "0.8em",
+															pl: "2em",
+														},
+														"&>div": {
+															background: "none !important",
+															"&::before": {
+																border: "none !important",
+															},
+															"&::after": {
+																border: "none !important",
+															},
+														},
+														"& *::after, & *::before, &:hover": { p: 0, border: "none" },
+														"& 	.MuiTextField-root": {
+															background: "inherit",
+														},
+														"& .MuiFilledInput-underline:after": {
+															borderBottomColor: "none",
+														},
+														"& 	.MuiTextField-root.Mui-disabled": {
+															backgroundColor: colors.lightNavyBlue,
+														},
+														"& 	.MuiTextField-root.Mui-focused": {
+															backgroundColor: colors.lightNavyBlue,
+														},
+														input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, lineHeight: 0.5 },
+													}}
+													inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+												/>
+												<Typography
+													sx={{
+														position: "absolute",
+														top: "50%",
+														right: "10px",
+														opacity: 0.2,
+														transform: "translateY(-50%)",
+														pointerEvents: "none",
+													}}
+												>
+													approx.
+												</Typography>
+											</Box>
+										</Box>
+									</Box>
+								</Stack>
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "center",
+										gap: ".5em",
+										width: "100%",
 									}}
-									inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-								/>
-								<Box sx={{ width: "100%" }}>
-									<Typography variant="body1">1 SUP = 0.12 USD</Typography>
+								>
+									{user && user.publicAddress && (
+										<Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", width: "100%", padding: "0 .5rem" }}>
+											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
+												Account: {AddressDisplay(user.publicAddress)}{" "}
+												<span
+													style={{ cursor: "pointer" }}
+													onClick={() => {
+														logout()
+													}}
+												>
+													(disconnect)
+												</span>
+											</Typography>
+											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
+												$SUPS in Account: <b>{userSups ? parseFloat(formatUnits(userSups, supsDecimals)).toFixed(2) : "--"}</b>
+											</Typography>
+										</Box>
+									)}
+
+									{/* <Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
+										Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, supsDecimals)).toFixed(2) : "--"}</b>
+									</Typography> */}
 								</Box>
 							</Box>
 
-							{/* Progress Bar */}
-							<Box sx={{ width: "100%", backgroundColor: `${theme.palette.primary.dark}` }}>
-								<Box
-									sx={{
-										backgroundColor: `${theme.palette.primary.main}`,
-										width: `${BigNumber.from(100).sub(
-											amountRemaining.div(parseUnits(web3Constants.totalSaleSups.toString(), 18)).mul(100),
-										)}%`,
-										height: "2rem",
-									}}
-								/>
-							</Box>
-							<Box>
-								<Typography
-									variant="body1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									{formatUnits(amountRemaining, 24)}m of 217M Tokens remaining
-								</Typography>
-								<Typography
-									variant="body1"
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
-									{formatUnits(amountRemaining.div(web3Constants.totalSaleSups), 16)}% of total supply
-								</Typography>
-							</Box>
 							<FancyButton
-								disabled={!acceptedChainExceptions || tokenAmt?.gt(userBalance) || tokenAmt?.eq(0) || supsAmt?.gt(amountRemaining) || loading}
-								sx={{ width: "60%", minWidth: "150px", alignSelf: "center", marginTop: "1.5rem" }}
+								borderColor={colors.skyBlue}
+								disabled={
+									!acceptedChainExceptions ||
+									!tokenBalance ||
+									tokenAmt.gte(tokenBalance) ||
+									tokenAmt.eq(0) ||
+									supsAmt.gt(amountRemaining) ||
+									loading ||
+									exchangeRates === undefined
+								}
+								sx={{ width: "60%", minWidth: "200px", alignSelf: "center" }}
 								type="submit"
 								fancy
 							>
 								{(() => {
-									if (tokenAmt && tokenAmt.gt(userBalance)) {
-										return `Insufficient ${currentToken} Balance`
-									} else if (supsAmt && supsAmt.gt(amountRemaining)) {
-										return `Insufficient Remaining SUPS`
+									if (!tokenBalance) return "Fetching Balance"
+									if (tokenAmt.gte(tokenBalance)) {
+										return `Insufficient ${currentToken.name.toUpperCase()} Balance`
+									} else if (!tokenDisplay) {
+										return "Enter values"
+									} else if (supsAmt.gt(amountRemaining)) {
+										return `Insufficient SUPS Remaining`
+									} else if (exchangeRates === undefined) {
+										return `Retrieving Exchange Rates`
 									} else {
 										return "Purchase Your Sups"
 									}

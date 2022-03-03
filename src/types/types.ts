@@ -116,15 +116,36 @@ export interface Product {
 export interface Collection {
 	id: string
 	name: string
+	slug: string
 	image: string
+	mintContract: string
+	stakeContract: string
 	createdAt: Date
 	updatedAt: Date
 	frozenAt?: Date
 	deletedAt?: Date
 }
 
+// export interface NFTOwner {
+// 	token_address: string
+// 	token_id: string
+// 	contract_type: string
+// 	owner_of: string
+// 	block_number: string
+// 	block_number_minted: string
+// 	token_uri: string
+// 	metadata: string
+// 	synced_at: string
+// 	amount: string
+// 	name: string
+// 	symbol: string
+// }
+
 export interface Asset {
-	tokenID: number
+	hash: string
+	// mintContract: string
+	// stakeContract: string
+	externalTokenID: number
 	userID: string
 	username: string
 	name: string
@@ -142,13 +163,15 @@ export interface Asset {
 	lockedByID?: string
 	deletedAt?: Date
 	mintingSignature?: string
+	signatureExpiry?: string
 	txHistory: any[]
+	minted: boolean
 }
 
 export interface Attribute {
 	display_type?: "number"
 	trait_type: string
-	token_id?: number
+	assetHash?: string
 	value: string | number
 }
 
@@ -174,27 +197,54 @@ export interface StoreItem {
 	updatedAt: Date
 }
 
+export interface Transaction {
+	id: string
+	credit: string
+	debit: string
+	amount: string
+	status: "failed" | "success"
+	transactionReference: string
+	description: string
+	reason?: string
+	created_at: Date
+	groupID?: string
+	to: User
+	from: User
+}
+
 export interface QueuedWarMachine {
 	position: number
 	warMachineMetadata: WarMachineMetadata
 }
 
 export interface WarMachineMetadata {
-	tokenID: number
+	assetHash: string
 	isInsured: boolean
 	contractReward: string
-}
-
-export enum Rarity {
-	Common,
-	Uncommon,
-	Rare,
-	Epic,
-	Legendary,
 }
 
 export interface ExchangeRates {
 	ETHtoUSD: number
 	BNBtoUSD: number
 	SUPtoUSD: number
+}
+
+export type tokenName = "eth" | "usdc" | "bnb" | "busd"
+
+export interface tokenSelect {
+	name: tokenName
+	networkName: string
+	chainId: number
+	tokenSrc: string
+	chainSrc: string
+	isNative: boolean
+	contractAddr: string
+	scanSite: string
+	gasFee: number
+}
+
+export interface metamaskError {
+	code: number
+	message: string
+	stack?: unknown
 }
