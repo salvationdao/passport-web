@@ -1,5 +1,5 @@
 import SortIcon from "@mui/icons-material/Sort"
-import { Box, CircularProgress, Pagination, Paper, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
+import { Box, CircularProgress, InputBase, MenuItem, Pagination, Paper, Select, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../../assets"
@@ -15,6 +15,8 @@ import { SortChip } from "../profile/profile"
 import { DesktopTransactionTable } from "./desktopTransactionTable"
 import { MobileTransactionTable } from "./mobileTransactionTable"
 
+type GroupType = "All" | "Ungrouped" | string
+
 export const TransactionsPage = () => {
 	const history = useHistory()
 	const { user } = useAuth()
@@ -27,13 +29,17 @@ export const TransactionsPage = () => {
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
 
+	// Sort / Filters / Page size
+	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
+	const [selectedGroupID, setSelectedGroupID] = useState<GroupType>("All")
+	const [pageSize, setPageSize] = useState(5)
+
 	// Ungrouped transactions
 	const [totalPages, setTotalPages] = useState(0)
 	const [currentPage, setCurrentPage] = useState(1)
-	const [ungroupedTransactionIDs, setUngroupedTransactionIDs] = useState<string[]>([])
-	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
+	const [transactionIDs, setTransactionIDs] = useState<string[]>([])
 
-	// Group transactions
+	// Group IDs
 	const [transactionGroupIDs, setTransactionGroupIDs] = useState<string[]>([])
 
 	useEffect(() => {
@@ -41,25 +47,41 @@ export const TransactionsPage = () => {
 		;(async () => {
 			setLoading(true)
 			try {
-				// Get ungrouped transaction IDs
-				const pageSize = 5
+				// Get transaction IDs
+				const filterItems = []
+
+				switch (selectedGroupID) {
+					case "All":
+						// Get all transactions; don't push any filters
+						break
+					case "Ungrouped":
+						// Get only ungrouped transactions
+						filterItems.push({
+							columnField: "group_id",
+							operatorValue: "=",
+							value: "''",
+						})
+						break
+					default:
+						// Get transactions of a specific group
+						filterItems.push({
+							columnField: "group_id",
+							operatorValue: "=",
+							value: selectedGroupID,
+						})
+				}
+
 				const resp = await send<{ total: number; transactionIDs: string[] }>(HubKey.TransactionList, {
 					pageSize,
 					page: currentPage - 1,
 					search,
 					filter: {
 						linkOperator: "and",
-						items: [
-							{
-								columnField: "group_id",
-								operatorValue: "=",
-								value: "''",
-							},
-						],
+						items: filterItems,
 					},
 					...sort,
 				})
-				setUngroupedTransactionIDs(resp.transactionIDs)
+				setTransactionIDs(resp.transactionIDs)
 				setTotalPages(Math.ceil(resp.total / pageSize))
 				setError(undefined)
 			} catch (e) {
@@ -72,7 +94,7 @@ export const TransactionsPage = () => {
 				setLoading(false)
 			}
 		})()
-	}, [send, state, search, user, currentPage, sort])
+	}, [send, state, search, user, currentPage, sort, selectedGroupID, pageSize])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send || !user) return
@@ -134,7 +156,6 @@ export const TransactionsPage = () => {
 								<SortChip
 									active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 									label="Oldest first"
-									variant="outlined"
 									onClick={() => {
 										setSort(newSort)
 									}}
@@ -150,7 +171,6 @@ export const TransactionsPage = () => {
 								<SortChip
 									active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 									label="Newest first"
-									variant="outlined"
 									onClick={() => {
 										setSort(newSort)
 									}}
@@ -257,12 +277,17 @@ export const TransactionsPage = () => {
 								fullWidth
 							/>
 						</Box>
-						<TransactionGroupBox>
+						<TransactionGroupBox
+							sx={{
+								minWidth: 0,
+							}}
+						>
 							<Box
 								sx={{
 									display: "flex",
-									justifyContent: "space-between",
 									flexWrap: "wrap",
+									justifyContent: "space-between",
+									alignItems: "baseline",
 									marginBottom: ".5rem",
 									"@media (max-width: 500px)": {
 										flexDirection: "column",
@@ -271,28 +296,41 @@ export const TransactionsPage = () => {
 									},
 								}}
 							>
-								<Typography
-									variant="h3"
-									component="h2"
-									sx={{
-										fontFamily: fonts.bizmoblack,
-										fontStyle: "italic",
-										letterSpacing: "2px",
-										textTransform: "uppercase",
+								<Select
+									value={selectedGroupID}
+									onChange={(e) => {
+										setSelectedGroupID(e.target.value)
+										setCurrentPage(1)
 									}}
+									input={<GroupSelectionInput />}
+									displayEmpty
 								>
-									Uncategorized
-								</Typography>
+									<MenuItem value={"All"}>
+										<em>All</em>
+									</MenuItem>
+									<MenuItem value={"Ungrouped"}>Ungrouped</MenuItem>
+									{transactionGroupIDs.map((g, index) => (
+										<MenuItem key={`${g}-${index}-group_filter`} value={g}>
+											{g}
+										</MenuItem>
+									))}
+								</Select>
 								<FancyButton size="small" onClick={() => setOpenFilterDrawer(true)} endIcon={<SortIcon />}>
 									Sort By
 								</FancyButton>
 							</Box>
 							{isWiderThan1000px ? (
-								<DesktopTransactionTable transactionIDs={ungroupedTransactionIDs} />
+								<Box
+									sx={{
+										overflowX: "auto",
+									}}
+								>
+									<DesktopTransactionTable transactionIDs={transactionIDs} />
+								</Box>
 							) : (
-								<MobileTransactionTable transactionIDs={ungroupedTransactionIDs} />
+								<MobileTransactionTable transactionIDs={transactionIDs} />
 							)}
-							{ungroupedTransactionIDs.length === 0 && (
+							{transactionIDs.length === 0 && (
 								<Box
 									sx={{
 										flex: 1,
@@ -307,27 +345,44 @@ export const TransactionsPage = () => {
 										<CircularProgress />
 									) : (
 										<Typography variant="subtitle2" color={colors.darkerGrey}>
-											{error ? error : "No transaction history"}
+											{error ? error : `No transaction history ${selectedGroupID && "for"} ${selectedGroupID}`}
 										</Typography>
 									)}
 								</Box>
 							)}
-							<Pagination
+							<Box
 								sx={{
-									alignSelf: "center",
+									display: "flex",
+									flexWrap: "wrap",
+									justifyContent: "space-between",
+									alignItems: "center",
 									marginTop: "1rem",
 								}}
-								count={totalPages}
-								color="primary"
-								page={currentPage}
-								onChange={(_, p) => {
-									setCurrentPage(p)
-								}}
-							/>
+							>
+								<Select
+									value={pageSize}
+									onChange={(e) => {
+										setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
+										setCurrentPage(1)
+									}}
+									input={<PageSizeSelectionInput />}
+								>
+									<MenuItem value={5}>Showing 5 results per page</MenuItem>
+									<MenuItem value={10}>Showing 10 results per page</MenuItem>
+									<MenuItem value={20}>Showing 20 results per page</MenuItem>
+									<MenuItem value={50}>Showing 50 results per page</MenuItem>
+									<MenuItem value={100}>Showing 100 results per page</MenuItem>
+								</Select>
+								<Pagination
+									count={totalPages}
+									color="primary"
+									page={currentPage}
+									onChange={(_, p) => {
+										setCurrentPage(p)
+									}}
+								/>
+							</Box>
 						</TransactionGroupBox>
-						{transactionGroupIDs.map((g, index) => (
-							<TransactionGroup key={`${g}-${index}`} groupID={g} search={search} />
-						))}
 					</Paper>
 				</Box>
 			</Box>
@@ -346,205 +401,49 @@ const TransactionGroupBox = styled("div")({
 	},
 })
 
-interface TransactionGroupProps {
-	groupID: string
-	search: string
-}
+const GroupSelectionInput = styled(InputBase)(({ theme }) => ({
+	padding: 2,
+	borderRadius: ".5rem",
+	transition: theme.transitions.create(["background-color"]),
+	"&:hover": {
+		backgroundColor: "rgba(255, 255, 255, .2)",
+	},
+	"& .MuiInputBase-input": {
+		display: "flex",
+		alignItems: "end",
+		borderRadius: ".5rem",
+		padding: 0,
+		fontSize: "1.2rem",
+		fontFamily: fonts.bizmoblack,
+		fontStyle: "italic",
+		letterSpacing: "2px",
+		textTransform: "uppercase",
+		"&:focus": {
+			borderRadius: 4,
+			borderColor: "#80bdff",
+			boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
+		},
+	},
+}))
 
-const TransactionGroup = ({ groupID, search }: TransactionGroupProps) => {
-	const { user } = useAuth()
-	const { state, send } = useWebsocket()
-	const [currentPage, setCurrentPage] = useState(1)
-	const [totalPages, setTotalPages] = useState(1)
-	const [transactionIDs, setTransactionIDs] = useState<string[]>([])
-	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
-	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState<string>()
-	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !send || !user) return
-		;(async () => {
-			setLoading(true)
-			try {
-				const pageSize = 5
-				const resp = await send<{ total: number; transactionIDs: string[] }>(HubKey.TransactionList, {
-					pageSize,
-					page: currentPage - 1,
-					search,
-					filter: {
-						linkOperator: "and",
-						items: [
-							{
-								columnField: "group_id",
-								operatorValue: "=",
-								value: groupID,
-							},
-						],
-					},
-					...sort,
-				})
-				setTransactionIDs(resp.transactionIDs)
-				setTotalPages(Math.ceil(resp.total / pageSize))
-				setError(undefined)
-			} catch (e) {
-				if (typeof e === "string") {
-					setError(e)
-				} else if (e instanceof Error) {
-					setError(e.message)
-				}
-			} finally {
-				setLoading(false)
-			}
-		})()
-	}, [send, state, search, user, currentPage, sort, groupID])
-
-	const renderFilters = () => {
-		return (
-			<>
-				<Box>
-					<Typography
-						variant="subtitle1"
-						sx={{
-							display: "flex",
-							alignItems: "center",
-							marginBottom: ".5rem",
-						}}
-					>
-						Sort By
-					</Typography>
-					<Box
-						sx={{
-							display: "flex",
-							flexDirection: "row",
-							flexWrap: "wrap",
-							gap: ".5rem",
-						}}
-					>
-						{(() => {
-							const newSort = {
-								sortBy: "created_at",
-								sortDir: "asc",
-							}
-							return (
-								<SortChip
-									active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-									label="Oldest first"
-									variant="outlined"
-									onClick={() => {
-										setSort(newSort)
-									}}
-								/>
-							)
-						})()}
-						{(() => {
-							const newSort = {
-								sortBy: "created_at",
-								sortDir: "desc",
-							}
-							return (
-								<SortChip
-									active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
-									label="Newest first"
-									variant="outlined"
-									onClick={() => {
-										setSort(newSort)
-									}}
-								/>
-							)
-						})()}
-					</Box>
-				</Box>
-			</>
-		)
-	}
-
-	return (
-		<>
-			<SwipeableDrawer
-				open={openFilterDrawer}
-				onClose={() => setOpenFilterDrawer(false)}
-				onOpen={() => setOpenFilterDrawer(true)}
-				anchor="bottom"
-				swipeAreaWidth={56}
-				ModalProps={{ keepMounted: true }}
-				PaperProps={{
-					sx: {
-						padding: "2rem",
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem",
-						},
-					},
-				}}
-			>
-				{renderFilters()}
-			</SwipeableDrawer>
-			<TransactionGroupBox>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "space-between",
-						flexWrap: "wrap",
-						marginBottom: ".5rem",
-						"@media (max-width: 500px)": {
-							flexDirection: "column",
-							alignItems: "start",
-							marginBottom: "1rem",
-						},
-					}}
-				>
-					<Typography
-						variant="h3"
-						component="h2"
-						sx={{
-							fontFamily: fonts.bizmoblack,
-							fontStyle: "italic",
-							letterSpacing: "2px",
-							textTransform: "uppercase",
-						}}
-					>
-						{groupID}
-					</Typography>
-					<FancyButton size="small" onClick={() => setOpenFilterDrawer(true)} endIcon={<SortIcon />}>
-						Sort By
-					</FancyButton>
-				</Box>
-
-				{isWiderThan1000px ? <DesktopTransactionTable transactionIDs={transactionIDs} /> : <MobileTransactionTable transactionIDs={transactionIDs} />}
-				{transactionIDs.length === 0 && (
-					<Box
-						sx={{
-							flex: 1,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							padding: "1rem",
-							minHeight: "200px",
-						}}
-					>
-						{loading ? (
-							<CircularProgress />
-						) : (
-							<Typography variant="subtitle2" color={colors.darkerGrey}>
-								{error ? error : `No transaction history for ${groupID}`}
-							</Typography>
-						)}
-					</Box>
-				)}
-				<Pagination
-					sx={{
-						alignSelf: "center",
-						marginTop: "1rem",
-					}}
-					count={totalPages}
-					color="secondary"
-					page={currentPage}
-					onChange={(_, p) => {
-						setCurrentPage(p)
-					}}
-				/>
-			</TransactionGroupBox>
-		</>
-	)
-}
+const PageSizeSelectionInput = styled(InputBase)(({ theme }) => ({
+	padding: 2,
+	borderRadius: ".5rem",
+	transition: theme.transitions.create(["background-color"]),
+	"&:hover": {
+		backgroundColor: "rgba(255, 255, 255, .2)",
+	},
+	"& .MuiInputBase-input": {
+		display: "flex",
+		alignItems: "end",
+		borderRadius: ".5rem",
+		padding: 0,
+		fontSize: ".9em",
+		color: colors.darkGrey,
+		"&:focus": {
+			borderRadius: 4,
+			borderColor: "#80bdff",
+			boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
+		},
+	},
+}))
