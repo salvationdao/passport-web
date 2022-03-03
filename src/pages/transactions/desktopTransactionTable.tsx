@@ -1,5 +1,5 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, Button, Chip, styled, Typography } from "@mui/material"
+import { Box, Button, Chip, styled, Typography, TypographyProps } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -17,6 +17,7 @@ export const DesktopTransactionTable = ({ transactionIDs }: TransactionTableProp
 		<Box
 			component="table"
 			sx={{
+				width: "100%",
 				borderCollapse: "collapse",
 			}}
 		>
@@ -77,7 +78,7 @@ const EntryRow = styled("tr")({
 	"& > *:nth-of-type(7)": {},
 })
 
-const EntryData = styled(Typography)({
+const EntryData = styled((props: TypographyProps) => <Typography {...props} tabIndex={-1} />)({
 	overflowX: "auto",
 	display: "block",
 	whiteSpace: "nowrap",

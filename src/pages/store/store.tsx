@@ -177,7 +177,6 @@ export const StorePage: React.FC = () => {
 							<SortChip
 								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 								label="Oldest first"
-								variant="outlined"
 								onClick={() => {
 									setSort(newSort)
 								}}
@@ -193,7 +192,6 @@ export const StorePage: React.FC = () => {
 							<SortChip
 								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 								label="Newest first"
-								variant="outlined"
 								onClick={() => {
 									setSort(newSort)
 								}}
@@ -209,7 +207,6 @@ export const StorePage: React.FC = () => {
 							<SortChip
 								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 								label="Name: Alphabetical"
-								variant="outlined"
 								onClick={() => {
 									setSort(newSort)
 								}}
@@ -225,7 +222,6 @@ export const StorePage: React.FC = () => {
 							<SortChip
 								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 								label="Name: Alphabetical (reverse)"
-								variant="outlined"
 								onClick={() => {
 									setSort(newSort)
 								}}
@@ -250,71 +246,30 @@ export const StorePage: React.FC = () => {
 						gap: ".5rem",
 					}}
 				>
-					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
-					<FilterChip
-						active={rarities.has("Colossal")}
-						label="Colossal"
-						color={colors.rarity.colossal}
-						variant="outlined"
-						onClick={() => toggleRarity("Colossal")}
-					/>
-					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
+					<FilterChip active={rarities.has("Colossal")} label="Colossal" color={colors.rarity.colossal} onClick={() => toggleRarity("Colossal")} />
 					<FilterChip
 						active={rarities.has("Legendary")}
 						label="Legendary"
 						color={colors.rarity.legendary}
-						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
 					/>
 					<FilterChip
 						active={rarities.has("Elite Legendary")}
 						label="Elite Legendary"
 						color={colors.rarity.eliteLegendary}
-						variant="outlined"
 						onClick={() => toggleRarity("Elite Legendary")}
 					/>
 					<FilterChip
 						active={rarities.has("Ultra Rare")}
 						label="Ultra Rare"
 						color={colors.rarity.ultraRare}
-						variant="outlined"
 						onClick={() => toggleRarity("Ultra Rare")}
 					/>
-					<FilterChip
-						active={rarities.has("Exotic")}
-						label="Exotic"
-						color={colors.rarity.exotic}
-						variant="outlined"
-						onClick={() => toggleRarity("Exotic")}
-					/>
-					<FilterChip
-						active={rarities.has("Guardian")}
-						label="Guardian"
-						color={colors.rarity.guardian}
-						variant="outlined"
-						onClick={() => toggleRarity("Guardian")}
-					/>
-					<FilterChip
-						active={rarities.has("Mythic")}
-						label="Mythic"
-						color={colors.rarity.mythic}
-						variant="outlined"
-						onClick={() => toggleRarity("Mythic")}
-					/>
-					<FilterChip
-						active={rarities.has("Deus ex")}
-						label="Deus ex"
-						color={colors.rarity.deusEx}
-						variant="outlined"
-						onClick={() => toggleRarity("Deus ex")}
-					/>
-					<FilterChip
-						active={rarities.has("Titan")}
-						label="Titan"
-						color={colors.rarity.titan}
-						variant="outlined"
-						onClick={() => toggleRarity("Titan")}
-					/>
+					<FilterChip active={rarities.has("Exotic")} label="Exotic" color={colors.rarity.exotic} onClick={() => toggleRarity("Exotic")} />
+					<FilterChip active={rarities.has("Guardian")} label="Guardian" color={colors.rarity.guardian} onClick={() => toggleRarity("Guardian")} />
+					<FilterChip active={rarities.has("Mythic")} label="Mythic" color={colors.rarity.mythic} onClick={() => toggleRarity("Mythic")} />
+					<FilterChip active={rarities.has("Deus ex")} label="Deus ex" color={colors.rarity.deusEx} onClick={() => toggleRarity("Deus ex")} />
+					<FilterChip active={rarities.has("Titan")} label="Titan" color={colors.rarity.titan} onClick={() => toggleRarity("Titan")} />
 				</Box>
 			</Box>
 		</>
@@ -484,6 +439,7 @@ export const StorePage: React.FC = () => {
 								flex: 1,
 								display: "flex",
 								flexDirection: "column",
+								minWidth: 0,
 							}}
 						>
 							<Tabs
@@ -495,11 +451,10 @@ export const StorePage: React.FC = () => {
 									hidden: true,
 								}}
 								aria-label="Filter tabs"
-								variant={isWiderThan1000px ? "standard" : "scrollable"}
+								variant="scrollable"
 								scrollButtons="auto"
 								allowScrollButtonsMobile
 								sx={{
-									maxWidth: "calc(100vw - 6rem)",
 									[`& .${tabsClasses.scrollButtons}`]: {
 										"&.Mui-disabled": { opacity: 0.3 },
 									},
