@@ -27,7 +27,7 @@ const LootboxVideo: React.FC<VideoProps> = ({ srcURL, setOpen, open, setDialogOp
 
 	return (
 		<Fade in={open} appear={false} timeout={1000}>
-			<Box sx={{ position: "absolute", height: "100%", width: "100%", zIndex: 99 }}>
+			<Box sx={{ position: "absolute", height: "100%", zIndex: 99 }}>
 				{open && (
 					<>
 						<Video
