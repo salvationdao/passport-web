@@ -122,7 +122,7 @@ export const SalePage = () => {
 							top: 0,
 							left: 0,
 							width: "100%",
-							minHeight: "100vh",
+							minHeight: "100%",
 							background: colors.black,
 							zIndex: 9999,
 						}}
@@ -139,7 +139,7 @@ export const SalePage = () => {
 					<Box
 						sx={{
 							opacity: loadingAmountRemaining ? 0 : 1,
-							minHeight: "100vh",
+							minHeight: "100%",
 							background: colors.black2Background,
 						}}
 					>
@@ -148,7 +148,7 @@ export const SalePage = () => {
 								pt: `${NAVBAR_HEIGHT}px`,
 								pb: "2em",
 								justifyContent: "center",
-								minHeight: "100vh",
+								minHeight: "100%",
 								alignItems: "center",
 								gap: "4em",
 								px: "2em",
@@ -321,8 +321,8 @@ const GameFrame = styled("iframe")({
 	left: 0,
 	bottom: 0,
 	right: 0,
-	width: "100vw",
-	height: "100vh",
+	width: "100%",
+	height: "100%",
 	border: "none",
 	margin: 0,
 	padding: 0,

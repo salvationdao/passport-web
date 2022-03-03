@@ -6,7 +6,7 @@ export const PleaseEnlist = () => {
 	return (
 		<Box
 			sx={{
-				minHeight: "100vh",
+				minHeight: "100%",
 				display: "flex",
 				flexDirection: "column",
 			}}
@@ -67,7 +67,7 @@ export const WhiteListCheck = () => {
 	return (
 		<Box
 			sx={{
-				minHeight: "100vh",
+				minHeight: "100%",
 				display: "flex",
 				flexDirection: "column",
 			}}

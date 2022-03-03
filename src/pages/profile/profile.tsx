@@ -109,7 +109,7 @@ export const ProfilePage: React.FC = () => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				minHeight: "100vh",
+				minHeight: "100%",
 			}}
 		>
 			<Navbar
@@ -137,7 +137,6 @@ export const ProfilePage: React.FC = () => {
 							sx={{
 								display: "flex",
 								flexDirection: "column",
-								width: "100%",
 								maxWidth: "340px",
 								padding: "2rem 0",
 								"& > *:not(:last-child)": {
@@ -494,6 +493,7 @@ export const SortChip = ({ color = colors.white, active, ...props }: SortChipPro
 				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
 			},
 		}}
+		variant="outlined"
 		{...props}
 	/>
 )
@@ -516,6 +516,7 @@ export const FilterChip = ({ color = colors.white, active, ...props }: FilterChi
 				boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
 			},
 		}}
+		variant="outlined"
 		onDelete={active ? props.onClick : undefined}
 		{...props}
 	/>

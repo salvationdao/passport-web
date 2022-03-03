@@ -81,7 +81,7 @@ export const StoresPage = () => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				minHeight: "100vh",
+				minHeight: "100%",
 			}}
 		>
 			<Navbar

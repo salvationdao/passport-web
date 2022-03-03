@@ -298,7 +298,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 								)
 								return
 							}
-							setWithdrawDialogOpen(true)
+							history.push("/withdraw")
 						}}
 					>
 						Withdraw
@@ -494,6 +494,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				component="main"
 				sx={(theme) => ({
 					flexGrow: 1,
+					minWidth: 0, // DO NOT REMOVE THIS OR OVERFLOW X MAY BREAK ON SOME PAGES
 					transition: theme.transitions.create("margin", {
 						easing: theme.transitions.easing.sharp,
 						duration: theme.transitions.duration.leavingScreen,

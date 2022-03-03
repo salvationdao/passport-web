@@ -1,12 +1,12 @@
-import React from "react"
-import { Navbar } from "../components/home/navbar"
-import Locker from "../assets/images/locker.png"
 import { Box, Paper, TextField, Typography } from "@mui/material"
-import { colors } from "../theme"
+import React from "react"
 import Arrow from "../assets/images/arrow.png"
+import Locker from "../assets/images/locker.png"
 import { FancyButton } from "../components/fancyButton"
+import { Navbar } from "../components/home/navbar"
+import { colors } from "../theme"
 
-export const WithdrawPage = () => {
+export const WithdrawPreviewPage = () => {
 	return (
 		<div>
 			<Navbar sx={{ marginBottom: "2rem" }} />

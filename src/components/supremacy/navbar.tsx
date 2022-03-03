@@ -189,7 +189,7 @@ export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (pr
 			component="header"
 			id="sup-navbar"
 			sx={{
-				width: "100vw",
+				width: "100%",
 				minHeight: "5rem",
 				position: "fixed",
 				top: 0,
@@ -209,7 +209,7 @@ export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (pr
 						sx={{
 							background: open ? colors.black2 : "unset",
 							height: NAVBAR_HEIGHT,
-							width: "100vw",
+							width: "100%",
 							display: "flex",
 							justifyContent: "center",
 							alignItems: "center",
@@ -304,7 +304,7 @@ export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (pr
 									sx={{
 										pt: `${NAVBAR_HEIGHT}px`,
 										background: colors.black2,
-										minHeight: "100vh",
+										minHeight: "100%",
 										"&:focus": {
 											boxShadow: "none",
 										},
@@ -335,7 +335,7 @@ export const SupremacyNavbar: React.FC<{ sx?: SxProps; loading: boolean }> = (pr
 													"@media (max-width:600px)": {
 														borderTop: `1px groove ${colors.neonBlue}`,
 														maxWidth: "unset",
-														width: "100vw",
+														width: "100%",
 													},
 													"@media (orientation: landscape)": {
 														gap: "1em",

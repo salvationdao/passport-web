@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
+import { Box, Collapse, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
@@ -177,7 +177,6 @@ export const StorePage: React.FC = () => {
 							<SortChip
 								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 								label="Oldest first"
-								variant="outlined"
 								onClick={() => {
 									setSort(newSort)
 								}}
@@ -193,7 +192,6 @@ export const StorePage: React.FC = () => {
 							<SortChip
 								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 								label="Newest first"
-								variant="outlined"
 								onClick={() => {
 									setSort(newSort)
 								}}
@@ -209,7 +207,6 @@ export const StorePage: React.FC = () => {
 							<SortChip
 								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 								label="Name: Alphabetical"
-								variant="outlined"
 								onClick={() => {
 									setSort(newSort)
 								}}
@@ -225,7 +222,6 @@ export const StorePage: React.FC = () => {
 							<SortChip
 								active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
 								label="Name: Alphabetical (reverse)"
-								variant="outlined"
 								onClick={() => {
 									setSort(newSort)
 								}}
@@ -250,71 +246,30 @@ export const StorePage: React.FC = () => {
 						gap: ".5rem",
 					}}
 				>
-					<FilterChip active={rarities.has("Mega")} label="Mega" color={colors.rarity.mega} variant="outlined" onClick={() => toggleRarity("Mega")} />
-					<FilterChip
-						active={rarities.has("Colossal")}
-						label="Colossal"
-						color={colors.rarity.colossal}
-						variant="outlined"
-						onClick={() => toggleRarity("Colossal")}
-					/>
-					<FilterChip active={rarities.has("Rare")} label="Rare" color={colors.rarity.rare} variant="outlined" onClick={() => toggleRarity("Rare")} />
+					<FilterChip active={rarities.has("Colossal")} label="Colossal" color={colors.rarity.colossal} onClick={() => toggleRarity("Colossal")} />
 					<FilterChip
 						active={rarities.has("Legendary")}
 						label="Legendary"
 						color={colors.rarity.legendary}
-						variant="outlined"
 						onClick={() => toggleRarity("Legendary")}
 					/>
 					<FilterChip
 						active={rarities.has("Elite Legendary")}
 						label="Elite Legendary"
 						color={colors.rarity.eliteLegendary}
-						variant="outlined"
 						onClick={() => toggleRarity("Elite Legendary")}
 					/>
 					<FilterChip
 						active={rarities.has("Ultra Rare")}
 						label="Ultra Rare"
 						color={colors.rarity.ultraRare}
-						variant="outlined"
 						onClick={() => toggleRarity("Ultra Rare")}
 					/>
-					<FilterChip
-						active={rarities.has("Exotic")}
-						label="Exotic"
-						color={colors.rarity.exotic}
-						variant="outlined"
-						onClick={() => toggleRarity("Exotic")}
-					/>
-					<FilterChip
-						active={rarities.has("Guardian")}
-						label="Guardian"
-						color={colors.rarity.guardian}
-						variant="outlined"
-						onClick={() => toggleRarity("Guardian")}
-					/>
-					<FilterChip
-						active={rarities.has("Mythic")}
-						label="Mythic"
-						color={colors.rarity.mythic}
-						variant="outlined"
-						onClick={() => toggleRarity("Mythic")}
-					/>
-					<FilterChip
-						active={rarities.has("Deus ex")}
-						label="Deus ex"
-						color={colors.rarity.deusEx}
-						variant="outlined"
-						onClick={() => toggleRarity("Deus ex")}
-					/>
-					<FilterChip
-						active={rarities.has("Titan")}
-						label="Titan"
-						color={colors.rarity.titan}
-						variant="outlined"
-						onClick={() => toggleRarity("Titan")}
-					/>
+					<FilterChip active={rarities.has("Exotic")} label="Exotic" color={colors.rarity.exotic} onClick={() => toggleRarity("Exotic")} />
+					<FilterChip active={rarities.has("Guardian")} label="Guardian" color={colors.rarity.guardian} onClick={() => toggleRarity("Guardian")} />
+					<FilterChip active={rarities.has("Mythic")} label="Mythic" color={colors.rarity.mythic} onClick={() => toggleRarity("Mythic")} />
+					<FilterChip active={rarities.has("Deus ex")} label="Deus ex" color={colors.rarity.deusEx} onClick={() => toggleRarity("Deus ex")} />
+					<FilterChip active={rarities.has("Titan")} label="Titan" color={colors.rarity.titan} onClick={() => toggleRarity("Titan")} />
 				</Box>
 			</Box>
 		</>
@@ -346,7 +301,7 @@ export const StorePage: React.FC = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					minHeight: "100vh",
+					minHeight: "100%",
 					overflowX: "hidden",
 				}}
 			>
@@ -440,50 +395,25 @@ export const StorePage: React.FC = () => {
 							<ChevronLeftIcon />
 							Go Back
 						</Link>
-						{!isWiderThan1000px && (
-							<FancyButton onClick={() => setOpenFilterDrawer(true)} size="small" endIcon={<FilterAltIcon />}>
-								Filters / Sort
-							</FancyButton>
-						)}
+						<FancyButton onClick={() => setOpenFilterDrawer((prev) => !prev)} size="small" endIcon={<FilterAltIcon />}>
+							Filters / Sort
+						</FancyButton>
 					</Box>
 
 					<Box
 						sx={{
 							flex: 1,
 							display: "flex",
+							flexDirection: "column",
+							justifyContent: "center",
 							width: "100%",
 						}}
 					>
-						{isWiderThan1000px && (
-							<Box
-								sx={{
-									alignSelf: "start",
-									width: "340px",
-								}}
-							>
-								<Tabs
-									sx={{
-										backgroundColor: "transparent",
-									}}
-								/>
-								<Paper
-									sx={{
-										padding: "2rem",
-										borderRadius: 0,
-										"& > *:not(:last-child)": {
-											marginBottom: "1rem",
-										},
-									}}
-								>
-									{renderFilters()}
-								</Paper>
-							</Box>
-						)}
 						<Box
 							sx={{
-								flex: 1,
 								display: "flex",
-								flexDirection: "column",
+								justifyContent: "center",
+								width: "100%",
 							}}
 						>
 							<Tabs
@@ -495,11 +425,10 @@ export const StorePage: React.FC = () => {
 									hidden: true,
 								}}
 								aria-label="Filter tabs"
-								variant={isWiderThan1000px ? "standard" : "scrollable"}
+								variant="scrollable"
 								scrollButtons="auto"
 								allowScrollButtonsMobile
 								sx={{
-									maxWidth: "calc(100vw - 6rem)",
 									[`& .${tabsClasses.scrollButtons}`]: {
 										"&.Mui-disabled": { opacity: 0.3 },
 									},
@@ -512,6 +441,38 @@ export const StorePage: React.FC = () => {
 								<StyledTab value="War Machine" label="War Machine" />
 								<StyledTab value="Weapon" label="Weapons" />
 							</Tabs>
+						</Box>
+
+						<Box
+							sx={{
+								flex: 1,
+								display: "flex",
+								// flexDirection: "column",
+								minWidth: 0,
+							}}
+						>
+							{isWiderThan1000px && (
+								<Collapse in={openFilterDrawer} orientation={"horizontal"}>
+									<Box
+										sx={{
+											alignSelf: "start",
+											width: "340px",
+										}}
+									>
+										<Paper
+											sx={{
+												padding: "2rem",
+												borderRadius: 0,
+												"& > *:not(:last-child)": {
+													marginBottom: "1rem",
+												},
+											}}
+										>
+											{renderFilters()}
+										</Paper>
+									</Box>
+								</Collapse>
+							)}
 							{!loading && canEnter && (storeItemIDs.length || showLootBox) ? (
 								<Paper
 									sx={{

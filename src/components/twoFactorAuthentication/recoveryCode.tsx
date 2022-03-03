@@ -30,7 +30,7 @@ export const TwoFactorAuthenticationRecoveryCode = () => {
 	return (
 		<Box
 			sx={{
-				minHeight: "100vh",
+				minHeight: "100%",
 				width: "100%",
 				backgroundColor: "primary.main",
 				display: "flex",

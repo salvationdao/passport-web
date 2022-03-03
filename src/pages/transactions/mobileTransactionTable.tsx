@@ -151,14 +151,24 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				<EntryLabel>Transaction Ref.</EntryLabel>
 				<Button
 					sx={{
-						textAlign: "start",
 						justifyContent: "start",
+						textAlign: "start",
 					}}
 					endIcon={<ContentCopyIcon />}
 					variant="text"
 					onClick={() => navigator.clipboard.writeText(entry.transactionReference)}
 				>
-					<EntryData>{entry.transactionReference}</EntryData>
+					<EntryData
+						sx={{
+							overflowX: "hidden",
+							maxWidth: "200px",
+							textTransform: "uppercase",
+							textOverflow: "ellipsis",
+							whiteSpace: "nowrap",
+						}}
+					>
+						{entry.transactionReference}
+					</EntryData>
 				</Button>
 			</EntryDataRow>
 			<EntryDataRow>
@@ -249,7 +259,7 @@ const EntryLabel = styled((props: TypographyProps) => <Typography variant="body2
 	color: colors.darkGrey,
 })
 
-const EntryData = styled((props: TypographyProps) => <Typography variant="body2" {...props} />)({
+const EntryData = styled(({ tabIndex, ...props }: TypographyProps) => <Typography tabIndex={-1} variant="body2" {...props} />)({
 	display: "inline-block",
 	minWidth: "50%",
 })

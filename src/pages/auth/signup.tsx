@@ -205,7 +205,7 @@ export const SignUpPage: React.FC = () => {
 			sx={{
 				overflow: "hidden",
 				position: "relative",
-				minHeight: "100vh",
+				minHeight: "100%",
 				display: "flex",
 				justifyContent: "center",
 				alignItems: "center",
