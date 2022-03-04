@@ -248,3 +248,5 @@ export interface metamaskError {
 	message: string
 	stack?: unknown
 }
+
+export type transferStateType = "waiting" | "error" | "confirm" | "none" | "unavailable"

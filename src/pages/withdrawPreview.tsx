@@ -1,7 +1,7 @@
 import { Box, Paper, TextField, Typography } from "@mui/material"
 import React from "react"
 import Arrow from "../assets/images/arrow.png"
-import Locker from "../assets/images/locker.png"
+import Locker from "../assets/images/gradient/safeLarge.png"
 import { FancyButton } from "../components/fancyButton"
 import { Navbar } from "../components/home/navbar"
 import { colors } from "../theme"

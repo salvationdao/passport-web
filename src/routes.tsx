@@ -29,6 +29,7 @@ import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
 import { TransactionsPage } from "./pages/transactions/transactions"
+import { DepositPage } from "./pages/deposit/depositPage"
 import { WithdrawPreviewPage } from "./pages/withdrawPreview"
 import { WithdrawSups } from "./components/withdrawSups"
 
@@ -149,6 +150,9 @@ export const Routes = () => {
 							<Route path="/withdraw">
 								<WithdrawPreviewPage />
 								{/*<WithdrawSups /> --- do not enable this until after sale   */}
+							</Route>
+							<Route path="/deposit">
+								<DepositPage />
 							</Route>
 							<Route path="/mystery">
 								<LootBoxPage />

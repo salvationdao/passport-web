@@ -120,6 +120,19 @@ export const Web3Container = createContainer(() => {
 	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
 	const [loadingAmountRemaining, setLoadingAmountRemaining] = useState<boolean>(true)
 	const [wcSignature, setWcSignature] = useState<string | undefined>()
+	const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>()
+
+	useEffect(() => {
+		if (!provider) return
+		;(async () => {
+			try {
+				const signer = provider.getSigner()
+				setSigner(signer)
+			} catch (e) {
+				setSigner(undefined)
+			}
+		})()
+	}, [provider])
 
 	//Setting up websocket to listen to remaining supply
 	useInterval(() => {
@@ -657,6 +670,7 @@ export const Web3Container = createContainer(() => {
 		setLoadingAmountRemaining,
 		wcProvider,
 		wcSignature,
+		signer,
 	}
 })
 

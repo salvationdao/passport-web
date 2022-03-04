@@ -32,6 +32,7 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
+import SavingsIcon from "@mui/icons-material/Savings"
 
 const drawerWidth = 250
 
@@ -248,81 +249,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				{
 					//TODO: these buttons to be display: flex after launch
 				}
-				<Box
-					sx={{
-						display: "none",
-						"& > *:not(:last-child)": {
-							marginRight: ".2rem",
-						},
-					}}
-				>
-					<FancyButton
-						size="small"
-						borderColor={colors.supremacyGold}
-						sx={{
-							flex: 1,
-						}}
-						onClick={() => {
-							history.push("/buy")
-						}}
-					>
-						Buy SUPS
-					</FancyButton>
-					{/* <FancyButton
-						size="small"
-						sx={{
-							flex: 1,
-						}}
-						onClick={() => {
-							if (!user.publicAddress) {
-								displayMessage(
-									"You must have a wallet connected to your account if you want to redeem SUPs. You can connect a wallet account in your profile page.",
-									"error",
-								)
-							}
-						}}
-					>
-						Redeem
-					</FancyButton> */}
-					<FancyButton
-						size="small"
-						borderColor={colors.skyBlue}
-						sx={{
-							flex: 1,
-						}}
-						onClick={() => {
-							if (!user.publicAddress) {
-								displayMessage(
-									"You must have a wallet connected to your account if you want to redeem SUPs. You can connect a wallet account in your profile page.",
-									"error",
-								)
-								return
-							}
-							history.push("/withdraw")
-						}}
-					>
-						Withdraw
-					</FancyButton>
-					<FancyButton
-						size="small"
-						borderColor={colors.neonPink}
-						sx={{
-							flex: 1,
-						}}
-						onClick={() => {
-							if (!user.publicAddress) {
-								displayMessage(
-									"You must have a wallet connected to your account if you want to redeem SUPs. You can connect a wallet account in your profile page.",
-									"error",
-								)
-								return
-							}
-							setDepositDialogOpen(true)
-						}}
-					>
-						Deposit
-					</FancyButton>
-				</Box>
 			</Box>
 			<Box
 				sx={{
@@ -377,6 +303,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				<NavButton to="/withdraw" startIcon={<AccountBalanceWalletIcon />}>
 					Withdraw
+				</NavButton>
+				<NavButton to="/deposit" startIcon={<SavingsIcon />}>
+					Deposit
 				</NavButton>
 				<NavButton to="/transactions" startIcon={<ReceiptLongIcon />}>
 					Transactions
