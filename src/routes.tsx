@@ -57,7 +57,6 @@ export const Routes = () => {
 	}, [authLoading])
 
 	useEffect(() => {
-		// Maintenance timeout after all websocket checks
 		try {
 			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/check`)
 				.then((res) => {
@@ -90,7 +89,7 @@ export const Routes = () => {
 		)
 	}
 
-	if (!user && authLoading && okCheck !== true) {
+	if (!user && authLoading) {
 		return <Loading text={loadingText} />
 	}
 
