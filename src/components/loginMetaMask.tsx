@@ -51,10 +51,21 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 				}
 				setIsProcessing(false)
 				!publicSale && history.push("/onboarding?skip_username=true")
-			} catch (e) {
+			} catch (e: any) {
 				setIsProcessing(false)
 				if (onFailure) {
-					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
+					if (typeof e === "string") {
+						onFailure(e)
+						setErrorMessage(e)
+						return
+					}
+					//checking metamask error signature and setting error
+					if (e.code && typeof e.message === "string") {
+						onFailure(e.message)
+						setErrorMessage(e.message)
+						return
+					}
+					onFailure("Something went wrong, please try again.")
 				}
 			}
 			return

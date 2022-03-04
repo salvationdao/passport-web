@@ -91,9 +91,13 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				await tx.wait()
 				setErrorMinting(undefined)
 				onClose()
-			} catch (e) {
-				console.log(e)
-				setErrorMinting(e === "string" ? e : "Issue minting, please try again or contact support.")
+			} catch (e: any) {
+				//checking metamask error signature and setting error
+				if (e.code && e.message) {
+					setErrorMinting(typeof e.code === "number" ? e.message : "Issue minting, please try again or contact support.")
+					return
+				}
+				setErrorMinting(typeof e === "string" ? e : "Issue minting, please try again or contact support.")
 			} finally {
 				setLoadingMint(false)
 			}

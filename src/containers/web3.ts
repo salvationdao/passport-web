@@ -26,6 +26,7 @@ import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { SocketState, useWebsocket } from "./socket"
 import { genericABI } from "./web3GenericABI"
+import { metamaskError } from "../types/types"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -412,9 +413,13 @@ export const Web3Container = createContainer(() => {
 				setAccount(acc)
 				handleAccountChange([acc])
 				return acc
-			} catch (error) {
+			} catch (error: any) {
 				if (error instanceof Error) displayMessage(error.message, "error")
-				else displayMessage("Please authenticate your wallet.", "info")
+
+				//getting MM error, but the "Please authenticate your wallet" might suffice as well
+				if (error.code && error.message) {
+					displayMessage(`${error.message}`, "error")
+				} else displayMessage("Please authenticate your wallet.", "info")
 			}
 		}
 		return ""
@@ -588,7 +593,12 @@ export const Web3Container = createContainer(() => {
 				displayMessage("Wallet does not have sufficient funds.", "error")
 				return
 			}
-		} catch (error) {
+		} catch (error: any) {
+			//checking metamask error signature and setting error
+			if (error.code && error.message) {
+				displayMessage(`${error.message}`, "error")
+				return
+			}
 			displayMessage("Something went wrong, please try again.", "error")
 			throw error
 		}
@@ -611,7 +621,12 @@ export const Web3Container = createContainer(() => {
 				displayMessage("Wallet does not have sufficient funds.", "error")
 				return
 			}
-		} catch (error) {
+		} catch (error: any) {
+			//checking metamask error signature and setting error
+			if (error.code && error.message) {
+				displayMessage(`${error.message}`, "error")
+				return
+			}
 			displayMessage("Something went wrong, please try again.", "error")
 			throw error
 		}

@@ -20,12 +20,15 @@ import { FancyButton } from "./fancyButton"
 import { MetaMaskLogin } from "./loginMetaMask"
 import { SupFancyButton } from "./supremacy/supFancyButton"
 import { TokenSelect } from "./tokenSelect"
+import { useSnackbar } from "../containers/snackbar"
+
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 
 export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) => {
 	const { state, subscribe } = useWebsocket()
 	const { user, logout } = useAuth()
+	const { displayMessage } = useSnackbar()
 	const {
 		changeChain,
 		amountRemaining,
@@ -250,7 +253,12 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			setSupsAmt(BigNumber.from(0))
 
 			await tx.wait()
-		} catch (error) {
+		} catch (error: any) {
+			////checking metamask error signature and setting error, already handling specific error code 4001 in transferError
+			if (error.code && error.code !== 4001 && error.message) {
+				displayMessage(error.message, "error")
+			}
+
 			setTransferError(error)
 			setTransferState("error")
 		} finally {

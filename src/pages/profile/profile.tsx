@@ -1482,8 +1482,13 @@ const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			const tx = await nftstakeContract.unstake(asset.collection.mintContract, asset.externalTokenID)
 			await tx.wait()
 			setUnstakingSuccess(true)
-		} catch (e) {
-			console.log(e)
+		} catch (e: any) {
+			//checking metamask error signature and setting error
+			if (e.code && e.message) {
+				setError(e.message)
+				return
+			}
+			setError(typeof e === "string" ? e : "Something went wrong, please try again.")
 			// setError(e)
 		} finally {
 			setUnstakingLoading(false)
@@ -1583,9 +1588,13 @@ const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			const tx = await nftstakeContract.stake(asset.collection.mintContract, asset.externalTokenID)
 			await tx.wait()
 			setStakingSuccess(true)
-		} catch (e) {
-			console.log(e)
-			// setError(e)
+		} catch (e: any) {
+			//checking metamask error signature and setting error
+			if (e.code && e.message) {
+				setError(e.message)
+				return
+			}
+			setError(typeof e === "string" ? e : "Something went wrong, please try again.")
 		} finally {
 			setStakingLoading(false)
 		}

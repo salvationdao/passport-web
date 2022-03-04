@@ -209,10 +209,13 @@ export const AuthContainer = createContainer(() => {
 
 				return resp
 			}
-		} catch (e) {
+		} catch (e: any) {
 			localStorage.clear()
 			setUser(undefined)
-			console.error(e)
+			//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
+			if (e.code && e.message) {
+				throw { code: e.code, message: e.message }
+			}
 		}
 	}, [send, state, sign, sessionID, connect])
 	/**
