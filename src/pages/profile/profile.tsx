@@ -20,7 +20,7 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery,
+	useMediaQuery
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
@@ -805,14 +805,38 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 						}}
 					>
 						<Box
-							component="img"
-							src={asset.image}
-							alt="Asset Image"
 							sx={{
+								position: "relative",
 								width: "100%",
 								maxWidth: "350px",
 							}}
-						/>
+						>
+							<Box
+								component="img"
+								src={asset.image}
+								alt="Asset Image"
+								sx={{
+									width: "100%",
+								}}
+							/>
+							{asset.imageAvatar && (
+								<Box
+									component="img"
+									src={asset.imageAvatar}
+									alt="Asset avatar"
+									sx={{
+										position: "absolute",
+										bottom: "1rem",
+										right: "1rem",
+										height: "60px",
+										width: "60px",
+										objectFit: "contain",
+										border: `1px solid ${colors.darkGrey}`,
+										backgroundColor: colors.darkGrey,
+									}}
+								/>
+							)}
+						</Box>
 						<Box
 							sx={{
 								flex: 1,

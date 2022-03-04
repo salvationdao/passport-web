@@ -154,6 +154,7 @@ export interface Asset {
 	description: string
 	externalURL: string
 	image: string
+	imageAvatar: string
 	animation_url: string
 	attributes: Attribute[]
 	additional_metadata?: any
@@ -184,6 +185,7 @@ export interface StoreItem {
 	collection: Collection
 	description: string
 	image: string
+	imageAvatar: string
 	animation_url: string
 	attributes: Attribute[]
 	usdCentCost: number

@@ -163,14 +163,38 @@ export const StoreItemPage = () => {
 							}}
 						>
 							<Box
+							sx={{
+								position: "relative",
+								width: "100%",
+								maxWidth: "350px",
+							}}
+						>
+							<Box
 								component="img"
 								src={storeItem.image}
-								alt="Asset Image"
+								alt="Store Item Image"
 								sx={{
 									width: "100%",
-									maxWidth: "350px",
 								}}
 							/>
+							{storeItem.imageAvatar && (
+								<Box
+									component="img"
+									src={storeItem.imageAvatar}
+									alt="Store Item avatar"
+									sx={{
+										position: "absolute",
+										bottom: "1rem",
+										right: "1rem",
+										height: "60px",
+										width: "60px",
+										objectFit: "contain",
+										border: `1px solid ${colors.darkGrey}`,
+										backgroundColor: colors.darkGrey,
+									}}
+								/>
+							)}
+						</Box>
 							<Box
 								sx={{
 									flex: 1,
