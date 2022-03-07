@@ -66,7 +66,7 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 
 	const factionStatDisplay = () => {
 		if (!factionDataMore) return null
-		const { velocity, recruitNumber, winCount, lossCount, killCount, deathCount, mvp } = factionDataMore
+		const { velocity, recruit_number, win_count, loss_count, kill_count, death_count, mvp } = factionDataMore
 		return (
 			<Fade in={true}>
 				<Stack direction="row" flexWrap="wrap" sx={{ pt: 1, px: 1, "& > *": { width: "50%", pb: 1 } }}>
@@ -82,14 +82,14 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 						}
 						prefixImageUrl={SupTokenIconPath}
 					/>
-					<Stat title="Recruits" content={recruitNumber} />
-					<Stat title="Wins" content={winCount} />
-					<Stat title="Losses" content={lossCount} />
-					<Stat title="Win Rate" content={winCount + lossCount === 0 ? "0%" : `${((winCount / (winCount + lossCount)) * 100).toFixed(0)}%`} />
-					<Stat title="Kills" content={killCount} />
-					<Stat title="Deaths" content={deathCount} />
-					<Stat title="K/D" content={deathCount === 0 ? "0%" : `${((killCount / deathCount) * 100).toFixed(0)}%`} />
-					<Stat title="MVP" content={mvp?.username || ""} prefixImageUrl={mvp?.avatarID ? `/api/files/${mvp.avatarID}` : ""} />
+					<Stat title="Recruits" content={recruit_number} />
+					<Stat title="Wins" content={win_count} />
+					<Stat title="Losses" content={loss_count} />
+					<Stat title="Win Rate" content={win_count + loss_count === 0 ? "0%" : `${((win_count / (win_count + loss_count)) * 100).toFixed(0)}%`} />
+					<Stat title="Kills" content={kill_count} />
+					<Stat title="Deaths" content={death_count} />
+					<Stat title="K/D" content={death_count === 0 ? "0%" : `${((kill_count / death_count) * 100).toFixed(0)}%`} />
+					<Stat title="MVP" content={mvp?.username || ""} prefixImageUrl={mvp?.avatar_id ? `/api/files/${mvp.avatar_id}` : ""} />
 				</Stack>
 			</Fade>
 		)
@@ -98,11 +98,11 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 	const {
 		label,
 		theme: { primary, secondary },
-		logoBlobID,
-		backgroundUrl,
+		logo_blob_id,
+		background_url,
 		description,
 	} = factionData
-	const logoUrl = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logoBlobID}`
+	const logoUrl = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logo_blob_id}`
 
 	return (
 		<Stack
@@ -121,7 +121,7 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 						px: 2.6,
 						pt: 3,
 						pb: 1.5,
-						backgroundImage: `url(${backgroundUrl})`,
+						backgroundImage: `url(${background_url})`,
 						backgroundRepeat: "no-repeat",
 						backgroundPosition: "center",
 						backgroundSize: "cover",
@@ -153,7 +153,7 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 					sx={{
 						px: 2.6,
 						py: 3,
-						backgroundImage: `url(${backgroundUrl})`,
+						backgroundImage: `url(${background_url})`,
 						backgroundRepeat: "no-repeat",
 						backgroundPosition: "center",
 						backgroundSize: "cover",

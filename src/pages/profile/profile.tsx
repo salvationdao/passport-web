@@ -20,7 +20,7 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
-	useMediaQuery
+	useMediaQuery,
 } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
@@ -165,7 +165,7 @@ export const ProfilePage: React.FC = () => {
 									</Typography>
 								)}
 							</Section>
-							{user.publicAddress && (
+							{user.public_address && (
 								<Box
 									sx={{
 										alignSelf: "start",
@@ -187,10 +187,10 @@ export const ProfilePage: React.FC = () => {
 											marginRight: "1rem",
 										}}
 									>
-										{middleTruncate(user.publicAddress)}
+										{middleTruncate(user.public_address)}
 									</Typography>
 									<IconButton
-										onClick={() => navigator.clipboard.writeText(user.publicAddress!)}
+										onClick={() => navigator.clipboard.writeText(user.public_address!)}
 										sx={{
 											margin: "-.5rem",
 										}}
@@ -561,7 +561,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
 	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
 
-	const isOwner = asset ? loggedInUser?.id === asset?.userID : false
+	const isOwner = asset ? loggedInUser?.id === asset?.user_id : false
 
 	const isWarMachine = (): boolean => {
 		if (!asset) return false
@@ -608,21 +608,21 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	}
 
 	const getOwner = useCallback(async (asset: Asset | undefined, provider: ethers.providers.Web3Provider | undefined, loggedInUser: User | undefined) => {
-		if (!asset || !asset.minted || !provider || !loggedInUser?.publicAddress) return
+		if (!asset || !asset.minted || !provider || !loggedInUser?.public_address) return
 		try {
 			const abi = ["function ownerOf(uint256) view returns (address)"]
 			const signer = provider.getSigner()
-			const nftContract = new ethers.Contract(asset.collection.mintContract, abi, signer)
-			const owner = await nftContract.ownerOf(asset.externalTokenID)
+			const nftContract = new ethers.Contract(asset.collection.mint_contract, abi, signer)
+			const owner = await nftContract.ownerOf(asset.external_token_id)
 
-			if (owner === asset.collection.stakeContract && asset.userID === loggedInUser.id) {
+			if (owner === asset.collection.stake_contract && asset.user_id === loggedInUser.id) {
 				setAssetState(AssetState.OffWorldStaked)
 			} else if (
-				(owner !== loggedInUser.publicAddress && owner !== asset.collection.stakeContract) ||
-				(owner === loggedInUser.publicAddress && asset.userID === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
+				(owner !== loggedInUser.public_address && owner !== asset.collection.stake_contract) ||
+				(owner === loggedInUser.public_address && asset.user_id === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
 			) {
 				setAssetState(AssetState.OffWorldNotStaked)
-			} else if (owner === loggedInUser.publicAddress && asset.userID === loggedInUser.id) {
+			} else if (owner === loggedInUser.public_address && asset.user_id === loggedInUser.id) {
 				setAssetState(AssetState.OffWorldStaked)
 			}
 		} catch (e) {}
@@ -646,7 +646,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					let numberAttributes = new Array<Attribute>()
 					let regularAttributes = new Array<Attribute>()
 					payload.attributes.forEach((a) => {
-						if (a.assetHash) {
+						if (a.asset_hash) {
 							// If is an asset attribute
 							assetAttributes.push(a)
 						} else if (a.display_type === "number") {
@@ -695,15 +695,15 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	}
 	return (
 		<>
-			{asset.collection && asset.collection.mintContract !== "" && (
+			{asset.collection && asset.collection.mint_contract !== "" && (
 				<MintModal
 					open={mintWindowOpen}
 					onClose={() => setMintWindowOpen(false)}
-					mintContract={asset.collection.mintContract}
-					assetExternalTokenID={asset.externalTokenID}
-					mintingSignature={asset.mintingSignature}
+					mintContract={asset.collection.mint_contract}
+					assetExternalTokenID={asset.external_token_id}
+					mintingSignature={asset.minting_signature}
 					collectionSlug={asset.collection.slug}
-					signatureExpiry={asset.signatureExpiry}
+					signatureExpiry={asset.signature_expiry}
 				/>
 			)}
 			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
@@ -741,32 +741,32 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 							marginBottom: "1rem",
 						}}
 					>
-						{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mintContract !== "" && (
+						{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mint_contract !== "" && (
 							<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
 								Transition In Asset
 							</FancyButton>
 						)}
 
-						{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mintContract !== "" && (
+						{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mint_contract !== "" && (
 							<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
 								Transition out Asset
 							</FancyButton>
 						)}
 
-						{isOwner && isWarMachine() && !asset.frozenAt && (
+						{isOwner && isWarMachine() && !asset.frozen_at && (
 							<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
 								Rename Asset
 							</FancyButton>
 						)}
 						{isOwner ? (
-							(asset.mintingSignature || asset.mintingSignature !== "") &&
+							(asset.minting_signature || asset.minting_signature !== "") &&
 							!asset.minted &&
 							asset.collection &&
-							asset.collection.mintContract !== "" ? (
+							asset.collection.mint_contract !== "" ? (
 								<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 									Continue Transition Off World
 								</FancyButton>
-							) : !asset.frozenAt && isWarMachine() ? (
+							) : !asset.frozen_at && isWarMachine() ? (
 								<>
 									{!asset.minted && (
 										<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
@@ -776,7 +776,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 								</>
 							) : (
 								<>
-									{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
+									{!queueDetail?.war_machine_metadata.is_insured && (!asset.locked_by_id || asset.locked_by_id === NilUUID) && (
 										<FancyButton size="small" loading={submitting} onClick={payInsurance}>
 											Pay Insurance
 										</FancyButton>
@@ -819,10 +819,10 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									width: "100%",
 								}}
 							/>
-							{asset.imageAvatar && (
+							{asset.image_avatar && (
 								<Box
 									component="img"
-									src={asset.imageAvatar}
+									src={asset.image_avatar}
 									alt="Asset avatar"
 									sx={{
 										position: "absolute",
@@ -852,7 +852,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 								}}
 							>
 								{asset.name}
-								{asset.frozenAt && (
+								{asset.frozen_at && (
 									<Box
 										component="span"
 										sx={{
@@ -897,7 +897,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									margin: ".5rem 0",
 								}}
 							/>
-							{loggedInUser?.id === asset.userID && (
+							{loggedInUser?.id === asset.user_id && (
 								<Box
 									sx={{
 										marginBottom: ".5rem",
@@ -934,9 +934,9 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 													Contract Reward:
 												</Box>
 												<SupTokenIcon />
-												{supFormatter(queueDetail.warMachineMetadata.contractReward)}
+												{supFormatter(queueDetail.war_machine_metadata.contract_reward)}
 											</Typography>
-											{queueDetail.warMachineMetadata.isInsured ? (
+											{queueDetail.war_machine_metadata.is_insured ? (
 												<Typography>
 													<Box
 														component="span"
@@ -996,33 +996,33 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										gap: ".5rem",
 									}}
 								>
-									{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mintContract !== "" && (
+									{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mint_contract !== "" && (
 										<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
 											Transition In Asset
 										</FancyButton>
 									)}
 
-									{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mintContract !== "" && (
+									{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mint_contract !== "" && (
 										<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
 											Transition out Asset
 										</FancyButton>
 									)}
 
 									{/*TODO: fix this mess of if statements*/}
-									{loggedInUser?.id === asset.userID && isWarMachine() && !asset.frozenAt && (
+									{loggedInUser?.id === asset.user_id && isWarMachine() && !asset.frozen_at && (
 										<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
 											Rename Asset
 										</FancyButton>
 									)}
-									{loggedInUser?.id === asset.userID ? (
-										(asset.mintingSignature || asset.mintingSignature !== "") &&
+									{loggedInUser?.id === asset.user_id ? (
+										(asset.minting_signature || asset.minting_signature !== "") &&
 										asset.collection &&
-										asset.collection.mintContract !== "" &&
+										asset.collection.mint_contract !== "" &&
 										!asset.minted ? (
 											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 												Continue Transition Off World
 											</FancyButton>
-										) : !asset.frozenAt && isWarMachine() ? (
+										) : !asset.frozen_at && isWarMachine() ? (
 											<>
 												{!asset.minted && (
 													<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
@@ -1032,7 +1032,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 											</>
 										) : (
 											<>
-												{!queueDetail?.warMachineMetadata.isInsured && (!asset.lockedByID || asset.lockedByID === NilUUID) && (
+												{!queueDetail?.war_machine_metadata.is_insured && (!asset.locked_by_id || asset.locked_by_id === NilUUID) && (
 													<FancyButton size="small" loading={submitting} onClick={payInsurance}>
 														Pay Insurance
 													</FancyButton>
@@ -1165,9 +1165,9 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										<Button
 											component={"a"}
 											href={
-												asset.collection.mintContract === "0xEEfaF47acaa803176F1711c1cE783e790E4E750D"
-													? `https://testnets.opensea.io/assets/goerli/${asset.collection.mintContract}/${asset.externalTokenID}`
-													: `https://opensea.io/assets/${asset.collection.mintContract}/${asset.externalTokenID}`
+												asset.collection.mint_contract === "0xEEfaF47acaa803176F1711c1cE783e790E4E750D"
+													? `https://testnets.opensea.io/assets/goerli/${asset.collection.mint_contract}/${asset.external_token_id}`
+													: `https://opensea.io/assets/${asset.collection.mint_contract}/${asset.external_token_id}`
 											}
 											target="_blank"
 											rel="noopener noreferrer"
@@ -1502,8 +1502,8 @@ const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			setUnstakingLoading(true)
 			const abi = ["function unstake(address,uint256)"]
 			const signer = provider.getSigner()
-			const nftstakeContract = new ethers.Contract(asset.collection.stakeContract, abi, signer)
-			const tx = await nftstakeContract.unstake(asset.collection.mintContract, asset.externalTokenID)
+			const nftstakeContract = new ethers.Contract(asset.collection.stake_contract, abi, signer)
+			const tx = await nftstakeContract.unstake(asset.collection.mint_contract, asset.external_token_id)
 			await tx.wait()
 			setUnstakingSuccess(true)
 		} catch (e: any) {
@@ -1591,8 +1591,8 @@ const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			const abi = ["function approve(address, uint256)"]
 			const signer = provider.getSigner()
 			// TODO: fix for collection contract
-			const nftContract = new ethers.Contract(asset.collection.mintContract, abi, signer)
-			const tx = await nftContract.approve(asset.collection.stakeContract, asset.externalTokenID)
+			const nftContract = new ethers.Contract(asset.collection.mint_contract, abi, signer)
+			const tx = await nftContract.approve(asset.collection.stake_contract, asset.external_token_id)
 			await tx.wait()
 			setApprovalSuccess(true)
 		} catch (e) {
@@ -1608,8 +1608,8 @@ const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			setStakingLoading(true)
 			const abi = ["function stake(address,uint256)"]
 			const signer = provider.getSigner()
-			const nftstakeContract = new ethers.Contract(asset.collection.stakeContract, abi, signer)
-			const tx = await nftstakeContract.stake(asset.collection.mintContract, asset.externalTokenID)
+			const nftstakeContract = new ethers.Contract(asset.collection.stake_contract, abi, signer)
+			const tx = await nftstakeContract.stake(asset.collection.mint_contract, asset.external_token_id)
 			await tx.wait()
 			setStakingSuccess(true)
 		} catch (e: any) {

@@ -28,7 +28,7 @@ export const AssetContainer = createContainer(() => {
 		})
 	}, [factionID, subscribe])
 
-	const queuedWarMachine = useCallback((assetHash: string) => queuingList.find((q) => q.warMachineMetadata.assetHash === assetHash), [queuingList])
+	const queuedWarMachine = useCallback((assetHash: string) => queuingList.find((q) => q.war_machine_metadata.asset_hash === assetHash), [queuingList])
 	return {
 		queuedWarMachine,
 		queuingContractReward,

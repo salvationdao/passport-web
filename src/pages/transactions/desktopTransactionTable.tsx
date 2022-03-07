@@ -162,8 +162,8 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 		>
 			<td align="left">
 				<Button
-					title={entry.transactionReference}
-					onClick={() => navigator.clipboard.writeText(entry.transactionReference)}
+					title={entry.transaction_reference}
+					onClick={() => navigator.clipboard.writeText(entry.transaction_reference)}
 					endIcon={<ContentCopyIcon />}
 					variant="text"
 					fullWidth
@@ -176,7 +176,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 							textOverflow: "ellipsis",
 						}}
 					>
-						{entry.transactionReference}
+						{entry.transaction_reference}
 					</EntryData>
 				</Button>
 			</td>

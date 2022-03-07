@@ -39,7 +39,7 @@ export const UserAvatar = ({ user }: { user: User }) => {
 	const avatar = (
 		<Avatar
 			alt={`${user.firstName} ${user.lastName}`}
-			src={!!user.avatarID ? `/api/files/${user.avatarID}?token=${encodeURIComponent(localStorage.getItem("token") || "")}` : undefined}
+			src={!!user.avatar_id ? `/api/files/${user.avatar_id}?token=${encodeURIComponent(localStorage.getItem("token") || "")}` : undefined}
 			sx={{ height: "35px", width: "35px" }}
 		/>
 	)

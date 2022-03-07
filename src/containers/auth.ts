@@ -986,7 +986,7 @@ export const AuthContainer = createContainer(() => {
 		recheckAuth,
 		user: user,
 		userID: user?.id,
-		factionID: user?.factionID,
+		factionID: user?.faction_id,
 		setUser,
 		isImpersonatingUser: false,
 		loading,

@@ -6,40 +6,40 @@ export interface User {
 	username: string
 	firstName: string
 	lastName: string
-	roleID: string
-	avatarID: string
-	factionID: string
+	role_id: string
+	avatar_id: string
+	faction_id: string
 	faction: Faction | undefined
 	verified: boolean
-	createdAt: Date
-	updatedAt: Date
-	deletedAt: Date | null
+	created_at: Date
+	updated_at: Date
+	deleted_at: Date | null
 	role: Role
 	organisation?: Organisation
 	online: boolean
-	twoFactorAuthenticationActivated: boolean
-	twoFactorAuthenticationIsSet: boolean
-	hasRecoveryCode: boolean
-	pass2FA: boolean
-	publicAddress?: string
-	facebookID?: string
-	googleID?: string
-	twitchID?: string
-	twitterID?: string
-	discordID?: string
+	two_factor_authentication_activated: boolean
+	two_factor_authentication_is_set: boolean
+	has_recovery_code: boolean
+	pass_2_fa: boolean
+	public_address?: string
+	facebook_id?: string
+	google_id?: string
+	twitch_id?: string
+	twitter_id?: string
+	discord_id?: string
 }
 
 export interface UserFaction {
-	recruitID: string
-	supsEarned: number
+	recruit_id: string
+	sups_earned: number
 	rank: string
-	spectatedCount: number
+	spectated_count: number
 
 	// Faction specific
-	factionID: string
+	faction_id: string
 	theme: FactionTheme
-	logoUrl: string
-	backgroundUrl: string
+	logo_url: string
+	background_url: string
 }
 
 export interface FactionTheme {
@@ -51,8 +51,8 @@ export interface FactionTheme {
 export interface Faction {
 	id: string
 	label: string
-	logoBlobID: string
-	backgroundUrl: string
+	logo_blob_id: string
+	background_url: string
 	theme: FactionTheme
 	description: string
 }
@@ -60,12 +60,12 @@ export interface Faction {
 export interface DetailedFaction {
 	description: string
 	velocity?: number
-	sharePercent: number
-	recruitNumber: number
-	winCount: number
-	lossCount: number
-	killCount: number
-	deathCount: number
+	share_percent: number
+	recruit_number: number
+	win_count: number
+	loss_count: number
+	kill_count: number
+	death_count: number
 	mvp: User
 }
 
@@ -73,13 +73,13 @@ export interface UserActivity {
 	id: string
 	user: User
 	action: string
-	objectID: string
-	objectSlug: string
-	objectName: string
-	objectType: ObjectType
-	createdAt: Date
-	oldData?: Object
-	newData?: Object
+	object_id: string
+	object_slug: string
+	object_name: string
+	object_type: ObjectType
+	created_at: Date
+	old_data?: Object
+	new_data?: Object
 }
 
 export interface Role {
@@ -88,18 +88,18 @@ export interface Role {
 	permissions: Perm[]
 	tier: number
 	reserved: boolean
-	createdAt: Date
-	updatedAt: Date
-	deletedAt: Date | null
+	created_at: Date
+	updated_at: Date
+	deleted_at: Date | null
 }
 
 export interface Organisation {
 	id: string
 	slug: string
 	name: string
-	createdAt: Date
-	updatedAt: Date
-	deletedAt: Date | null
+	created_at: Date
+	updated_at: Date
+	deleted_at: Date | null
 }
 
 export interface Product {
@@ -107,10 +107,10 @@ export interface Product {
 	slug: string
 	name: string
 	description: string
-	imageID: string
-	createdAt: Date
-	updatedAt: Date
-	deletedAt: Date | null
+	image_id: string
+	created_at: Date
+	updated_at: Date
+	deleted_at: Date | null
 }
 
 export interface Collection {
@@ -118,12 +118,12 @@ export interface Collection {
 	name: string
 	slug: string
 	image: string
-	mintContract: string
-	stakeContract: string
-	createdAt: Date
-	updatedAt: Date
-	frozenAt?: Date
-	deletedAt?: Date
+	mint_contract: string
+	stake_contract: string
+	created_at: Date
+	updated_at: Date
+	frozen_at?: Date
+	deleted_at?: Date
 }
 
 // export interface NFTOwner {
@@ -145,58 +145,58 @@ export interface Asset {
 	hash: string
 	// mintContract: string
 	// stakeContract: string
-	externalTokenID: number
-	userID: string
+	external_token_id: number
+	user_id: string
 	username: string
 	name: string
 	collection: Collection
 	game_object?: any
 	description: string
-	externalURL: string
+	external_url: string
 	image: string
-	imageAvatar: string
+	image_avatar: string
 	animation_url: string
 	attributes: Attribute[]
 	additional_metadata?: any
-	createdAt: Date
-	updatedAt: Date
-	frozenAt?: Date
-	lockedByID?: string
-	deletedAt?: Date
-	mintingSignature?: string
-	signatureExpiry?: string
-	txHistory: any[]
+	created_at: Date
+	updated_at: Date
+	frozen_at?: Date
+	locked_by_id?: string
+	deleted_at?: Date
+	minting_signature?: string
+	signature_expiry?: string
+	tx_history: any[]
 	minted: boolean
 }
 
 export interface Attribute {
 	display_type?: "number"
 	trait_type: string
-	assetHash?: string
+	asset_hash?: string
 	value: string | number
 }
 
 export interface StoreItem {
 	ID: string
 	name: string
-	factionID: string
+	faction_id: string
 	faction?: Faction
-	collectionID: string
+	collection_id: string
 	collection: Collection
 	description: string
 	image: string
-	imageAvatar: string
+	image_avatar: string
 	animation_url: string
 	attributes: Attribute[]
-	usdCentCost: number
-	amountSold: number
-	supCost: string
-	amountAvailable: number
-	soldAfter: Date
-	soldBefore: Date
-	deletedAt: Date
-	createdAt: Date
-	updatedAt: Date
+	usd_cent_cost: number
+	amount_sold: number
+	sup_cost: string
+	amount_available: number
+	sold_after: Date
+	sold_before: Date
+	deleted_at: Date
+	created_at: Date
+	updated_at: Date
 }
 
 export interface Transaction {
@@ -205,24 +205,24 @@ export interface Transaction {
 	debit: string
 	amount: string
 	status: "failed" | "success"
-	transactionReference: string
+	transaction_reference: string
 	description: string
 	reason?: string
 	created_at: Date
-	groupID?: string
+	group_id?: string
 	to: User
 	from: User
 }
 
 export interface QueuedWarMachine {
 	position: number
-	warMachineMetadata: WarMachineMetadata
+	war_machine_metadata: WarMachineMetadata
 }
 
 export interface WarMachineMetadata {
-	assetHash: string
-	isInsured: boolean
-	contractReward: string
+	asset_hash: string
+	is_insured: boolean
+	contract_reward: string
 }
 
 export interface ExchangeRates {

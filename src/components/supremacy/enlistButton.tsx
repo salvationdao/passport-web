@@ -21,10 +21,10 @@ export const EnlistButton: React.VoidFunctionComponent<EnlistButtonProps> = ({ f
 		id,
 		label,
 		theme: { primary },
-		logoBlobID,
+		logo_blob_id,
 	} = faction
 
-	const logoUrl = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logoBlobID}`
+	const logoUrl = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logo_blob_id}`
 
 	const refPos = { bottom: -21 }
 

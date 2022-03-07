@@ -41,7 +41,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 	return (
 		<Box
 			component="button"
-			disabled={item.amountAvailable - item.amountSold <= 0}
+			disabled={item.amount_available - item.amount_sold <= 0}
 			onClick={() => history.push(`/stores/${item.collection.slug}/${item.ID}`)}
 			onMouseOver={() => setShowPreview(true)}
 			onMouseLeave={() => setShowPreview(false)}
@@ -60,7 +60,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 				outline: "none",
 				backgroundColor: "transparent",
 				"&:hover .ViewButton, &:focus .ViewButton":
-					item.amountAvailable - item.amountSold <= 0
+					item.amount_available - item.amount_sold <= 0
 						? null
 						: {
 								borderRadius: "50%",
@@ -74,7 +74,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 		>
 			<Box
 				sx={{
-					display: item.amountAvailable - item.amountSold <= 0 ? "flex" : "none",
+					display: item.amount_available - item.amount_sold <= 0 ? "flex" : "none",
 					padding: ".3rem",
 					justifyContent: "center",
 					zIndex: "1",
@@ -90,7 +90,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 			</Box>
 			<Box
 				sx={{
-					cursor: item.amountAvailable - item.amountSold <= 0 ? "default" : "pointer",
+					cursor: item.amount_available - item.amount_sold <= 0 ? "default" : "pointer",
 				}}
 			>
 				<Typography
@@ -181,7 +181,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 								marginRight: ".2rem",
 							}}
 						/>
-						{supFormatter(item.supCost)}
+						{supFormatter(item.sup_cost)}
 					</Typography>
 				</Box>
 				<ViewButton

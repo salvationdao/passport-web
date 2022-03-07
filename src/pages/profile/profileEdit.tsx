@@ -223,7 +223,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 		setSubmitting(true)
 		setNewUsername(newUsername)
 		try {
-			let avatarID: string | undefined = user.avatarID
+			let avatarID: string | undefined = user.avatar_id
 			if (avatarChanged) {
 				if (!!avatar) {
 					// Upload avatar
@@ -302,17 +302,17 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 			lastName: user.lastName,
 			role: user.role,
 			organisation: user.organisation,
-			roleID: user.roleID,
+			roleID: user.role_id,
 			organisationID: user.organisation?.id,
-			publicAddress: user.publicAddress || "",
-			twoFactorAuthenticationActivated: user.twoFactorAuthenticationActivated,
+			publicAddress: user.public_address || "",
+			twoFactorAuthenticationActivated: user.two_factor_authentication_activated,
 			currentPassword: "",
 			newPassword: "",
 		})
 
 		// Get avatar as file
-		if (!!user.avatarID)
-			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}`).then((r) =>
+		if (!!user.avatar_id)
+			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.avatar_id}?token=${encodeURIComponent(token || "")}`).then((r) =>
 				r.blob().then((b) => setAvatar(new File([b], "avatar.jpg", { type: b.type }))),
 			)
 	}, [user, reset, token])

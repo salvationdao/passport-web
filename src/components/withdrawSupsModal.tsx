@@ -133,7 +133,7 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 	}, [provider, account, withdrawAmount])
 
 	const withDrawAttempt = useCallback(async () => {
-		if (!user || !user.publicAddress || user.publicAddress === "" || state !== SocketState.OPEN) return
+		if (!user || !user.public_address || user.public_address === "" || state !== SocketState.OPEN) return
 
 		try {
 			if (!provider) return

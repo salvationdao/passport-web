@@ -44,7 +44,7 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 		;(async () => {
 			try {
 				const resp = await send<number>(HubKey.StoreLootBoxAmount, {
-					factionID: user.factionID,
+					factionID: user.faction_id,
 				})
 
 				setMCAmount(resp)

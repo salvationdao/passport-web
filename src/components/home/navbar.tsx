@@ -55,7 +55,7 @@ const RenderFaction = (size: string) => {
 					width: size,
 					marginRight: ".5rem",
 					flexShrink: 0,
-					backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID})`,
+					backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id})`,
 					backgroundRepeat: "no-repeat",
 					backgroundPosition: "center",
 					backgroundSize: "contain",
@@ -138,10 +138,10 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 					border: `2px solid ${theme.palette.secondary.main}`,
 				})}
 			/>
-			{!!user && user.faction && !user.avatarID ? (
+			{!!user && user.faction && !user.avatar_id ? (
 				<Avatar
 					className="Avatar"
-					src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID}`}
+					src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id}`}
 					sx={{
 						height: size,
 						width: size,
@@ -150,7 +150,7 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 			) : (
 				<Avatar
 					className="Avatar"
-					src={user.avatarID ? `/api/files/${user.avatarID}?token=${encodeURIComponent(token || "")}` : undefined}
+					src={user.avatar_id ? `/api/files/${user.avatar_id}?token=${encodeURIComponent(token || "")}` : undefined}
 					sx={{
 						height: size,
 						width: size,

@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	// Wallet
-	const userPublicAddress = user?.publicAddress
+	const userPublicAddress = user?.public_address
 
 	// Supremacy
 	const [factionsData, setFactionsData] = useState<Faction[]>([])
@@ -84,13 +84,13 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		}
 
 		// no wallet connected
-		if (!user.publicAddress) {
+		if (!user.public_address) {
 			setWalletMsg("Wallet not connected")
 			setWalletSups(undefined)
 			return
 		}
 
-		const correctWallet = correctWalletCheck(user.publicAddress, account)
+		const correctWallet = correctWalletCheck(user.public_address, account)
 		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
 		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : undefined)
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
@@ -533,7 +533,7 @@ const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?:
 				>
 					<Box
 						component="img"
-						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logoBlobID}`}
+						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id}`}
 						alt={`${user.faction.label} Faction Logo`}
 						sx={{
 							height: "2rem",

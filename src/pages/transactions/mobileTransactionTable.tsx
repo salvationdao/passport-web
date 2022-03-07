@@ -156,7 +156,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					}}
 					endIcon={<ContentCopyIcon />}
 					variant="text"
-					onClick={() => navigator.clipboard.writeText(entry.transactionReference)}
+					onClick={() => navigator.clipboard.writeText(entry.transaction_reference)}
 				>
 					<EntryData
 						sx={{
@@ -167,7 +167,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 							whiteSpace: "nowrap",
 						}}
 					>
-						{entry.transactionReference}
+						{entry.transaction_reference}
 					</EntryData>
 				</Button>
 			</EntryDataRow>

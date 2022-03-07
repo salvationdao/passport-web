@@ -45,7 +45,7 @@ export const StoreItemPage = () => {
 					let numberAttributes = new Array<Attribute>()
 					let regularAttributes = new Array<Attribute>()
 					payload.attributes.forEach((a) => {
-						if (a.assetHash) {
+						if (a.asset_hash) {
 							// If is an asset attribute
 							assetAttributes.push(a)
 						} else if (a.display_type === "number") {
@@ -163,38 +163,38 @@ export const StoreItemPage = () => {
 							}}
 						>
 							<Box
-							sx={{
-								position: "relative",
-								width: "100%",
-								maxWidth: "350px",
-							}}
-						>
-							<Box
-								component="img"
-								src={storeItem.image}
-								alt="Store Item Image"
 								sx={{
+									position: "relative",
 									width: "100%",
+									maxWidth: "350px",
 								}}
-							/>
-							{storeItem.imageAvatar && (
+							>
 								<Box
 									component="img"
-									src={storeItem.imageAvatar}
-									alt="Store Item avatar"
+									src={storeItem.image}
+									alt="Store Item Image"
 									sx={{
-										position: "absolute",
-										bottom: "1rem",
-										right: "1rem",
-										height: "60px",
-										width: "60px",
-										objectFit: "contain",
-										border: `1px solid ${colors.darkGrey}`,
-										backgroundColor: colors.darkGrey,
+										width: "100%",
 									}}
 								/>
-							)}
-						</Box>
+								{storeItem.image_avatar && (
+									<Box
+										component="img"
+										src={storeItem.image_avatar}
+										alt="Store Item avatar"
+										sx={{
+											position: "absolute",
+											bottom: "1rem",
+											right: "1rem",
+											height: "60px",
+											width: "60px",
+											objectFit: "contain",
+											border: `1px solid ${colors.darkGrey}`,
+											backgroundColor: colors.darkGrey,
+										}}
+									/>
+								)}
+							</Box>
 							<Box
 								sx={{
 									flex: 1,
@@ -249,7 +249,7 @@ export const StoreItemPage = () => {
 												marginRight: ".2rem",
 											}}
 										/>
-										{supFormatter(storeItem.supCost)}
+										{supFormatter(storeItem.sup_cost)}
 									</Typography>
 								</Box>
 								<Divider
@@ -387,7 +387,7 @@ export const StoreItemPage = () => {
 														marginRight: ".5rem",
 													}}
 												/>
-												{supFormatter(storeItem.supCost)}
+												{supFormatter(storeItem.sup_cost)}
 											</Typography>
 											<Box
 												sx={{
@@ -396,18 +396,18 @@ export const StoreItemPage = () => {
 												}}
 											>
 												<Typography variant="caption" color={colors.darkGrey}>
-													({usdFormatter(storeItem.usdCentCost)} USD)
+													({usdFormatter(storeItem.usd_cent_cost)} USD)
 												</Typography>
 												<Typography variant="caption">
-													Stock: {storeItem.amountAvailable - storeItem.amountSold} / {storeItem.amountAvailable}
+													Stock: {storeItem.amount_available - storeItem.amount_sold} / {storeItem.amount_available}
 												</Typography>
 											</Box>
 										</Box>
 										<FancyButton
-											disabled={storeItem.amountAvailable - storeItem.amountSold <= 0}
+											disabled={storeItem.amount_available - storeItem.amount_sold <= 0}
 											onClick={() => setShowPurchaseModal(true)}
 										>
-											{storeItem.amountAvailable - storeItem.amountSold <= 0 ? "Sold out" : "Purchase Item"}
+											{storeItem.amount_available - storeItem.amount_sold <= 0 ? "Sold out" : "Purchase Item"}
 										</FancyButton>
 									</>
 								)}
@@ -544,7 +544,7 @@ export const StoreItemPage = () => {
 												marginRight: ".5rem",
 											}}
 										/>
-										{supFormatter(storeItem.supCost)}
+										{supFormatter(storeItem.sup_cost)}
 									</Typography>
 									<Box
 										sx={{
@@ -553,12 +553,12 @@ export const StoreItemPage = () => {
 										}}
 									>
 										<Typography variant="caption">
-											Stock: {storeItem.amountAvailable - storeItem.amountSold} / {storeItem.amountAvailable}
+											Stock: {storeItem.amount_available - storeItem.amount_sold} / {storeItem.amount_available}
 										</Typography>
 									</Box>
 								</Box>
-								<FancyButton disabled={storeItem.amountAvailable - storeItem.amountSold <= 0} onClick={() => setShowPurchaseModal(true)}>
-									{storeItem.amountAvailable - storeItem.amountSold <= 0 ? "Sold out" : "Purchase Item"}
+								<FancyButton disabled={storeItem.amount_available - storeItem.amount_sold <= 0} onClick={() => setShowPurchaseModal(true)}>
+									{storeItem.amount_available - storeItem.amount_sold <= 0 ? "Sold out" : "Purchase Item"}
 								</FancyButton>
 							</Box>
 						</>
@@ -625,7 +625,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 							variant="contained"
 							type="submit"
 							color="primary"
-							disabled={loading || storeItem.amountAvailable - storeItem.amountSold === 0}
+							disabled={loading || storeItem.amount_available - storeItem.amount_sold === 0}
 							onClick={() => purchase()}
 							sx={{ marginRight: "1rem" }}
 						>

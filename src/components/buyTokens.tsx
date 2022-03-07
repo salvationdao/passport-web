@@ -803,10 +803,10 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 										width: "100%",
 									}}
 								>
-									{user && user.publicAddress && (
+									{user && user.public_address && (
 										<Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", width: "100%", padding: "0 .5rem" }}>
 											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
-												Account: {AddressDisplay(user.publicAddress)}{" "}
+												Account: {AddressDisplay(user.public_address)}{" "}
 												<span
 													style={{ cursor: "pointer" }}
 													onClick={() => {

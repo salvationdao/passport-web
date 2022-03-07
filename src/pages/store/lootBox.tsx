@@ -77,7 +77,7 @@ export const LootBoxPage = () => {
 		setLoading(true)
 		try {
 			const resp = await send(HubKey.StoreLootBox, {
-				factionID: user.factionID,
+				factionID: user.faction_id,
 			})
 
 			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${resp}`)
