@@ -35,13 +35,13 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const { username } = useParams<{ username: string }>()
-	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error, payload, query } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
 	const {
 		loading: offWorldLoading,
 		error: offWorldError,
 		payload: offWorldPayload,
 		query: offWorldQuery,
-	} = useQuery<{ assetHashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
+	} = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
 
 	const toggleRarity = (rarity: string) => {
 		setRarities((prev) => {
@@ -229,13 +229,13 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 	useEffect(() => {
 		if (!payload || loading || error) return
 
-		setAssetHashes(payload.assetHashes)
+		setAssetHashes(payload.asset_hashes)
 	}, [payload, loading, error])
 
 	useEffect(() => {
 		if (!offWorldPayload || offWorldLoading || offWorldError) return
 
-		setAssetHashes(Array.from(new Set(offWorldPayload.assetHashes)))
+		setAssetHashes(Array.from(new Set(offWorldPayload.asset_hashes)))
 	}, [offWorldPayload, offWorldLoading, offWorldError])
 
 	const renderRarities = () => {

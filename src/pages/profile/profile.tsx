@@ -301,13 +301,12 @@ interface CollectionViewProps {
 }
 
 const CollectionView = ({ user }: CollectionViewProps) => {
-	const { loading, error } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
 	const history = useHistory()
 
 	// Collection data
 	const [search, setSearch] = useState("")
 	const [assetHashes, setAssetHashes] = useState<string[]>([])
-
 	// Filter/Sort
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
 	const [assetType] = useState<string>()
