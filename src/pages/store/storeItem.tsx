@@ -12,7 +12,8 @@ import { SocketState, useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue, supFormatter, usdFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { Attribute, StoreItem } from "../../types/types"
+import { StoreItem, StoreItemAttibutes, StoreItemResponse } from "../../types/store_item"
+import { Attribute, Collection } from "../../types/types"
 import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
 
 export const StoreItemPage = () => {
@@ -25,26 +26,41 @@ export const StoreItemPage = () => {
 
 	// Store item data
 	const [storeItem, setStoreItem] = useState<StoreItem>()
+	const [collection, setCollection] = useState<Collection>()
+	const [priceInSups, setPriceInSups] = useState<string | null>(null)
 	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
 
 	// Purchase store item
 	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
-
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !collection_slug) return
+		return subscribe<Collection>(
+			HubKey.CollectionUpdated,
+			(payload) => {
+				if (!payload) return
+				setCollection(payload)
+			},
+			{
+				slug: collection_slug,
+			},
+		)
+	}, [collection_slug, subscribe, state])
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !user) return
 
 		setLoading(true)
 		try {
-			return subscribe<StoreItem>(
+			return subscribe<StoreItemResponse>(
 				HubKey.StoreItemSubscribe,
 				(payload) => {
 					if (!payload) return
 					let assetAttributes = new Array<Attribute>()
 					let numberAttributes = new Array<Attribute>()
 					let regularAttributes = new Array<Attribute>()
-					payload.attributes.forEach((a) => {
+					const att = StoreItemAttibutes(payload.item)
+					att.forEach((a) => {
 						if (a.asset_hash) {
 							// If is an asset attribute
 							assetAttributes.push(a)
@@ -59,7 +75,8 @@ export const StoreItemPage = () => {
 					// setAssetAttributes(assetAttributes)
 					setNumberAttributes(numberAttributes)
 					// setRegularAttributes(regularAttributes)
-					setStoreItem(payload)
+					setStoreItem(payload.item)
+					setPriceInSups(payload.price_in_sups)
 					setLoading(false)
 				},
 				{ store_item_id: id },
@@ -88,7 +105,7 @@ export const StoreItemPage = () => {
 		)
 	}
 
-	if (loading || !storeItem) {
+	if (loading || !storeItem || !priceInSups || !collection) {
 		return <Loading />
 	}
 
@@ -171,29 +188,27 @@ export const StoreItemPage = () => {
 							>
 								<Box
 									component="img"
-									src={storeItem.image}
+									src={storeItem.data.template.image_url}
 									alt="Store Item Image"
 									sx={{
 										width: "100%",
 									}}
 								/>
-								{storeItem.image_avatar && (
-									<Box
-										component="img"
-										src={storeItem.image_avatar}
-										alt="Store Item avatar"
-										sx={{
-											position: "absolute",
-											bottom: "1rem",
-											right: "1rem",
-											height: "60px",
-											width: "60px",
-											objectFit: "contain",
-											border: `1px solid ${colors.darkGrey}`,
-											backgroundColor: colors.darkGrey,
-										}}
-									/>
-								)}
+								<Box
+									component="img"
+									src={storeItem.data.template.avatar_url}
+									alt="Store Item avatar"
+									sx={{
+										position: "absolute",
+										bottom: "1rem",
+										right: "1rem",
+										height: "60px",
+										width: "60px",
+										objectFit: "contain",
+										border: `1px solid ${colors.darkGrey}`,
+										backgroundColor: colors.darkGrey,
+									}}
+								/>
 							</Box>
 							<Box
 								sx={{
@@ -211,7 +226,7 @@ export const StoreItemPage = () => {
 										textTransform: "uppercase",
 									}}
 								>
-									{storeItem.name}
+									{storeItem.data.template.label}
 								</Typography>
 								<Typography
 									variant="h4"
@@ -221,10 +236,10 @@ export const StoreItemPage = () => {
 										fontStyle: "italic",
 										letterSpacing: "2px",
 										textTransform: "uppercase",
-										...rarityTextStyles[getItemAttributeValue(storeItem.attributes, "Rarity") as Rarity],
+										...rarityTextStyles[storeItem.data.template.tier as Rarity],
 									}}
 								>
-									{getItemAttributeValue(storeItem.attributes, "Rarity")}
+									{storeItem.data.template.tier}
 								</Typography>
 								<Box
 									sx={{
@@ -249,7 +264,7 @@ export const StoreItemPage = () => {
 												marginRight: ".2rem",
 											}}
 										/>
-										{supFormatter(storeItem.sup_cost)}
+										{supFormatter(priceInSups)}
 									</Typography>
 								</Box>
 								<Divider
@@ -387,7 +402,7 @@ export const StoreItemPage = () => {
 														marginRight: ".5rem",
 													}}
 												/>
-												{supFormatter(storeItem.sup_cost)}
+												{supFormatter(priceInSups)}
 											</Typography>
 											<Box
 												sx={{
@@ -480,13 +495,7 @@ export const StoreItemPage = () => {
 											margin: ".5rem 0",
 										}}
 									/>
-									{storeItem.description ? (
-										<Typography variant="body1">{storeItem.description}</Typography>
-									) : (
-										<Typography variant="body1" color={colors.darkGrey} fontStyle="italic">
-											No description available
-										</Typography>
-									)}
+									<Typography variant="body1">{storeItem.data.template.label}</Typography>
 								</Box>
 								<Box>
 									<Typography
@@ -503,7 +512,7 @@ export const StoreItemPage = () => {
 											margin: ".5rem 0",
 										}}
 									/>
-									<Typography variant="body1">Part of the {storeItem.collection.name} collection.</Typography>
+									<Typography variant="body1">Part of the {collection.name} collection.</Typography>
 								</Box>
 							</Box>
 						</Box>
@@ -544,7 +553,7 @@ export const StoreItemPage = () => {
 												marginRight: ".5rem",
 											}}
 										/>
-										{supFormatter(storeItem.sup_cost)}
+										{supFormatter(priceInSups)}
 									</Typography>
 									<Box
 										sx={{
@@ -586,7 +595,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 		setLoading(true)
 		try {
 			await send(HubKey.StorePurchase, {
-				store_item_id: storeItem.ID,
+				store_item_id: storeItem.id,
 			})
 			onClose()
 			setPurchasedOpen(true)
@@ -614,7 +623,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 						<Typography variant="body1" sx={{ textAlign: "center", lineHeight: "1.3", fontSize: "120%" }}>
 							Please confirm purchase of{" "}
 							<Box component="span" sx={{ color: theme.palette.primary.main }}>
-								{storeItem.name}
+								{storeItem.data.template.label}
 							</Box>
 							<Box component="span">?</Box>
 						</Typography>
@@ -657,7 +666,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 					<DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 						<Box
 							component="img"
-							src={storeItem.image}
+							src={storeItem.data.template.image_url}
 							alt="Asset Image"
 							sx={{
 								display: isWiderThan1000px ? "block" : "none",
@@ -669,7 +678,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 						<Typography variant="h3" sx={{ textAlign: "center", lineHeight: "1.3" }}>
 							Congratulations on your purchase of{" "}
 							<Box component="span" sx={{ color: theme.palette.primary.main }}>
-								{storeItem.name}
+								{storeItem.data.template.label}
 							</Box>
 							<Box component="span">!</Box>
 						</Typography>

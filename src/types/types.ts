@@ -148,28 +148,28 @@ export interface Attribute {
 	value: string | number
 }
 
-export interface StoreItem {
-	ID: string
-	name: string
-	faction_id: string
-	faction?: Faction
-	collection_id: string
-	collection: Collection
-	description: string
-	image: string
-	image_avatar: string
-	animation_url: string
-	attributes: Attribute[]
-	usd_cent_cost: number
-	amount_sold: number
-	sup_cost: string
-	amount_available: number
-	sold_after: Date
-	sold_before: Date
-	deleted_at: Date
-	created_at: Date
-	updated_at: Date
-}
+// export interface StoreItem {
+// 	ID: string
+// 	name: string
+// 	faction_id: string
+// 	faction?: Faction
+// 	collection_id: string
+// 	collection: Collection
+// 	description: string
+// 	image: string
+// 	image_avatar: string
+// 	animation_url: string
+// 	attributes: Attribute[]
+// 	usd_cent_cost: number
+// 	amount_sold: number
+// 	sup_cost: string
+// 	amount_available: number
+// 	sold_after: Date
+// 	sold_before: Date
+// 	deleted_at: Date
+// 	created_at: Date
+// 	updated_at: Date
+// }
 
 export interface Transaction {
 	id: string

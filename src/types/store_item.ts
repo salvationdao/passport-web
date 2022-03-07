@@ -59,7 +59,9 @@ export interface Template {
 	is_default: boolean
 	image_url: string
 	animation_url: string
-	deleted_at?: string
+	avatar_url: string
+	deleted_at?: strin
+	asset_type: string
 	updated_at: string
 	created_at: string
 }

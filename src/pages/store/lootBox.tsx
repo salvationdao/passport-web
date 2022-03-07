@@ -26,12 +26,12 @@ import { SocketState, useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { Asset } from "../../types/types"
+import { PurchasedItem } from "../../types/purchased_item"
 import { rarityTextStyles, Rarity } from "../profile/profile"
 
 export const LootBoxPage = () => {
 	const [loading, setLoading] = useState(false)
-	const [asset, setAsset] = useState<Asset | undefined>()
+	const [asset, setAsset] = useState<PurchasedItem | null>(null)
 	const { state, send } = useWebsocket()
 	const { user } = useAuth()
 	const [dialogOpen, setDialogOpen] = useState(false)
@@ -81,7 +81,7 @@ export const LootBoxPage = () => {
 			})
 
 			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${resp}`)
-			const mysteryAsset: Asset = await assetResponse.json()
+			const mysteryAsset: PurchasedItem = await assetResponse.json()
 			if (mysteryAsset) {
 				setAsset(mysteryAsset)
 				setSidebarOpen(false)
@@ -199,13 +199,13 @@ export const LootBoxPage = () => {
 						<DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 							<Typography variant="h3" sx={{ textAlign: "center", lineHeight: "1.3" }}>
 								<Box component="span" sx={{ color: theme.palette.primary.main }}>
-									{asset?.name}
+									{asset?.data.mech.name}
 								</Box>
 								<Box component="span">!</Box>
 							</Typography>
 							<Box
 								component="img"
-								src={asset?.image}
+								src={asset?.data.mech.image_url}
 								alt="Asset Image"
 								sx={{
 									width: "100%",
@@ -221,10 +221,10 @@ export const LootBoxPage = () => {
 										fontStyle: "italic",
 										letterSpacing: "2px",
 										textTransform: "uppercase",
-										...rarityTextStyles[getItemAttributeValue(asset.attributes, "Rarity") as Rarity],
+										...rarityTextStyles[asset.data.mech.tier as Rarity],
 									}}
 								>
-									{getItemAttributeValue(asset.attributes, "Rarity")}
+									{asset.data.mech.tier}
 								</Typography>
 							) : null}
 						</DialogContent>

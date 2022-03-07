@@ -7,16 +7,18 @@ import { useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue, supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { StoreItem } from "../../types/types"
 import { ViewButton } from "../collections/collectionItemCard"
 import { Rarity, rarityTextStyles } from "../profile/profile"
 import SoldOut from "../../assets/images/SoldOutTrimmed.png"
+import { StoreItem, StoreItemResponse } from "../../types/store_item"
+import { Collection } from "../../types/types"
 
 interface StoreItemCardProps {
 	storeItemID: string
+	collection: Collection
 }
 
-export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ storeItemID }) => {
+export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ collection, storeItemID }) => {
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<StoreItem>()
@@ -25,10 +27,10 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 
 	useEffect(() => {
 		if (!subscribe) return
-		return subscribe<StoreItem>(
+		return subscribe<StoreItemResponse>(
 			HubKey.StoreItemSubscribe,
 			(payload) => {
-				setItem(payload)
+				setItem(payload.item)
 			},
 			{ store_item_id: storeItemID },
 		)
@@ -42,7 +44,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 		<Box
 			component="button"
 			disabled={item.amount_available - item.amount_sold <= 0}
-			onClick={() => history.push(`/stores/${item.collection.slug}/${item.ID}`)}
+			onClick={() => history.push(`/stores/${collection.slug}/${item.id}`)}
 			onMouseOver={() => setShowPreview(true)}
 			onMouseLeave={() => setShowPreview(false)}
 			onFocus={() => setShowPreview(true)}
@@ -101,7 +103,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 						textTransform: "uppercase",
 					}}
 				>
-					{item.name}
+					{item.data.template.label}
 				</Typography>
 
 				{/* image */}
@@ -112,17 +114,17 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 				>
 					<Box
 						component="img"
-						src={item.image}
+						src={item.data.template.image_url}
 						alt="Mech image"
 						sx={{
 							width: "100%",
 							marginBottom: ".3rem",
-							visibility: item.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
-							opacity: item.animation_url ? (showPreview ? 0 : 1) : "visible",
+							visibility: item.data.template.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
+							opacity: item.data.template.animation_url ? (showPreview ? 0 : 1) : "visible",
 							transition: "all .2s ease-in",
 						}}
 					/>
-					{item.animation_url && (
+					{item.data.template.animation_url && (
 						<Box
 							component="video"
 							sx={{
@@ -139,10 +141,10 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 							autoPlay
 							loop
 							tabIndex={-1}
-							poster={item.image}
+							poster={item.data.template.image_url}
 						>
-							<source src={item.animation_url} type="video/webm"></source>
-							<img src={item.image} alt="Mech" />
+							<source src={item.data.template.animation_url} type="video/webm"></source>
+							<img src={item.data.template.image_url} alt="Mech" />
 						</Box>
 					)}
 				</Box>

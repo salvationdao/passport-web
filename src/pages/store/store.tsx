@@ -486,9 +486,10 @@ export const StorePage: React.FC = () => {
 								>
 									{/* NOTE: You might need to remove the lootbox if pagination is added */}
 									{showLootBox && <LootBoxCard />}
-									{storeItemIDs.map((a) => {
-										return <StoreItemCard key={a} storeItemID={a} />
-									})}
+									{collection &&
+										storeItemIDs.map((a) => {
+											return <StoreItemCard collection={collection} key={a} storeItemID={a} />
+										})}
 								</Paper>
 							) : (
 								<Paper

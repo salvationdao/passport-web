@@ -46,7 +46,7 @@ import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { NilUUID } from "../../types/auth"
-import { PurchasedItem, PurchasedItemAttributes } from "../../types/purchased_item"
+import { PurchasedItem, PurchasedItemAttributes, PurchasedItemResponse } from "../../types/purchased_item"
 import { Attribute, Collection, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 
@@ -558,6 +558,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
 	const [renameWindowOpen, setRenameWindowOpen] = useState(false)
 	const [assetState, setAssetState] = useState<AssetState>(AssetState.OnWorld)
+	const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
 
 	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
 	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
@@ -566,7 +567,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 
 	const isWarMachine = (): boolean => {
 		if (!purchasedItem) return false
-		return true
+		return purchasedItem.data.mech.asset_type === "War Machine"
 	}
 
 	const leaveQueue = async () => {
@@ -633,7 +634,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 
 		setLoading(true)
 		try {
-			return subscribe<PurchasedItem>(
+			return subscribe<PurchasedItemResponse>(
 				HubKey.AssetUpdated,
 				(payload) => {
 					if (!payload) return
@@ -641,7 +642,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					let numberAttributes = new Array<Attribute>()
 					let regularAttributes = new Array<Attribute>()
 
-					const attributes = PurchasedItemAttributes(payload)
+					const attributes = PurchasedItemAttributes(payload.purchased_item)
 					attributes.forEach((a) => {
 						if (a.asset_hash) {
 							// If is an asset attribute
@@ -657,7 +658,8 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					setAssetAttributes(assetAttributes)
 					setNumberAttributes(numberAttributes)
 					setRegularAttributes(regularAttributes)
-					setPurchasedItem(payload)
+					setPurchasedItem(payload.purchased_item)
+					setOwnerUsername(payload.owner_username)
 					setLoading(false)
 				},
 				{ assetHash },
@@ -691,7 +693,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 		)
 	}
 
-	if (!collection) {
+	if (!collection || !ownerUsername) {
 		return (
 			<Paper
 				sx={{
@@ -820,23 +822,21 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									width: "100%",
 								}}
 							/>
-							{purchasedItem.image_avatar && (
-								<Box
-									component="img"
-									src={purchasedItem.image_avatar}
-									alt="Asset avatar"
-									sx={{
-										position: "absolute",
-										bottom: "1rem",
-										right: "1rem",
-										height: "60px",
-										width: "60px",
-										objectFit: "contain",
-										border: `1px solid ${colors.darkGrey}`,
-										backgroundColor: colors.darkGrey,
-									}}
-								/>
-							)}
+							<Box
+								component="img"
+								src={purchasedItem.data.mech.avatar_url}
+								alt="Asset avatar"
+								sx={{
+									position: "absolute",
+									bottom: "1rem",
+									right: "1rem",
+									height: "60px",
+									width: "60px",
+									objectFit: "contain",
+									border: `1px solid ${colors.darkGrey}`,
+									backgroundColor: colors.darkGrey,
+								}}
+							/>
 						</Box>
 						<Box
 							sx={{
@@ -868,7 +868,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									Owned By:
 								</Typography>
 								<Typography variant="subtitle1" color={colors.skyBlue}>
-									{purchasedItem.username}
+									{ownerUsername}
 								</Typography>
 							</Box>
 							<Divider
@@ -998,9 +998,9 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 												Continue Transition Off World
 											</FancyButton>
-										) : !purchasedItem.frozen_at && isWarMachine() ? (
+										) : !purchasedItem.minted_at && isWarMachine() ? (
 											<>
-												{!purchasedItem.minted && (
+												{!purchasedItem.minted_at && (
 													<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 														Transition Off World
 													</FancyButton>
@@ -1114,7 +1114,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										alignItems: "start",
 									}}
 								>
-									{collection && purchasedItem.username === "OnChain" && (
+									{collection && ownerUsername === "OnChain" && (
 										<Button
 											component={"a"}
 											href={
@@ -1148,10 +1148,22 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					</Box>
 				</Box>
 				{provider && purchasedItem && (
-					<StakeModel open={stakeModelOpen} asset={purchasedItem} provider={provider} onClose={() => setStakeModelOpen(false)} />
+					<StakeModel
+						collection={collection}
+						open={stakeModelOpen}
+						asset={purchasedItem}
+						provider={provider}
+						onClose={() => setStakeModelOpen(false)}
+					/>
 				)}
 				{provider && purchasedItem && (
-					<UnstakeModel open={unstakeModelOpen} asset={purchasedItem} provider={provider} onClose={() => setUnstakeModelOpen(false)} />
+					<UnstakeModel
+						collection={collection}
+						open={unstakeModelOpen}
+						asset={purchasedItem}
+						provider={provider}
+						onClose={() => setUnstakeModelOpen(false)}
+					/>
 				)}
 			</Paper>
 		</>
@@ -1357,6 +1369,7 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Pur
 }
 
 interface StakeModelProps {
+	collection: Collection
 	open: boolean
 	onClose: () => void
 	provider: ethers.providers.Web3Provider
@@ -1437,9 +1450,8 @@ interface StakeModelProps {
 // 	})()
 // },[asset, provider, loggedInUser])
 
-const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
+const UnstakeModel = ({ open, onClose, provider, asset, collection }: StakeModelProps) => {
 	const [error, setError] = useState<string>()
-
 	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
 	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
 
@@ -1449,8 +1461,8 @@ const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			setUnstakingLoading(true)
 			const abi = ["function unstake(address,uint256)"]
 			const signer = provider.getSigner()
-			const nftstakeContract = new ethers.Contract(asset.collection.stake_contract, abi, signer)
-			const tx = await nftstakeContract.unstake(asset.collection.mint_contract, asset.external_token_id)
+			const nftstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
+			const tx = await nftstakeContract.unstake(collection.mint_contract, asset.external_token_id)
 			await tx.wait()
 			setUnstakingSuccess(true)
 		} catch (e: any) {
@@ -1500,7 +1512,7 @@ const UnstakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 	)
 }
 
-const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
+const StakeModel = ({ open, onClose, provider, asset, collection }: StakeModelProps) => {
 	const [error, setError] = useState<string>()
 	const [approvalLoading, setApprovalLoading] = useState<boolean>(false)
 	const [approvalSuccess, setApprovalSuccess] = useState<boolean>(false)
@@ -1538,8 +1550,8 @@ const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			const abi = ["function approve(address, uint256)"]
 			const signer = provider.getSigner()
 			// TODO: fix for collection contract
-			const nftContract = new ethers.Contract(asset.collection.mint_contract, abi, signer)
-			const tx = await nftContract.approve(asset.collection.stake_contract, asset.external_token_id)
+			const nftContract = new ethers.Contract(collection.mint_contract, abi, signer)
+			const tx = await nftContract.approve(collection.stake_contract, asset.external_token_id)
 			await tx.wait()
 			setApprovalSuccess(true)
 		} catch (e) {
@@ -1555,8 +1567,8 @@ const StakeModel = ({ open, onClose, provider, asset }: StakeModelProps) => {
 			setStakingLoading(true)
 			const abi = ["function stake(address,uint256)"]
 			const signer = provider.getSigner()
-			const nftstakeContract = new ethers.Contract(asset.collection.stake_contract, abi, signer)
-			const tx = await nftstakeContract.stake(asset.collection.mint_contract, asset.external_token_id)
+			const nftstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
+			const tx = await nftstakeContract.stake(collection.mint_contract, asset.external_token_id)
 			await tx.wait()
 			setStakingSuccess(true)
 		} catch (e: any) {

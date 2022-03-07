@@ -22,6 +22,10 @@ export const PurchasedItemAttributes = (purchasedItem: PurchasedItem): Attribute
 	return result
 }
 
+export interface PurchasedItemResponse {
+	purchased_item: PurchasedItem
+	owner_username: string
+}
 export interface PurchasedItem {
 	id: string
 	collection_id: string
@@ -58,10 +62,12 @@ export interface Mech {
 	is_default: boolean
 	image_url: string
 	animation_url: string
+	avatar_url: string
 	hash: string
 	name: string
 	label: string
 	slug: string
+	asset_type: string
 	deleted_at?: string
 	updated_at: string
 	created_at: string
