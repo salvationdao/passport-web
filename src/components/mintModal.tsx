@@ -38,18 +38,6 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 	const mintAttempt = useCallback(
 		async (mintingContract: string, assetExternalTokenID: number, collectionSlug: string) => {
 			try {
-				if (!mintingContract || mintingContract === "") {
-					setErrorMinting("Missing collection contract information.")
-					return
-				}
-				if (!collectionSlug || collectionSlug === "") {
-					setErrorMinting("Missing collection slug.")
-					return
-				}
-				if (!assetExternalTokenID) {
-					setErrorMinting("Item token id.")
-					return
-				}
 				if (currentChainId?.toString() !== ETHEREUM_CHAIN_ID) {
 					setErrorMinting("Connected to wrong chain.")
 					return
@@ -80,6 +68,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				onClose()
 			} catch (e: any) {
 				//checking metamask error signature and setting error
+				console.error(e)
 				if (e.code && e.message) {
 					setErrorMinting(typeof e.code === "number" ? e.message : "Issue minting, please try again or contact support.")
 					return

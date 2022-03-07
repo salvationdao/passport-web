@@ -60,7 +60,7 @@ export interface Template {
 	image_url: string
 	animation_url: string
 	avatar_url: string
-	deleted_at?: strin
+	deleted_at?: string
 	asset_type: string
 	updated_at: string
 	created_at: string

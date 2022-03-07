@@ -550,7 +550,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	const [, setRegularAttributes] = useState<Attribute[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
-
+	const [collectionSlug, setCollectionSlug] = useState<string | null>(null)
 	// Asset actions
 	const { queuedWarMachine, queuingContractReward } = useAsset()
 	const queueDetail = queuedWarMachine(assetHash)
@@ -625,10 +625,15 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	}, [getOwner, purchasedItem, provider, loggedInUser])
 
 	useEffect(() => {
-		subscribe<Collection>(HubKey.CollectionUpdated, (payload) => {
-			setCollection(collection)
-		})
-	})
+		if (!collectionSlug) return
+		subscribe<Collection>(
+			HubKey.CollectionUpdated,
+			(payload) => {
+				setCollection(payload)
+			},
+			{ slug: collectionSlug },
+		)
+	}, [collectionSlug])
 	useEffect(() => {
 		if (state !== SocketState.OPEN || assetHash === "") return
 
@@ -660,9 +665,10 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					setRegularAttributes(regularAttributes)
 					setPurchasedItem(payload.purchased_item)
 					setOwnerUsername(payload.owner_username)
+					setCollectionSlug(payload.collection_slug)
 					setLoading(false)
 				},
-				{ assetHash },
+				{ asset_hash: assetHash },
 			)
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching asset data. Please try again.")
@@ -693,7 +699,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 		)
 	}
 
-	if (!collection || !ownerUsername) {
+	if (!collection || !ownerUsername || !collectionSlug) {
 		return (
 			<Paper
 				sx={{
@@ -848,6 +854,15 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 								variant="h4"
 								component="p"
 								sx={{
+									textTransform: "uppercase",
+								}}
+							>
+								{purchasedItem.data.mech.label} {purchasedItem.data.mech.name}
+							</Typography>
+							<Typography
+								variant="h4"
+								component="p"
+								sx={{
 									fontFamily: fonts.bizmoblack,
 									fontStyle: "italic",
 									letterSpacing: "2px",
@@ -996,7 +1011,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									{loggedInUser?.id === purchasedItem.owner_id ? (
 										collection.mint_contract !== "" && !purchasedItem.minted_at ? (
 											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-												Continue Transition Off World
+												Transition Off World
 											</FancyButton>
 										) : !purchasedItem.minted_at && isWarMachine() ? (
 											<>

@@ -221,7 +221,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 			>
 				{collection.name === "Supremacy Genesis" && <LootBoxCard />}
 				{storeItemIDs.slice(0, 5).map((a) => {
-					return <StoreItemCard key={a} storeItemID={a} />
+					return <StoreItemCard collection={collection} key={a} storeItemID={a} />
 				})}
 			</Box>
 		)

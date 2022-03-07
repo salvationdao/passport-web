@@ -23,6 +23,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<StoreItem>()
 	const [showPreview, setShowPreview] = useState(false)
+	const [priceInSups, setPriceInSups] = useState<string | null>(null)
 	const theme = useTheme()
 
 	useEffect(() => {
@@ -31,12 +32,13 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 			HubKey.StoreItemSubscribe,
 			(payload) => {
 				setItem(payload.item)
+				setPriceInSups(payload.price_in_sups)
 			},
 			{ store_item_id: storeItemID },
 		)
 	}, [subscribe, storeItemID])
 
-	if (!item) {
+	if (!item || !priceInSups) {
 		return <StoreItemCardSkeleton />
 	}
 
@@ -155,7 +157,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 							textTransform: "uppercase",
 						}}
 					>
-						{getItemAttributeValue(item.attributes, "Asset Type")}
+						{item.data.template.asset_type}
 					</Typography>
 					<Typography
 						variant="h4"
@@ -165,10 +167,10 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 							fontStyle: "italic",
 							letterSpacing: "2px",
 							textTransform: "uppercase",
-							...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
+							...rarityTextStyles[item.data.template.tier as Rarity],
 						}}
 					>
-						{getItemAttributeValue(item.attributes, "Rarity")}
+						{item.data.template.tier}
 					</Typography>
 					<Typography
 						variant="subtitle1"
@@ -183,7 +185,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 								marginRight: ".2rem",
 							}}
 						/>
-						{supFormatter(item.sup_cost)}
+						{supFormatter(priceInSups)}
 					</Typography>
 				</Box>
 				<ViewButton

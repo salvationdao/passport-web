@@ -26,10 +26,11 @@ import { SocketState, useWebsocket } from "../../containers/socket"
 import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { PurchasedItem } from "../../types/purchased_item"
+import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles, Rarity } from "../profile/profile"
 
 export const LootBoxPage = () => {
+	const { subscribe } = useWebsocket()
 	const [loading, setLoading] = useState(false)
 	const [asset, setAsset] = useState<PurchasedItem | null>(null)
 	const { state, send } = useWebsocket()
@@ -77,16 +78,18 @@ export const LootBoxPage = () => {
 		setLoading(true)
 		try {
 			const resp = await send(HubKey.StoreLootBox, {
-				factionID: user.faction_id,
+				faction_id: user.faction_id,
 			})
 
-			const assetResponse = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${resp}`)
-			const mysteryAsset: PurchasedItem = await assetResponse.json()
-			if (mysteryAsset) {
-				setAsset(mysteryAsset)
-				setSidebarOpen(false)
-				setOpen(true)
-			}
+			return subscribe<PurchasedItemResponse>(
+				HubKey.AssetUpdated,
+				(payload) => {
+					setAsset(payload.purchased_item)
+					setSidebarOpen(false)
+					setOpen(true)
+				},
+				{ asset_hash: resp },
+			)
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while purchasing the item. Please contact support if this problem persists.")
 		} finally {
@@ -199,7 +202,7 @@ export const LootBoxPage = () => {
 						<DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 							<Typography variant="h3" sx={{ textAlign: "center", lineHeight: "1.3" }}>
 								<Box component="span" sx={{ color: theme.palette.primary.main }}>
-									{asset?.data.mech.name}
+									{asset && asset.data.mech.label}
 								</Box>
 								<Box component="span">!</Box>
 							</Typography>

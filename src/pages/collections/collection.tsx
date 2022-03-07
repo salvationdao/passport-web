@@ -11,13 +11,10 @@ import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
 import { useAuth } from "../../containers/auth"
-import { useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { CollectionItemCard } from "./collectionItemCard"
-import ExpandLess from "@mui/icons-material/ExpandLess"
-import ExpandMore from "@mui/icons-material/ExpandMore"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const [assetHashes, setAssetHashes] = useState<string[]>([])
@@ -31,13 +28,13 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	const history = useHistory()
 	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
-	const { loading, error, payload, query } = useQuery<{ assetHashes: string[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error, payload, query } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
 	const {
 		loading: offWorldLoading,
 		error: offWorldError,
 		payload: offWorldPayload,
 		query: offWorldQuery,
-	} = useQuery<{ assetHashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
+	} = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
@@ -46,13 +43,13 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	useEffect(() => {
 		if (!payload || loading || error) return
 
-		setAssetHashes(payload.assetHashes)
+		setAssetHashes(payload.asset_hashes)
 	}, [payload, loading, error])
 
 	useEffect(() => {
 		if (!offWorldPayload || offWorldLoading || offWorldError) return
 
-		setAssetHashes(Array.from(new Set(offWorldPayload.assetHashes)))
+		setAssetHashes(Array.from(new Set(offWorldPayload.asset_hashes)))
 	}, [offWorldPayload, offWorldLoading, offWorldError])
 
 	if (user && !user.faction) {

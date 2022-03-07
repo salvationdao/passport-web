@@ -6,7 +6,7 @@ import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { PurchasedItem } from "../../types/purchased_item"
+import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 
 import { Rarity, rarityTextStyles } from "../profile/profile"
 
@@ -19,6 +19,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<PurchasedItem>()
+	const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
 	const [showPreview, setShowPreview] = useState(false)
 	const [noAsset, setNoAsset] = useState<boolean>(false) //used if asset doesn't exist in our metadata (shouldn't happen, fixes local dev stuff)
 
@@ -37,12 +38,13 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 
 	useEffect(() => {
 		if (!subscribe || assetHash === "") return
-		return subscribe<PurchasedItem>(
+		return subscribe<PurchasedItemResponse>(
 			HubKey.AssetUpdated,
 			(payload) => {
-				setItem(payload)
+				setItem(payload.purchased_item)
+				setOwnerUsername(payload.owner_username)
 			},
-			{ assetHash },
+			{ asset_hash: assetHash },
 		)
 	}, [subscribe, assetHash])
 
