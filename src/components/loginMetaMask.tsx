@@ -30,7 +30,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			try {
 				displayMessage("Please refer to your wallet for authentication")
 				const resp = await loginWalletConnect()
-				if (!resp || !resp.isNew) return
+				if (!resp || !resp.is_new) return
 				!publicSale && history.push("/onboarding?skip_username=true")
 			} catch (e) {
 				setIsProcessing(false)
@@ -44,7 +44,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 
 			try {
 				const resp = await loginMetamask()
-				if (!resp || !resp.isNew) {
+				if (!resp || !resp.is_new) {
 					setErrorMessage("There was a problem logging you in. Your account may be disabled, please contact support.")
 					setIsProcessing(false)
 					return

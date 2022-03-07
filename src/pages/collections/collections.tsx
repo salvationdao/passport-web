@@ -215,7 +215,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 		;(async () => {
 			setLoading(true)
 			try {
-				const resp = await send<{ assetHashes: string[]; total: number }>(HubKey.AssetList, {
+				const resp = await send<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, {
 					pageSize: 6,
 					search,
 					filter: {
@@ -236,7 +236,7 @@ const CollectionPreview: React.VoidFunctionComponent<CollectionPreviewProps> = (
 						],
 					},
 				})
-				setAssetHashes(resp.assetHashes)
+				setAssetHashes(resp.asset_hashes)
 			} catch (e) {
 				setError(typeof e === "string" ? e : "An error occurred while loading items for this store.")
 			} finally {

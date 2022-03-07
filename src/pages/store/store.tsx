@@ -26,7 +26,7 @@ export const StorePage: React.FC = () => {
 
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [collection, setCollection] = useState<Collection>()
-	const { loading: queryLoading, error, payload, query } = useQuery<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, false)
+	const { loading: queryLoading, error, payload, query } = useQuery<{ total: number; store_item_ids: string[] }>(HubKey.StoreList, false)
 	const [tabLoading, setTabLoading] = useState(true)
 
 	const [canEnter, setCanEnter] = useState(true)
@@ -136,7 +136,7 @@ export const StorePage: React.FC = () => {
 
 	useEffect(() => {
 		if (!payload || queryLoading || error) return
-		setStoreItemIDs(payload.storeItemIDs)
+		setStoreItemIDs(payload.store_item_ids)
 	}, [payload, queryLoading, error])
 
 	if (user && !user.faction) {
@@ -274,7 +274,6 @@ export const StorePage: React.FC = () => {
 			</Box>
 		</>
 	)
-
 	return (
 		<>
 			{!isWiderThan1000px && canEnter && (

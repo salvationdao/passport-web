@@ -103,7 +103,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				(payload) => {
 					setEntry(payload)
 				},
-				{ transactionID },
+				{ transaction_id: transactionID },
 			)
 		} catch (e) {
 			if (typeof e === "string") {

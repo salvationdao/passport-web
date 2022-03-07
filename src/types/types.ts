@@ -141,34 +141,6 @@ export interface Collection {
 // 	symbol: string
 // }
 
-export interface Asset {
-	hash: string
-	// mintContract: string
-	// stakeContract: string
-	external_token_id: number
-	user_id: string
-	username: string
-	name: string
-	collection: Collection
-	game_object?: any
-	description: string
-	external_url: string
-	image: string
-	image_avatar: string
-	animation_url: string
-	attributes: Attribute[]
-	additional_metadata?: any
-	created_at: Date
-	updated_at: Date
-	frozen_at?: Date
-	locked_by_id?: string
-	deleted_at?: Date
-	minting_signature?: string
-	signature_expiry?: string
-	tx_history: any[]
-	minted: boolean
-}
-
 export interface Attribute {
 	display_type?: "number"
 	trait_type: string

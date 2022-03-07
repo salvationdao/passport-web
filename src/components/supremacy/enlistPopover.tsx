@@ -36,7 +36,7 @@ const Stat: React.VoidFunctionComponent<StatProps> = ({ title, content, prefixIm
 }
 
 interface EnlistFactionRequest {
-	factionID: string
+	faction_id: string
 }
 
 interface PopoverContentProps {
@@ -45,7 +45,7 @@ interface PopoverContentProps {
 }
 
 const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ factionData, onClose }) => {
-	const factionDataMore = useSubscription<DetailedFaction>(HubKey.SubscribeFactionStat, { factionID: factionData.id }).payload
+	const factionDataMore = useSubscription<DetailedFaction>(HubKey.SubscribeFactionStat, { faction_id: factionData.id }).payload
 
 	const [page, setPage] = useState(0)
 	const { send, state } = useWebsocket()
@@ -58,7 +58,7 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 		if (state !== WebSocket.OPEN) return
 		onClose()
 		try {
-			await send<any, EnlistFactionRequest>(HubKey.FactionEnlist, { factionID: factionData.id })
+			await send<any, EnlistFactionRequest>(HubKey.FactionEnlist, { faction_id: factionData.id })
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		}

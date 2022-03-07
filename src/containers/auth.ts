@@ -58,7 +58,7 @@ export const AuthContainer = createContainer(() => {
 
 	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
 
-	const [sessionID, setSessionID] = useState("")
+	const [sessionId, setSessionID] = useState("")
 
 	const isLogoutPage = window.location.pathname.startsWith("/nosidebar/logout")
 
@@ -72,7 +72,7 @@ export const AuthContainer = createContainer(() => {
 	const logout = useCallback(async () => {
 		try {
 			const token = localStorage.getItem("token")
-			await send(HubKey.AuthLogout, { token, sessionID })
+			await send(HubKey.AuthLogout, { token: token, session_id: sessionId })
 			localStorage.removeItem("token")
 			setRecheckAuth(false)
 
@@ -89,7 +89,7 @@ export const AuthContainer = createContainer(() => {
 		} catch (error) {
 			console.error()
 		}
-	}, [send, isLogoutPage, sessionID, wcProvider])
+	}, [send, isLogoutPage, sessionId, wcProvider])
 
 	/**
 	 * Logs a User in using their email and password.
@@ -103,7 +103,7 @@ export const AuthContainer = createContainer(() => {
 			const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
 				email,
 				password,
-				sessionID,
+				session_id: sessionId,
 			})
 			if (!resp || !resp.user || !resp.token) {
 				localStorage.clear()
@@ -114,7 +114,7 @@ export const AuthContainer = createContainer(() => {
 			localStorage.setItem("token", resp.token)
 			setAuthorised(true)
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -133,8 +133,8 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await send<TokenLoginResponse, TokenLoginRequest>(HubKey.AuthLoginToken, {
 					token,
-					sessionID,
-					twitchExtensionJWT: searchParams.get("twitchExtensionJWT"),
+					session_id: sessionId,
+					twitch_extension_jwt: searchParams.get("twitchExtensionJWT"),
 				})
 				setUser(resp.user)
 				setAuthorised(true)
@@ -146,7 +146,7 @@ export const AuthContainer = createContainer(() => {
 				setReconnecting(false)
 			}
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -158,9 +158,9 @@ export const AuthContainer = createContainer(() => {
 
 			try {
 				const resp = await send<RegisterResponse, WalletSignUpRequest>(HubKey.AuthSignUpWallet, {
-					publicAddress: account,
+					public_address: account,
 					username,
-					sessionID,
+					session_id: sessionId,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -178,7 +178,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return undefined
 		},
-		[send, state, account, metaMaskState, sessionID],
+		[send, state, account, metaMaskState, sessionId],
 	)
 
 	/**
@@ -188,16 +188,17 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const loginMetamask = useCallback(async () => {
 		if (state !== WebSocket.OPEN) return undefined
-
 		try {
 			const acc = await connect()
 			const signature = await sign()
 			if (acc) {
+				console.log({ acc })
 				const resp: PasswordLoginResponse = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
-					publicAddress: acc,
-					signature,
-					sessionID,
+					public_address: acc,
+					signature: signature,
+					session_id: sessionId,
 				})
+				console.log({ resp })
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
 					setUser(undefined)
@@ -217,7 +218,7 @@ export const AuthContainer = createContainer(() => {
 				throw { code: e.code, message: e.message }
 			}
 		}
-	}, [send, state, sign, sessionID, connect])
+	}, [send, state, sign, sessionId, connect])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -231,9 +232,9 @@ export const AuthContainer = createContainer(() => {
 				await signWalletConnect()
 			} else {
 				const resp = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
-					publicAddress: account as string,
+					public_address: account as string,
 					signature: wcSignature || "",
-					sessionID,
+					session_id: sessionId,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -250,7 +251,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			console.error(e)
 		}
-	}, [send, state, account, sessionID, signWalletConnect, wcSignature])
+	}, [send, state, account, sessionId, signWalletConnect, wcSignature])
 
 	// Effect
 	useEffect(() => {
@@ -273,7 +274,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<RegisterResponse, GoogleSignUpRequest>(HubKey.AuthSignUpGoogle, {
 					token,
 					username,
-					sessionID,
+					session_id: sessionId,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -291,7 +292,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return undefined
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -304,8 +305,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<PasswordLoginResponse, GoogleLoginRequest>(HubKey.AuthLoginGoogle, {
-					token,
-					sessionID,
+					token: token,
+					session_id: sessionId,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -323,7 +324,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -338,7 +339,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<RegisterResponse, FacebookSignUpRequest>(HubKey.AuthSignUpFacebook, {
 					token,
 					username,
-					sessionID,
+					session_id: sessionId,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -356,7 +357,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -371,8 +372,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<PasswordLoginResponse, FacebookLoginRequest>(HubKey.AuthLoginFacebook, {
-					token,
-					sessionID,
+					token: token,
+					session_id: sessionId,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -390,7 +391,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -405,7 +406,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<RegisterResponse, TwitchSignUpRequest>(HubKey.AuthSignUpTwitch, {
 					token,
 					username,
-					sessionID,
+					session_id: sessionId,
 					website: true,
 				})
 				setUser(resp.user)
@@ -424,7 +425,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -437,8 +438,8 @@ export const AuthContainer = createContainer(() => {
 			}
 			try {
 				const resp = await send<PasswordLoginResponse, TwitchLoginRequest>(HubKey.AuthLoginTwitch, {
-					token,
-					sessionID,
+					token: token,
+					session_id: sessionId,
 					website: true,
 				})
 				if (!resp || !resp.user || !resp.token) {
@@ -457,23 +458,23 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
 	 * Signs a user up using a Twitter OAuth token and verifier
 	 */
 	const signUpTwitter = useCallback(
-		async (oauthToken: string, oauthVerifier: string, username: string) => {
+		async (oauth_token: string, oauth_verifier: string, username: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
 				const resp = await send<RegisterResponse, TwitterSignUpRequest>(HubKey.AuthSignUpTwitter, {
-					oauthToken,
-					oauthVerifier,
+					oauth_token,
+					oauth_verifier,
 					username,
-					sessionID,
+					session_id: sessionId,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -491,22 +492,22 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
 	 * Logs a User in using a Twitter OAuth code
 	 */
 	const loginTwitter = useCallback(
-		async (oauthToken: string, oauthVerifier: string) => {
+		async (oauth_token: string, oauth_verifier: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
 				const resp = await send<PasswordLoginResponse, TwitterLoginRequest>(HubKey.AuthLoginTwitter, {
-					oauthToken,
-					oauthVerifier,
-					sessionID,
+					oauth_token,
+					oauth_verifier,
+					session_id: sessionId,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -524,7 +525,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -539,8 +540,8 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<RegisterResponse, DiscordSignUpRequest>(HubKey.AuthSignUpDiscord, {
 					code,
 					username,
-					sessionID,
-					redirectURI: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+					session_id: sessionId,
+					redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -558,7 +559,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -572,8 +573,8 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await send<PasswordLoginResponse, DiscordLoginRequest>(HubKey.AuthLoginDiscord, {
 					code,
-					sessionID,
-					redirectURI: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+					session_id: sessionId,
+					redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -591,7 +592,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[send, state, sessionID],
+		[send, state, sessionId],
 	)
 
 	/**
@@ -771,14 +772,14 @@ export const AuthContainer = createContainer(() => {
 	 * Connects a User's existing account to Twitter
 	 */
 	const addTwitter = useCallback(
-		async (oauthToken: string, oauthVerifier: string) => {
+		async (oauth_token: string, oauth_verifier: string) => {
 			if (state !== WebSocket.OPEN) {
 				return
 			}
 			try {
 				const resp = await send<AddServiceResponse, AddTwitterRequest>(HubKey.UserAddTwitter, {
-					oauthToken,
-					oauthVerifier,
+					oauth_token,
+					oauth_verifier,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -830,7 +831,7 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await send<AddServiceResponse, AddDiscordRequest>(HubKey.UserAddDiscord, {
 					code,
-					redirectURI: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+					redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				})
 				if (!resp || !resp.user) {
 					return
@@ -945,10 +946,10 @@ export const AuthContainer = createContainer(() => {
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
-		if (authorised && sessionID && !isLogoutPage) {
+		if (authorised && sessionId && !isLogoutPage) {
 			window.close()
 		}
-	}, [authorised, sessionID, isLogoutPage])
+	}, [authorised, sessionId, isLogoutPage])
 
 	/////////////////
 	//  Container  //
@@ -993,7 +994,7 @@ export const AuthContainer = createContainer(() => {
 		verifying,
 		verifyCompleteType,
 		setSessionID,
-		sessionID,
+		sessionId,
 		showSimulation,
 		setShowSimulation,
 	}

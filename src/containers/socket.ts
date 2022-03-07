@@ -3,7 +3,7 @@ import { createContainer } from "unstated-next"
 import HubKey from "../keys"
 import { API_ENDPOINT_HOSTNAME } from "../config"
 
-// makeid is used to generate a random transactionID for the websocket
+// makeid is used to generate a random transaction_id for the websocket
 export function makeid(length: number = 12): string {
 	let result = ""
 	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -52,7 +52,7 @@ interface WebSocketProperties {
 type SubscribeCallback = (payload: any) => void
 
 export interface Message<T> {
-	transactionID: string
+	transaction_id: string
 	key: string
 	payload: T
 }
@@ -60,7 +60,7 @@ export interface Message<T> {
 type WSCallback<T = any> = (data: T) => void
 
 interface HubError {
-	transactionID: string
+	transaction_id: string
 	key: string
 	message: string
 }
@@ -72,9 +72,9 @@ const UseWebsocket = (): WebSocketProperties => {
 	const webSocket = useRef<WebSocket | null>(null)
 
 	const send = useRef<WSSendFn>(function send<Y = any, X = any>(key: string, payload?: X): Promise<Y> {
-		const transactionID = makeid()
+		const transaction_id = makeid()
 		return new Promise(function (resolve, reject) {
-			callbacks.current[transactionID] = (data: Message<Y> | HubError) => {
+			callbacks.current[transaction_id] = (data: Message<Y> | HubError) => {
 				if (data.key === "HUB:ERROR") {
 					reject((data as HubError).message)
 					return
@@ -88,40 +88,40 @@ const UseWebsocket = (): WebSocketProperties => {
 				JSON.stringify({
 					key,
 					payload,
-					transactionID,
+					transaction_id,
 				}),
 			)
 		})
 	})
 
-	const subs = useRef<{ [transactionID: string]: SubscribeCallback[] }>({})
+	const subs = useRef<{ [transaction_id: string]: SubscribeCallback[] }>({})
 
 	const subscribe = useMemo(() => {
 		return <T>(key: string, callback: (payload: T) => void, args?: any) => {
-			const transactionID = makeid()
+			const transaction_id = makeid()
 
-			if (subs.current[transactionID]) subs.current[transactionID].push(callback)
-			else subs.current[transactionID] = [callback]
+			if (subs.current[transaction_id]) subs.current[transaction_id].push(callback)
+			else subs.current[transaction_id] = [callback]
 
 			if (!webSocket.current) throw new Error("no websocket")
 			webSocket.current.send(
 				JSON.stringify({
 					key,
 					payload: args,
-					transactionID,
+					transaction_id,
 				}),
 			)
 
 			return () => {
-				const i = subs.current[transactionID].indexOf(callback)
+				const i = subs.current[transaction_id].indexOf(callback)
 				if (i === -1) return
-				subs.current[transactionID].splice(i, 1)
+				subs.current[transaction_id].splice(i, 1)
 
 				if (!webSocket.current) throw new Error("no websocket")
 				webSocket.current.send(
 					JSON.stringify({
 						key: key + ":UNSUBSCRIBE",
-						transactionID: transactionID,
+						transaction_id,
 					}),
 				)
 			}
@@ -153,15 +153,15 @@ const UseWebsocket = (): WebSocketProperties => {
 						onopen()
 					}
 				}
-				if (msgData.transactionID) {
-					const { [msgData.transactionID]: cb, ...withoutCb } = callbacks.current
+				if (msgData.transaction_id) {
+					const { [msgData.transaction_id]: cb, ...withoutCb } = callbacks.current
 					if (cb) {
 						cb(msgData)
 						callbacks.current = withoutCb
 					}
 				}
-				if (subs.current[msgData.transactionID]) {
-					for (const callback of subs.current[msgData.transactionID]) {
+				if (subs.current[msgData.transaction_id]) {
+					for (const callback of subs.current[msgData.transaction_id]) {
 						callback(msgData.payload)
 					}
 				}

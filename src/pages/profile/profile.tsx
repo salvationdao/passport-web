@@ -46,7 +46,8 @@ import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { NilUUID } from "../../types/auth"
-import { Asset, Attribute, User } from "../../types/types"
+import { PurchasedItem, PurchasedItemAttributes } from "../../types/purchased_item"
+import { Attribute, Collection, User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 
 export const ProfilePage: React.FC = () => {
@@ -537,12 +538,13 @@ enum AssetState {
 const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	const history = useHistory()
 	const { state, subscribe, send } = useWebsocket()
+	const [collection, setCollection] = useState<Collection | null>(null)
 	const { user: loggedInUser } = useAuth()
 	const { provider } = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	// Asset data
-	const [asset, setAsset] = useState<Asset>()
+	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem>()
 	const [, setAssetAttributes] = useState<Attribute[]>([])
 	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
 	const [, setRegularAttributes] = useState<Attribute[]>([])
@@ -560,26 +562,11 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
 	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
 
-	const isOwner = asset ? loggedInUser?.id === asset?.user_id : false
+	const isOwner = purchasedItem ? loggedInUser?.id === purchasedItem?.owner_id : false
 
 	const isWarMachine = (): boolean => {
-		if (!asset) return false
-		// loops through asset's attributes checks if it has a trait_type of "Asset Type", and value of "War Machine"
-		const wm = asset.attributes.filter((a) => a.trait_type === "Asset Type" && a.value === "War Machine")
-		return wm.length > 0
-	}
-
-	const onDeploy = async () => {
-		if (!assetHash) return
-		setSubmitting(true)
-		try {
-			await send(HubKey.AssetJoinQueue, { assetHash: assetHash })
-			displayMessage(`Successfully deployed ${asset?.name}`, "success")
-		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-		} finally {
-			setSubmitting(false)
-		}
+		if (!purchasedItem) return false
+		return true
 	}
 
 	const leaveQueue = async () => {
@@ -606,45 +593,56 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 		}
 	}
 
-	const getOwner = useCallback(async (asset: Asset | undefined, provider: ethers.providers.Web3Provider | undefined, loggedInUser: User | undefined) => {
-		if (!asset || !asset.minted || !provider || !loggedInUser?.public_address) return
-		try {
-			const abi = ["function ownerOf(uint256) view returns (address)"]
-			const signer = provider.getSigner()
-			const nftContract = new ethers.Contract(asset.collection.mint_contract, abi, signer)
-			const owner = await nftContract.ownerOf(asset.external_token_id)
+	const getOwner = useCallback(
+		async (purchasedItem: PurchasedItem | undefined, provider: ethers.providers.Web3Provider | undefined, loggedInUser: User | undefined) => {
+			if (!purchasedItem || !purchasedItem?.minted_at || !provider || !loggedInUser?.public_address) return
+			if (!collection) return
+			try {
+				const abi = ["function ownerOf(uint256) view returns (address)"]
+				const signer = provider.getSigner()
+				const nftContract = new ethers.Contract(collection.mint_contract, abi, signer)
+				const owner = await nftContract.ownerOf(purchasedItem.external_token_id)
 
-			if (owner === asset.collection.stake_contract && asset.user_id === loggedInUser.id) {
-				setAssetState(AssetState.OffWorldStaked)
-			} else if (
-				(owner !== loggedInUser.public_address && owner !== asset.collection.stake_contract) ||
-				(owner === loggedInUser.public_address && asset.user_id === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
-			) {
-				setAssetState(AssetState.OffWorldNotStaked)
-			} else if (owner === loggedInUser.public_address && asset.user_id === loggedInUser.id) {
-				setAssetState(AssetState.OffWorldStaked)
-			}
-		} catch (e) {}
-	}, [])
+				if (owner === collection.stake_contract && purchasedItem.owner_id === loggedInUser.id) {
+					setAssetState(AssetState.OffWorldStaked)
+				} else if (
+					(owner !== loggedInUser.public_address && owner !== collection.stake_contract) ||
+					(owner === loggedInUser.public_address && purchasedItem.owner_id === "2fa1a63e-a4fa-4618-921f-4b4d28132069")
+				) {
+					setAssetState(AssetState.OffWorldNotStaked)
+				} else if (owner === loggedInUser.public_address && purchasedItem.owner_id === loggedInUser.id) {
+					setAssetState(AssetState.OffWorldStaked)
+				}
+			} catch (e) {}
+		},
+		[],
+	)
 
 	// check the owner every second
 	useEffect(() => {
-		setInterval(() => getOwner(asset, provider, loggedInUser), 1000)
-	}, [getOwner, asset, provider, loggedInUser])
+		setInterval(() => getOwner(purchasedItem, provider, loggedInUser), 1000)
+	}, [getOwner, purchasedItem, provider, loggedInUser])
 
+	useEffect(() => {
+		subscribe<Collection>(HubKey.CollectionUpdated, (payload) => {
+			setCollection(collection)
+		})
+	})
 	useEffect(() => {
 		if (state !== SocketState.OPEN || assetHash === "") return
 
 		setLoading(true)
 		try {
-			return subscribe<Asset>(
+			return subscribe<PurchasedItem>(
 				HubKey.AssetUpdated,
 				(payload) => {
 					if (!payload) return
 					let assetAttributes = new Array<Attribute>()
 					let numberAttributes = new Array<Attribute>()
 					let regularAttributes = new Array<Attribute>()
-					payload.attributes.forEach((a) => {
+
+					const attributes = PurchasedItemAttributes(payload)
+					attributes.forEach((a) => {
 						if (a.asset_hash) {
 							// If is an asset attribute
 							assetAttributes.push(a)
@@ -659,7 +657,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 					setAssetAttributes(assetAttributes)
 					setNumberAttributes(numberAttributes)
 					setRegularAttributes(regularAttributes)
-					setAsset(payload)
+					setPurchasedItem(payload)
 					setLoading(false)
 				},
 				{ assetHash },
@@ -681,7 +679,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 		)
 	}
 
-	if (loading || !asset) {
+	if (loading || !purchasedItem) {
 		return (
 			<Paper
 				sx={{
@@ -692,20 +690,31 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 			</Paper>
 		)
 	}
+
+	if (!collection) {
+		return (
+			<Paper
+				sx={{
+					flexGrow: 1,
+				}}
+			>
+				Loading...
+			</Paper>
+		)
+	}
+
 	return (
 		<>
-			{asset.collection && asset.collection.mint_contract !== "" && (
+			{collection && collection.mint_contract !== "" && (
 				<MintModal
 					open={mintWindowOpen}
 					onClose={() => setMintWindowOpen(false)}
-					mintContract={asset.collection.mint_contract}
-					assetExternalTokenID={asset.external_token_id}
-					mintingSignature={asset.minting_signature}
-					collectionSlug={asset.collection.slug}
-					signatureExpiry={asset.signature_expiry}
+					mintContract={collection.mint_contract}
+					assetExternalTokenID={purchasedItem.external_token_id}
+					collectionSlug={collection.slug}
 				/>
 			)}
-			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={asset} userID={user.id} />
+			<UpdateNameModal open={renameWindowOpen} onClose={() => setRenameWindowOpen(false)} asset={purchasedItem} userID={user.id} />
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -740,34 +749,27 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 							marginBottom: "1rem",
 						}}
 					>
-						{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mint_contract !== "" && (
+						{assetState === AssetState.OffWorldNotStaked && collection && collection.mint_contract !== "" && (
 							<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
 								Transition In Asset
 							</FancyButton>
 						)}
 
-						{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mint_contract !== "" && (
+						{assetState === AssetState.OffWorldStaked && collection && collection.mint_contract !== "" && (
 							<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
 								Transition out Asset
 							</FancyButton>
 						)}
 
-						{isOwner && isWarMachine() && !asset.frozen_at && (
+						{isOwner && isWarMachine() && !purchasedItem.minted_at && (
 							<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
 								Rename Asset
 							</FancyButton>
 						)}
 						{isOwner ? (
-							(asset.minting_signature || asset.minting_signature !== "") &&
-							!asset.minted &&
-							asset.collection &&
-							asset.collection.mint_contract !== "" ? (
-								<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
-									Continue Transition Off World
-								</FancyButton>
-							) : !asset.frozen_at && isWarMachine() ? (
+							!purchasedItem.minted_at && isWarMachine() ? (
 								<>
-									{!asset.minted && (
+									{!purchasedItem.minted_at && (
 										<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 											Transition Off World
 										</FancyButton>
@@ -775,7 +777,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 								</>
 							) : (
 								<>
-									{!queueDetail?.war_machine_metadata.is_insured && (!asset.locked_by_id || asset.locked_by_id === NilUUID) && (
+									{!queueDetail?.war_machine_metadata.is_insured && (
 										<FancyButton size="small" loading={submitting} onClick={payInsurance}>
 											Pay Insurance
 										</FancyButton>
@@ -812,16 +814,16 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 						>
 							<Box
 								component="img"
-								src={asset.image}
+								src={purchasedItem.data.mech.image_url}
 								alt="Asset Image"
 								sx={{
 									width: "100%",
 								}}
 							/>
-							{asset.image_avatar && (
+							{purchasedItem.image_avatar && (
 								<Box
 									component="img"
-									src={asset.image_avatar}
+									src={purchasedItem.image_avatar}
 									alt="Asset avatar"
 									sx={{
 										position: "absolute",
@@ -843,28 +845,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 							}}
 						>
 							<Typography
-								variant="h2"
-								component="h1"
-								sx={{
-									marginBottom: ".3rem",
-									textTransform: "uppercase",
-								}}
-							>
-								{asset.name}
-								{asset.frozen_at && (
-									<Box
-										component="span"
-										sx={{
-											marginLeft: ".5rem",
-											color: colors.skyBlue,
-											fontSize: "1rem",
-										}}
-									>
-										(Frozen)
-									</Box>
-								)}
-							</Typography>
-							<Typography
 								variant="h4"
 								component="p"
 								sx={{
@@ -872,10 +852,10 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									fontStyle: "italic",
 									letterSpacing: "2px",
 									textTransform: "uppercase",
-									...rarityTextStyles[getItemAttributeValue(asset.attributes, "Rarity") as Rarity],
+									...rarityTextStyles[purchasedItem.tier as Rarity],
 								}}
 							>
-								{getItemAttributeValue(asset.attributes, "Rarity")}
+								{purchasedItem.tier}
 							</Typography>
 							<Box
 								sx={{
@@ -888,7 +868,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									Owned By:
 								</Typography>
 								<Typography variant="subtitle1" color={colors.skyBlue}>
-									{asset.username}
+									{purchasedItem.username}
 								</Typography>
 							</Box>
 							<Divider
@@ -896,7 +876,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									margin: ".5rem 0",
 								}}
 							/>
-							{loggedInUser?.id === asset.user_id && (
+							{loggedInUser?.id === purchasedItem.owner_id && (
 								<Box
 									sx={{
 										marginBottom: ".5rem",
@@ -995,35 +975,32 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										gap: ".5rem",
 									}}
 								>
-									{assetState === AssetState.OffWorldNotStaked && asset.collection && asset.collection.mint_contract !== "" && (
+									{assetState === AssetState.OffWorldNotStaked && collection && collection.mint_contract !== "" && (
 										<FancyButton size="small" onClick={() => setStakeModelOpen(true)}>
 											Transition In Asset
 										</FancyButton>
 									)}
 
-									{assetState === AssetState.OffWorldStaked && asset.collection && asset.collection.mint_contract !== "" && (
+									{assetState === AssetState.OffWorldStaked && collection && collection.mint_contract !== "" && (
 										<FancyButton size="small" onClick={() => setUnstakeModelOpen(true)}>
 											Transition out Asset
 										</FancyButton>
 									)}
 
 									{/*TODO: fix this mess of if statements*/}
-									{loggedInUser?.id === asset.user_id && isWarMachine() && !asset.frozen_at && (
+									{loggedInUser?.id === purchasedItem.owner_id && isWarMachine() && (
 										<FancyButton size="small" borderColor={colors.darkGrey} onClick={() => setRenameWindowOpen(true)}>
 											Rename Asset
 										</FancyButton>
 									)}
-									{loggedInUser?.id === asset.user_id ? (
-										(asset.minting_signature || asset.minting_signature !== "") &&
-										asset.collection &&
-										asset.collection.mint_contract !== "" &&
-										!asset.minted ? (
+									{loggedInUser?.id === purchasedItem.owner_id ? (
+										collection.mint_contract !== "" && !purchasedItem.minted_at ? (
 											<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 												Continue Transition Off World
 											</FancyButton>
-										) : !asset.frozen_at && isWarMachine() ? (
+										) : !purchasedItem.frozen_at && isWarMachine() ? (
 											<>
-												{!asset.minted && (
+												{!purchasedItem.minted && (
 													<FancyButton size="small" onClick={() => setMintWindowOpen(true)}>
 														Transition Off World
 													</FancyButton>
@@ -1031,7 +1008,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 											</>
 										) : (
 											<>
-												{!queueDetail?.war_machine_metadata.is_insured && (!asset.locked_by_id || asset.locked_by_id === NilUUID) && (
+												{!queueDetail?.war_machine_metadata.is_insured && (
 													<FancyButton size="small" loading={submitting} onClick={payInsurance}>
 														Pay Insurance
 													</FancyButton>
@@ -1106,29 +1083,6 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										textTransform: "uppercase",
 									}}
 								>
-									Description
-								</Typography>
-								<Divider
-									sx={{
-										margin: ".5rem 0",
-									}}
-								/>
-								{asset.description ? (
-									<Typography variant="body1">{asset.description}</Typography>
-								) : (
-									<Typography variant="body1" color={colors.darkGrey} fontStyle="italic">
-										No description available
-									</Typography>
-								)}
-							</Box>
-							<Box>
-								<Typography
-									variant="subtitle1"
-									color={colors.neonPink}
-									sx={{
-										textTransform: "uppercase",
-									}}
-								>
 									Info
 								</Typography>
 								<Divider
@@ -1136,7 +1090,7 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										margin: ".5rem 0",
 									}}
 								/>
-								<Typography variant="body1">Part of the {asset.collection.name} collection.</Typography>
+								<Typography variant="body1">Part of the {collection.name} collection.</Typography>
 							</Box>
 							<Box>
 								<Typography
@@ -1160,13 +1114,13 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 										alignItems: "start",
 									}}
 								>
-									{asset.username === "OnChain" && (
+									{collection && purchasedItem.username === "OnChain" && (
 										<Button
 											component={"a"}
 											href={
-												asset.collection.mint_contract === "0xEEfaF47acaa803176F1711c1cE783e790E4E750D"
-													? `https://testnets.opensea.io/assets/goerli/${asset.collection.mint_contract}/${asset.external_token_id}`
-													: `https://opensea.io/assets/${asset.collection.mint_contract}/${asset.external_token_id}`
+												collection.mint_contract === "0xEEfaF47acaa803176F1711c1cE783e790E4E750D"
+													? `https://testnets.opensea.io/assets/goerli/${collection.mint_contract}/${purchasedItem.external_token_id}`
+													: `https://opensea.io/assets/${collection.mint_contract}/${purchasedItem.external_token_id}`
 											}
 											target="_blank"
 											rel="noopener noreferrer"
@@ -1193,8 +1147,12 @@ const AssetView = ({ user, assetHash }: AssetViewProps) => {
 						</Box>
 					</Box>
 				</Box>
-				{provider && asset && <StakeModel open={stakeModelOpen} asset={asset} provider={provider} onClose={() => setStakeModelOpen(false)} />}
-				{provider && asset && <UnstakeModel open={unstakeModelOpen} asset={asset} provider={provider} onClose={() => setUnstakeModelOpen(false)} />}
+				{provider && purchasedItem && (
+					<StakeModel open={stakeModelOpen} asset={purchasedItem} provider={provider} onClose={() => setStakeModelOpen(false)} />
+				)}
+				{provider && purchasedItem && (
+					<UnstakeModel open={unstakeModelOpen} asset={purchasedItem} provider={provider} onClose={() => setUnstakeModelOpen(false)} />
+				)}
 			</Paper>
 		</>
 	)
@@ -1325,29 +1283,19 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 	)
 }
 
-const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Asset; userID: string }) => {
+const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: PurchasedItem; userID: string }) => {
 	const { open, onClose, asset, userID } = props
 	const { send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
 	const [loading, setLoading] = useState(false)
 
-	const getName = useCallback(() => {
-		let result = ""
-		const attr = asset.attributes.filter((a) => a.trait_type === "Name")
-		if (attr.length > 0) {
-			result = `${attr[0].value}`
-		}
-
-		return result
-	}, [asset])
-
 	const onSubmit = handleSubmit(async ({ name }) => {
 		setLoading(true)
 		try {
-			await send<Asset>(HubKey.AssetUpdateName, {
-				assetHash: asset.hash,
-				userID,
+			await send<PurchasedItem>(HubKey.AssetUpdateName, {
+				asset_hash: asset.hash,
+				user_id: userID,
 				name,
 			})
 
@@ -1362,8 +1310,8 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Ass
 
 	// set default name
 	useEffect(() => {
-		setValue("name", getName())
-	}, [getName, setValue])
+		setValue("name", asset.data.mech.name)
+	}, [setValue])
 
 	return (
 		<Dialog onClose={() => onClose()} open={open}>
@@ -1412,7 +1360,7 @@ interface StakeModelProps {
 	open: boolean
 	onClose: () => void
 	provider: ethers.providers.Web3Provider
-	asset: Asset
+	asset: PurchasedItem
 }
 
 //

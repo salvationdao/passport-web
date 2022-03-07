@@ -179,7 +179,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 		;(async () => {
 			setLoading(true)
 			try {
-				const resp = await send<{ total: number; storeItemIDs: string[] }>(HubKey.StoreList, {
+				const resp = await send<{ total: number; store_item_ids: string[] }>(HubKey.StoreList, {
 					pageSize: 5,
 					search,
 					filter: {
@@ -199,7 +199,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 						],
 					},
 				})
-				setStoreItemIDs(resp.storeItemIDs)
+				setStoreItemIDs(resp.store_item_ids)
 			} catch (e) {
 				setError(typeof e === "string" ? e : "An error occurred while loading items for this store.")
 			} finally {

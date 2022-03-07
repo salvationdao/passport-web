@@ -557,10 +557,10 @@ const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?:
 interface FactionAvailable {
 	id: string
 	label: string
-	logoBlobID: string
+	logo_blob_id: string
 	theme: FactionTheme
-	megaAmount: number
-	lootboxAmount: number
+	mega_amount: number
+	lootbox_amount: number
 }
 
 const FactionWarMachineRemain = () => {
@@ -583,7 +583,7 @@ const FactionWarMachineRemain = () => {
 
 			<Stack justifyContent="space-around" spacing={1.5}>
 				{factionAvailables.map((fa) => {
-					const { id, logoBlobID, theme, megaAmount, lootboxAmount } = fa
+					const { id, logo_blob_id, theme, mega_amount, lootbox_amount } = fa
 
 					return (
 						<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
@@ -592,7 +592,7 @@ const FactionWarMachineRemain = () => {
 									width: 41,
 									height: 41,
 									flexShrink: 0,
-									backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logoBlobID})`,
+									backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logo_blob_id})`,
 									backgroundRepeat: "no-repeat",
 									backgroundPosition: "center",
 									backgroundSize: "contain",
@@ -604,13 +604,11 @@ const FactionWarMachineRemain = () => {
 							<Stack>
 								<Stack direction="row">
 									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mega:&nbsp;</Typography>
-									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>
-										{id == "880db344-e405-428d-84e5-6ebebab1fe6d" ? 0 : megaAmount}
-									</Typography>
+									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{mega_amount}</Typography>
 								</Stack>
 								<Stack direction="row">
 									<Typography sx={{ fontWeight: "fontWeightBold" }}>Lootbox:&nbsp;</Typography>
-									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{lootboxAmount}</Typography>
+									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{lootbox_amount}</Typography>
 								</Stack>
 							</Stack>
 						</Stack>

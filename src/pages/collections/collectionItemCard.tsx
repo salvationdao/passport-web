@@ -4,10 +4,10 @@ import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useWebsocket } from "../../containers/socket"
-import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { Asset } from "../../types/types"
+import { PurchasedItem } from "../../types/purchased_item"
+
 import { Rarity, rarityTextStyles } from "../profile/profile"
 
 export interface CollectionItemCardProps {
@@ -18,7 +18,7 @@ export interface CollectionItemCardProps {
 export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ assetHash, username }) => {
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
-	const [item, setItem] = useState<Asset>()
+	const [item, setItem] = useState<PurchasedItem>()
 	const [showPreview, setShowPreview] = useState(false)
 	const [noAsset, setNoAsset] = useState<boolean>(false) //used if asset doesn't exist in our metadata (shouldn't happen, fixes local dev stuff)
 
@@ -37,7 +37,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 
 	useEffect(() => {
 		if (!subscribe || assetHash === "") return
-		return subscribe<Asset>(
+		return subscribe<PurchasedItem>(
 			HubKey.AssetUpdated,
 			(payload) => {
 				setItem(payload)
@@ -93,7 +93,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 					textTransform: "uppercase",
 				}}
 			>
-				{item.name}
+				{item.data.mech.name}
 			</Typography>
 
 			{/* image */}
@@ -104,17 +104,17 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			>
 				<Box
 					component="img"
-					src={item.image}
+					src={item.data.mech.image_url}
 					alt="Mech image"
 					sx={{
 						width: "100%",
 						marginBottom: ".3rem",
-						visibility: item.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
-						opacity: item.animation_url ? (showPreview ? 0 : 1) : "visible",
+						visibility: item.data.mech.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
+						opacity: item.data.mech.animation_url ? (showPreview ? 0 : 1) : "visible",
 						transition: "all .2s ease-in",
 					}}
 				/>
-				{item.animation_url && (
+				{item.data.mech.animation_url && (
 					<Box
 						component="video"
 						sx={{
@@ -132,7 +132,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 						loop
 						tabIndex={-1}
 					>
-						<source src={item.animation_url} type="video/webm"></source>
+						<source src={item.data.mech.animation_url} type="video/webm"></source>
 					</Box>
 				)}
 			</Box>
@@ -142,7 +142,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 					textTransform: "uppercase",
 				}}
 			>
-				{getItemAttributeValue(item.attributes, "Asset Type")}
+				{"War Machine"}
 			</Typography>
 			<Typography
 				variant="h4"
@@ -151,10 +151,10 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 					fontStyle: "italic",
 					letterSpacing: "2px",
 					textTransform: "uppercase",
-					...rarityTextStyles[getItemAttributeValue(item.attributes, "Rarity") as Rarity],
+					...rarityTextStyles[item.tier as Rarity],
 				}}
 			>
-				{getItemAttributeValue(item.attributes, "Rarity")}
+				{item.tier}
 			</Typography>
 			<ViewButton
 				sx={{

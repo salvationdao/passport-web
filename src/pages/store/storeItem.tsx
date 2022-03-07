@@ -62,7 +62,7 @@ export const StoreItemPage = () => {
 					setStoreItem(payload)
 					setLoading(false)
 				},
-				{ storeItemID: id },
+				{ store_item_id: id },
 			)
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching store item data. Please try again.")
@@ -586,7 +586,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 		setLoading(true)
 		try {
 			await send(HubKey.StorePurchase, {
-				storeItemID: storeItem.ID,
+				store_item_id: storeItem.ID,
 			})
 			onClose()
 			setPurchasedOpen(true)

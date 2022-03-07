@@ -71,7 +71,7 @@ export const TransactionsPage = () => {
 						})
 				}
 
-				const resp = await send<{ total: number; transactionIDs: string[] }>(HubKey.TransactionList, {
+				const resp = await send<{ total: number; transaction_ids: string[] }>(HubKey.TransactionList, {
 					pageSize,
 					page: currentPage - 1,
 					search,
@@ -81,7 +81,7 @@ export const TransactionsPage = () => {
 					},
 					...sort,
 				})
-				setTransactionIDs(resp.transactionIDs)
+				setTransactionIDs(resp.transaction_ids)
 				setTotalPages(Math.ceil(resp.total / pageSize))
 				setError(undefined)
 			} catch (e) {

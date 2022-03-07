@@ -11,8 +11,6 @@ interface MintModalProps {
 	onClose: () => void
 	assetExternalTokenID: number
 	mintContract: string
-	mintingSignature?: string | undefined
-	signatureExpiry?: string | undefined
 	collectionSlug: string
 }
 
@@ -21,7 +19,7 @@ interface GetSignatureResponse {
 	expiry: number
 }
 
-export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug, mintContract, mintingSignature, signatureExpiry }: MintModalProps) => {
+export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug, mintContract }: MintModalProps) => {
 	const { account, provider, currentChainId, changeChain, metaMaskState } = useWeb3()
 	const [loadingMint, setLoadingMint] = useState<boolean>(false)
 	const [errorMinting, setErrorMinting] = useState<string>()
@@ -38,7 +36,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 	}, [changeChainToETH])
 
 	const mintAttempt = useCallback(
-		async (mintingContract: string, assetExternalTokenID: number, collectionSlug: string, mintingSignature?: string, signatureExpiry?: string) => {
+		async (mintingContract: string, assetExternalTokenID: number, collectionSlug: string) => {
 			try {
 				if (!mintingContract || mintingContract === "") {
 					setErrorMinting("Missing collection contract information.")
@@ -70,17 +68,6 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
 				const signer = provider.getSigner()
 				const mintContract = new ethers.Contract(mintingContract, abi, signer)
-				if (signatureExpiry) {
-					const sigExInt = parseInt(signatureExpiry)
-					const expiryDate = new Date(sigExInt * 1000)
-
-					if (mintingSignature && mintingSignature !== "" && expiryDate > new Date()) {
-						// if theres minting signature and hasn't expired.
-						await mintContract.signedMint(BigNumber.from(assetExternalTokenID), mintingSignature, sigExInt)
-						setErrorMinting(undefined)
-						return
-					}
-				}
 
 				const nonce = await mintContract.nonces(account)
 				const resp = await fetch(
@@ -142,8 +129,8 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 			{metaMaskState === MetaMaskState.Active && currentChainId?.toString() === ETHEREUM_CHAIN_ID && (
 				<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}>
 					{!loadingMint && (
-						<FancyButton onClick={() => mintAttempt(mintContract, assetExternalTokenID, collectionSlug, mintingSignature, signatureExpiry)}>
-							{mintingSignature !== "" ? "Continue transition" : "Confirm and start transition"}
+						<FancyButton onClick={() => mintAttempt(mintContract, assetExternalTokenID, collectionSlug)}>
+							{"Confirm and start transition"}
 						</FancyButton>
 					)}
 					{loadingMint && <CircularProgress color={"primary"} />}

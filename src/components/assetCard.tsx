@@ -6,11 +6,10 @@ import EthLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg" // TODO 
 import EpicIcon from "../assets/images/icons/badges/Epic.png"
 import PlaceholderMech from "../assets/images/placeholder_mech.png"
 import PlaceholderLogo from "../assets/images/Zaibatsu_Logo.svg"
-
-import { Asset } from "../types/types"
+import { PurchasedItem, PurchasedItemAttributes } from "../types/purchased_item"
 
 interface AssetCardProps extends BoxProps {
-	asset: Asset
+	item: PurchasedItem
 }
 // TODO: need to confirm which currencies to be used
 // enum Currency {
@@ -25,9 +24,8 @@ interface AssetCardProps extends BoxProps {
 // 	Anomaly,
 // }
 
-export const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
+export const AssetCard: React.FC<AssetCardProps> = ({ item }) => {
 	const history = useHistory()
-	const { name, attributes, hash } = asset
 
 	let currencyLogo = EthLogo
 	// if (currency === Currency.Ethereum) {
@@ -50,7 +48,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
 
 	const getAssetType = (): string => {
 		let output = ""
-
+		const attributes = PurchasedItemAttributes(item)
 		// get asset type from attributes array
 		const arr = attributes.filter((a) => a.trait_type === "Asset Type")
 		if (arr && arr.length > 0) {
@@ -85,7 +83,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
 					textTransform: "uppercase",
 				}}
 			>
-				{name}
+				{item.data.mech.name}
 			</Typography>
 
 			<Box
@@ -180,7 +178,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
 					<Box component="img" src={rarityIcon} alt="Rarity Icon" />
 				</Box>
 			</Box>
-			<ViewPropertiesButton onClick={() => history.push("/collections/assets/" + hash)}>
+			<ViewPropertiesButton onClick={() => history.push("/collections/assets/" + item.hash)}>
 				<Typography
 					variant="h4"
 					sx={{

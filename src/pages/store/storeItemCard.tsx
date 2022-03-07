@@ -30,7 +30,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 			(payload) => {
 				setItem(payload)
 			},
-			{ storeItemID },
+			{ store_item_id: storeItemID },
 		)
 	}, [subscribe, storeItemID])
 
