@@ -6,14 +6,14 @@ export const PurchasedItemAttributes = (purchasedItem: PurchasedItem): Attribute
 	result.push({ trait_type: "SubModel", value: purchasedItem.data.chassis.skin })
 	result.push({ trait_type: "Rarity", value: purchasedItem.data.mech.tier })
 	result.push({ trait_type: "Asset Type", value: "War Machine" })
-	result.push({ trait_type: "Max Structure Hit Points", value: purchasedItem.data.chassis.max_hitpoints })
-	result.push({ trait_type: "Max Shield Hit Points", value: purchasedItem.data.chassis.max_shield })
 	result.push({ trait_type: "Name", value: purchasedItem.data.mech.name })
 	result.push({ trait_type: "Speed", value: purchasedItem.data.chassis.speed })
-	result.push({ trait_type: "Weapon Hardpoints", value: purchasedItem.data.chassis.weapon_hardpoints })
-	result.push({ trait_type: "Turret Hardpoints", value: purchasedItem.data.chassis.turret_hardpoints })
-	result.push({ trait_type: "Utility Slots", value: purchasedItem.data.chassis.utility_slots })
-	result.push({ trait_type: "Shield Recharge Rate", value: purchasedItem.data.chassis.shield_recharge_rate })
+	result.push({ display_type: "number", trait_type: "Max Structure Hit Points", value: purchasedItem.data.chassis.max_hitpoints })
+	result.push({ display_type: "number", trait_type: "Max Shield Hit Points", value: purchasedItem.data.chassis.max_shield })
+	result.push({ display_type: "number", trait_type: "Weapon Hardpoints", value: purchasedItem.data.chassis.weapon_hardpoints })
+	result.push({ display_type: "number", trait_type: "Turret Hardpoints", value: purchasedItem.data.chassis.turret_hardpoints })
+	result.push({ display_type: "number", trait_type: "Utility Slots", value: purchasedItem.data.chassis.utility_slots })
+	result.push({ display_type: "number", trait_type: "Shield Recharge Rate", value: purchasedItem.data.chassis.shield_recharge_rate })
 	if (purchasedItem.data.weapons["0"]) result.push({ trait_type: "Weapon One", value: purchasedItem.data.weapons["0"].label })
 	if (purchasedItem.data.weapons["1"]) result.push({ trait_type: "Weapon Two", value: purchasedItem.data.weapons["1"].label })
 	if (purchasedItem.data.turrets["0"]) result.push({ trait_type: "Turret One", value: purchasedItem.data.turrets["0"].label })
@@ -23,6 +23,7 @@ export const PurchasedItemAttributes = (purchasedItem: PurchasedItem): Attribute
 }
 
 export interface PurchasedItemResponse {
+	collection_slug: string
 	purchased_item: PurchasedItem
 	owner_username: string
 	item_on_chain_transactions: ItemOnchainTransaction[]
