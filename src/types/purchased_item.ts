@@ -25,7 +25,9 @@ export const PurchasedItemAttributes = (purchasedItem: PurchasedItem): Attribute
 export interface PurchasedItemResponse {
 	purchased_item: PurchasedItem
 	owner_username: string
+	item_on_chain_transactions: ItemOnchainTransaction[]
 }
+export interface ItemOnchainTransaction {}
 export interface PurchasedItem {
 	id: string
 	collection_id: string
