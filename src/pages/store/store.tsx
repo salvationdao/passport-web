@@ -246,30 +246,30 @@ export const StorePage: React.FC = () => {
 						gap: ".5rem",
 					}}
 				>
-					<FilterChip active={rarities.has("Colossal")} label="Colossal" color={colors.rarity.colossal} onClick={() => toggleRarity("Colossal")} />
+					<FilterChip active={rarities.has("Colossal")} label="Colossal" color={colors.rarity.COLOSSAL} onClick={() => toggleRarity("Colossal")} />
 					<FilterChip
 						active={rarities.has("Legendary")}
 						label="Legendary"
-						color={colors.rarity.legendary}
+						color={colors.rarity.LEGENDARY}
 						onClick={() => toggleRarity("Legendary")}
 					/>
 					<FilterChip
 						active={rarities.has("Elite Legendary")}
 						label="Elite Legendary"
-						color={colors.rarity.eliteLegendary}
+						color={colors.rarity.ELITE_LEGENDARY}
 						onClick={() => toggleRarity("Elite Legendary")}
 					/>
 					<FilterChip
 						active={rarities.has("Ultra Rare")}
 						label="Ultra Rare"
-						color={colors.rarity.ultraRare}
+						color={colors.rarity.ULTRA_RARE}
 						onClick={() => toggleRarity("Ultra Rare")}
 					/>
-					<FilterChip active={rarities.has("Exotic")} label="Exotic" color={colors.rarity.exotic} onClick={() => toggleRarity("Exotic")} />
-					<FilterChip active={rarities.has("Guardian")} label="Guardian" color={colors.rarity.guardian} onClick={() => toggleRarity("Guardian")} />
-					<FilterChip active={rarities.has("Mythic")} label="Mythic" color={colors.rarity.mythic} onClick={() => toggleRarity("Mythic")} />
-					<FilterChip active={rarities.has("Deus ex")} label="Deus ex" color={colors.rarity.deusEx} onClick={() => toggleRarity("Deus ex")} />
-					<FilterChip active={rarities.has("Titan")} label="Titan" color={colors.rarity.titan} onClick={() => toggleRarity("Titan")} />
+					<FilterChip active={rarities.has("Exotic")} label="Exotic" color={colors.rarity.EXOTIC} onClick={() => toggleRarity("Exotic")} />
+					<FilterChip active={rarities.has("Guardian")} label="Guardian" color={colors.rarity.GUARDIAN} onClick={() => toggleRarity("Guardian")} />
+					<FilterChip active={rarities.has("Mythic")} label="Mythic" color={colors.rarity.MYTHIC} onClick={() => toggleRarity("Mythic")} />
+					<FilterChip active={rarities.has("Deus ex")} label="Deus ex" color={colors.rarity.DEUS_EX} onClick={() => toggleRarity("Deus ex")} />
+					<FilterChip active={rarities.has("Titan")} label="Titan" color={colors.rarity.TITAN} onClick={() => toggleRarity("Titan")} />
 				</Box>
 			</Box>
 		</>

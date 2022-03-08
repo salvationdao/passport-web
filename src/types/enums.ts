@@ -1,3 +1,17 @@
+export enum Rarity {
+	Mega = "MEGA",
+	Colossal = "COLOSSAL",
+	Rare = "RARE",
+	Legendary = "LEGENDARY",
+	EliteLegendary = "ELITE_LEGENDARY",
+	UltraRare = "ULTRA_RARE",
+	Exotic = "EXOTIC",
+	Guardian = "GUARDIAN",
+	Mythic = "MYTHIC",
+	DeusEx = "DEUS_EX",
+	Titan = "TITAN",
+}
+
 export enum Perm {
 	RoleList = "RoleList",
 	RoleCreate = "RoleCreate",

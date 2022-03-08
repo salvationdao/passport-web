@@ -1,4 +1,4 @@
-import { Alert, Box, Link, Typography } from "@mui/material"
+import { Box, Link, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink, useHistory } from "react-router-dom"
@@ -63,10 +63,9 @@ export const LoginPage: React.FC = () => {
 			<Box
 				sx={{
 					display: "flex",
-					flex: 1,
-					height: "100%",
 					justifyContent: "center",
 					alignItems: "center",
+					minHeight: "100vh",
 				}}
 			>
 				<Loading text="Loading. Please wait..." />
@@ -79,10 +78,9 @@ export const LoginPage: React.FC = () => {
 				<Box
 					sx={{
 						display: "flex",
-						flex: 1,
-						height: "100%",
 						justifyContent: "center",
 						alignItems: "center",
+						minHeight: "100vh",
 					}}
 				>
 					<Loading text="You are already logged in, redirecting to your profile..." />
@@ -93,10 +91,9 @@ export const LoginPage: React.FC = () => {
 			<Box
 				sx={{
 					display: "flex",
-					flex: 1,
-					height: "100%",
 					justifyContent: "center",
 					alignItems: "center",
+					minHeight: "100vh",
 				}}
 			>
 				<Loading text="You have successfully logged in, redirecting to your profile..." />

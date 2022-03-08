@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom"
 import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { SocketState, useWebsocket } from "../containers/socket"
+import { getStringFromShoutingSnakeCase } from "../helpers"
 import { useQuery } from "../hooks/useSend"
 import HubKey from "../keys"
 import { FilterChip, SortChip } from "../pages/profile/profile"
@@ -254,7 +255,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 				<FilterChip
 					key={`${rarity}-${index}`}
 					active={rarities.has(rarityName)}
-					label={rarityName}
+					label={getStringFromShoutingSnakeCase(rarityName)}
 					color={colorValue}
 					variant="outlined"
 					onClick={() => toggleRarity(rarityName)}

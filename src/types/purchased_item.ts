@@ -7,7 +7,7 @@ export const PurchasedItemAttributes = (purchasedItem: PurchasedItem): Attribute
 	result.push({ trait_type: "Rarity", value: purchasedItem.data.mech.tier })
 	result.push({ trait_type: "Asset Type", value: "War Machine" })
 	result.push({ trait_type: "Name", value: purchasedItem.data.mech.name })
-	result.push({ trait_type: "Speed", value: purchasedItem.data.chassis.speed })
+	result.push({ display_type: "number", trait_type: "Speed", value: purchasedItem.data.chassis.speed })
 	result.push({ display_type: "number", trait_type: "Max Structure Hit Points", value: purchasedItem.data.chassis.max_hitpoints })
 	result.push({ display_type: "number", trait_type: "Max Shield Hit Points", value: purchasedItem.data.chassis.max_shield })
 	result.push({ display_type: "number", trait_type: "Weapon Hardpoints", value: purchasedItem.data.chassis.weapon_hardpoints })
@@ -16,8 +16,8 @@ export const PurchasedItemAttributes = (purchasedItem: PurchasedItem): Attribute
 	result.push({ display_type: "number", trait_type: "Shield Recharge Rate", value: purchasedItem.data.chassis.shield_recharge_rate })
 	if (purchasedItem.data.weapons["0"]) result.push({ trait_type: "Weapon One", value: purchasedItem.data.weapons["0"].label })
 	if (purchasedItem.data.weapons["1"]) result.push({ trait_type: "Weapon Two", value: purchasedItem.data.weapons["1"].label })
-	if (purchasedItem.data.turrets["0"]) result.push({ trait_type: "Turret One", value: purchasedItem.data.turrets["0"].label })
-	if (purchasedItem.data.turrets["1"]) result.push({ trait_type: "Turret Two", value: purchasedItem.data.turrets["1"].label })
+	if (purchasedItem.data.turrets && purchasedItem.data.turrets["0"]) result.push({ trait_type: "Turret One", value: purchasedItem.data.turrets["0"].label })
+	if (purchasedItem.data.turrets && purchasedItem.data.turrets["1"]) result.push({ trait_type: "Turret Two", value: purchasedItem.data.turrets["1"].label })
 	if (purchasedItem.data.modules["0"]) result.push({ trait_type: "Utility One", value: purchasedItem.data.modules["0"].label })
 	return result
 }
@@ -51,7 +51,7 @@ export interface MechContainer {
 	mech: Mech
 	chassis: Chassis
 	weapons: { [key: string]: Weapon }
-	turrets: { [key: string]: Weapon }
+	turrets?: { [key: string]: Weapon }
 	modules: { [key: string]: Module }
 }
 

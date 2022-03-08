@@ -4,11 +4,12 @@ import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useWebsocket } from "../../containers/socket"
+import { getStringFromShoutingSnakeCase } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
+import { Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
-
-import { Rarity, rarityTextStyles } from "../profile/profile"
+import { rarityTextStyles } from "../profile/profile"
 
 export interface CollectionItemCardProps {
 	assetHash: string
@@ -156,7 +157,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 					...rarityTextStyles[item.tier as Rarity],
 				}}
 			>
-				{item.tier}
+				{getStringFromShoutingSnakeCase(item.tier)}
 			</Typography>
 			<ViewButton
 				sx={{

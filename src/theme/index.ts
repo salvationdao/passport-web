@@ -1,5 +1,6 @@
 import { createTheme } from "@mui/material/styles"
 import AvatarDefault from "../assets/images/NinjaSoftwareLogo.svg"
+import { Rarity } from "../types/enums"
 
 declare module "@mui/material/styles" {
 	interface Palette {
@@ -17,7 +18,12 @@ declare module "@mui/material/Button" {
 	}
 }
 
-export const colors = {
+export const colors: {
+	[key: string]: any
+	rarity: {
+		[key in Rarity]: string
+	}
+} = {
 	errorRed: "#d32f2f",
 	neonPink: "#f72485",
 	darkNeonPink: "#c31c69",
@@ -54,17 +60,17 @@ export const colors = {
 	discordGrey: "#2c2f33",
 	supremacyGold: "#F3D977",
 	rarity: {
-		mega: "#e84234",
-		colossal: "#b43328",
-		rare: "#4d90fa",
-		legendary: "#fabd4d",
-		eliteLegendary: "#ffcc4e",
-		ultraRare: "#4e57ff",
-		exotic: "#824dff",
-		guardian: "#4dcfff",
-		mythic: "#a1e6ff",
-		deusEx: "#fffa4e",
-		titan: "#5eff75",
+		MEGA: "#e84234",
+		COLOSSAL: "#b43328",
+		RARE: "#4d90fa",
+		LEGENDARY: "#fabd4d",
+		ELITE_LEGENDARY: "#ffcc4e",
+		ULTRA_RARE: "#4e57ff",
+		EXOTIC: "#824dff",
+		GUARDIAN: "#4dcfff",
+		MYTHIC: "#a1e6ff",
+		DEUS_EX: "#fffa4e",
+		TITAN: "#5eff75",
 	},
 	supremacy: {
 		text: "#FFFFFF",

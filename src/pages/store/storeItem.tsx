@@ -9,12 +9,14 @@ import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
-import { getItemAttributeValue, supFormatter, usdFormatter } from "../../helpers/items"
+import { supFormatter, usdFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
+import { Rarity } from "../../types/enums"
 import { StoreItem, StoreItemAttibutes, StoreItemResponse } from "../../types/store_item"
 import { Attribute, Collection } from "../../types/types"
-import { PercentageDisplay, Rarity, rarityTextStyles } from "../profile/profile"
+import { PercentageDisplay } from "../profile/percentageDisplay"
+import { rarityTextStyles } from "../profile/profile"
 
 export const StoreItemPage = () => {
 	const { store_item_id: id, collection_slug } = useParams<{ store_item_id: string; collection_slug: string }>()

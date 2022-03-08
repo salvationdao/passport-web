@@ -19,15 +19,14 @@ import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import LootboxVideo from "../../components/lootboxVideo"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
-import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { SocketState, useWebsocket } from "../../containers/socket"
-import { getItemAttributeValue } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
+import { Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
-import { rarityTextStyles, Rarity } from "../profile/profile"
+import { rarityTextStyles } from "../profile/profile"
 
 export const LootBoxPage = () => {
 	const { subscribe } = useWebsocket()
@@ -42,7 +41,7 @@ export const LootBoxPage = () => {
 	const { setSidebarOpen } = useSidebarState()
 	const [imgURL, setImg] = useState("")
 	const [videoURL, setVideoURL] = useState("")
-	const [error, setError] = useState<string>("")
+	const [error, setError] = useState<string>()
 
 	useEffect(() => {
 		if (user && user.faction) {
@@ -84,6 +83,11 @@ export const LootBoxPage = () => {
 			return subscribe<PurchasedItemResponse>(
 				HubKey.AssetUpdated,
 				(payload) => {
+					if (!payload) {
+						setError("Something went wrong while purchasing the item. Please contact support if this problem persists.")
+						return
+					}
+					setError(undefined)
 					setAsset(payload.purchased_item)
 					setSidebarOpen(false)
 					setOpen(true)
@@ -91,7 +95,11 @@ export const LootBoxPage = () => {
 				{ asset_hash: resp },
 			)
 		} catch (e) {
-			setError(typeof e === "string" ? e : "Something went wrong while purchasing the item. Please contact support if this problem persists.")
+			if (typeof e === "string") {
+				setError(e)
+			} else if (e instanceof Error) {
+				setError(e.message || "Something went wrong while purchasing the item. Please contact support if this problem persists.")
+			}
 		} finally {
 			setLoading(false)
 		}
@@ -108,7 +116,7 @@ export const LootBoxPage = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					minHeight: "100%",
+					minHeight: "100vh",
 					overflowX: "hidden",
 					visibility: open ? "hidden" : "unset",
 				}}
@@ -153,29 +161,26 @@ export const LootBoxPage = () => {
 						>
 							Mystery Crate
 						</Typography>
-						<Box
-							sx={{
-								position: "absolute",
-								top: "50%",
-								left: "50%",
-								transform: "translate(-50%, -50%)",
-							}}
-						>
-							<Zoom in={true}>
-								<Box
-									component="img"
-									src={imgURL}
-									alt="Mystery Crate Icon"
-									sx={{
-										width: "300px",
-										height: "300px",
-										animation: loading ? `${slowJiggle} 0.2s infinite` : `${jiggle} 0.82s cubic-bezier(.36,.07,.19,.97) both`,
-									}}
-								/>
-							</Zoom>
-						</Box>
+
+						<Zoom in={true}>
+							<Box
+								component="img"
+								src={imgURL}
+								alt="Mystery Crate Icon"
+								sx={{
+									width: "300px",
+									height: "300px",
+									animation: loading ? `${slowJiggle} 0.2s infinite` : `${jiggle} 0.82s cubic-bezier(.36,.07,.19,.97) both`,
+								}}
+							/>
+						</Zoom>
+
 						<Stack gap="1em" alignItems="center">
-							<Typography sx={{ color: colors.errorRed }}>{error}</Typography>
+							{error && (
+								<Typography textAlign="center" sx={{ color: colors.errorRed }}>
+									{error}
+								</Typography>
+							)}
 							<FancyButton sx={{ width: "fit-content" }} onClick={purchase} loading={loading}>
 								Purchase for
 								<Box

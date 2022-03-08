@@ -1,17 +1,19 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, Skeleton, Typography, useTheme } from "@mui/material"
+import { Box, Skeleton, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { SupTokenIcon } from "../../assets"
+import SoldOut from "../../assets/images/SoldOutTrimmed.png"
 import { useWebsocket } from "../../containers/socket"
-import { getItemAttributeValue, supFormatter } from "../../helpers/items"
+import { getStringFromShoutingSnakeCase } from "../../helpers"
+import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { ViewButton } from "../collections/collectionItemCard"
-import { Rarity, rarityTextStyles } from "../profile/profile"
-import SoldOut from "../../assets/images/SoldOutTrimmed.png"
+import { Rarity } from "../../types/enums"
 import { StoreItem, StoreItemResponse } from "../../types/store_item"
 import { Collection } from "../../types/types"
+import { ViewButton } from "../collections/collectionItemCard"
+import { rarityTextStyles } from "../profile/profile"
 
 interface StoreItemCardProps {
 	storeItemID: string
@@ -24,7 +26,6 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 	const [item, setItem] = useState<StoreItem>()
 	const [showPreview, setShowPreview] = useState(false)
 	const [priceInSups, setPriceInSups] = useState<string | null>(null)
-	const theme = useTheme()
 
 	useEffect(() => {
 		if (!subscribe) return
@@ -170,7 +171,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 							...rarityTextStyles[item.data.template.tier as Rarity],
 						}}
 					>
-						{item.data.template.tier}
+						{getStringFromShoutingSnakeCase(item.data.template.tier)}
 					</Typography>
 					<Typography
 						variant="subtitle1"

@@ -84,3 +84,13 @@ export const getIsMobile = () => {
 
 	return isMobile
 }
+
+// getStringFromShoutingSnakeCase returns a normal, capitalised word/phrase from a string formatted to SHOUTING_SNAKE_CASE
+// e.g ULTRA_RARE => Ultra Rare
+export const getStringFromShoutingSnakeCase = (val: string) => {
+	return val
+		.toLowerCase()
+		.split("_")
+		.map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+		.join(" ")
+}
