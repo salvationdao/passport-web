@@ -21,6 +21,7 @@ BigNumber.config({ EXPONENTIAL_AT: 1e9 })
 const UseSignatureMode = true
 
 interface GetSignatureResponse {
+	refundID: string
 	messageSignature: string
 	expiry: number
 }
@@ -124,6 +125,8 @@ export const WithdrawSups: React.FC = () => {
 			const respJson: GetSignatureResponse = await resp.json()
 
 			await withdrawContract.withdrawSUPS(withdrawAmountBigNum, respJson.messageSignature, respJson.expiry)
+			await fetch(`/api/withdraw-tx-hash/${respJson.refundID}/${tx.hash}`)
+
 			setErrorWithdrawing(undefined)
 		} catch (e) {
 			setErrorWithdrawing(e === "string" ? e : "Issue withdrawing, please try again.")
