@@ -124,7 +124,7 @@ export const WithdrawSups: React.FC = () => {
 			const resp = await fetch(`/api/withdraw/${account}/${nonce}/${withdrawAmountBigNum}`)
 			const respJson: GetSignatureResponse = await resp.json()
 
-			await withdrawContract.withdrawSUPS(withdrawAmountBigNum, respJson.messageSignature, respJson.expiry)
+			const tx = await withdrawContract.withdrawSUPS(withdrawAmountBigNum, respJson.messageSignature, respJson.expiry)
 			await fetch(`/api/withdraw-tx-hash/${respJson.refundID}/${tx.hash}`)
 
 			setErrorWithdrawing(undefined)
