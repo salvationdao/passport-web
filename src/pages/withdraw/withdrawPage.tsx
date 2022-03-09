@@ -17,7 +17,7 @@ export const WithdrawPage = () => {
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 
 	//TODO: set this transferstate to "none" when withdrawSUPs functionality becomes available
-	const [currentTransferState, setCurrentTransferState] = useState<transferStateType>("none")
+	const [currentTransferState, setCurrentTransferState] = useState<transferStateType>("unavailable")
 	const [loading, setLoading] = useState<boolean>(false)
 	const [error, setError] = useState<string>("")
 	const [withdrawAmount, setWithdrawAmount] = useState<string>()
