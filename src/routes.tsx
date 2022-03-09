@@ -31,6 +31,7 @@ import { StoresPage } from "./pages/store/stores"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { DepositPage } from "./pages/deposit/depositPage"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
+import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
 
 export const Routes = () => {
 	const { setSessionID, user, loading: authLoading } = useAuth()
@@ -229,6 +230,7 @@ export const Routes = () => {
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
+			{user && <CorrectWalletConnected />}
 		</Box>
 	)
 }

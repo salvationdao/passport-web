@@ -62,13 +62,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 
-	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
-		const str1 = userPubAddr.toUpperCase()
-		const str2 = metaMaskAcc.toUpperCase()
-
-		return str1 === str2
-	}
-
 	useEffect(() => {
 		if (userSups) {
 			setXsynSups(BigNumber.from(userSups))
@@ -90,9 +83,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			return
 		}
 
-		const correctWallet = correctWalletCheck(user.public_address, account)
-		setWalletMsg(correctWallet ? "" : "Incorrect wallet connected")
-		if (supBalance) setWalletSups(correctWallet ? formatUnits(supBalance, 18) : undefined)
+		if (supBalance) setWalletSups(formatUnits(supBalance, 18))
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {

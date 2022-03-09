@@ -27,7 +27,6 @@ import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { SocketState, useWebsocket } from "./socket"
 import { genericABI } from "./web3GenericABI"
-import { metamaskError } from "../types/types"
 
 export enum MetaMaskState {
 	NotInstalled,
