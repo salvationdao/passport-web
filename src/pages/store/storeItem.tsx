@@ -9,6 +9,7 @@ import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
+import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { supFormatter, usdFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
@@ -241,7 +242,7 @@ export const StoreItemPage = () => {
 										...rarityTextStyles[storeItem.data.template.tier as Rarity],
 									}}
 								>
-									{storeItem.data.template.tier}
+									{getStringFromShoutingSnakeCase(storeItem.data.template.tier)}
 								</Typography>
 								<Box
 									sx={{

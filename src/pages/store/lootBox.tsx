@@ -11,7 +11,7 @@ import {
 	Typography,
 	useMediaQuery,
 	useTheme,
-	Zoom,
+	Zoom
 } from "@mui/material"
 import { useEffect, useState } from "react"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
@@ -22,6 +22,7 @@ import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { SocketState, useWebsocket } from "../../containers/socket"
+import { getStringFromShoutingSnakeCase } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
@@ -232,7 +233,7 @@ export const LootBoxPage = () => {
 										...rarityTextStyles[asset.data.mech.tier as Rarity],
 									}}
 								>
-									{asset.data.mech.tier}
+									{getStringFromShoutingSnakeCase(asset.data.mech.tier)}
 								</Typography>
 							) : null}
 						</DialogContent>

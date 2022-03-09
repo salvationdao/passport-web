@@ -1,5 +1,5 @@
 import SortIcon from "@mui/icons-material/Sort"
-import { Box, CircularProgress, InputBase, MenuItem, Pagination, Paper, Select, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
+import { Box, CircularProgress, InputBase, MenuItem, Pagination, Paper, Select, Stack, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../../assets"
@@ -30,8 +30,9 @@ export const TransactionsPage = () => {
 	const [error, setError] = useState<string>()
 
 	// Sort / Filters / Page size
-	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
-	const [selectedGroupID, setSelectedGroupID] = useState<GroupType>("All")
+	const [sort, setSort] = useState<{ sort_by: string; sort_dir: string }>()
+	const [selectedGroup, setSelectedGroup] = useState<GroupType>("All")
+	const [selectedSubGroup, setSelectedSubGroup] = useState<GroupType>("All")
 	const [pageSize, setPageSize] = useState(20)
 
 	// Ungrouped transactions
@@ -39,8 +40,8 @@ export const TransactionsPage = () => {
 	const [currentPage, setCurrentPage] = useState(1)
 	const [transactionIDs, setTransactionIDs] = useState<string[]>([])
 
-	// Group IDs
-	const [transactionGroupIDs, setTransactionGroupIDs] = useState<string[]>([])
+	// Groups
+	const [transactionGroups, setTransactionGroups] = useState<{ [key: string]: string[] }>({})
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send || !user) return
@@ -49,15 +50,14 @@ export const TransactionsPage = () => {
 			try {
 				// Get transaction IDs
 				const filterItems = []
-
-				switch (selectedGroupID) {
+				switch (selectedGroup) {
 					case "All":
 						// Get all transactions; don't push any filters
 						break
 					case "Ungrouped":
 						// Get only ungrouped transactions
 						filterItems.push({
-							columnField: "group_id",
+							columnField: "group",
 							operatorValue: "=",
 							value: "''",
 						})
@@ -65,14 +65,35 @@ export const TransactionsPage = () => {
 					default:
 						// Get transactions of a specific group
 						filterItems.push({
-							columnField: "group_id",
+							columnField: "group",
 							operatorValue: "=",
-							value: selectedGroupID,
+							value: selectedGroup,
 						})
+
+						// Add sub group filters if specified
+						if (selectedSubGroup) {
+							switch (selectedSubGroup) {
+								case "All":
+									break
+								case "Ungrouped":
+									filterItems.push({
+										columnField: "sub_group",
+										operatorValue: "=",
+										value: "''",
+									})
+									break
+								default:
+									filterItems.push({
+										columnField: "sub_group",
+										operatorValue: "=",
+										value: selectedSubGroup,
+									})
+							}
+						}
 				}
 
 				const resp = await send<{ total: number; transaction_ids: string[] }>(HubKey.TransactionList, {
-					pageSize,
+					page_size: pageSize,
 					page: currentPage - 1,
 					search,
 					filter: {
@@ -94,7 +115,7 @@ export const TransactionsPage = () => {
 				setLoading(false)
 			}
 		})()
-	}, [send, state, search, user, currentPage, sort, selectedGroupID, pageSize])
+	}, [send, state, search, user, currentPage, pageSize, sort, selectedGroup, selectedSubGroup])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send || !user) return
@@ -102,8 +123,8 @@ export const TransactionsPage = () => {
 			setLoading(true)
 			try {
 				// Get transaction group IDs
-				const groupIDs = await send<string[]>(HubKey.TransactionGroups)
-				setTransactionGroupIDs(groupIDs)
+				const groups = await send<{ [key: string]: string[] }>(HubKey.TransactionGroups)
+				setTransactionGroups(groups)
 			} catch (e) {
 				if (typeof e === "string") {
 					setError(e)
@@ -149,12 +170,12 @@ export const TransactionsPage = () => {
 					>
 						{(() => {
 							const newSort = {
-								sortBy: "created_at",
-								sortDir: "asc",
+								sort_by: "created_at",
+								sort_dir: "asc",
 							}
 							return (
 								<SortChip
-									active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+									active={sort?.sort_by === newSort.sort_by && sort.sort_dir === newSort.sort_dir}
 									label="Oldest first"
 									onClick={() => {
 										setSort(newSort)
@@ -164,12 +185,12 @@ export const TransactionsPage = () => {
 						})()}
 						{(() => {
 							const newSort = {
-								sortBy: "created_at",
-								sortDir: "desc",
+								sort_by: "created_at",
+								sort_dir: "desc",
 							}
 							return (
 								<SortChip
-									active={sort?.sortBy === newSort.sortBy && sort.sortDir === newSort.sortDir}
+									active={sort?.sort_by === newSort.sort_by && sort.sort_dir === newSort.sort_dir}
 									label="Newest first"
 									onClick={() => {
 										setSort(newSort)
@@ -286,7 +307,6 @@ export const TransactionsPage = () => {
 								sx={{
 									display: "flex",
 									flexWrap: "wrap",
-									justifyContent: "space-between",
 									alignItems: "baseline",
 									marginBottom: ".5rem",
 									"@media (max-width: 500px)": {
@@ -296,25 +316,66 @@ export const TransactionsPage = () => {
 									},
 								}}
 							>
+									<Stack spacing=".5rem" direction="row" alignItems="baseline">
 								<Select
-									value={selectedGroupID}
+									value={selectedGroup}
 									onChange={(e) => {
-										setSelectedGroupID(e.target.value)
+										setSelectedGroup(e.target.value)
+										setSelectedSubGroup("All")
 										setCurrentPage(1)
 									}}
 									input={<GroupSelectionInput />}
 									displayEmpty
 								>
-									<MenuItem value={"All"}>
+									<MenuItem value="All">
 										<em>All</em>
 									</MenuItem>
-									<MenuItem value={"Ungrouped"}>Ungrouped</MenuItem>
-									{transactionGroupIDs.map((g, index) => (
+									<MenuItem value="Ungrouped">Ungrouped</MenuItem>
+									{Object.keys(transactionGroups).map((g, index) => (
 										<MenuItem key={`${g}-${index}-group_filter`} value={g}>
 											{g}
 										</MenuItem>
 									))}
 								</Select>
+								{transactionGroups[selectedGroup] && transactionGroups[selectedGroup].length > 0 && (
+										<>
+										<Typography
+											variant="caption"
+											color={colors.darkGrey}
+											sx={{
+												textTransform: "uppercase",
+											}}
+										>
+											Subgroup
+										</Typography>
+										<Select
+											value={selectedSubGroup}
+											onChange={(e) => {
+												setSelectedSubGroup(e.target.value)
+												setCurrentPage(1)
+											}}
+											input={<SubGroupSelectionInput />}
+										>
+											<MenuItem value="All">
+												<em>All</em>
+											</MenuItem>
+											<MenuItem value="Ungrouped">No Sub Group</MenuItem>
+											{transactionGroups[selectedGroup].map((s, index) => (
+												<MenuItem key={`${s}-${index}-sub_group_filter`} value={s}>
+													{s}
+												</MenuItem>
+											))}
+										</Select>
+										</>
+								)}
+									</Stack>
+								<Box
+									sx={{
+										flex: 1,
+										minHeight: ".5rem",
+										minWidth: "1rem",
+									}}
+								/>
 								<FancyButton size="small" onClick={() => setOpenFilterDrawer(true)} endIcon={<SortIcon />}>
 									Sort By
 								</FancyButton>
@@ -345,7 +406,7 @@ export const TransactionsPage = () => {
 										<CircularProgress />
 									) : (
 										<Typography variant="subtitle2" color={colors.darkerGrey}>
-											{error ? error : `No transaction history ${selectedGroupID && "for"} ${selectedGroupID}`}
+											{error ? error : `No transaction history ${selectedGroup && "for"} ${selectedGroup}`}
 										</Typography>
 									)}
 								</Box>
@@ -415,6 +476,31 @@ const GroupSelectionInput = styled(InputBase)(({ theme }) => ({
 		padding: 0,
 		fontSize: "1.2rem",
 		fontFamily: fonts.bizmoblack,
+		fontStyle: "italic",
+		letterSpacing: "2px",
+		textTransform: "uppercase",
+		"&:focus": {
+			borderRadius: 4,
+			borderColor: "#80bdff",
+			boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
+		},
+	},
+}))
+
+const SubGroupSelectionInput = styled(InputBase)(({ theme }) => ({
+	padding: 2,
+	borderRadius: ".5rem",
+	transition: theme.transitions.create(["background-color"]),
+	"&:hover": {
+		backgroundColor: "rgba(255, 255, 255, .2)",
+	},
+	"& .MuiInputBase-input": {
+		display: "flex",
+		alignItems: "end",
+		borderRadius: ".5rem",
+		padding: 0,
+		fontSize: "1rem",
+		fontFamily: fonts.bizmosemi_bold,
 		fontStyle: "italic",
 		letterSpacing: "2px",
 		textTransform: "uppercase",

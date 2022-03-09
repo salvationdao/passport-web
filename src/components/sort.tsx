@@ -255,7 +255,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 				<FilterChip
 					key={`${rarity}-${index}`}
 					active={rarities.has(rarityName)}
-					label={getStringFromShoutingSnakeCase(rarityName)}
+					label={getStringFromShoutingSnakeCase(rarity)}
 					color={colorValue}
 					variant="outlined"
 					onClick={() => toggleRarity(rarityName)}

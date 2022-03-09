@@ -1,10 +1,10 @@
-import { Alert, Box, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from "@mui/material"
+import { Alert, Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from "@mui/material"
+import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
-import { useWeb3, MetaMaskState } from "../containers/web3"
-import { BigNumber, ethers } from "ethers"
-import { FancyButton } from "./fancyButton"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../config"
+import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { ConnectWallet } from "./connectWallet"
+import { FancyButton } from "./fancyButton"
 
 interface MintModalProps {
 	open: boolean
@@ -82,7 +82,14 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 	)
 
 	return (
-		<Dialog open={open} onClose={onClose} maxWidth={"xl"}>
+		<Dialog
+			open={open}
+			onClose={() => {
+				setErrorMinting(undefined)
+				onClose()
+			}}
+			maxWidth={"xl"}
+		>
 			<DialogTitle
 				sx={(theme) => ({
 					fontSize: theme.typography.h3,
@@ -92,39 +99,57 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				Transition Asset Off World
 			</DialogTitle>
 
-			<DialogContent sx={{ paddingTop: "1.5rem !important", minWidth: "400px" }}>
+			<DialogContent sx={{ minWidth: 0, paddingTop: "1.5rem !important" }}>
 				<Box sx={{ display: "flex", flexDirection: "column" }}>
 					{metaMaskState !== MetaMaskState.Active && <ConnectWallet />}
 
 					{metaMaskState === MetaMaskState.Active && (
 						<>
-							{currentChainId?.toString() !== ETHEREUM_CHAIN_ID && (
-								<FancyButton onClick={async () => await changeChainToETH()}>Switch Network</FancyButton>
-							)}
-							{currentChainId?.toString() === ETHEREUM_CHAIN_ID && (
+							{currentChainId?.toString() === ETHEREUM_CHAIN_ID ? (
 								<>
-									<Typography variant={"h5"} color={"error"}>
+									<Typography marginBottom=".5rem" variant={"h5"} color={"error"}>
 										GABS WARNING:
 									</Typography>
-									<Typography>Once you start the transition of your asset to off world it will cease to be usable until either; </Typography>
-									<Typography>* The fee is paid and the process is completed where we will revoke access until re-staked </Typography>
-									<Typography>* The fee to cancel the transition is complete</Typography>
+									<Typography marginBottom=".5rem">
+										Once you start the transition of your asset to off world it will cease to be usable until either:
+									</Typography>
+									<Box component="ul" margin={0}>
+										<li>The fee is paid and the process is completed where we will revoke access until re-staked </li>
+										<li>The fee to cancel the transition is complete</li>
+									</Box>
 								</>
+							) : (
+								<FancyButton onClick={async () => await changeChainToETH()}>Switch Network</FancyButton>
 							)}
 						</>
 					)}
 				</Box>
 			</DialogContent>
 			{metaMaskState === MetaMaskState.Active && currentChainId?.toString() === ETHEREUM_CHAIN_ID && (
-				<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}>
-					{!loadingMint && (
-						<FancyButton onClick={() => mintAttempt(mintContract, assetExternalTokenID, collectionSlug)}>
-							{"Confirm and start transition"}
+				<>
+					<DialogActions
+						sx={{
+							display: "flex",
+							width: "100%",
+							justifyContent: "end",
+							"@media (max-width: 500px)": {
+								flexDirection: "column",
+								alignItems: "stretch",
+							},
+						}}
+					>
+						<FancyButton
+							loading={loadingMint}
+							onClick={() => {
+								setErrorMinting(undefined)
+								mintAttempt(mintContract, assetExternalTokenID, collectionSlug)
+							}}
+						>
+							Confirm and start transition
 						</FancyButton>
-					)}
-					{loadingMint && <CircularProgress color={"primary"} />}
+					</DialogActions>
 					{errorMinting && <Alert severity={"error"}>{errorMinting}</Alert>}
-				</DialogActions>
+				</>
 			)}
 		</Dialog>
 	)

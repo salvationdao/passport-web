@@ -205,6 +205,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								? {
 										content: '"(You)"',
 										marginLeft: "1ch",
+										color: colors.darkerGrey,
 								  }
 								: undefined,
 					}}

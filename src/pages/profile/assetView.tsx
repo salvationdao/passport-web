@@ -30,6 +30,7 @@ import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useWeb3 } from "../../containers/web3"
+import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
@@ -387,7 +388,7 @@ export const AssetView = ({ user, assetHash }: AssetViewProps) => {
 									...rarityTextStyles[purchasedItem.tier as Rarity],
 								}}
 							>
-								{purchasedItem.tier}
+								{getStringFromShoutingSnakeCase(purchasedItem.tier)}
 							</Typography>
 							<Box
 								sx={{
