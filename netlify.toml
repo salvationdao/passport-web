@@ -29,5 +29,5 @@
   REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME = "staging-passport.xsyn.io"
   REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE = ""
   REACT_APP_BYPASS_WHITELIST = "false"
-  REACT_APP_BATTLE_ARENA_LINK = "https://staging--watch.supremacy.game"
+  REACT_APP_BATTLE_ARENA_LINK = "https://staging.deltaforce.supremacy.game"
   
