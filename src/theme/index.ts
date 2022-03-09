@@ -18,12 +18,23 @@ declare module "@mui/material/Button" {
 	}
 }
 
-export const colors: {
-	[key: string]: any
-	rarity: {
-		[key in Rarity]: string
-	}
+const rarityColors: {
+	[key in Rarity]: string
 } = {
+	MEGA: "#e84234",
+	COLOSSAL: "#b43328",
+	RARE: "#4d90fa",
+	LEGENDARY: "#fabd4d",
+	ELITE_LEGENDARY: "#ffcc4e",
+	ULTRA_RARE: "#4e57ff",
+	EXOTIC: "#824dff",
+	GUARDIAN: "#4dcfff",
+	MYTHIC: "#a1e6ff",
+	DEUS_EX: "#fffa4e",
+	TITAN: "#5eff75",
+}
+
+export const colors = {
 	errorRed: "#d32f2f",
 	neonPink: "#f72485",
 	darkNeonPink: "#c31c69",
@@ -59,19 +70,7 @@ export const colors: {
 	twitterBlue: "#1DA1F2",
 	discordGrey: "#2c2f33",
 	supremacyGold: "#F3D977",
-	rarity: {
-		MEGA: "#e84234",
-		COLOSSAL: "#b43328",
-		RARE: "#4d90fa",
-		LEGENDARY: "#fabd4d",
-		ELITE_LEGENDARY: "#ffcc4e",
-		ULTRA_RARE: "#4e57ff",
-		EXOTIC: "#824dff",
-		GUARDIAN: "#4dcfff",
-		MYTHIC: "#a1e6ff",
-		DEUS_EX: "#fffa4e",
-		TITAN: "#5eff75",
-	},
+	rarity: rarityColors,
 	supremacy: {
 		text: "#FFFFFF",
 		offWhite: "#F8F8F8",

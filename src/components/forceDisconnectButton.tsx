@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { Tooltip, Typography, Button } from "@mui/material"
+import { Button, Tooltip, Typography } from "@mui/material"
 import { useAuth } from "../containers/auth"
 import { useQuery } from "../hooks/useSend"
 import useSubscription from "../hooks/useSubscription"
@@ -23,7 +23,7 @@ export const ForceDisconnectButton = ({ user }: { user: User }) => {
 			title={
 				<Typography>
 					{"Force Disconnect "}
-					<Typography color="primary">{`${user.firstName} ${user.lastName}`}</Typography>
+					<Typography color="primary">{`${user.first_name} ${user.last_name}`}</Typography>
 				</Typography>
 			}
 		>

@@ -4,8 +4,8 @@ export interface User {
 	id: string
 	email: string
 	username: string
-	firstName: string
-	lastName: string
+	first_name: string
+	last_name: string
 	role_id: string
 	avatar_id: string
 	faction_id: string

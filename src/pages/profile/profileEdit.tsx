@@ -19,7 +19,6 @@ import { useWebsocket } from "../../containers/socket"
 import { fetching } from "../../fetching"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
-import { Organisation, Role } from "../../types/types"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -176,20 +175,14 @@ export const ProfileEditPage: React.FC = () => {
 
 interface UserInput {
 	email?: string
-	newUsername?: string
-	firstName?: string
-	lastName?: string
-	newPassword?: string
-	/** Required if changing own password */
-	currentPassword?: string
-	avatarID?: string
-	roleID?: string
-	organisationID?: string
-	publicAddress?: string
-
-	organisation: Organisation
-	role: Role
-	twoFactorAuthenticationActivated: boolean
+	new_username?: string
+	first_name?: string
+	last_name?: string
+	new_password?: string
+	current_password?: string // required if changing password
+	avatar_id?: string
+	organisation_id?: string
+	two_factor_authentication_activated: boolean
 }
 
 interface ProfileEditProps {
@@ -208,7 +201,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 	// Setup form
 	const { control, handleSubmit, reset, watch, formState } = useForm<UserInput>()
 	const { isDirty } = formState
-	const password = watch("newPassword")
+	const password = watch("new_password")
 
 	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
 	const [submitting, setSubmitting] = useState(false)
@@ -219,9 +212,9 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 
 	const onSaveForm = handleSubmit(async (data) => {
 		if (!user) return
-		const { newUsername, newPassword, ...input } = data
+		const { new_username, new_password, ...input } = data
 		setSubmitting(true)
-		setNewUsername(newUsername)
+		setNewUsername(new_username)
 		try {
 			let avatarID: string | undefined = user.avatar_id
 			if (avatarChanged) {
@@ -242,9 +235,9 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 
 			const payload = {
 				...input,
-				newUsername: user.username !== newUsername ? newUsername : undefined,
-				newPassword: changePassword ? newPassword : undefined,
-				avatarID,
+				new_username: user.username !== new_username ? new_username : undefined,
+				new_password: changePassword ? new_password : undefined,
+				avatar_id: avatarID,
 			}
 
 			const resp = await send<User>(HubKey.UserUpdate, {
@@ -294,20 +287,15 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 	// Load defaults
 	useEffect(() => {
 		if (!user) return
-
 		reset({
 			email: user.email || "",
-			newUsername: user.username,
-			firstName: user.firstName,
-			lastName: user.lastName,
-			role: user.role,
-			organisation: user.organisation,
-			roleID: user.role_id,
-			organisationID: user.organisation?.id,
-			publicAddress: user.public_address || "",
-			twoFactorAuthenticationActivated: user.two_factor_authentication_activated,
-			currentPassword: "",
-			newPassword: "",
+			new_username: user.username,
+			first_name: user.first_name,
+			last_name: user.last_name,
+			organisation_id: user.organisation?.id,
+			two_factor_authentication_activated: user.two_factor_authentication_activated,
+			current_password: "",
+			new_password: "",
 		})
 
 		// Get avatar as file
@@ -368,7 +356,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					<Typography variant="subtitle1">User Details</Typography>
 					<InputField
 						label="Username"
-						name="newUsername"
+						name="new_username"
 						control={control}
 						rules={{
 							required: "Username cannot be empty",
@@ -384,8 +372,8 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 							},
 						}}
 					>
-						<InputField label="First Name" name="firstName" control={control} disabled={submitting} fullWidth />
-						<InputField label="Last Name" name="lastName" control={control} disabled={submitting} fullWidth />
+						<InputField label="First Name" name="first_name" control={control} disabled={submitting} fullWidth />
+						<InputField label="Last Name" name="last_name" control={control} disabled={submitting} fullWidth />
 					</Box>
 					<InputField
 						name="email"

@@ -4,7 +4,7 @@ import { Box, Collapse, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tab
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
-import { FancyButton } from "../../components/fancyButton"
+import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
@@ -476,20 +476,43 @@ export const StorePage: React.FC = () => {
 								<Paper
 									sx={{
 										flex: 1,
-										display: "grid",
-										gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-										gridAutoRows: "min-content",
-										gap: "1rem",
-										height: "100%",
 										padding: "2rem",
 									}}
 								>
-									{/* NOTE: You might need to remove the lootbox if pagination is added */}
-									{showLootBox && <LootBoxCard />}
-									{collection &&
-										storeItemIDs.map((a) => {
-											return <StoreItemCard collection={collection} key={a} storeItemID={a} />
-										})}
+									<Box
+										sx={{
+											display: "grid",
+											gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+											gridAutoRows: "min-content",
+											gap: "1rem",
+										}}
+									>
+										{/* NOTE: You might need to remove the lootbox if pagination is added */}
+										{showLootBox && <LootBoxCard />}
+										{collection &&
+											storeItemIDs.map((a) => {
+												return <StoreItemCard collection={collection} key={a} storeItemID={a} />
+											})}
+									</Box>
+									<Box
+										sx={{
+											display: "flex",
+											justifyContent: "center",
+											marginTop: "2rem",
+										}}
+									>
+										<Link
+											underline="none"
+											color={colors.white}
+											component={StyledFancyButton}
+											sx={{ padding: "0.5rem 2rem" }}
+											href="https://opensea.io/collection/supremacy-genesis"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											Black Market
+										</Link>
+									</Box>
 								</Paper>
 							) : (
 								<Paper
@@ -526,3 +549,7 @@ const StyledTab = styled((props: TabProps) => <Tab {...props} />)(({ theme }) =>
 		color: theme.palette.secondary.main,
 	},
 }))
+
+const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => (
+	<FancyButton {...props} fancy borderColor={colors.skyBlue} />
+))({})

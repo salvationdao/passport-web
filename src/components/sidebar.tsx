@@ -6,6 +6,7 @@ import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
+import SavingsIcon from "@mui/icons-material/Savings"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
 import { Box, Button, Divider, Drawer, Stack, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
@@ -32,7 +33,6 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import SavingsIcon from "@mui/icons-material/Savings"
 
 const drawerWidth = 250
 
@@ -155,7 +155,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					}}
 				>
 					<Typography variant="subtitle1">
-						{user.firstName} {user.lastName}
+						{user.first_name} {user.last_name}
 					</Typography>
 					<Typography variant="h5">{truncatedUsername}</Typography>
 				</Box>

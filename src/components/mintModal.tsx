@@ -1,9 +1,11 @@
-import { Alert, Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from "@mui/material"
+import CloseIcon from "@mui/icons-material/Close"
+import { Alert, Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from "@mui/material"
 import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../config"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { metamaskErrorHandling } from "../helpers/web3"
+import { colors } from "../theme"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 
@@ -84,7 +86,8 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				setErrorMinting(undefined)
 				onClose()
 			}}
-			maxWidth={"xl"}
+			maxWidth="sm"
+			fullWidth
 		>
 			<DialogTitle
 				sx={(theme) => ({
@@ -93,60 +96,67 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				color={"primary"}
 			>
 				Transition Asset Off World
+				<IconButton
+					onClick={() => {
+						setErrorMinting(undefined)
+						onClose()
+					}}
+					sx={{
+						position: "absolute",
+						top: "1rem",
+						right: "1rem",
+					}}
+				>
+					<CloseIcon />
+				</IconButton>
 			</DialogTitle>
 
-			<DialogContent sx={{ minWidth: 0, paddingTop: "1.5rem !important" }}>
-				<Box sx={{ display: "flex", flexDirection: "column" }}>
-					{metaMaskState !== MetaMaskState.Active && <ConnectWallet />}
-
-					{metaMaskState === MetaMaskState.Active && (
-						<>
-							{currentChainId?.toString() === ETHEREUM_CHAIN_ID ? (
-								<>
-									<Typography marginBottom=".5rem" variant={"h5"} color={"error"}>
-										GABS WARNING:
-									</Typography>
-									<Typography marginBottom=".5rem">
-										Once you start the transition of your asset to off world it will cease to be usable until either:
-									</Typography>
-									<Box component="ul" margin={0}>
-										<li>The fee is paid and the process is completed where we will revoke access until re-staked </li>
-										<li>The fee to cancel the transition is complete</li>
-									</Box>
-								</>
-							) : (
-								<FancyButton onClick={async () => await changeChainToETH()}>Switch Network</FancyButton>
-							)}
-						</>
-					)}
-				</Box>
-			</DialogContent>
 			{metaMaskState === MetaMaskState.Active && currentChainId?.toString() === ETHEREUM_CHAIN_ID && (
-				<>
-					<DialogActions
-						sx={{
-							display: "flex",
-							width: "100%",
-							justifyContent: "end",
-							"@media (max-width: 500px)": {
-								flexDirection: "column",
-								alignItems: "stretch",
-							},
+				<DialogContent
+					sx={{
+						paddingY: 0,
+					}}
+				>
+					<Typography marginBottom=".5rem" variant={"h5"} color={"error"}>
+						GABS WARNING:
+					</Typography>
+					<Typography marginBottom=".5rem">
+						Once you start the transition of your asset to off world it will cease to be usable until either:
+					</Typography>
+					<Box component="ul" margin={0}>
+						<li>The fee is paid and the process is completed where we will revoke access until re-staked </li>
+						<li>The fee to cancel the transition is complete</li>
+					</Box>
+				</DialogContent>
+			)}
+
+			<DialogActions
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "stretch",
+					padding: "16px 24px",
+				}}
+			>
+				{metaMaskState !== MetaMaskState.Active ? (
+					<ConnectWallet />
+				) : currentChainId?.toString() === ETHEREUM_CHAIN_ID ? (
+					<FancyButton
+						loading={loadingMint}
+						onClick={() => {
+							setErrorMinting(undefined)
+							mintAttempt(mintContract, assetExternalTokenID, collectionSlug)
 						}}
 					>
-						<FancyButton
-							loading={loadingMint}
-							onClick={() => {
-								setErrorMinting(undefined)
-								mintAttempt(mintContract, assetExternalTokenID, collectionSlug)
-							}}
-						>
-							Confirm and start transition
-						</FancyButton>
-					</DialogActions>
-					{errorMinting && <Alert severity={"error"}>{errorMinting}</Alert>}
-				</>
-			)}
+						Confirm and start transition
+					</FancyButton>
+				) : (
+					<FancyButton borderColor={colors.darkGrey} onClick={async () => await changeChainToETH()}>
+						Switch Network
+					</FancyButton>
+				)}
+			</DialogActions>
+			{errorMinting && <Alert severity="error">{errorMinting}</Alert>}
 		</Dialog>
 	)
 }

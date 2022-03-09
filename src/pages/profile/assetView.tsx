@@ -1,16 +1,17 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import CloseIcon from "@mui/icons-material/Close"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import {
 	Alert,
 	Box,
 	Button,
 	ButtonProps,
-	CircularProgress,
 	Dialog,
 	DialogActions,
 	DialogContent,
 	DialogTitle,
 	Divider,
+	IconButton,
 	Link,
 	Paper,
 	styled,
@@ -893,30 +894,53 @@ const UnstakeModel = ({ open, onClose, provider, asset, collection }: StakeModel
 				sx={(theme) => ({
 					fontSize: theme.typography.h3,
 				})}
-				color={"primary"}
+				color="primary"
 			>
-				Transition Asset on World
+				Transition Asset On World
+				<IconButton
+					onClick={() => {
+						setError(undefined)
+						onClose()
+					}}
+					sx={{
+						position: "absolute",
+						top: "1rem",
+						right: "1rem",
+					}}
+				>
+					<CloseIcon />
+				</IconButton>
 			</DialogTitle>
-			<DialogContent sx={{ display: "flex", width: "100%", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
-				<>
-					<Typography variant={"h5"} color={"error"}>
-						GABS WARNING:
-					</Typography>
-					<Typography>
-						Once transitioned off world you will be required to pay the fees to approve and transition back, transition with care.
-					</Typography>
-				</>
-
-				<FancyButton disabled={unstakingSuccess || unstakingLoading} fullWidth onClick={unstake}>
-					{unstakingLoading && <CircularProgress />}
-					{!unstakingLoading && unstakingSuccess && "Successfully Transitioned"}
-					{!unstakingLoading && !unstakingSuccess && "Transition"}
-				</FancyButton>
+			<DialogContent
+				sx={{
+					paddingY: 0,
+				}}
+			>
+				<Typography variant="h5" color="error" marginBottom=".5rem">
+					GABS WARNING:
+				</Typography>
+				<Typography>Once transitioned off world you will be required to pay the fees to approve and transition back, transition with care.</Typography>
 			</DialogContent>
-			<DialogActions>
-				{!!error && <Alert severity="error">{error}</Alert>}
-				<Button onClick={() => onClose()}>Cancel</Button>
+			<DialogActions
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "stretch",
+					padding: "16px 24px",
+				}}
+			>
+				<FancyButton
+					loading={unstakingLoading}
+					disabled={unstakingSuccess || unstakingLoading}
+					onClick={() => {
+						setError(undefined)
+						unstake()
+					}}
+				>
+					{unstakingSuccess ? "Successfully Transitioned" : "Transition"}
+				</FancyButton>
 			</DialogActions>
+			{!!error && <Alert severity="error">{error}</Alert>}
 		</Dialog>
 	)
 }
@@ -994,38 +1018,58 @@ const StakeModel = ({ open, onClose, provider, asset, collection }: StakeModelPr
 				sx={(theme) => ({
 					fontSize: theme.typography.h3,
 				})}
-				color={"primary"}
+				color="primary"
 			>
-				Transition Asset on World
+				Transition Asset On World
+				<IconButton
+					onClick={() => {
+						setError(undefined)
+						onClose()
+					}}
+					sx={{
+						position: "absolute",
+						top: "1rem",
+						right: "1rem",
+					}}
+				>
+					<CloseIcon />
+				</IconButton>
 			</DialogTitle>
-			<DialogContent sx={{ display: "flex", width: "100%", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
-				<>
-					<Typography variant={"h5"} color={"error"}>
-						GABS WARNING:
-					</Typography>
-					<Typography>To transition your items back on world it is a 2 part process, with each part requiring fees.</Typography>
-				</>
-				<Box>
-					<Typography>1. First you need to approve us to transition your item.</Typography>
-					<FancyButton disabled={approvalSuccess || approvalLoading} fullWidth onClick={approve}>
-						{approvalLoading && <CircularProgress />}
-						{!approvalLoading && approvalSuccess && "Successfully Approved"}
-						{!approvalLoading && !approvalSuccess && "Approve"}
-					</FancyButton>
-				</Box>
-				<Box>
-					<Typography>2. Transition your item on world.</Typography>
-					<FancyButton disabled={stakingSuccess || stakingLoading} fullWidth onClick={stake}>
-						{stakingLoading && <CircularProgress />}
-						{!stakingLoading && stakingSuccess && "Successfully Transitioned"}
-						{!stakingLoading && !stakingSuccess && "Transition"}
-					</FancyButton>
-				</Box>
+			<DialogContent sx={{ paddingY: 0 }}>
+				<Typography variant="h5" color="error" marginBottom=".5rem">
+					GABS WARNING:
+				</Typography>
+				<Typography>To transition your items back on world it is a 2 part process, with each part requiring fees.</Typography>
 			</DialogContent>
-			<DialogActions>
-				{!!error && <Alert severity="error">{error}</Alert>}
-				<Button onClick={() => onClose()}>Cancel</Button>
+			<DialogActions
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "stretch",
+					padding: "16px 24px",
+				}}
+				disableSpacing
+			>
+				<Typography variant="subtitle1">Step 1: Approve the transaction to transition your item.</Typography>
+				<FancyButton
+					sx={{
+						marginBottom: "1rem",
+					}}
+					loading={approvalLoading}
+					disabled={approvalSuccess || approvalLoading}
+					onClick={approve}
+				>
+					{approvalSuccess ? "Successfully Approved" : "Approve"}
+				</FancyButton>
+
+				<Typography variant="subtitle1" color={!approvalSuccess ? colors.darkerGrey : colors.white}>
+					Step 2: Transition your item on world.
+				</Typography>
+				<FancyButton loading={stakingLoading} disabled={!approvalSuccess || stakingSuccess || stakingLoading} onClick={stake}>
+					{stakingSuccess ? "Successfully Transitioned" : "Transition"}
+				</FancyButton>
 			</DialogActions>
+			{!!error && <Alert severity="error">{error}</Alert>}
 		</Dialog>
 	)
 }

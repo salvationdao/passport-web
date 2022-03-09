@@ -38,7 +38,7 @@ export const UserAvatar = ({ user }: { user: User }) => {
 	const { payload: onlineStatus } = useSubscription<boolean>(HubKey.UserOnlineStatus, { id: user.id })
 	const avatar = (
 		<Avatar
-			alt={`${user.firstName} ${user.lastName}`}
+			alt={`${user.first_name} ${user.last_name}`}
 			src={!!user.avatar_id ? `/api/files/${user.avatar_id}?token=${encodeURIComponent(localStorage.getItem("token") || "")}` : undefined}
 			sx={{ height: "35px", width: "35px" }}
 		/>
