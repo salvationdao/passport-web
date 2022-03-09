@@ -1,5 +1,6 @@
 import WalletConnectProvider from "@walletconnect/web3-provider"
-import { BigNumber, ethers } from "ethers"
+import { BigNumber, ethers, utils } from "ethers"
+import { arrayify, hexlify } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useInterval } from "react-use"
 import { createContainer } from "unstated-next"
@@ -45,6 +46,12 @@ interface AddEthereumChainParameter {
 	rpcUrls: string[]
 	blockExplorerUrls?: string[]
 	iconUrls?: string[] // Currently ignored.
+}
+
+interface EarlyContributorCheck {
+	key: string
+	value: boolean
+	has_signed: boolean
 }
 
 export enum web3Constants {
@@ -240,7 +247,6 @@ export const Web3Container = createContainer(() => {
 			if (currentChainId.toString() !== BINANCE_CHAIN_ID) {
 				return
 			}
-			console.log("get wallet sups")
 			// A Human-Readable ABI; for interacting with the contract, we
 			// must include any fragment we wish to use
 			const abi = [
@@ -258,14 +264,11 @@ export const Web3Container = createContainer(() => {
 
 			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
 			try {
-				console.log("loading")
 				const bal = await erc20.balanceOf(acc)
 				if (!bal) {
 					setSupBalance(BigNumber.from(0))
 					return
 				}
-				console.log("loaded")
-				console.log({ bal })
 				setSupBalance(bal)
 			} catch (e) {
 				setSupBalance(BigNumber.from(0))
@@ -547,9 +550,58 @@ export const Web3Container = createContainer(() => {
 				nonce = await getNonce(acc)
 			}
 			if (nonce === "") return ""
-			return await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
+			const signedMessage = await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
+			console.log(signedMessage)
+			return signedMessage
 		},
 		[provider, getNonce, getNonceFromID],
+	)
+
+	const signEarlyContributors = useCallback(
+		async (name: string, phone: string, email: string, agree: boolean): Promise<boolean> => {
+			if (!provider) return false
+			try {
+				if (!wcProvider) {
+					await provider.send("eth_requestAccounts", [])
+					const signer = provider.getSigner()
+					const acc = await signer.getAddress()
+					const message = `Name:${name}Email:${email}Phone:${phone}Agrees:${agree}`
+					const hashMessage = hexlify(ethers.utils.toUtf8Bytes(message))
+					const signedMessage = await signer.signMessage(message)
+					const resp = await fetch(
+						`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/early/sign?signature=${signedMessage}&message=${message}&address=${acc}&agree=${agree}&hex=${hashMessage}`,
+						{
+							method: "POST",
+						},
+					)
+					const body = (await resp.clone().json()) as EarlyContributorCheck
+					return body.has_signed
+				}
+
+				const connector = await wcProvider.getWalletConnector()
+				const acc = connector.accounts[0]
+				const message = `Name:${name}Email:${email}Phone:${phone}Agrees:${agree}`
+				const hashMessage = hexlify(ethers.utils.toUtf8Bytes(message))
+				const signedMessage = await connector.signPersonalMessage([ethers.utils.toUtf8Bytes(message), acc]).catch((e) => {
+					console.log(e)
+				})
+				const resp = await fetch(
+					`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/early/sign?signature=${signedMessage}&message=${message}&address=${acc}&agree=${agree}&hex=${hashMessage}`,
+					{
+						method: "POST",
+					},
+				)
+				const body = (await resp.clone().json()) as EarlyContributorCheck
+				return body.has_signed
+			} catch (e: any) {
+				console.log(e)
+				if (e.code === 4001) {
+					return false
+				}
+			}
+			return false
+		},
+		[provider],
 	)
 
 	const signWalletConnect = useCallback(async () => {
@@ -670,6 +722,7 @@ export const Web3Container = createContainer(() => {
 		setLoadingAmountRemaining,
 		wcProvider,
 		wcSignature,
+		signEarlyContributors,
 		signer,
 	}
 })

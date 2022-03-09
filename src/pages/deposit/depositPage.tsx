@@ -79,7 +79,7 @@ export const DepositPage = () => {
 					/>
 
 					<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: "1rem" }}>
-						Deposit Sups
+						Deposit $Sups
 					</Typography>
 					{
 						//this is a place holder for the actual withdraw sups functionality, it does nothing but look ok

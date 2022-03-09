@@ -39,7 +39,7 @@ export enum SocketState {
 	CLOSED = WebSocket.CLOSED,
 }
 
-type WSSendFn = <Y = any, X = any>(key: string, payload?: X) => Promise<Y>
+export type WSSendFn = <Y = any, X = any>(key: string, payload?: X) => Promise<Y>
 
 interface WebSocketProperties {
 	send: WSSendFn

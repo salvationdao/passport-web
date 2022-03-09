@@ -19,7 +19,6 @@ import { SignUpPage } from "./pages/auth/signup"
 import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
 import { CollectionPage } from "./pages/collections/collection"
-import { DepositPage } from "./pages/deposit/depositPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
@@ -30,7 +29,8 @@ import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
 import { TransactionsPage } from "./pages/transactions/transactions"
-import { WithdrawPreviewPage } from "./pages/withdrawPreview"
+import { DepositPage } from "./pages/deposit/depositPage"
+import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 
 export const Routes = () => {
 	const { setSessionID, user, loading: authLoading } = useAuth()
@@ -147,8 +147,7 @@ export const Routes = () => {
 								<TransactionsPage />
 							</Route>
 							<Route path="/withdraw">
-								<WithdrawPreviewPage />
-								{/*<WithdrawSups /> --- do not enable this until after sale   */}
+								<WithdrawPage />
 							</Route>
 							<Route path="/deposit">
 								<DepositPage />

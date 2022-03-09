@@ -84,9 +84,9 @@ export const DepositSups = ({
 			setCurrentTransferState("waiting")
 			if (state !== SocketState.OPEN) return
 			const tx = await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, depositAmount)
+			setCurrentTransferHash(tx.hash)
 			setCurrentTransferState("confirm")
 			await tx.wait()
-			setCurrentTransferHash(tx.hash)
 		} catch (e: any) {
 			//checking metamask Signature
 			if (e.code && typeof e.message === "string") {
@@ -148,6 +148,12 @@ export const DepositSups = ({
 								onChange={(e) => {
 									if (e.target.value === "") {
 										setDepositAmount(undefined)
+										return
+									}
+									if (e.target.value.length > 10) {
+										const limitedLengthValue = e.target.value.slice(0, 10)
+										const parseValue = ethers.utils.parseUnits(limitedLengthValue)
+										setDepositAmount(parseValue)
 										return
 									}
 									const parseValue = ethers.utils.parseUnits(e.target.value, 18)
@@ -242,26 +248,9 @@ export const DepositSups = ({
 						//handleDeposit()
 					}}
 				>
-					Deposit SUPS
+					Deposit $SUPS
 				</FancyButton>
 			</Box>
-
-			{/* public sale overlay */}
-			{/* <Box
-				sx={{
-					position: "absolute",
-					width: "100%",
-					height: "100%",
-					display: "flex",
-					justifyContent: "center",
-					alignItems: "center",
-					padding: "1rem",
-				}}
-			>
-				<Typography variant="h3" sx={{ textTransform: "uppercase", textAlign: "center", lineHeight: "1.6" }} color={colors.darkGrey}>
-					Withdrawing of $SUPs will be available after the token sale
-				</Typography>
-			</Box> */}
 		</Box>
 	)
 }
