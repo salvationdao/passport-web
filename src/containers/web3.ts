@@ -27,6 +27,7 @@ import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { SocketState, useWebsocket } from "./socket"
 import { genericABI } from "./web3GenericABI"
+import { metamaskErrorHandling } from "../helpers/web3"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -657,14 +658,10 @@ export const Web3Container = createContainer(() => {
 				displayMessage("Wallet does not have sufficient funds.", "error")
 				return
 			}
-		} catch (error: any) {
-			//checking metamask error signature and setting error
-			if (error.code && error.message) {
-				displayMessage(`${error.message}`, "error")
-				return
-			}
-			displayMessage("Something went wrong, please try again.", "error")
-			throw error
+		} catch (e: any) {
+			const err = metamaskErrorHandling(e)
+			err ? displayMessage(err, "error") : displayMessage("Something went wrong, please try again.", "error")
+			throw err
 		}
 	}
 	async function sendTransferToPurchaseAddress(contractAddress: string, value: BigNumber) {
@@ -685,14 +682,10 @@ export const Web3Container = createContainer(() => {
 				displayMessage("Wallet does not have sufficient funds.", "error")
 				return
 			}
-		} catch (error: any) {
-			//checking metamask error signature and setting error
-			if (error.code && error.message) {
-				displayMessage(`${error.message}`, "error")
-				return
-			}
-			displayMessage("Something went wrong, please try again.", "error")
-			throw error
+		} catch (e: any) {
+			const err = metamaskErrorHandling(e)
+			err ? displayMessage(err, "error") : displayMessage("Something went wrong, please try again.", "error")
+			throw err
 		}
 	}
 

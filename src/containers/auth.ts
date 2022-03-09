@@ -34,6 +34,7 @@ import { Perm } from "../types/enums"
 import { User } from "../types/types"
 import { useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
+import { metamaskErrorHandling } from "../helpers/web3"
 
 export enum VerificationType {
 	EmailVerification,
@@ -214,9 +215,11 @@ export const AuthContainer = createContainer(() => {
 			localStorage.clear()
 			setUser(undefined)
 			//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
-			if (e.code && e.message) {
-				throw { code: e.code, message: e.message }
+			const err = metamaskErrorHandling(e)
+			if (err) {
+				throw err
 			}
+			throw e
 		}
 	}, [send, state, sign, sessionId, connect])
 	/**

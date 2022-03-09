@@ -3,6 +3,7 @@ import { ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../config"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { metamaskErrorHandling } from "../helpers/web3"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 
@@ -67,13 +68,8 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				setErrorMinting(undefined)
 				onClose()
 			} catch (e: any) {
-				//checking metamask error signature and setting error
-				console.error(e)
-				if (e.code && e.message) {
-					setErrorMinting(typeof e.code === "number" ? e.message : "Issue minting, please try again or contact support.")
-					return
-				}
-				setErrorMinting(typeof e === "string" ? e : "Issue minting, please try again or contact support.")
+				const err = metamaskErrorHandling(e)
+				err ? setErrorMinting(err) : setErrorMinting("Issue minting, please try again or contact support.")
 			} finally {
 				setLoadingMint(false)
 			}

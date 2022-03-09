@@ -402,8 +402,8 @@ export const WithdrawSupsForm = ({
 					<FancyButton
 						disabled={
 							!withdrawAmount ||
-							!supBalance ||
-							ethers.utils.parseUnits(withdrawAmount, 18).gt(supBalance) ||
+							!xsynSups ||
+							ethers.utils.parseUnits(withdrawAmount, 18).gt(xsynSups) ||
 							currentTransferState !== "none" ||
 							immediateError !== undefined
 						}

@@ -1,3 +1,4 @@
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import { Box, Button, TextField, Typography } from "@mui/material"
 import { BigNumber, ethers } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
@@ -5,18 +6,17 @@ import React, { useEffect, useState } from "react"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
 import SupsToken from "../assets/images/sup-token.svg"
+import { SUPS_CONTRACT_ADDRESS } from "../config"
 import { useAuth } from "../containers/auth"
+import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
+import { AddressDisplay, metamaskErrorHandling } from "../helpers/web3"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { FancyButton } from "./fancyButton"
-import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
-import { SocketState, useWebsocket } from "../containers/socket"
-import { SUPS_CONTRACT_ADDRESS } from "../config"
-import { useSnackbar } from "../containers/snackbar"
 import { transferStateType } from "../types/types"
+import { FancyButton } from "./fancyButton"
 
 //TODO: after transfer on blockchain, give user ON WORLD game tokens
 
@@ -24,9 +24,8 @@ interface DepositSupsProps {
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
 	currentTransferState: string
-	connectedWalletAddress: string
-	depositAmount: BigNumber | undefined
-	setDepositAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>
+	depositAmount: string | undefined
+	setDepositAmount: React.Dispatch<React.SetStateAction<string | undefined>>
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setError: React.Dispatch<React.SetStateAction<string>>
 }
@@ -35,19 +34,19 @@ export const DepositSups = ({
 	setCurrentTransferState,
 	currentTransferState,
 	setCurrentTransferHash,
-	connectedWalletAddress,
 	depositAmount,
 	setDepositAmount,
 	setLoading,
 	setError,
 }: DepositSupsProps) => {
-	const { metaMaskState, supBalance, provider, sendTransferToPurchaseAddress } = useWeb3()
+	const { metaMaskState, supBalance, provider, sendTransferToPurchaseAddress, account } = useWeb3()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const { user } = useAuth()
 	const { state } = useWebsocket()
 
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsTotal, setSupsTotal] = useState<BigNumber>()
+	const [immediateError, setImmediateError] = useState<string>()
 
 	useEffect(() => {
 		if (userSups) {
@@ -60,16 +59,19 @@ export const DepositSups = ({
 	}, [depositAmount, xsynSups])
 
 	const handleTotalAmount = () => {
-		if (depositAmount && xsynSups) {
-			const totalSups = depositAmount.add(xsynSups)
+		if (!depositAmount) return
+
+		const bigNumDepositAmt = ethers.utils.parseUnits(depositAmount, 18)
+		if (bigNumDepositAmt && xsynSups) {
+			const totalSups = bigNumDepositAmt.add(xsynSups)
 			setSupsTotal(totalSups)
 			return
 		}
-		if (!xsynSups && depositAmount) {
-			setSupsTotal(depositAmount)
+		if (!xsynSups && bigNumDepositAmt) {
+			setSupsTotal(bigNumDepositAmt)
 			return
 		}
-		if (xsynSups && !depositAmount) {
+		if (xsynSups && !bigNumDepositAmt) {
 			setSupsTotal(xsynSups)
 			return
 		}
@@ -79,22 +81,19 @@ export const DepositSups = ({
 	async function handleDeposit() {
 		setLoading(true)
 		if (!depositAmount || !user || !provider) return
+		const bigNumDepositAmt = ethers.utils.parseUnits(depositAmount, 18)
 
 		try {
 			setCurrentTransferState("waiting")
 			if (state !== SocketState.OPEN) return
-			const tx = await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, depositAmount)
+			const tx = await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, bigNumDepositAmt)
 			setCurrentTransferHash(tx.hash)
 			setCurrentTransferState("confirm")
 			await tx.wait()
 		} catch (e: any) {
 			//checking metamask Signature
-			if (e.code && typeof e.message === "string") {
-				setError(e.message)
-			}
-			if (typeof e === "string") {
-				setError(e)
-			}
+			const error = metamaskErrorHandling(e)
+			error ? setError(error) : setError("Issue depositing, please try again.")
 			setCurrentTransferState("error")
 		} finally {
 			setLoading(false)
@@ -127,7 +126,7 @@ export const DepositSups = ({
 					>
 						<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 							<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h5">
-								From:{` ${connectedWalletAddress}`}
+								From:{` ${account ? AddressDisplay(account) : null}`}
 							</Typography>
 							{metaMaskState === MetaMaskState.NotInstalled ? (
 								<WalletConnectIcon height={"1.2rem"} width={"1.2rem"} />
@@ -143,22 +142,36 @@ export const DepositSups = ({
 								color="secondary"
 								fullWidth
 								variant="filled"
-								type="number"
-								value={depositAmount ? parseInt(ethers.utils.formatUnits(depositAmount, 18)) : ""}
+								value={depositAmount ? depositAmount : ""}
 								onChange={(e) => {
+									let num = Number(e.target.value)
+									e.preventDefault()
+
 									if (e.target.value === "") {
 										setDepositAmount(undefined)
 										return
 									}
-									if (e.target.value.length > 10) {
-										const limitedLengthValue = e.target.value.slice(0, 10)
-										const parseValue = ethers.utils.parseUnits(limitedLengthValue)
-										setDepositAmount(parseValue)
+
+									const decimalIndex = e.target.value.indexOf(".")
+									if (decimalIndex !== -1) {
+										const decimalLength = e.target.value.slice(decimalIndex + 1).length
+										if (decimalLength > 18) {
+											return
+										}
+									}
+									if (e.target.value.charAt(0) === ".") {
+										setDepositAmount("0" + e.target.value)
 										return
 									}
-									const parseValue = ethers.utils.parseUnits(e.target.value, 18)
-									const bigValue = BigNumber.from(parseValue)
-									setDepositAmount(bigValue)
+									if (e.target.value.indexOf("-") > -1) {
+										setImmediateError("Amount must be a positive value")
+										return
+									}
+									if (!isNaN(num)) {
+										setDepositAmount(e.target.value)
+									} else {
+										setImmediateError("Amount must be a number")
+									}
 								}}
 								sx={{
 									"& .MuiFilledInput-input": {
@@ -167,7 +180,6 @@ export const DepositSups = ({
 									},
 									input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, lineHeight: 0.5 },
 								}}
-								inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
 							/>
 						</Box>
 						<Button
@@ -175,7 +187,7 @@ export const DepositSups = ({
 							disabled={!supBalance || supBalance._hex === BigNumber.from(0)._hex}
 							onClick={() => {
 								if (supBalance) {
-									setDepositAmount(supBalance)
+									setDepositAmount(supFormatter(supBalance.toString()))
 								}
 							}}
 						>
@@ -240,16 +252,24 @@ export const DepositSups = ({
 					</Box>
 				</Box>
 				<FancyButton
-					disabled={!depositAmount || !supBalance || depositAmount.gt(supBalance) || currentTransferState !== "none"}
+					disabled={
+						!depositAmount ||
+						!supBalance ||
+						ethers.utils.parseUnits(depositAmount).gt(supBalance) ||
+						currentTransferState !== "none" ||
+						immediateError !== undefined
+					}
 					borderColor={colors.skyBlue}
 					sx={{ marginTop: "1.5rem", width: "50%" }}
 					onClick={() => {
-						//TODO: uncomment this after deposit sups
-						//handleDeposit()
+						handleDeposit()
 					}}
 				>
 					Deposit $SUPS
 				</FancyButton>
+				<Typography color="error" variant="subtitle1" sx={immediateError ? { margin: "1rem" } : { display: "none" }}>
+					{immediateError}
+				</Typography>
 			</Box>
 		</Box>
 	)

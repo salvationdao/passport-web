@@ -32,6 +32,7 @@ import { SocketState, useWebsocket } from "../../containers/socket"
 import { useWeb3 } from "../../containers/web3"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { supFormatter } from "../../helpers/items"
+import { metamaskErrorHandling } from "../../helpers/web3"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
@@ -879,13 +880,8 @@ const UnstakeModel = ({ open, onClose, provider, asset, collection }: StakeModel
 			await tx.wait()
 			setUnstakingSuccess(true)
 		} catch (e: any) {
-			//checking metamask error signature and setting error
-			if (e.code && e.message) {
-				setError(e.message)
-				return
-			}
-			setError(typeof e === "string" ? e : "Something went wrong, please try again.")
-			// setError(e)
+			const err = metamaskErrorHandling(e)
+			err ? setError(err) : setError("Something went wrong, please try again")
 		} finally {
 			setUnstakingLoading(false)
 		}
@@ -985,12 +981,8 @@ const StakeModel = ({ open, onClose, provider, asset, collection }: StakeModelPr
 			await tx.wait()
 			setStakingSuccess(true)
 		} catch (e: any) {
-			//checking metamask error signature and setting error
-			if (e.code && e.message) {
-				setError(e.message)
-				return
-			}
-			setError(typeof e === "string" ? e : "Something went wrong, please try again.")
+			const err = metamaskErrorHandling(e)
+			err ? setError(err) : setError("Something went wrong, please try again")
 		} finally {
 			setStakingLoading(false)
 		}

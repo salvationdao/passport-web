@@ -1,6 +1,5 @@
 import { Box, Paper, Typography } from "@mui/material"
-import { BigNumber } from "ethers"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import Coin from "../../assets/images/gradient/coin.png"
 import { DepositSups } from "../../components/depositSups"
 import { GradientCircleThing } from "../../components/home/gradientCircleThing"
@@ -10,11 +9,11 @@ import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/swi
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
 import { useAuth } from "../../containers/auth"
 import { useWeb3 } from "../../containers/web3"
-import { supFormatter } from "../../helpers/items"
+import { AddressDisplay } from "../../helpers/web3"
 import { transferStateType } from "../../types/types"
 
 export const DepositPage = () => {
-	const { signer } = useWeb3()
+	const { account } = useWeb3()
 	const { user } = useAuth()
 
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
@@ -22,22 +21,8 @@ export const DepositPage = () => {
 	//TODO: set this transferstate to "none" when depositSUPs functionality becomes available
 	const [currentTransferState, setCurrentTransferState] = useState<transferStateType>("unavailable")
 	const [loading, setLoading] = useState<boolean>(false)
-	const [connectedWalletAddress, setConnectedWalletAddress] = useState("")
 	const [error, setError] = useState<string>("")
-	const [depositAmount, setDepositAmount] = useState<BigNumber>()
-
-	useEffect(() => {
-		if (!signer) return
-		;(async () => {
-			try {
-				const acc = await signer.getAddress()
-
-				setConnectedWalletAddress(`${acc.substring(0, 6)}...${acc.substring(acc.length - 4, acc.length)}`)
-			} catch (e) {
-				setConnectedWalletAddress("")
-			}
-		})()
-	})
+	const [depositAmount, setDepositAmount] = useState<string>()
 
 	return (
 		<div>
@@ -62,11 +47,14 @@ export const DepositPage = () => {
 						flexDirection: "column",
 						alignItems: "center",
 						justifyContent: "center",
-						height: "85vh",
+						height: "100vh",
 						position: "relative",
 					}}
 				>
-					<GradientCircleThing sx={{ position: "absolute", height: "100%", display: { xs: "none", xl: "block" } }} hideInner />
+					<GradientCircleThing
+						sx={{ position: "absolute", height: "100%", maxHeight: "950px", maxWidth: "950px", display: { xs: "none", xl: "block" } }}
+						hideInner
+					/>
 					<Box
 						component="img"
 						src={Coin}
@@ -74,28 +62,26 @@ export const DepositPage = () => {
 						sx={{
 							height: "12rem",
 							marginBottom: "1.5rem",
-							marginTop: { xs: "1.5rem", xl: "-10rem" },
+							marginTop: { xs: "1.5rem", xl: "-8rem" },
 						}}
 					/>
-
-					<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: "1rem" }}>
-						Deposit $Sups
-					</Typography>
-					{
-						//this is a place holder for the actual withdraw sups functionality, it does nothing but look ok
-					}
 					<SwitchNetworkOverlay />
-					<ConnectWalletOverlay walletIsConnected={!!connectedWalletAddress} />
+					<ConnectWalletOverlay walletIsConnected={!!account} />
 					<TransactionResultOverlay
 						currentTransferState={currentTransferState}
 						setCurrentTransferState={setCurrentTransferState}
 						currentTransferHash={currentTransferHash}
-						confirmationMessage={`Depositing ${
-							depositAmount ? supFormatter(depositAmount.toString()) : "NONE"
-						} $SUPS from wallet address: ${connectedWalletAddress} to Alpha Citizen ${user?.username}.`}
+						confirmationMessage={`Depositing ${depositAmount} $SUPS from wallet address: ${
+							account ? AddressDisplay(account) : null
+						} to Alpha Citizen ${user?.username}.`}
 						error={error}
 						loading={loading}
 					/>
+
+					<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: "3rem" }}>
+						Deposit $Sups
+					</Typography>
+
 					<Box
 						sx={{
 							width: "80%",
@@ -110,7 +96,6 @@ export const DepositPage = () => {
 							setCurrentTransferState={setCurrentTransferState}
 							currentTransferState={currentTransferState}
 							setCurrentTransferHash={setCurrentTransferHash}
-							connectedWalletAddress={connectedWalletAddress}
 							depositAmount={depositAmount}
 							setDepositAmount={setDepositAmount}
 							setLoading={setLoading}

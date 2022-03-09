@@ -3,6 +3,7 @@ import { useHistory } from "react-router-dom"
 import { AuthContainer } from "../containers"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { metamaskErrorHandling } from "../helpers/web3"
 
 interface MetaMaskLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
@@ -54,15 +55,10 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			} catch (e: any) {
 				setIsProcessing(false)
 				if (onFailure) {
-					if (typeof e === "string") {
-						onFailure(e)
-						setErrorMessage(e)
-						return
-					}
-					//checking metamask error signature and setting error
-					if (e.code && typeof e.message === "string") {
-						onFailure(e.message)
-						setErrorMessage(e.message)
+					const err = metamaskErrorHandling(e)
+					if (err) {
+						onFailure(err)
+						setErrorMessage(err)
 						return
 					}
 					onFailure("Something went wrong, please try again.")
