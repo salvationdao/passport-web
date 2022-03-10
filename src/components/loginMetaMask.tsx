@@ -46,7 +46,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			try {
 				const resp = await loginMetamask()
 				if (!resp || !resp.is_new) {
-					setErrorMessage("There was a problem logging you in. Your account may be disabled, please contact support.")
+					setErrorMessage("There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.")
 					setIsProcessing(false)
 					return
 				}
