@@ -40,41 +40,6 @@ export const CollectionsPage: React.FC = () => {
 		})()
 	}, [send, state, user, displayMessage])
 
-	// TODO: commented out by vinnie 25/02/22, think we're moving nfts be retrived with asset list
-	// useEffect(() => {
-	// 	if (state !== SocketState.OPEN || !send) return
-	// 	;(async () => {
-	// 		setLoading(true)
-	// 		try {
-	// 			const resp = await send<{ NFTOwners: NFTOwner[] }>(HubKey.WalletCollectionList)
-	// 			if (resp.NFTOwners) {
-	// 				const filter = resp.NFTOwners.filter((x) => {
-	// 					return x.owner_of === user?.publicAddress
-	// 				})
-	//
-	// 				if (!filter) return
-	//
-	// 				let itemIDs: number[] = []
-	// 				filter.forEach((item) => {
-	// 					fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${item.token_id}`).then((resp) => {
-	// 						if (resp.ok && resp.status !== 200) {
-	// 							const num = parseInt(item.token_id)
-	// 							itemIDs.push(num)
-	// 						}
-	// 					})
-	// 				})
-	// 				setWalletTokenIDs(itemIDs)
-	// 			}
-	// 		} catch (e) {
-	// 			displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error", {
-	// 				autoHideDuration: null,
-	// 			})
-	// 		} finally {
-	// 			setLoading(false)
-	// 		}
-	// 	})()
-	// }, [send, state, user, displayMessage])
-
 	useEffect(() => {
 		if (user || username) return
 

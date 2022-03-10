@@ -18,7 +18,7 @@ import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
 import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
-import { AssetView } from "./assetView"
+import { AssetView, AssetViewContainer } from "./assetView"
 
 export const ProfilePage: React.FC = () => {
 	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
@@ -171,76 +171,7 @@ export const ProfilePage: React.FC = () => {
 									</IconButton>
 								</Box>
 							)}
-							{/* This will be used in the future when we allow non-wallet connections */}
-							{/* {loggedInUser?.username === user.username && (
-								<Section>
-									<Typography variant="h6" component="p">
-										Connect
-									</Typography>
-									<Box
-										sx={{
-											display: "grid",
-											gridTemplateColumns: "repeat(auto-fill, minmax(50px, 1fr))",
-											gap: "1rem",
-										}}
-									>
-										{!user.publicAddress && (
-											<RouterLink
-												component={StyledIconButton}
-												to={`/profile/${user.username}/edit#connections`}
-												title="Connect with MetaMask"
-											>
-												<MetaMaskIcon />
-											</RouterLink>
-										)}
-										{!user.twitterID && (
-											<RouterLink
-												component={StyledIconButton}
-												to={`/profile/${user.username}/edit#connections`}
-												title="Connect with Twitter"
-											>
-												<TwitterIcon />
-											</RouterLink>
-										)}
-										{!user.discordID && (
-											<RouterLink
-												component={StyledIconButton}
-												to={`/profile/${user.username}/edit#connections`}
-												title="Connect with Discord"
-											>
-												<DiscordIcon />
-											</RouterLink>
-										)}
-										{!user.facebookID && (
-											<RouterLink
-												component={StyledIconButton}
-												to={`/profile/${user.username}/edit#connections`}
-												title="Connect with Facebook"
-											>
-												<FacebookIcon />
-											</RouterLink>
-										)}
-										{!user.googleID && (
-											<RouterLink
-												component={StyledIconButton}
-												to={`/profile/${user.username}/edit#connections`}
-												title="Connect with Google"
-											>
-												<GoogleIcon />
-											</RouterLink>
-										)}
-										{!user.twitchID && (
-											<RouterLink
-												component={StyledIconButton}
-												to={`/profile/${user.username}/edit#connections`}
-												title="Connect with Twitch"
-											>
-												<TwitchIcon />
-											</RouterLink>
-										)}
-									</Box>
-								</Section>
-							)} */}
+
 							{loggedInUser?.username === user.username && (
 								<Section>
 									<Typography variant="h6" component="p">
@@ -255,7 +186,7 @@ export const ProfilePage: React.FC = () => {
 						<Box minHeight="2rem" minWidth="2rem" />
 					</>
 				)}
-				{!!asset_hash ? <AssetView user={user} assetHash={asset_hash} /> : <CollectionView user={user} />}
+				{!!asset_hash ? <AssetViewContainer user={user} assetHash={asset_hash} /> : <CollectionView user={user} />}
 			</Box>
 		</Box>
 	)
