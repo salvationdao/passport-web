@@ -37,12 +37,6 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const { username } = useParams<{ username: string }>()
 	const { loading, error, payload, query } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
-	const {
-		loading: offWorldLoading,
-		error: offWorldError,
-		payload: offWorldPayload,
-		query: offWorldQuery,
-	} = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
 
 	const toggleRarity = (rarity: string) => {
 		setRarities((prev) => {
@@ -187,6 +181,15 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 			})
 		}
 
+		if (showOffWorldOnly !== undefined) {
+			filtersItems.push({
+				// filter by on_chain_status
+				columnField: "on_chain_status",
+				operatorValue: showOffWorldOnly ? "=" : "!=",
+				value: "STAKABLE",
+			})
+		}
+
 		const attributeFilterItems: any[] = []
 		if (assetType && assetType !== "All") {
 			attributeFilterItems.push({
@@ -204,41 +207,25 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 			}),
 		)
 
-		if (showOffWorldOnly) {
-			offWorldQuery({
-				username,
-				attribute_filter: {
-					linkOperator: "and",
-					items: attributeFilterItems,
-				},
-			})
-		} else {
-			query({
-				search,
-				attribute_filter: {
-					linkOperator: "or",
-					items: attributeFilterItems,
-				},
-				filter: {
-					linkOperator: "and",
-					items: filtersItems,
-				},
-				...sort,
-			})
-		}
-	}, [user, query, collection, state, assetType, rarities, search, username, sort, showOffWorldOnly, offWorldQuery])
+		query({
+			search,
+			attribute_filter: {
+				linkOperator: "or",
+				items: attributeFilterItems,
+			},
+			filter: {
+				linkOperator: "and",
+				items: filtersItems,
+			},
+			...sort,
+		})
+	}, [user, query, collection, state, assetType, rarities, search, username, sort, showOffWorldOnly])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
 
 		setAssetHashes(payload.asset_hashes)
 	}, [payload, loading, error])
-
-	useEffect(() => {
-		if (!offWorldPayload || offWorldLoading || offWorldError) return
-
-		setAssetHashes(Array.from(new Set(offWorldPayload.asset_hashes)))
-	}, [offWorldPayload, offWorldLoading, offWorldError])
 
 	const renderRarities = () => {
 		const rarityArray: string[] = []
