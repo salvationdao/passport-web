@@ -248,18 +248,16 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 		}
 
 		return rarityArray.map((rarity, index) => {
-			const rarityUppercase = rarity.charAt(0).toUpperCase() + rarity.slice(1)
-			const rarityName = rarityUppercase.split(/(?=[A-Z])/).join(" ")
 			const colorValue = colors.rarity[rarity as keyof typeof colors.rarity]
 
 			return (
 				<FilterChip
 					key={`${rarity}-${index}`}
-					active={rarities.has(rarityName)}
+					active={rarities.has(rarity)}
 					label={getStringFromShoutingSnakeCase(rarity)}
 					color={colorValue}
 					variant="outlined"
-					onClick={() => toggleRarity(rarityName)}
+					onClick={() => toggleRarity(rarity)}
 				/>
 			)
 		})
