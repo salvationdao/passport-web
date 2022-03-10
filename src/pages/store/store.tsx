@@ -1,4 +1,5 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import OpenseaLogo from "../../assets/images/opensea_logomark_white.svg"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import { Box, Collapse, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
@@ -494,25 +495,6 @@ export const StorePage: React.FC = () => {
 												return <StoreItemCard collection={collection} key={a} storeItemID={a} />
 											})}
 									</Box>
-									<Box
-										sx={{
-											display: "flex",
-											justifyContent: "center",
-											marginTop: "2rem",
-										}}
-									>
-										<Link
-											underline="none"
-											color={colors.white}
-											component={StyledFancyButton}
-											sx={{ padding: "0.5rem 2rem" }}
-											href="https://opensea.io/collection/supremacy-genesis"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											Black Market
-										</Link>
-									</Box>
 								</Paper>
 							) : (
 								<Paper
@@ -534,7 +516,36 @@ export const StorePage: React.FC = () => {
 					</Box>
 				</Box>
 			</Box>
+			<BlackMarketCTA />
 		</>
+	)
+}
+
+const BlackMarketCTA = () => {
+	return (
+		<Box
+			sx={{
+				flexDirection: "column",
+				display: "flex",
+				justifyContent: "center",
+				marginTop: "2rem",
+				alignItems: "center",
+			}}
+		>
+			<Typography>Looking for other factions? </Typography>
+			<Link
+				underline="none"
+				color={colors.white}
+				component={StyledFancyButton}
+				sx={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 2rem", height: "4rem" }}
+				href="https://opensea.io/collection/supremacy-genesis"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				Check out the black market.
+				<img src={OpenseaLogo} style={{ maxHeight: "100%" }} />
+			</Link>
+		</Box>
 	)
 }
 

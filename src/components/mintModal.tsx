@@ -64,6 +64,10 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				const resp = await fetch(
 					`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/mint-nft/${account}/${nonce}/${collectionSlug}/${assetExternalTokenID}`,
 				)
+				if (resp.status !== 200) {
+					const err = await resp.json()
+					throw (err as any).message
+				}
 				const respJson: GetSignatureResponse = await resp.clone().json()
 				const tx = await mintContract.signedMint(assetExternalTokenID, respJson.messageSignature, respJson.expiry)
 				await tx.wait()
@@ -71,6 +75,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				onClose()
 			} catch (e: any) {
 				const err = metamaskErrorHandling(e)
+				console.error(err)
 				err ? setErrorMinting(err) : setErrorMinting("Issue minting, please try again or contact support.")
 			} finally {
 				setLoadingMint(false)
@@ -121,12 +126,8 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 						GABS WARNING:
 					</Typography>
 					<Typography marginBottom=".5rem">
-						Once you start the transition of your asset to off world it will cease to be usable until either:
+						Once you start the transition your asset off world it will be locked for the next five minutes to prepare for transport.
 					</Typography>
-					<Box component="ul" margin={0}>
-						<li>The fee is paid and the process is completed where we will revoke access until re-staked </li>
-						<li>The fee to cancel the transition is complete</li>
-					</Box>
 				</DialogContent>
 			)}
 
@@ -155,8 +156,8 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 						Switch Network
 					</FancyButton>
 				)}
+				{errorMinting && <Typography sx={{ marginTop: "1rem", color: colors.supremacy.red }}>{errorMinting}</Typography>}
 			</DialogActions>
-			{errorMinting && <Alert severity="error">{errorMinting}</Alert>}
 		</Dialog>
 	)
 }

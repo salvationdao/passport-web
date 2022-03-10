@@ -18,6 +18,7 @@ import {
 	Typography,
 	useMediaQuery,
 } from "@mui/material"
+import isFuture from "date-fns/isFuture"
 import { ethers } from "ethers"
 import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -230,6 +231,9 @@ export const AssetView = ({ user, assetHash }: AssetViewProps) => {
 			</Paper>
 		)
 	}
+
+	console.log("on chain status", purchasedItem.on_chain_status)
+	console.log("is unlocked in the future: ", isFuture(purchasedItem.unlocked_at))
 
 	return (
 		<>

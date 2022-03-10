@@ -26,7 +26,6 @@ export interface PurchasedItemResponse {
 	collection_slug: string
 	purchased_item: PurchasedItem
 	owner_username: string
-	item_on_chain_transactions: ItemOnchainTransaction[]
 }
 export interface ItemOnchainTransaction {}
 export interface PurchasedItem {
@@ -39,12 +38,19 @@ export interface PurchasedItem {
 	hash: string
 	owner_id: string
 	data: MechContainer
-	unlocked_at: string
-	minted_at: string
-	deleted_at: string
-	refreshes_at: string
-	updated_at: string
-	created_at: string
+	on_chain_status: OnChainStatus
+	unlocked_at: Date
+	minted_at: Date
+	deleted_at: Date
+	refreshes_at: Date
+	updated_at: Date
+	created_at: Date
+}
+
+export enum OnChainStatus {
+	MINTABLE = "MINTABLE",
+	STAKABLE = "STAKABLE",
+	UNSTAKABLE = "UNSTAKABLE",
 }
 
 export interface MechContainer {
