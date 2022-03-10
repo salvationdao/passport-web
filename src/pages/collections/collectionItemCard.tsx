@@ -116,12 +116,12 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 					sx={{
 						width: "100%",
 						marginBottom: ".3rem",
-						visibility: item.data.mech.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
-						opacity: item.data.mech.animation_url ? (showPreview ? 0 : 1) : "visible",
+						visibility: item.data.mech.card_animation_url ? (showPreview ? "hidden" : "visible") : "visible",
+						opacity: item.data.mech.card_animation_url ? (showPreview ? 0 : 1) : "visible",
 						transition: "all .2s ease-in",
 					}}
 				/>
-				{item.data.mech.animation_url && (
+				{item.data.mech.card_animation_url && (
 					<Box
 						component="video"
 						sx={{
@@ -139,7 +139,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 						loop
 						tabIndex={-1}
 					>
-						<source src={item.data.mech.animation_url} type="video/webm"></source>
+						<source src={item.data.mech.card_animation_url} type="video/webm"></source>
 					</Box>
 				)}
 			</Box>

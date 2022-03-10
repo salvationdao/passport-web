@@ -122,12 +122,12 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 						sx={{
 							width: "100%",
 							marginBottom: ".3rem",
-							visibility: item.data.template.animation_url ? (showPreview ? "hidden" : "visible") : "visible",
-							opacity: item.data.template.animation_url ? (showPreview ? 0 : 1) : "visible",
+							visibility: item.data.template.card_animation_url ? (showPreview ? "hidden" : "visible") : "visible",
+							opacity: item.data.template.card_animation_url ? (showPreview ? 0 : 1) : "visible",
 							transition: "all .2s ease-in",
 						}}
 					/>
-					{item.data.template.animation_url && (
+					{item.data.template.card_animation_url && (
 						<Box
 							component="video"
 							sx={{
@@ -146,7 +146,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 							tabIndex={-1}
 							poster={item.data.template.image_url}
 						>
-							<source src={item.data.template.animation_url} type="video/webm"></source>
+							<source src={item.data.template.card_animation_url} type="video/webm"></source>
 							<img src={item.data.template.image_url} alt="Mech" />
 						</Box>
 					)}

@@ -158,7 +158,7 @@ export interface Attribute {
 // 	description: string
 // 	image: string
 // 	image_avatar: string
-// 	animation_url: string
+// 	card_animation_url: string
 // 	attributes: Attribute[]
 // 	usd_cent_cost: number
 // 	amount_sold: number

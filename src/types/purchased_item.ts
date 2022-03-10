@@ -70,7 +70,7 @@ export interface Mech {
 	tier: string
 	is_default: boolean
 	image_url: string
-	animation_url: string
+	card_animation_url: string
 	avatar_url: string
 	hash: string
 	name: string
