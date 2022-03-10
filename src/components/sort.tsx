@@ -190,14 +190,15 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 		const attributeFilterItems: any[] = []
 		if (assetType && assetType !== "All") {
 			attributeFilterItems.push({
-				trait: "Asset Type",
+				trait: "asset_type",
 				value: assetType,
 				operatorValue: "contains",
 			})
 		}
 		rarities.forEach((v) =>
 			attributeFilterItems.push({
-				trait: "Rarity",
+				// NOTE: "rarity" trait is now "tier" on the backend
+				trait: "tier",
 				value: v,
 				operatorValue: "contains",
 			}),
@@ -206,7 +207,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 		if (showOffWorldOnly) {
 			offWorldQuery({
 				username,
-				attributeFilter: {
+				attribute_filter: {
 					linkOperator: "and",
 					items: attributeFilterItems,
 				},
@@ -214,7 +215,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 		} else {
 			query({
 				search,
-				attributeFilter: {
+				attribute_filter: {
 					linkOperator: "or",
 					items: attributeFilterItems,
 				},

@@ -42,6 +42,10 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 		return subscribe<PurchasedItemResponse>(
 			HubKey.AssetUpdated,
 			(payload) => {
+				if (!payload || !payload.purchased_item) {
+					setNoAsset(true)
+					return
+				}
 				setItem(payload.purchased_item)
 				setOwnerUsername(payload.owner_username)
 			},

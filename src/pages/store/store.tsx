@@ -30,8 +30,6 @@ export const StorePage: React.FC = () => {
 	const { loading: queryLoading, error, payload, query } = useQuery<{ total: number; store_item_ids: string[] }>(HubKey.StoreList, false)
 	const [tabLoading, setTabLoading] = useState(true)
 
-	const [canEnter, setCanEnter] = useState(true)
-
 	// search and filter
 	const [search, setSearch] = useState("")
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
@@ -85,7 +83,6 @@ export const StorePage: React.FC = () => {
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !collection) return
-
 		const filtersItems: any[] = []
 
 		if (collection && collection.id) {
@@ -277,7 +274,7 @@ export const StorePage: React.FC = () => {
 	)
 	return (
 		<>
-			{!isWiderThan1000px && canEnter && (
+			{!isWiderThan1000px && (
 				<SwipeableDrawer
 					open={openFilterDrawer}
 					onClose={() => setOpenFilterDrawer(false)}
@@ -473,7 +470,7 @@ export const StorePage: React.FC = () => {
 									</Box>
 								</Collapse>
 							)}
-							{!loading && canEnter && (storeItemIDs.length || showLootBox) ? (
+							{!loading && (storeItemIDs.length || showLootBox) ? (
 								<Paper
 									sx={{
 										flex: 1,

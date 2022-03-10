@@ -11,7 +11,7 @@ import {
 	Typography,
 	useMediaQuery,
 	useTheme,
-	Zoom
+	Zoom,
 } from "@mui/material"
 import { useEffect, useState } from "react"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"

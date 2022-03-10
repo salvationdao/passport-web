@@ -14,11 +14,11 @@ export const PurchasedItemAttributes = (purchasedItem: PurchasedItem): Attribute
 	result.push({ display_type: "number", trait_type: "Turret Hardpoints", value: purchasedItem.data.chassis.turret_hardpoints })
 	result.push({ display_type: "number", trait_type: "Utility Slots", value: purchasedItem.data.chassis.utility_slots })
 	result.push({ display_type: "number", trait_type: "Shield Recharge Rate", value: purchasedItem.data.chassis.shield_recharge_rate })
-	if (purchasedItem.data.weapons["0"]) result.push({ trait_type: "Weapon One", value: purchasedItem.data.weapons["0"].label })
-	if (purchasedItem.data.weapons["1"]) result.push({ trait_type: "Weapon Two", value: purchasedItem.data.weapons["1"].label })
+	if (purchasedItem.data.weapons && purchasedItem.data.weapons["0"]) result.push({ trait_type: "Weapon One", value: purchasedItem.data.weapons["0"].label })
+	if (purchasedItem.data.weapons && purchasedItem.data.weapons["1"]) result.push({ trait_type: "Weapon Two", value: purchasedItem.data.weapons["1"].label })
 	if (purchasedItem.data.turrets && purchasedItem.data.turrets["0"]) result.push({ trait_type: "Turret One", value: purchasedItem.data.turrets["0"].label })
 	if (purchasedItem.data.turrets && purchasedItem.data.turrets["1"]) result.push({ trait_type: "Turret Two", value: purchasedItem.data.turrets["1"].label })
-	if (purchasedItem.data.modules["0"]) result.push({ trait_type: "Utility One", value: purchasedItem.data.modules["0"].label })
+	if (purchasedItem.data.modules && purchasedItem.data.modules["0"]) result.push({ trait_type: "Utility One", value: purchasedItem.data.modules["0"].label })
 	return result
 }
 

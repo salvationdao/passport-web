@@ -193,13 +193,11 @@ export const AuthContainer = createContainer(() => {
 			const acc = await connect()
 			const signature = await sign()
 			if (acc) {
-				console.log({ acc })
 				const resp: PasswordLoginResponse = await send<PasswordLoginResponse, WalletLoginRequest>(HubKey.AuthLoginWallet, {
 					public_address: acc,
 					signature: signature,
 					session_id: sessionId,
 				})
-				console.log({ resp })
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
 					setUser(undefined)

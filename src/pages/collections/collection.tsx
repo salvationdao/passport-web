@@ -28,7 +28,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	const history = useHistory()
 	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
-	const { loading, error, payload, query } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error, payload } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
 	const {
 		loading: offWorldLoading,
 		error: offWorldError,
@@ -42,13 +42,11 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 	useEffect(() => {
 		if (!payload || loading || error) return
-
 		setAssetHashes(payload.asset_hashes)
 	}, [payload, loading, error])
 
 	useEffect(() => {
 		if (!offWorldPayload || offWorldLoading || offWorldError) return
-
 		setAssetHashes(Array.from(new Set(offWorldPayload.asset_hashes)))
 	}, [offWorldPayload, offWorldLoading, offWorldError])
 
