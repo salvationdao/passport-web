@@ -103,14 +103,14 @@ export const StorePage: React.FC = () => {
 		const attributeFilterItems: any[] = []
 		if (assetType && assetType !== "All") {
 			attributeFilterItems.push({
-				trait: "Asset Type",
+				trait: "asset_type",
 				value: assetType,
 				operatorValue: "contains",
 			})
 		}
 		rarities.forEach((v) =>
 			attributeFilterItems.push({
-				trait: "Rarity",
+				trait: "tier",
 				value: v,
 				operatorValue: "contains",
 			}),
@@ -118,8 +118,8 @@ export const StorePage: React.FC = () => {
 
 		query({
 			search,
-			attributeFilter: {
-				linkOperator: "or",
+			attribute_filter: {
+				linkOperator: assetType && assetType !== "All" ? "and" : "or",
 				items: attributeFilterItems,
 			},
 			filter: {
@@ -272,6 +272,7 @@ export const StorePage: React.FC = () => {
 			</Box>
 		</>
 	)
+
 	return (
 		<>
 			{!isWiderThan1000px && (

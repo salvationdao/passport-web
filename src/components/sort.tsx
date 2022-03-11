@@ -210,7 +210,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 		query({
 			search,
 			attribute_filter: {
-				linkOperator: "or",
+				linkOperator: assetType && assetType !== "All" ? "and" : "or",
 				items: attributeFilterItems,
 			},
 			filter: {
