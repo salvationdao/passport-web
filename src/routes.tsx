@@ -32,10 +32,12 @@ import { TransactionsPage } from "./pages/transactions/transactions"
 import { DepositPage } from "./pages/deposit/depositPage"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
+import { useWeb3 } from "./containers/web3"
 
 export const Routes = () => {
 	const { setSessionID, user, loading: authLoading } = useAuth()
 	const { state } = useWebsocket()
+	const { account } = useWeb3()
 	const { setSidebarOpen } = useSidebarState()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
 	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
@@ -234,7 +236,7 @@ export const Routes = () => {
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
-			{user && <CorrectWalletConnected />}
+			{user && account && <CorrectWalletConnected />}
 		</Box>
 	)
 }
