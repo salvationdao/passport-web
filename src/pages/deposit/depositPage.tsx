@@ -1,5 +1,7 @@
 import { Box, Paper, Typography } from "@mui/material"
-import React, { useState } from "react"
+import { BigNumber } from "ethers"
+import { formatUnits, parseUnits } from "ethers/lib/utils"
+import React, { useEffect, useState } from "react"
 import Coin from "../../assets/images/gradient/coin.png"
 import { DepositSups } from "../../components/depositSups"
 import { GradientCircleThing } from "../../components/home/gradientCircleThing"
@@ -7,22 +9,40 @@ import { Navbar } from "../../components/home/navbar"
 import { ConnectWalletOverlay } from "../../components/transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
+import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
 import { transferStateType } from "../../types/types"
 
+interface CanEnterResponse {
+	can_withdraw: boolean
+}
+
 export const DepositPage = () => {
+	useEffect(() => {
+		try {
+			;(async () => {
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/check`)
+				const body = (await resp.clone().json()) as CanEnterResponse
+				if (body.can_withdraw) {
+					setCurrentTransferState("none")
+					return
+				}
+			})()
+		} catch (e) {
+			console.error(e)
+		}
+	}, [])
 	const { account } = useWeb3()
 	const { user } = useAuth()
 
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 
-	//TODO: set this transferstate to "none" when depositSUPs functionality becomes available
 	const [currentTransferState, setCurrentTransferState] = useState<transferStateType>("unavailable")
 	const [loading, setLoading] = useState<boolean>(false)
 	const [error, setError] = useState<string>("")
-	const [depositAmount, setDepositAmount] = useState<string>()
+	const [depositAmount, setDepositAmount] = useState<BigNumber>(BigNumber.from("0"))
 
 	return (
 		<div>
@@ -71,9 +91,9 @@ export const DepositPage = () => {
 						currentTransferState={currentTransferState}
 						setCurrentTransferState={setCurrentTransferState}
 						currentTransferHash={currentTransferHash}
-						confirmationMessage={`Depositing ${depositAmount} $SUPS from wallet address: ${account ? AddressDisplay(account) : null} to ${
-							user?.username
-						}.`}
+						confirmationMessage={`Depositing ${formatUnits(depositAmount, 18)} $SUPS from wallet address: ${
+							account ? AddressDisplay(account) : null
+						} to ${user && user.username}.`}
 						error={error}
 						loading={loading}
 					/>
