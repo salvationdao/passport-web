@@ -6,7 +6,6 @@ import { SocketState, WSSendFn } from "../containers/socket"
 import { transferStateType, User } from "../types/types"
 import { EarlyContributorSignMessage } from "./earlyContributorSignMessage"
 import { EarlySaftAgreement } from "./earlySaftAgreement"
-import { GradientCircleThing } from "./home/gradientCircleThing"
 import { Loading } from "./loading"
 import { WithdrawSupsForm } from "./withdrawSupsForm"
 
@@ -70,17 +69,13 @@ export const WithdrawSups = ({
 			setReadAgreement(body.has_signed)
 			setLoadingEarlyCheck(false)
 		})()
-	}, [])
+	}, [user?.public_address])
 
-	const ShowComponents = () => {
+	useEffect(() => {
 		setShowUserDisagree(!agreed && isEarly && signed)
 		setShowSignMessage(!signed && isEarly && readAgreement)
 		setShowWithdrawSupsForm(signed && agreed)
 		setShowAgreement(!signed && !readAgreement)
-	}
-
-	useEffect(() => {
-		ShowComponents()
 	}, [agreed, isEarly, signed, readAgreement])
 
 	if (loadingEarlyCheck) return <Loading text="Loading User Data" />

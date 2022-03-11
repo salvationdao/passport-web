@@ -92,7 +92,7 @@ export const WithdrawSupsForm = ({
 		} catch (error) {
 			console.log(error)
 		}
-	}, [])
+	}, [user?.public_address])
 
 	useEffect(() => {
 		if (userSups) {
@@ -111,10 +111,6 @@ export const WithdrawSupsForm = ({
 	}, [xsynSups, supBalance])
 
 	useEffect(() => {
-		handleTotalAmount()
-	}, [withdrawAmount, xsynSups])
-
-	const handleTotalAmount = () => {
 		if (xsynSups === undefined || supBalance === undefined) return
 		if (withdrawAmount && xsynSups && supBalance) {
 			const totalAccountSups = xsynSups.sub(withdrawAmount)
@@ -130,7 +126,7 @@ export const WithdrawSupsForm = ({
 			return
 		}
 		setSupsWalletTotal(undefined)
-	}
+	}, [withdrawAmount, xsynSups, supBalance])
 
 	// check balance on frontend
 	useEffect(() => {
@@ -167,7 +163,7 @@ export const WithdrawSupsForm = ({
 			}
 		}
 		setImmediateError(undefined)
-	}, [withdrawAmount, supBalance, withdrawContractAmount, earlyLimit])
+	}, [withdrawAmount, supBalance, withdrawContractAmount, earlyLimit, xsynSups, isInfinite])
 
 	const withDrawAttempt = useCallback(async () => {
 		if (!user || !user.public_address || user.public_address === "" || state !== SocketState.OPEN) return
@@ -181,7 +177,7 @@ export const WithdrawSupsForm = ({
 			!!message ? setError(message) : setError("Issue withdrawing, please try again.")
 			setCurrentTransferState("error")
 		}
-	}, [signer, send, state, withdrawAmount, user])
+	}, [signer, send, state, withdrawAmount, user, setCurrentTransferState, setError])
 
 	const withdrawAttemptSignature = useCallback(async () => {
 		setLoading(true)
@@ -211,7 +207,8 @@ export const WithdrawSupsForm = ({
 				})
 				.catch((e) => {
 					setCurrentTransferState("error")
-					setError("Failed to get signature")
+					const message = metamaskErrorHandling(e)
+					!!message ? setError(message) : setError("Issue withdrawing, please try again.")
 				})
 		} catch (e: any) {
 			setCurrentTransferState("error")
@@ -220,7 +217,7 @@ export const WithdrawSupsForm = ({
 		} finally {
 			setLoading(false)
 		}
-	}, [signer, account, withdrawAmount])
+	}, [signer, account, withdrawAmount, setCurrentTransferHash, setCurrentTransferState, setError, setLoading, setWithdrawAmount])
 
 	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
 	useEffect(() => {
@@ -244,7 +241,7 @@ export const WithdrawSupsForm = ({
 				!!message ? displayMessage(message) : displayMessage(e === "string" ? e : "Issue getting withdraw contract balance , please try again.")
 			}
 		})()
-	}, [provider])
+	}, [provider, displayMessage])
 
 	useEffect(() => {
 		if (withdrawContractAmount && earlyLimit && !limitSet) {
@@ -259,7 +256,7 @@ export const WithdrawSupsForm = ({
 			setLimitSet(true)
 			console.log(earlyLimit?.toString())
 		}
-	}, [earlyLimit, withdrawContractAmount])
+	}, [earlyLimit, withdrawContractAmount, limitSet])
 
 	return (
 		<>

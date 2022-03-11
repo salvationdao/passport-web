@@ -8,11 +8,6 @@ interface EarlyContributorModalProps {
 	signedSAFT: () => Promise<boolean | "" | undefined>
 }
 
-interface GetSignatureResponse {
-	messageSignature: string
-	expiry: number
-}
-
 export const EarlyContributorModal = ({ open, onClose, signedSAFT }: EarlyContributorModalProps) => {
 	return (
 		<Dialog open={open} onClose={onClose} maxWidth={"xl"}>

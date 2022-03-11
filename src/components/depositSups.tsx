@@ -1,6 +1,6 @@
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import { Box, Button, TextField, Typography } from "@mui/material"
-import { BigNumber, ethers } from "ethers"
+import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
@@ -56,10 +56,6 @@ export const DepositSups = ({
 	}, [userSups])
 
 	useEffect(() => {
-		handleTotalAmount()
-	}, [depositAmount, xsynSups])
-
-	const handleTotalAmount = () => {
 		if (!depositAmount) return
 
 		const bigNumDepositAmt = depositAmount
@@ -77,7 +73,7 @@ export const DepositSups = ({
 			return
 		}
 		setSupsTotal(BigNumber.from(0))
-	}
+	}, [depositAmount, xsynSups])
 
 	async function handleDeposit() {
 		setLoading(true)
@@ -107,7 +103,7 @@ export const DepositSups = ({
 				setImmediateError("Deposit amount above max value")
 			}
 		}
-	}, [depositAmount])
+	}, [depositAmount, setImmediateError, supBalance])
 
 	return (
 		<Box sx={{ width: "80%", minWidth: "300px" }}>

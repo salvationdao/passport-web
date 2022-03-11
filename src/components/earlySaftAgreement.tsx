@@ -1,6 +1,6 @@
 import { styled, Typography } from "@mui/material"
-import { Box, useTheme } from "@mui/system"
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import { Box } from "@mui/system"
+import React from "react"
 import { SAFT_AGREEMENT_PDF } from "../config"
 import { colors } from "../theme"
 import { FancyButton } from "./fancyButton"

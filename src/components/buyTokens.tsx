@@ -68,14 +68,6 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		}
 	}, [currentToken])
 
-	useEffect(() => {
-		if (supsAmt.gte(amountRemaining)) {
-			handleConversions("supsToTokens", amountRemaining)
-			setSupsAmt(amountRemaining)
-			setSupsDisplay(formatUnits(amountRemaining, 18))
-		}
-	}, [supsAmt])
-
 	const handleConversions = useCallback(
 		(direction: conversionType, value: BigNumber) => {
 			if (value.toString() === "") {
@@ -110,7 +102,9 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 					case "bnb":
 						switch (direction) {
 							case "tokensToSups":
-								const sups = value.mul(parseUnits(exchangeRates.BNBtoUSD.toString(), 18)).div(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
+								const sups = value
+									.mul(parseUnits(exchangeRates.bnb_to_usd.toString(), 18))
+									.div(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
 								setSupsAmt(BigNumber.from(sups))
 								setSupsDisplay(parseFloat(formatUnits(sups, 18)).toFixed(2))
 								setTokenAmt(value)
@@ -118,8 +112,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 								break
 							case "supsToTokens":
 								const tokens = value
-									.mul(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
-									.div(parseUnits(exchangeRates.BNBtoUSD.toString(), 18))
+									.mul(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
+									.div(parseUnits(exchangeRates.bnb_to_usd.toString(), 18))
 								setTokenAmt(BigNumber.from(tokens))
 								setTokenDisplay(parseFloat(formatUnits(tokens, tokenDecimals)).toString())
 								setSupsAmt(value)
@@ -131,8 +125,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						switch (direction) {
 							case "tokensToSups":
 								const sups = value
-									.mul(parseUnits(exchangeRates.ETHtoUSD.toString(), tokenDecimals))
-									.div(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
+									.mul(parseUnits(exchangeRates.eth_to_usd.toString(), tokenDecimals))
+									.div(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
 								setSupsAmt(BigNumber.from(sups))
 								setSupsDisplay(parseFloat(formatUnits(sups, 18)).toFixed(2))
 								setTokenAmt(value)
@@ -140,8 +134,8 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 								break
 							case "supsToTokens":
 								const tokens = value
-									.mul(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
-									.div(parseUnits(exchangeRates.ETHtoUSD.toString(), tokenDecimals))
+									.mul(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
+									.div(parseUnits(exchangeRates.eth_to_usd.toString(), tokenDecimals))
 								setTokenAmt(BigNumber.from(tokens))
 								setTokenDisplay(parseFloat(formatUnits(tokens, tokenDecimals)).toString())
 								setSupsAmt(value)
@@ -153,14 +147,14 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 			} else if (exchangeRates) {
 				switch (direction) {
 					case "tokensToSups":
-						const sups = parseUnits(value.div(parseUnits(exchangeRates.SUPtoUSD.toString(), 18)).toString(), 18)
+						const sups = parseUnits(value.div(parseUnits(exchangeRates.sup_to_usd.toString(), 18)).toString(), 18)
 						setSupsAmt(sups)
 						setSupsDisplay(parseFloat(formatUnits(sups, 18)).toFixed(2))
 						setTokenAmt(value)
 						setTokenDisplay(formatUnits(value, tokenDecimals))
 						break
 					case "supsToTokens":
-						const tokens = value.mul(parseUnits(exchangeRates.SUPtoUSD.toString(), 18))
+						const tokens = value.mul(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
 						setTokenAmt(tokens)
 						setTokenDisplay(parseFloat(formatUnits(tokens, tokenDecimals)).toFixed(2))
 						setSupsAmt(value)
@@ -171,6 +165,14 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		},
 		[currentToken, exchangeRates, tokenDecimals],
 	)
+
+	useEffect(() => {
+		if (supsAmt.gte(amountRemaining)) {
+			handleConversions("supsToTokens", amountRemaining)
+			setSupsAmt(amountRemaining)
+			setSupsDisplay(formatUnits(amountRemaining, 18))
+		}
+	}, [supsAmt, amountRemaining, setSupsAmt, setSupsDisplay, handleConversions])
 
 	// // handles network switch and default network token name
 	useEffect(() => {
@@ -188,8 +190,10 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 					setCurrentToken(busdToken)
 					return
 				}
-				setCurrentToken(filteredChain[0])
-				return
+				if (currentToken.networkName === "Binance") {
+					setCurrentToken(filteredChain[0])
+					return
+				}
 			}
 
 			const newToken = tokenOptions.find((el) => {
@@ -204,18 +208,18 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 		} else {
 			setCurrentToken(tokenOptions[0])
 		}
-	}, [currentChainId, acceptedChainExceptions, setCurrentToken, tokenOptions])
+	}, [currentChainId, acceptedChainExceptions, setCurrentToken, tokenOptions, currentToken])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
 		return subscribe<ExchangeRates>(HubKey.SupExchangeRates, (rates) => {
 			if (rates)
-				if (rates.BNBtoUSD === 0 || rates.ETHtoUSD === 0 || rates.SUPtoUSD === 0) {
+				if (rates.bnb_to_usd === 0 || rates.eth_to_usd === 0 || rates.sup_to_usd === 0) {
 					return
 				}
 			setExchangeRates(rates)
 		})
-	}, [state])
+	}, [state, subscribe])
 
 	const handleNetworkSwitch = async () => {
 		await changeChain(currentToken.chainId)

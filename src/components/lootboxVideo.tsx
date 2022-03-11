@@ -1,5 +1,5 @@
 import { Box, Button, Fade, styled } from "@mui/material"
-import React, { useCallback, useEffect } from "react"
+import React, { useEffect } from "react"
 
 interface VideoProps {
 	srcURL: string
@@ -10,11 +10,11 @@ interface VideoProps {
 }
 
 const LootboxVideo: React.FC<VideoProps> = ({ srcURL, setOpen, open, setDialogOpen, setSidebarOpen }) => {
-	const videoURL = {
-		"98bf7bb3-1a7c-4f21-8843-458d62884060": "",
-		"7c6dde21-b067-46cf-9e56-155c88a520e2": "",
-		"880db344-e405-428d-84e5-6ebebab1fe6d": "",
-	}
+	// const videoURL = {
+	// 	"98bf7bb3-1a7c-4f21-8843-458d62884060": "",
+	// 	"7c6dde21-b067-46cf-9e56-155c88a520e2": "",
+	// 	"880db344-e405-428d-84e5-6ebebab1fe6d": "",
+	// }
 
 	useEffect(() => {
 		const fallback = setTimeout(() => {
@@ -24,7 +24,7 @@ const LootboxVideo: React.FC<VideoProps> = ({ srcURL, setOpen, open, setDialogOp
 			}
 		}, 10000)
 		return clearTimeout(fallback)
-	}, [open])
+	}, [open, setDialogOpen, setOpen])
 
 	return (
 		<Fade in={open} appear={false} timeout={1000}>

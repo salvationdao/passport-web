@@ -1,4 +1,3 @@
-import { useMediaQuery } from "@mui/material"
 import { useState } from "react"
 import { createContainer } from "unstated-next"
 

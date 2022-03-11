@@ -47,7 +47,7 @@ export const Routes = () => {
 	useEffect(() => {
 		if (mobileScreen) setSidebarOpen(false)
 		else setSidebarOpen(true)
-	}, [mobileScreen])
+	}, [mobileScreen, setSidebarOpen])
 
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
@@ -59,7 +59,7 @@ export const Routes = () => {
 			return
 		}
 		setSidebarOpen(true)
-	}, [authLoading])
+	}, [authLoading, setSidebarOpen])
 
 	useEffect(() => {
 		try {

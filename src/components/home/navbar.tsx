@@ -1,11 +1,10 @@
 import { LoadingButton } from "@mui/lab"
 import { Avatar, Box, BoxProps, IconButton, IconButtonProps, SxProps, Theme, useMediaQuery } from "@mui/material"
-import React, { useState } from "react"
+import React from "react"
 import { Link, useHistory } from "react-router-dom"
 import { XSYNLogoImagePath } from "../../assets"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { AuthContainer } from "../../containers"
-import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 
 interface NavbarProps extends BoxProps {}
@@ -45,28 +44,28 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 	)
 }
 
-const RenderFaction = (size: string) => {
-	const { user } = useAuth()
-	if (user?.faction) {
-		return (
-			<Box
-				sx={{
-					height: size,
-					width: size,
-					marginRight: ".5rem",
-					flexShrink: 0,
-					backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id})`,
-					backgroundRepeat: "no-repeat",
-					backgroundPosition: "center",
-					backgroundSize: "contain",
-					backgroundColor: user.faction.theme.primary,
-					borderRadius: "50%",
-					border: `${user.faction.theme.primary} 1px solid`,
-				}}
-			/>
-		)
-	}
-}
+// const RenderFaction = (size: string) => {
+// 	const { user } = useAuth()
+// 	if (user?.faction) {
+// 		return (
+// 			<Box
+// 				sx={{
+// 					height: size,
+// 					width: size,
+// 					marginRight: ".5rem",
+// 					flexShrink: 0,
+// 					backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id})`,
+// 					backgroundRepeat: "no-repeat",
+// 					backgroundPosition: "center",
+// 					backgroundSize: "contain",
+// 					backgroundColor: user.faction.theme.primary,
+// 					borderRadius: "50%",
+// 					border: `${user.faction.theme.primary} 1px solid`,
+// 				}}
+// 			/>
+// 		)
+// 	}
+// }
 
 interface ProfileButtonProps extends Omit<IconButtonProps, "size"> {
 	size?: string

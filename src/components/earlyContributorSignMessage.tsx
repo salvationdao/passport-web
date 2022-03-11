@@ -1,4 +1,4 @@
-import { Box, Checkbox, Input, InputLabel, Typography, useTheme } from "@mui/material"
+import { Box, Checkbox, Input, InputLabel, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useWeb3 } from "../containers/web3"
 import { EarlyContributorModal } from "./earlyContributorModal"
@@ -11,7 +11,6 @@ interface EarlyContributorProps {
 }
 
 export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ setSigned, setAgreed }) => {
-	const theme = useTheme()
 	const { signEarlyContributors, wcProvider } = useWeb3()
 	const [canSign, setCanSign] = useState(false)
 	const [email, setEmail] = useState<string>()
@@ -22,7 +21,7 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 	const [showModal, setShowModal] = useState<boolean>(false)
 	const [checked, setChecked] = useState<boolean>(false)
 	const [wcLoading, setWcLoading] = useState<boolean>(false)
-	const [currentDay, setCurrentDay] = useState<Date>(new Date())
+	//const [currentDay, setCurrentDay] = useState<Date>(new Date())
 
 	useEffect(() => {
 		if (agree || decline) {
@@ -59,10 +58,9 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 	}
 
 	const emailOnChange = (email: string) => {
-		let re =
-			/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+		const atIndex = email.indexOf("@")
 
-		if (re.test(email)) {
+		if (atIndex >= 1 && email.length >= 5) {
 			setEmail(email)
 			setCanSign(true)
 		} else {
@@ -145,9 +143,9 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 							}}
 						/>
 					</Box>
-					<Box>
+					{/* <Box>
 						<Typography variant="body1">Date: {currentDay && currentDay.toDateString()}</Typography>
-					</Box>
+					</Box> */}
 					<Box sx={{ display: "flex", width: "100%", justifyContent: "center", flexDirection: "column", gap: "0.5em" }}>
 						<Box sx={{ display: "flex", width: "100%", justifyContent: "center", flexDirection: "row", alignItems: "center" }}>
 							<Checkbox

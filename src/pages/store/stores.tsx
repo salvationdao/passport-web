@@ -25,7 +25,8 @@ export const StoresPage = () => {
 	const [loading, setLoading] = useState(false)
 	const [userLoad, setUserLoad] = useState(true)
 	const [canEnter, setCanEnter] = useState(false)
-	const [factionsData, setFactionsData] = useState<Faction[]>([])
+
+	//const [factionsData, setFactionsData] = useState<Faction[]>([])
 
 	useEffect(() => {
 		if (user) {
@@ -39,17 +40,17 @@ export const StoresPage = () => {
 		setUserLoad(false)
 	}, [userLoad, user])
 
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		;(async () => {
-			try {
-				const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
-				setFactionsData(resp)
-			} catch (e) {
-				setFactionsData([])
-			}
-		})()
-	}, [send, state])
+	// useEffect(() => {
+	// 	if (state !== SocketState.OPEN) return
+	// 	;(async () => {
+	// 		try {
+	// 			const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
+	// 			setFactionsData(resp)
+	// 		} catch (e) {
+	// 			setFactionsData([])
+	// 		}
+	// 	})()
+	// }, [send, state])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return

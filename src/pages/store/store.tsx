@@ -545,7 +545,7 @@ const BlackMarketCTA = ({ mint_contract }: { mint_contract: string }) => {
 				rel="noopener noreferrer"
 			>
 				Check out the black market.
-				<img src={OpenseaLogo} style={{ maxHeight: "100%" }} />
+				<img src={OpenseaLogo} style={{ maxHeight: "100%" }} alt="Open Sea logo" />
 			</Link>
 		</Box>
 	)

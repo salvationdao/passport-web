@@ -1,6 +1,6 @@
 import { Box, Paper, Typography } from "@mui/material"
 import { BigNumber } from "ethers"
-import { formatUnits, parseUnits } from "ethers/lib/utils"
+import { formatUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
 import Coin from "../../assets/images/gradient/coin.png"
 import { DepositSups } from "../../components/depositSups"

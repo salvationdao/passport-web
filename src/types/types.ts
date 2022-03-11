@@ -198,9 +198,9 @@ export interface WarMachineMetadata {
 }
 
 export interface ExchangeRates {
-	ETHtoUSD: number
-	BNBtoUSD: number
-	SUPtoUSD: number
+	eth_to_usd: number
+	bnb_to_usd: number
+	sup_to_usd: number
 }
 
 export type tokenName = "eth" | "usdc" | "bnb" | "busd"

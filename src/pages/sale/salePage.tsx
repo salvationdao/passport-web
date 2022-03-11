@@ -1,14 +1,11 @@
 import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material"
-import { BigNumber } from "ethers"
-import { formatUnits, parseUnits } from "ethers/lib/utils"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { formatUnits } from "ethers/lib/utils"
+import { useRef, useState } from "react"
 import { Helmet } from "react-helmet"
-import { useInterval } from "react-use"
 import { SupremacyTC } from "../../assets"
 import BWSupToken from "../../assets/images/BW-sup-token.png"
 import { BuyTokens } from "../../components/buyTokens"
 import { BackgroundVideo } from "../../components/supremacy/backgroundVideo"
-import { CountdownTimer } from "../../components/supremacy/countdownTimer"
 import { Loading } from "../../components/supremacy/loading"
 import { SupremacyNavbar } from "../../components/supremacy/navbar"
 import { WhiteListModal } from "../../components/supremacy/whiteListModal"
@@ -26,8 +23,8 @@ export const SalePage = () => {
 	const { account, checkNeoBalance, setLoadingAmountRemaining } = useWeb3()
 	const { amountRemaining } = useWeb3()
 	const { loadingAmountRemaining } = useWeb3()
-	const [disableSimulation, setDisableSimulation] = useState(true)
-	const [countdown, setCountdown] = useState<Date | undefined>()
+	//const [disableSimulation, setDisableSimulation] = useState(true)
+	//const [countdown, setCountdown] = useState<Date | undefined>()
 
 	// Game state
 	const [showGame, setShowGame] = useState(false)
@@ -43,27 +40,28 @@ export const SalePage = () => {
 
 	//  Fetch time for countdown
 	//  Check when to disable simulation
-	interface WhitelistTime {
-		time: Date
-		next_phase: "whitelist" | "death" | "public"
-	}
+	// interface WhitelistTime {
+	// 	time: Date
+	// 	next_phase: "whitelist" | "death" | "public"
+	// }
 
-	const fetchTime = useCallback(async () => {
-		try {
-			const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
-			const data = (await response.clone().json()) as WhitelistTime
-			// if (!["death", "alpha"].includes(data.next_phase)) setDisableSimulation(true)
+	// const fetchTime = useCallback(async () => {
+	// 	try {
+	// 		const response = await fetch("https://stories.supremacy.game/api/whitelist/time")
+	// 		const data = (await response.clone().json()) as WhitelistTime
+	// 		// if (!["death", "alpha"].includes(data.next_phase)) setDisableSimulation(true)
 
-			const endDate = new Date(data.time)
-			setCountdown(endDate)
-		} catch (err) {
-			console.error(err)
-			setCountdown(undefined)
-		}
-	}, [])
-	useEffect(() => {
-		;(async () => await fetchTime())()
-	}, [fetchTime])
+	// 		const endDate = new Date(data.time)
+	// 		setCountdown(endDate)
+	// 	} catch (err) {
+	// 		console.error(err)
+	// 		setCountdown(undefined)
+	// 	}
+	// }, [])
+
+	// useEffect(() => {
+	// 	;(async () => await fetchTime())()
+	// }, [fetchTime])
 
 	let progressAmount = 0
 	let amtRemainingStr = parseInt(formatUnits(amountRemaining, 18))
@@ -135,7 +133,10 @@ export const SalePage = () => {
 				<>
 					<Loading loading={loadingAmountRemaining} setLoading={setLoadingAmountRemaining} />
 					<SupremacyNavbar loading={loadingAmountRemaining} />
-					{!disableSimulation && <WhiteListModal open={showSimulation} setOpen={setShowSimulation} handleJoinBtn={handleJoinBtn} />}
+					{
+						//!disableSimulation &&
+						<WhiteListModal open={showSimulation} setOpen={setShowSimulation} handleJoinBtn={handleJoinBtn} />
+					}
 					<Box
 						sx={{
 							opacity: loadingAmountRemaining ? 0 : 1,

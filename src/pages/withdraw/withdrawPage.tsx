@@ -1,7 +1,7 @@
 import { Box, Paper } from "@mui/material"
 import { BigNumber } from "ethers"
+import { formatUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
-import { GradientCircleThing } from "../../components/home/gradientCircleThing"
 import { Navbar } from "../../components/home/navbar"
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
 import { WithdrawSups } from "../../components/withdrawSups"
@@ -9,6 +9,7 @@ import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { useWebsocket } from "../../containers/socket"
 import { useWeb3 } from "../../containers/web3"
+import { AddressDisplay } from "../../helpers/web3"
 import { transferStateType } from "../../types/types"
 
 interface CanEnterResponse {
@@ -23,7 +24,7 @@ export const WithdrawPage = () => {
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 
 	//TODO: set this transferstate to "none" when withdrawSUPs functionality becomes available
-	const [currentTransferState, setCurrentTransferState] = useState<transferStateType>("unavailable")
+	const [currentTransferState, setCurrentTransferState] = useState<transferStateType>("none")
 	const [loading, setLoading] = useState<boolean>(false)
 	const [error, setError] = useState<string>("")
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber>(BigNumber.from(0))
@@ -78,9 +79,9 @@ export const WithdrawPage = () => {
 						currentTransferState={currentTransferState}
 						setCurrentTransferState={setCurrentTransferState}
 						currentTransferHash={currentTransferHash}
-						confirmationMessage={`Withdrawing ${withdrawAmount ? withdrawAmount : "NONE"} $SUPS from users: ${
+						confirmationMessage={`Withdrawing ${withdrawAmount ? formatUnits(withdrawAmount) : "NONE"} $SUPS from users: ${
 							user?.username
-						} to wallet address: ${account}.`}
+						} to wallet address: ${account ? AddressDisplay(account) : null}.`}
 						error={error}
 						loading={loading}
 					/>
