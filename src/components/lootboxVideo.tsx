@@ -54,6 +54,7 @@ const LootboxVideo: React.FC<VideoProps> = ({ srcURL, setOpen, open, setDialogOp
 								onClick={() => {
 									setDialogOpen(true)
 									setOpen(false)
+									setSidebarOpen(true)
 								}}
 							>
 								Skip Video
