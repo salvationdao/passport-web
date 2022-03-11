@@ -37,8 +37,10 @@ export const BSC_SCAN_SITE = process.env.REACT_APP_BSC_SCAN_SITE || "testnet.bsc
 export const ETHEREUM_CHAIN_ID = process.env.REACT_APP_ETHEREUM_CHAIN_ID || "5"
 export const BINANCE_CHAIN_ID = process.env.REACT_APP_BINANCE_CHAIN_ID || "97"
 
-export const PURCHASE_ADDRESS = process.env.REACT_APP_PURCHASE_ADDRESS || "0x5591eBC09A89A8B11D9644eC1455e294Fd3BAbB5"
+export const PURCHASE_ADDRESS = process.env.REACT_APP_PURCHASE_ADDRESS || "0x7D6439fDF9B096b29b77afa28b3083c0a329c7fE"
 export const WITHDRAW_ADDRESS = process.env.REACT_APP_WITHDRAW_ADDRESS || "0x9DAcEA338E4DDd856B152Ce553C7540DF920Bb15"
 export const REDEEM_ADDRESS = process.env.REACT_APP_REDEEM_ADDRESS || "0xc01c2f6DD7cCd2B9F8DB9aa1Da9933edaBc5079E"
 
 export const WALLET_CONNECT_RPC = process.env.REACT_APP_WALLET_CONNECT_RPC || "1375aa321ac8ac6cfba6aa9c"
+
+export const SAFT_AGREEMENT_PDF = process.env.SAFT_AGREEMENT_PDF || "/09_03_22_Token_Subscription_Agreement_Wallet_Address_Signature_Sups.pdf"

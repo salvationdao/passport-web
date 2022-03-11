@@ -1,4 +1,4 @@
-import { Alert, Box, Snackbar } from "@mui/material"
+import { Alert, Box, Snackbar, useMediaQuery } from "@mui/material"
 import { useEffect, useState } from "react"
 import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom"
 import { BlockConfirmationSnackList } from "./components/blockConfirmationSnackList"
@@ -35,19 +35,22 @@ import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
 import { useWeb3 } from "./containers/web3"
 
 export const Routes = () => {
-	const { account } = useWeb3()
 	const { setSessionID, user, loading: authLoading } = useAuth()
 	const { state } = useWebsocket()
+	const { account } = useWeb3()
 	const { setSidebarOpen } = useSidebarState()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
 	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
 	const [loadingText, setLoadingText] = useState<string>()
 	const searchParams = new URLSearchParams(window.location.search)
 	const sessionID = searchParams.get("sessionID")
+	const mobileScreen = useMediaQuery("(max-width:1024px)")
 
-	/* Get subdomain name  */
-	// const parts = window.location.hostname.split(".")
-	// const sndleveldomain = parts.slice(-2).join(".")
+	useEffect(() => {
+		if (mobileScreen) setSidebarOpen(false)
+		else setSidebarOpen(true)
+	}, [mobileScreen, setSidebarOpen])
+
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
 	}, [sessionID, setSessionID])
@@ -57,7 +60,8 @@ export const Routes = () => {
 			setLoadingText("Loading...")
 			return
 		}
-	}, [authLoading])
+		setSidebarOpen(true)
+	}, [authLoading, setSidebarOpen])
 
 	useEffect(() => {
 		try {

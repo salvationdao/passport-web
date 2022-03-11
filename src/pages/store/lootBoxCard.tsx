@@ -1,15 +1,15 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, Typography, useTheme } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
+import SoldOut from "../../assets/images/SoldOutTrimmed.png"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { ViewButton } from "../collections/collectionItemCard"
-import SoldOut from "../../assets/images/SoldOutTrimmed.png"
 
 export const LootBoxCard: React.VoidFunctionComponent = () => {
 	const [imgURL, setImg] = useState("")
@@ -17,7 +17,6 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 	const { displayMessage } = useSnackbar()
 	const { user } = useAuth()
 	const history = useHistory()
-	const theme = useTheme()
 	const { send, state } = useWebsocket()
 
 	useEffect(() => {
@@ -52,7 +51,7 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 				displayMessage("Could not get amount of mystery crates left.", "error")
 			}
 		})()
-	}, [user, send, state])
+	}, [user, send, state, displayMessage])
 
 	return (
 		<Box

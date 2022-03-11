@@ -11,7 +11,6 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
 import { Box, Button, Divider, Drawer, Stack, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
-import { formatUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
@@ -20,7 +19,6 @@ import SupsTokenLogo from "../assets/images/sups-token-logo.png"
 import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK, TOKEN_SALE_ENDPOINT } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
-import { useSnackbar } from "../containers/snackbar"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
@@ -34,7 +32,7 @@ import { ProfileButton } from "./home/navbar"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 
-const drawerWidth = 250
+const drawerWidth = 260
 
 export interface SidebarLayoutProps {
 	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
@@ -44,7 +42,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const history = useHistory()
 	const { send, state } = useWebsocket()
 	const { sidebarOpen } = useSidebarState()
-	const { displayMessage } = useSnackbar()
 	const { user, logout } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -83,7 +80,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			return
 		}
 
-		if (supBalance) setWalletSups(formatUnits(supBalance, 18))
+		if (supBalance) setWalletSups(supBalance.toString())
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
@@ -598,7 +595,7 @@ const FactionWarMachineRemain = () => {
 									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{mega_amount}</Typography>
 								</Stack>
 								<Stack direction="row">
-									<Typography sx={{ fontWeight: "fontWeightBold" }}>Lootbox:&nbsp;</Typography>
+									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates:&nbsp;</Typography>
 									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{lootbox_amount}</Typography>
 								</Stack>
 							</Stack>

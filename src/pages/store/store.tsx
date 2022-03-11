@@ -103,14 +103,14 @@ export const StorePage: React.FC = () => {
 		const attributeFilterItems: any[] = []
 		if (assetType && assetType !== "All") {
 			attributeFilterItems.push({
-				trait: "Asset Type",
+				trait: "asset_type",
 				value: assetType,
 				operatorValue: "contains",
 			})
 		}
 		rarities.forEach((v) =>
 			attributeFilterItems.push({
-				trait: "Rarity",
+				trait: "tier",
 				value: v,
 				operatorValue: "contains",
 			}),
@@ -118,8 +118,8 @@ export const StorePage: React.FC = () => {
 
 		query({
 			search,
-			attributeFilter: {
-				linkOperator: "or",
+			attribute_filter: {
+				linkOperator: assetType && assetType !== "All" ? "and" : "or",
 				items: attributeFilterItems,
 			},
 			filter: {
@@ -272,6 +272,7 @@ export const StorePage: React.FC = () => {
 			</Box>
 		</>
 	)
+
 	return (
 		<>
 			{!isWiderThan1000px && (
@@ -513,12 +514,16 @@ export const StorePage: React.FC = () => {
 					</Box>
 				</Box>
 			</Box>
-			<BlackMarketCTA />
+			{collection && <BlackMarketCTA mint_contract={collection.mint_contract} />}
 		</>
 	)
 }
 
-const BlackMarketCTA = () => {
+const BlackMarketCTA = ({ mint_contract }: { mint_contract: string }) => {
+	const openseaURL =
+		mint_contract === "0xEEfaF47acaa803176F1711c1cE783e790E4E750D"
+			? `https://testnets.opensea.io/collection/supremacy-genesis-v4`
+			: `https://opensea.io/collection/supremacy-genesis`
 	return (
 		<Box
 			sx={{
@@ -535,12 +540,12 @@ const BlackMarketCTA = () => {
 				color={colors.white}
 				component={StyledFancyButton}
 				sx={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 2rem", height: "4rem" }}
-				href="https://opensea.io/collection/supremacy-genesis"
+				href={openseaURL}
 				target="_blank"
 				rel="noopener noreferrer"
 			>
 				Check out the black market.
-				<img src={OpenseaLogo} style={{ maxHeight: "100%" }} />
+				<img src={OpenseaLogo} style={{ maxHeight: "100%" }} alt="Open Sea logo" />
 			</Link>
 		</Box>
 	)

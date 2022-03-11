@@ -28,7 +28,6 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 	const [alphabetical, setAlphabetical] = useState<boolean>()
 	const [collection, setCollection] = useState<Collection>()
 	const [collections, setCollections] = useState<Collection[]>()
-	const [isLoading, setIsLoading] = useState(false)
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const { send, state } = useWebsocket()
@@ -106,14 +105,11 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
 		;(async () => {
-			setIsLoading(true)
 			try {
 				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
 				setCollections(resp.records)
 			} catch (e) {
 				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error")
-			} finally {
-				setIsLoading(false)
 			}
 		})()
 	}, [send, state, user, displayMessage])
@@ -121,14 +117,11 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
 		;(async () => {
-			setIsLoading(true)
 			try {
 				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
 				setCollections(resp.records)
 			} catch (e) {
 				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error")
-			} finally {
-				setIsLoading(false)
 			}
 		})()
 	}, [send, state, user, displayMessage])
@@ -210,7 +203,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 		query({
 			search,
 			attribute_filter: {
-				linkOperator: "or",
+				linkOperator: assetType && assetType !== "All" ? "and" : "or",
 				items: attributeFilterItems,
 			},
 			filter: {
@@ -225,7 +218,7 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 		if (!payload || loading || error) return
 
 		setAssetHashes(payload.asset_hashes)
-	}, [payload, loading, error])
+	}, [payload, loading, error, setAssetHashes])
 
 	const renderRarities = () => {
 		const rarityArray: string[] = []

@@ -77,7 +77,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			isProcessing,
 			metaMaskState,
 		}),
-		[click, isProcessing, metaMaskState],
+		[click, isProcessing, metaMaskState, errorMessage],
 	)
 
 	if (!render) {

@@ -18,7 +18,7 @@ import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
 import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
-import { AssetView, AssetViewContainer } from "./assetView"
+import { AssetViewContainer } from "./assetView"
 
 export const ProfilePage: React.FC = () => {
 	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()

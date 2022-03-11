@@ -5,18 +5,14 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, Paper, styled, Typography } from "@mui/material"
 import { User } from "@sentry/react"
 import React, { useEffect, useState } from "react"
-import { useMutation } from "react-fetching-library"
 import { useForm } from "react-hook-form"
 import { useHistory, useParams } from "react-router-dom"
 import { PrivacyPolicy, TermsAndConditions } from "../../assets"
 import { InputField } from "../../components/form/inputField"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
-import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
-import { fetching } from "../../fetching"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 
@@ -195,20 +191,18 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 	const token = localStorage.getItem("token")
 	const { user } = useAuth()
 	const { send } = useWebsocket()
-	const { displayMessage } = useSnackbar()
 	const history = useHistory()
 
 	// Setup form
-	const { control, handleSubmit, reset, watch, formState } = useForm<UserInput>()
+	const { control, handleSubmit, reset, formState } = useForm<UserInput>()
 	const { isDirty } = formState
-	const password = watch("new_password")
 
-	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
+	//const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
 	const [submitting, setSubmitting] = useState(false)
 	const [changePassword, setChangePassword] = useState(false)
 
-	const [avatar, setAvatar] = useState<File>()
-	const [avatarChanged, setAvatarChanged] = useState(false)
+	//const [avatar, setAvatar] = useState<File>()
+	//const [avatarChanged, setAvatarChanged] = useState(false)
 
 	const onSaveForm = handleSubmit(async (data) => {
 		if (!user) return
@@ -216,28 +210,28 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 		setSubmitting(true)
 		setNewUsername(new_username)
 		try {
-			let avatarID: string | undefined = user.avatar_id
-			if (avatarChanged) {
-				if (!!avatar) {
-					// Upload avatar
-					const r = await upload({ file: avatar, public: true })
-					if (r.error || !r.payload) {
-						displayMessage("Failed to upload image, please try again.", "error")
-						setSubmitting(false)
-						return
-					}
-					avatarID = r.payload.id
-				} else {
-					// Remove avatar
-					avatarID = undefined
-				}
-			}
+			// let avatarID: string | undefined = user.avatar_id
+			// if (avatarChanged) {
+			// 	if (!!avatar) {
+			// 		// Upload avatar
+			// 		const r = await upload({ file: avatar, public: true })
+			// 		if (r.error || !r.payload) {
+			// 			displayMessage("Failed to upload image, please try again.", "error")
+			// 			setSubmitting(false)
+			// 			return
+			// 		}
+			// 		avatarID = r.payload.id
+			// 	} else {
+			// 		// Remove avatar
+			// 		avatarID = undefined
+			// 	}
+			// }
 
 			const payload = {
 				...input,
 				new_username: user.username !== new_username ? new_username : undefined,
 				new_password: changePassword ? new_password : undefined,
-				avatar_id: avatarID,
+				//avatar_id: avatarID,
 			}
 
 			const resp = await send<User>(HubKey.UserUpdate, {
@@ -275,14 +269,14 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 	// 	}
 	// }, [user, send, displayMessage])
 
-	const onAvatarChange = (file?: File) => {
-		if (!avatarChanged) setAvatarChanged(true)
-		if (!file) {
-			setAvatar(undefined)
-		} else {
-			setAvatar(file)
-		}
-	}
+	// const onAvatarChange = (file?: File) => {
+	// 	if (!avatarChanged) setAvatarChanged(true)
+	// 	if (!file) {
+	// 		setAvatar(undefined)
+	// 	} else {
+	// 		setAvatar(file)
+	// 	}
+	// }
 
 	// Load defaults
 	useEffect(() => {
@@ -299,10 +293,10 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 		})
 
 		// Get avatar as file
-		if (!!user.avatar_id)
-			fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.avatar_id}?token=${encodeURIComponent(token || "")}`).then((r) =>
-				r.blob().then((b) => setAvatar(new File([b], "avatar.jpg", { type: b.type }))),
-			)
+		// if (!!user.avatar_id)
+		// 	fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.avatar_id}?token=${encodeURIComponent(token || "")}`).then((r) =>
+		// 		r.blob().then((b) => setAvatar(new File([b], "avatar.jpg", { type: b.type }))),
+		// 	)
 	}, [user, reset, token])
 
 	if (!user) {
@@ -465,7 +459,8 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 				>
 					<Button
 						type="submit"
-						disabled={(!isDirty && !avatarChanged && !changePassword) || submitting}
+						//add this to disabled when avatar change is ready: && !avatarChanged
+						disabled={(!isDirty && !changePassword) || submitting}
 						variant="contained"
 						color="primary"
 						startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}

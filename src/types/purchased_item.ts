@@ -124,84 +124,84 @@ export interface Module {
 	created_at: string
 }
 
-const exampleAttributes = [
-	{
-		value: "Zaibatsu",
-		trait_type: "Brand",
-	},
-	{
-		value: "Tenshi Mk1",
-		trait_type: "Model",
-	},
-	{
-		value: "Gumdan",
-		trait_type: "SubModel",
-	},
-	{
-		value: "Ultra Rare",
-		trait_type: "Rarity",
-	},
-	{
-		value: "War Machine",
-		trait_type: "Asset Type",
-	},
-	{
-		value: 1000,
-		trait_type: "Max Structure Hit Points",
-		display_type: "number",
-	},
-	{
-		value: 1000,
-		trait_type: "Max Shield Hit Points",
-		display_type: "number",
-	},
-	{
-		value: "",
-		trait_type: "Name",
-	},
-	{
-		value: 2500,
-		trait_type: "Speed",
-		display_type: "number",
-	},
-	{
-		value: 2,
-		trait_type: "Weapon Hardpoints",
-		display_type: "number",
-	},
-	{
-		value: 2,
-		trait_type: "Turret Hardpoints",
-		display_type: "number",
-	},
-	{
-		value: 1,
-		trait_type: "Utility Slots",
-		display_type: "number",
-	},
-	{
-		value: "Sniper Rifle",
-		trait_type: "Weapon One",
-	},
-	{
-		value: "Laser Sword",
-		trait_type: "Weapon Two",
-	},
-	{
-		value: "Rocket Pod",
-		trait_type: "Turret One",
-	},
-	{
-		value: "Rocket Pod",
-		trait_type: "Turret Two",
-	},
-	{
-		value: "Shield",
-		trait_type: "Utility One",
-	},
-	{
-		value: 110,
-		trait_type: "Shield Recharge Rate",
-		display_type: "number",
-	},
-]
+// const exampleAttributes = [
+// 	{
+// 		value: "Zaibatsu",
+// 		trait_type: "Brand",
+// 	},
+// 	{
+// 		value: "Tenshi Mk1",
+// 		trait_type: "Model",
+// 	},
+// 	{
+// 		value: "Gumdan",
+// 		trait_type: "SubModel",
+// 	},
+// 	{
+// 		value: "Ultra Rare",
+// 		trait_type: "Rarity",
+// 	},
+// 	{
+// 		value: "War Machine",
+// 		trait_type: "Asset Type",
+// 	},
+// 	{
+// 		value: 1000,
+// 		trait_type: "Max Structure Hit Points",
+// 		display_type: "number",
+// 	},
+// 	{
+// 		value: 1000,
+// 		trait_type: "Max Shield Hit Points",
+// 		display_type: "number",
+// 	},
+// 	{
+// 		value: "",
+// 		trait_type: "Name",
+// 	},
+// 	{
+// 		value: 2500,
+// 		trait_type: "Speed",
+// 		display_type: "number",
+// 	},
+// 	{
+// 		value: 2,
+// 		trait_type: "Weapon Hardpoints",
+// 		display_type: "number",
+// 	},
+// 	{
+// 		value: 2,
+// 		trait_type: "Turret Hardpoints",
+// 		display_type: "number",
+// 	},
+// 	{
+// 		value: 1,
+// 		trait_type: "Utility Slots",
+// 		display_type: "number",
+// 	},
+// 	{
+// 		value: "Sniper Rifle",
+// 		trait_type: "Weapon One",
+// 	},
+// 	{
+// 		value: "Laser Sword",
+// 		trait_type: "Weapon Two",
+// 	},
+// 	{
+// 		value: "Rocket Pod",
+// 		trait_type: "Turret One",
+// 	},
+// 	{
+// 		value: "Rocket Pod",
+// 		trait_type: "Turret Two",
+// 	},
+// 	{
+// 		value: "Shield",
+// 		trait_type: "Utility One",
+// 	},
+// 	{
+// 		value: 110,
+// 		trait_type: "Shield Recharge Rate",
+// 		display_type: "number",
+// 	},
+// ]

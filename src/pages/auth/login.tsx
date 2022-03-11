@@ -19,7 +19,7 @@ interface LogInInput {
 
 export const LoginPage: React.FC = () => {
 	const history = useHistory()
-	const { user, recheckAuth, loading: authLoading } = useAuth()
+	const { user, recheckAuth } = useAuth()
 	const { setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
 
