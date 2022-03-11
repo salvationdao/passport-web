@@ -594,7 +594,7 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Pur
 						style={{ width: "300px" }}
 						autoFocus
 						disabled={loading}
-						inputProps={{ maxLength: 10 }}
+						inputProps={{ maxLength: 25 }}
 					/>
 					<DialogActions>
 						<>
