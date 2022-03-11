@@ -762,11 +762,15 @@ const StakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => {
 		if (!provider) return
 		// Check already approved
 		const abi = ["function getApproved(uint256) view returns (address)"]
-
 		const nftContract = new ethers.Contract(collection.mint_contract, abi, provider)
-		nftContract.getApproved(asset.external_token_id).then((resp: string) => {
-			setApprovalSuccess(resp === collection.stake_contract)
-		})
+		nftContract
+			.getApproved(asset.external_token_id)
+			.then((resp: string) => {
+				setApprovalSuccess(resp === collection.stake_contract)
+			})
+			.catch((err: any) => {
+				console.error(err)
+			})
 	}, [provider])
 
 	const approve = useCallback(async () => {

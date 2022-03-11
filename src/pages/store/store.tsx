@@ -514,12 +514,16 @@ export const StorePage: React.FC = () => {
 					</Box>
 				</Box>
 			</Box>
-			<BlackMarketCTA />
+			{collection && <BlackMarketCTA mint_contract={collection.mint_contract} />}
 		</>
 	)
 }
 
-const BlackMarketCTA = () => {
+const BlackMarketCTA = ({ mint_contract }: { mint_contract: string }) => {
+	const openseaURL =
+		mint_contract === "0xEEfaF47acaa803176F1711c1cE783e790E4E750D"
+			? `https://testnets.opensea.io/collection/supremacy-genesis-v4`
+			: `https://opensea.io/collection/supremacy-genesis`
 	return (
 		<Box
 			sx={{
@@ -536,7 +540,7 @@ const BlackMarketCTA = () => {
 				color={colors.white}
 				component={StyledFancyButton}
 				sx={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 2rem", height: "4rem" }}
-				href="https://opensea.io/collection/supremacy-genesis"
+				href={openseaURL}
 				target="_blank"
 				rel="noopener noreferrer"
 			>
