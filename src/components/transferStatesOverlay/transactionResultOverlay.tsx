@@ -134,7 +134,10 @@ export const TransactionResultOverlay = ({
 					loading={loading}
 					disabled={loading}
 					sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
-					onClick={() => setCurrentTransferState("none")}
+					onClick={() => {
+						window.location.reload()
+						setCurrentTransferState("none")
+					}}
 				>
 					{loading ? " " : "Close"}
 				</FancyButton>

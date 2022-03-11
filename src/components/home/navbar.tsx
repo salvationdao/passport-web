@@ -1,6 +1,6 @@
 import { LoadingButton } from "@mui/lab"
-import { Avatar, Box, BoxProps, IconButton, IconButtonProps, SxProps, Theme } from "@mui/material"
-import React from "react"
+import { Avatar, Box, BoxProps, IconButton, IconButtonProps, SxProps, Theme, useMediaQuery } from "@mui/material"
+import React, { useState } from "react"
 import { Link, useHistory } from "react-router-dom"
 import { XSYNLogoImagePath } from "../../assets"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
@@ -167,8 +167,9 @@ interface MenuButtonProps {
 
 const MenuButton: React.FC<MenuButtonProps> = ({ sx }) => {
 	const { setSidebarOpen } = useSidebarState()
+	const mobileScreen = useMediaQuery("(max-width:1024px)")
 
-	return (
+	return mobileScreen ? (
 		<>
 			<LoadingButton
 				onClick={() => setSidebarOpen((prev) => !prev)}
@@ -244,5 +245,5 @@ const MenuButton: React.FC<MenuButtonProps> = ({ sx }) => {
 				/>
 			</LoadingButton>
 		</>
-	)
+	) : null
 }

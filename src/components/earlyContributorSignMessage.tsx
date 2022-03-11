@@ -1,11 +1,7 @@
-import { Box, Checkbox, FormControl, Input, InputLabel, TextareaAutosize, Typography, useTheme } from "@mui/material"
+import { Box, Checkbox, Input, InputLabel, Typography, useTheme } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import { API_ENDPOINT_HOSTNAME } from "../config"
-import { useAuth } from "../containers/auth"
 import { useWeb3 } from "../containers/web3"
-import { colors } from "../theme"
 import { EarlyContributorModal } from "./earlyContributorModal"
-
 import { FancyButton } from "./fancyButton"
 import { Loading } from "./loading"
 
@@ -26,6 +22,7 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 	const [showModal, setShowModal] = useState<boolean>(false)
 	const [checked, setChecked] = useState<boolean>(false)
 	const [wcLoading, setWcLoading] = useState<boolean>(false)
+	const [currentDay, setCurrentDay] = useState<Date>(new Date())
 
 	useEffect(() => {
 		if (agree || decline) {
@@ -116,49 +113,7 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 					}}
 				>
 					<Typography variant="h3">Early Contributor SAFT Agreement</Typography>
-					<Box
-						sx={{
-							width: "100%",
-							overflow: "scroll",
-							maxWidth: "45em",
-							maxHeight: "15em",
-							overflowX: "hidden",
-							border: `2px solid  ${theme.palette.primary.main}`,
-							scrollbarWidth: "none",
-							"::-webkit-scrollbar": {
-								width: 4,
-							},
-							"::-webkit-scrollbar-track": {
-								boxShadow: `inset 0 0 5px ${colors.darkNavyBackground}`,
-								borderRadius: 3,
-							},
-							"::-webkit-scrollbar-thumb": {
-								background: colors.darkNeonBlue,
-								borderRadius: 3,
-							},
-						}}
-					>
-						<Box sx={{ p: "2em" }}>
-							Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ipsum non quasi dolorem unde molestias vel alias itaque eum officia
-							tempora cupiditate quidem consectetur fuga magni soluta perspiciatis, nobis optio accusantium? Minus eveniet quo saepe. Porro
-							assumenda numquam, in pariatur hic ab. Temporibus ex non veritatis veniam, excepturi ipsa minus quibusdam accusantium ipsam neque,
-							consectetur quisquam iste mollitia, praesentium dolores perferendis. Harum magnam perspiciatis cumque voluptatem amet maiores
-							corrupti nobis odio, sunt commodi quo totam sed dolores omnis, atque quibusdam optio dolorum ducimus. Dicta dolorem a est possimus
-							repellat eos soluta. Ducimus officiis rem amet maxime nam soluta, voluptatem ad! Adipisci harum dolorem modi doloremque cum mollitia
-							enim rem eaque perferendis maxime saepe iusto quos, reprehenderit quis dolores consectetur veniam ex? Quo repudiandae vel maiores
-							quasi, unde alias cupiditate? Expedita praesentium labore sit, asperiores reiciendis modi nesciunt non, neque fuga error ea
-							repellendus beatae id iure amet recusandae fugit, molestias hic! Obcaecati expedita, pariatur cupiditate qui vero et animi atque
-							error quis tempore natus odit a, praesentium incidunt, deserunt reprehenderit enim sed commodi quibusdam eos optio! Alias minima
-							optio laudantium cumque! Aperiam perspiciatis aspernatur veniam explicabo quia voluptatem ratione? Corrupti, omnis enim non nesciunt
-							suscipit nobis hic possimus maiores cum quas earum voluptatibus ipsa ducimus labore facere error, expedita vero officiis? Eius, enim
-							similique! Ipsam molestiae corporis possimus, vel delectus sapiente eveniet iusto maiores inventore hic voluptate, sunt deserunt!
-							Ipsam sequi numquam est vel, quibusdam nemo architecto rem quam exercitationem possimus? Commodi debitis ducimus voluptate iure
-							incidunt ex, quisquam ipsa placeat vitae quasi similique inventore, porro, neque modi illum! Molestiae magni nemo aspernatur fugit
-							ducimus, quaerat recusandae nulla in vel voluptatum. Quas ullam dolorem perferendis cumque eius ea dolore cupiditate natus mollitia
-							et aliquam sed reprehenderit voluptatum odit tempore, nobis quidem saepe dignissimos labore laudantium repellendus obcaecati
-							doloremque consequuntur. Numquam, omnis!
-						</Box>
-					</Box>
+
 					<Box sx={{ display: "flex", width: "100%", gap: "2em", justifyContent: "center" }}>
 						<Box sx={{ display: "flex", width: "100%", justifyContent: "center", flexDirection: "column" }}>
 							<InputLabel htmlFor="name">Full Name</InputLabel>
@@ -189,6 +144,9 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 								emailOnChange(e.currentTarget.value)
 							}}
 						/>
+					</Box>
+					<Box>
+						<Typography variant="body1">Date: {currentDay && currentDay.toDateString()}</Typography>
 					</Box>
 					<Box sx={{ display: "flex", width: "100%", justifyContent: "center", flexDirection: "column", gap: "0.5em" }}>
 						<Box sx={{ display: "flex", width: "100%", justifyContent: "center", flexDirection: "row", alignItems: "center" }}>

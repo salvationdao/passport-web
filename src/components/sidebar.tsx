@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			return
 		}
 
-		if (supBalance) setWalletSups(formatUnits(supBalance, 18))
+		if (supBalance) setWalletSups(supBalance.toString())
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {

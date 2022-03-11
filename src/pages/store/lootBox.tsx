@@ -112,7 +112,7 @@ export const LootBoxPage = () => {
 
 	return (
 		<>
-			<LootboxVideo setOpen={setOpen} srcURL={videoURL} open={open} setDialogOpen={setDialogOpen} />
+			<LootboxVideo setOpen={setOpen} srcURL={videoURL} open={open} setDialogOpen={setDialogOpen} setSidebarOpen={setSidebarOpen} />
 			<Box
 				sx={{
 					display: "flex",

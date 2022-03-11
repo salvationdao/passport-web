@@ -1,13 +1,13 @@
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import { Box, Button, Dialog, DialogContent, DialogTitle, TextField, Typography } from "@mui/material"
 import { BigNumber, ethers } from "ethers"
-import { formatUnits } from "ethers/lib/utils"
+import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
 import Safe from "../assets/images/gradient/safeLarge.png"
 import SupsToken from "../assets/images/sup-token.svg"
-import { REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { API_ENDPOINT_HOSTNAME, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
 import { useSnackbar } from "../containers/snackbar"
 import { SocketState, WSSendFn } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -24,8 +24,8 @@ import { SwitchNetworkOverlay } from "./transferStatesOverlay/switchNetworkOverl
 interface WithdrawSupsFormProps {
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
 	currentTransferState: string
-	withdrawAmount: string | undefined
-	setWithdrawAmount: React.Dispatch<React.SetStateAction<string | undefined>>
+	withdrawAmount: BigNumber
+	setWithdrawAmount: React.Dispatch<React.SetStateAction<BigNumber>>
 	setError: React.Dispatch<React.SetStateAction<string>>
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
@@ -42,6 +42,12 @@ interface GetSignatureResponse {
 	expiry: number
 }
 
+interface CheckEarlyResponse {
+	max_withdraw: string
+	unlimited: boolean
+	total_withdrawn: string
+}
+
 export const WithdrawSupsForm = ({
 	currentTransferState,
 	withdrawAmount,
@@ -55,6 +61,7 @@ export const WithdrawSupsForm = ({
 	send,
 }: WithdrawSupsFormProps) => {
 	const { account, metaMaskState, supBalance, provider, signer } = useWeb3()
+	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
@@ -63,12 +70,38 @@ export const WithdrawSupsForm = ({
 	const [withdrawContractAmount, setWithdrawContractAmount] = useState<BigNumber>()
 	const [immediateError, setImmediateError] = useState<string>()
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false)
+	const [isInfinite, setIsInfinite] = useState<boolean>(false)
+	const [earlyLimit, setEarlyLimit] = useState<BigNumber>()
+	const [limitSet, setLimitSet] = useState<boolean>(false)
+	const [totalWithdrawn, setTotalWithdrawn] = useState<BigNumber>()
+	const [maxLimit, setMaxLimit] = useState<BigNumber>()
+
+	useEffect(() => {
+		try {
+			;(async () => {
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/check/${user?.public_address}`)
+				const body = (await resp.clone().json()) as CheckEarlyResponse
+				setIsInfinite(body.unlimited)
+				if (!body.unlimited) {
+					setEarlyLimit(BigNumber.from(body.max_withdraw))
+					setTotalWithdrawn(BigNumber.from(body.total_withdrawn))
+					setMaxLimit(BigNumber.from(body.max_withdraw).sub(BigNumber.from(body.total_withdrawn)))
+					return
+				}
+			})()
+		} catch (error) {
+			console.log(error)
+		}
+	}, [])
 
 	useEffect(() => {
 		if (userSups) {
 			setXsynSups(BigNumber.from(userSups))
+			if (!isInfinite) {
+				setMaxLimit(BigNumber.from(userSups))
+			}
 		}
-	}, [userSups])
+	}, [userSups, isInfinite])
 
 	useEffect(() => {
 		if (xsynSups && supBalance) {
@@ -84,12 +117,10 @@ export const WithdrawSupsForm = ({
 	const handleTotalAmount = () => {
 		if (xsynSups === undefined || supBalance === undefined) return
 		if (withdrawAmount && xsynSups && supBalance) {
-			const bigNumWithdrawAmt = ethers.utils.parseUnits(withdrawAmount, 18)
-
-			const totalAccountSups = xsynSups.sub(bigNumWithdrawAmt)
+			const totalAccountSups = xsynSups.sub(withdrawAmount)
 			setSupsAccountTotal(totalAccountSups)
 
-			const totalWalletSups = supBalance.add(bigNumWithdrawAmt)
+			const totalWalletSups = supBalance.add(withdrawAmount)
 			setSupsWalletTotal(totalWalletSups)
 			return
 		}
@@ -103,16 +134,17 @@ export const WithdrawSupsForm = ({
 
 	// check balance on frontend
 	useEffect(() => {
-		if (withdrawAmount === undefined) {
-			setImmediateError(undefined)
-			return
+		if (!isInfinite && earlyLimit) {
+			if (earlyLimit.isZero() || earlyLimit.isNegative()) {
+				setImmediateError("Early contributor limit reached for today")
+				return
+			}
 		}
-		const bigNumWithdrawAmt = ethers.utils.parseUnits(withdrawAmount, 18)
 		if (!supBalance) {
 			setImmediateError("Could not get user $SUPS balance")
 			return
 		}
-		if (bigNumWithdrawAmt.gt(xsynSups)) {
+		if (withdrawAmount.gt(xsynSups)) {
 			setImmediateError("Insufficient $SUPS")
 			return
 		}
@@ -120,12 +152,22 @@ export const WithdrawSupsForm = ({
 			setImmediateError("Unable to check withdraw contract balance.")
 			return
 		}
-		if (bigNumWithdrawAmt.gt(withdrawContractAmount)) {
+		if (withdrawAmount.gt(withdrawContractAmount)) {
 			setImmediateError("Withdraw Contract balance too low.")
 			return
 		}
+		if (!isInfinite && earlyLimit) {
+			if (withdrawAmount.gt(earlyLimit)) {
+				setImmediateError("This amount will exceed the early contributor limit.")
+				return
+			}
+			if (earlyLimit.isZero() || earlyLimit.isNegative()) {
+				setImmediateError("Early contributor limit reached for today")
+				return
+			}
+		}
 		setImmediateError(undefined)
-	}, [withdrawAmount, supBalance, withdrawContractAmount])
+	}, [withdrawAmount, supBalance, withdrawContractAmount, earlyLimit])
 
 	const withDrawAttempt = useCallback(async () => {
 		if (!user || !user.public_address || user.public_address === "" || state !== SocketState.OPEN) return
@@ -133,9 +175,7 @@ export const WithdrawSupsForm = ({
 		try {
 			if (!signer || !withdrawAmount) return
 
-			const bigNumWithdrawAmt = ethers.utils.parseUnits(withdrawAmount, 18)
-			const bigStringWithdrawAmt = bigNumWithdrawAmt.toString()
-			await send(HubKey.SupsWithdraw, { amount: bigStringWithdrawAmt })
+			await send(HubKey.SupsWithdraw, { amount: withdrawAmount })
 		} catch (e) {
 			const message = metamaskErrorHandling(e)
 			!!message ? setError(message) : setError("Issue withdrawing, please try again.")
@@ -159,16 +199,20 @@ export const WithdrawSupsForm = ({
 			const abi = ["function nonces(address user) view returns (uint256)", "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
-			const bigNumWithdrawAmt = ethers.utils.parseUnits(withdrawAmount, 18)
-			const bigStringWithdrawAmt = bigNumWithdrawAmt.toString()
-			const resp = await fetch(`/api/withdraw/${account}/${nonce}/${bigStringWithdrawAmt}`)
-			const respJson: GetSignatureResponse = await resp.json()
+			await fetch(`/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
+				.then(async (resp) => {
+					const respJson: GetSignatureResponse = await resp.json()
 
-			const tx = await withdrawContract.withdrawSUPS(bigStringWithdrawAmt, respJson.messageSignature, respJson.expiry)
-			setCurrentTransferHash(tx.hash)
-			setCurrentTransferState("confirm")
-			await tx.wait()
-			setWithdrawAmount(undefined)
+					const tx = await withdrawContract.withdrawSUPS(withdrawAmount.toString(), respJson.messageSignature, respJson.expiry)
+					setCurrentTransferHash(tx.hash)
+					setCurrentTransferState("confirm")
+					await tx.wait()
+					setWithdrawAmount(BigNumber.from(0))
+				})
+				.catch((e) => {
+					setCurrentTransferState("error")
+					setError("Failed to get signature")
+				})
 		} catch (e: any) {
 			setCurrentTransferState("error")
 			const message = metamaskErrorHandling(e)
@@ -189,7 +233,6 @@ export const WithdrawSupsForm = ({
 					"function balanceOf(address owner) view returns (uint256)",
 					"function decimals() view returns (uint8)",
 					"function symbol() view returns (string)",
-
 					// Events
 					// "event Transfer(address indexed from, address indexed to, uint amount)",
 				]
@@ -202,6 +245,21 @@ export const WithdrawSupsForm = ({
 			}
 		})()
 	}, [provider])
+
+	useEffect(() => {
+		if (withdrawContractAmount && earlyLimit && !limitSet) {
+			const newEarlyLimit = withdrawContractAmount.sub(earlyLimit)
+			console.log(newEarlyLimit.toString())
+			if (newEarlyLimit.isNegative()) {
+				console.log("Setting to 0")
+				setEarlyLimit(BigNumber.from("0"))
+				setLimitSet(true)
+				return
+			}
+			setLimitSet(true)
+			console.log(earlyLimit?.toString())
+		}
+	}, [earlyLimit, withdrawContractAmount])
 
 	return (
 		<>
@@ -236,6 +294,26 @@ export const WithdrawSupsForm = ({
 							{supFormatter(withdrawContractAmount?.toString() || "0")}
 						</Typography>
 					</Box>
+					{!isInfinite && (
+						<>
+							<Box sx={{ display: "flex", alignSelf: "flex-end", margin: ".5rem 0" }}>
+								<Typography variant="h5" noWrap sx={{ fontWeight: "bold", marginRight: "1rem" }}>
+									Early Contributor Limit:
+								</Typography>
+								<Typography variant="h5" sx={{ color: colors.darkNeonPink }}>
+									{earlyLimit ? (+formatUnits(earlyLimit, 18)).toFixed(4) : "0"}
+								</Typography>
+							</Box>
+							<Box sx={{ display: "flex", alignSelf: "flex-end", margin: ".5rem 0" }}>
+								<Typography variant="h6" noWrap sx={{ fontWeight: "bold", marginRight: "1rem" }}>
+									Total Withdrawn:
+								</Typography>
+								<Typography variant="h6" sx={{ color: colors.darkNeonPink }}>
+									{totalWithdrawn ? (+formatUnits(totalWithdrawn, 18)).toFixed(4) : "0"}
+								</Typography>
+							</Box>
+						</>
+					)}
 
 					<Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
 						<Box sx={{ position: "relative", width: "100%" }}>
@@ -263,38 +341,34 @@ export const WithdrawSupsForm = ({
 										Amount:
 									</Typography>
 									<TextField
+										disabled={earlyLimit && earlyLimit.isZero() ? true : false}
 										color="secondary"
 										fullWidth
 										variant="filled"
-										value={withdrawAmount ? withdrawAmount : ""}
+										value={withdrawDisplay}
 										onChange={(e) => {
 											let num = Number(e.target.value)
-											e.preventDefault()
-
-											if (e.target.value === "") {
-												setWithdrawAmount(undefined)
-												return
-											}
-
-											const decimalIndex = e.target.value.indexOf(".")
-											if (decimalIndex !== -1) {
-												const decimalLength = e.target.value.slice(decimalIndex + 1).length
-												if (decimalLength > 18) {
-													return
-												}
-											}
-											if (e.target.value.charAt(0) === ".") {
-												setWithdrawAmount("0" + e.target.value)
-												return
-											}
-											if (e.target.value.indexOf("-") > -1) {
-												setImmediateError("Amount must be a positive value")
-												return
-											}
-											if (!isNaN(num)) {
-												setWithdrawAmount(e.target.value)
-											} else {
+											if (e.target.value.charAt(0) !== "." && isNaN(num)) {
+												setWithdrawDisplay(e.target.value)
 												setImmediateError("Amount must be a number")
+											}
+
+											if (e.target.value.charAt(0) === "-") {
+												setWithdrawDisplay(e.target.value)
+												setImmediateError("Amount can't be negative")
+												return
+											}
+											if (e.target.value === "") {
+												setWithdrawDisplay(e.target.value)
+												setWithdrawAmount(BigNumber.from(0))
+												return
+											}
+											try {
+												setWithdrawDisplay(e.target.value)
+												const newValue = parseUnits(e.target.value, 18)
+												setWithdrawAmount(newValue)
+											} catch (err) {
+												console.error(err)
 											}
 										}}
 										sx={{
@@ -327,14 +401,14 @@ export const WithdrawSupsForm = ({
 										sx={{ ml: "auto", width: "fit-content" }}
 										disabled={!xsynSups || xsynSups._hex === BigNumber.from(0)._hex}
 										onClick={() => {
-											if (xsynSups) {
-												const xsynSupsString = supFormatter(xsynSups.toString())
-												setWithdrawAmount(xsynSupsString)
+											if (maxLimit) {
+												setWithdrawAmount(maxLimit)
+												setWithdrawDisplay(formatUnits(maxLimit, 18))
 											}
 										}}
 									>
 										<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
-											Max: <b>{xsynSups ? supFormatter(xsynSups.toString()) : "--"} </b>
+											Max: <b>{maxLimit ? supFormatter(maxLimit.toString()) : "--"}</b>
 										</Typography>
 									</Button>
 								</Box>
@@ -385,7 +459,7 @@ export const WithdrawSupsForm = ({
 									<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", paddingRight: ".5rem" }} />
 
 									<Typography variant="h6" sx={{ color: colors.skyBlue, fontWeight: 800 }}>
-										{supsWalletTotal ? supFormatter(supsWalletTotal.toString()) : "--"}
+										{supsWalletTotal ? formatUnits(supsWalletTotal, 18) : "--"}
 									</Typography>
 								</Box>
 								<Box sx={{ display: "flex", alignSelf: "flex-end" }}>
@@ -401,11 +475,7 @@ export const WithdrawSupsForm = ({
 					</Box>
 					<FancyButton
 						disabled={
-							!withdrawAmount ||
-							!xsynSups ||
-							ethers.utils.parseUnits(withdrawAmount, 18).gt(xsynSups) ||
-							currentTransferState !== "none" ||
-							immediateError !== undefined
+							!withdrawAmount || !xsynSups || withdrawAmount.gt(xsynSups) || currentTransferState !== "none" || immediateError !== undefined
 						}
 						borderColor={colors.skyBlue}
 						sx={{ marginTop: "1.5rem", width: "50%" }}
@@ -428,8 +498,8 @@ export const WithdrawSupsForm = ({
 					</DialogTitle>
 					<DialogContent>
 						<Typography variant="subtitle2">
-							Please confirm your withdrawal of <b>{withdrawAmount ? withdrawAmount : null}</b> $SUPS from {user?.username} into wallet address:{" "}
-							{account ? AddressDisplay(account) : null}.
+							Please confirm your withdrawal of <b>{withdrawAmount ? formatUnits(withdrawAmount, 18) : null}</b> $SUPS from {user?.username} into
+							wallet address: {account ? AddressDisplay(account) : null}.
 						</Typography>
 					</DialogContent>
 					<DialogContent sx={{ width: "100%", display: "flex", justifyContent: "flex-end" }}>

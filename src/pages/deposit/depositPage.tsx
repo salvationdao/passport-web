@@ -71,9 +71,9 @@ export const DepositPage = () => {
 						currentTransferState={currentTransferState}
 						setCurrentTransferState={setCurrentTransferState}
 						currentTransferHash={currentTransferHash}
-						confirmationMessage={`Depositing ${depositAmount} $SUPS from wallet address: ${
-							account ? AddressDisplay(account) : null
-						} to Alpha Citizen ${user?.username}.`}
+						confirmationMessage={`Depositing ${depositAmount} $SUPS from wallet address: ${account ? AddressDisplay(account) : null} to ${
+							user?.username
+						}.`}
 						error={error}
 						loading={loading}
 					/>
