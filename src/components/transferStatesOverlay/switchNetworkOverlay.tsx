@@ -1,13 +1,15 @@
 import { Box, Typography } from "@mui/material"
 import React from "react"
 import { BINANCE_CHAIN_ID } from "../../config"
-import { useWeb3 } from "../../containers/web3"
 import { colors } from "../../theme"
 import { FancyButton } from "../fancyButton"
 
-export const SwitchNetworkOverlay = () => {
-	const { currentChainId, changeChain } = useWeb3()
+interface SwitchNetworkOverlayProps {
+	currentChainId: number | undefined
+	changeChain: (chain: number) => Promise<void>
+}
 
+export const SwitchNetworkOverlay = ({ currentChainId, changeChain }: SwitchNetworkOverlayProps) => {
 	const handleNetworkSwitch = async () => {
 		await changeChain(parseInt(BINANCE_CHAIN_ID))
 	}

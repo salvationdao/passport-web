@@ -34,7 +34,7 @@ export const DepositPage = () => {
 			console.error(e)
 		}
 	}, [])
-	const { account } = useWeb3()
+	const { account, changeChain, currentChainId } = useWeb3()
 	const { user } = useAuth()
 
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
@@ -85,7 +85,7 @@ export const DepositPage = () => {
 							marginTop: { xs: "1.5rem", xl: "-8rem" },
 						}}
 					/>
-					<SwitchNetworkOverlay />
+					<SwitchNetworkOverlay currentChainId={currentChainId} changeChain={changeChain} />
 					<ConnectWalletOverlay walletIsConnected={!!account} />
 					<TransactionResultOverlay
 						currentTransferState={currentTransferState}

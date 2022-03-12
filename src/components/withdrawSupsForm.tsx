@@ -60,7 +60,7 @@ export const WithdrawSupsForm = ({
 	state,
 	send,
 }: WithdrawSupsFormProps) => {
-	const { account, metaMaskState, supBalance, provider, signer } = useWeb3()
+	const { account, metaMaskState, supBalance, provider, signer, changeChain, currentChainId } = useWeb3()
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const { displayMessage } = useSnackbar()
@@ -241,7 +241,7 @@ export const WithdrawSupsForm = ({
 				!!message ? displayMessage(message) : displayMessage(e === "string" ? e : "Issue getting withdraw contract balance , please try again.")
 			}
 		})()
-	}, [provider, displayMessage])
+	}, [provider, displayMessage, currentChainId])
 
 	useEffect(() => {
 		if (withdrawContractAmount && earlyLimit && !limitSet) {
@@ -260,7 +260,7 @@ export const WithdrawSupsForm = ({
 
 	return (
 		<>
-			<SwitchNetworkOverlay />
+			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} />
 			<ConnectWalletOverlay walletIsConnected={!!account} />
 			<Box
 				component="img"
@@ -391,7 +391,7 @@ export const WithdrawSupsForm = ({
 										/>
 
 										<Typography variant="body2" sx={{ color: colors.darkSkyBlue, fontWeight: 800 }}>
-											{supsAccountTotal ? supFormatter(supsAccountTotal.toString()) : "--"}
+											{userSups ? supFormatter(userSups) : "--"}
 										</Typography>
 									</Box>
 									<Button

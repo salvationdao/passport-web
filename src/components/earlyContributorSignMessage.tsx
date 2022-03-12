@@ -21,7 +21,7 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 	const [showModal, setShowModal] = useState<boolean>(false)
 	const [checked, setChecked] = useState<boolean>(false)
 	const [wcLoading, setWcLoading] = useState<boolean>(false)
-	//const [currentDay, setCurrentDay] = useState<Date>(new Date())
+	const currentDay = new Date()
 
 	useEffect(() => {
 		if (agree || decline) {
@@ -143,9 +143,9 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 							}}
 						/>
 					</Box>
-					{/* <Box>
+					<Box>
 						<Typography variant="body1">Date: {currentDay && currentDay.toDateString()}</Typography>
-					</Box> */}
+					</Box>
 					<Box sx={{ display: "flex", width: "100%", justifyContent: "center", flexDirection: "column", gap: "0.5em" }}>
 						<Box sx={{ display: "flex", width: "100%", justifyContent: "center", flexDirection: "row", alignItems: "center" }}>
 							<Checkbox

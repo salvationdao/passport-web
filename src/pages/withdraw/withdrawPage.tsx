@@ -71,10 +71,6 @@ export const WithdrawPage = () => {
 						position: "relative",
 					}}
 				>
-					{/* <GradientCircleThing
-						sx={{ position: "absolute", height: "100%", maxHeight: "950px", maxWidth: "950px", display: { xs: "none", xl: "block" } }}
-						hideInner
-					/> */}
 					<TransactionResultOverlay
 						currentTransferState={currentTransferState}
 						setCurrentTransferState={setCurrentTransferState}
