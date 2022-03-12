@@ -165,20 +165,6 @@ export const WithdrawSupsForm = ({
 		setImmediateError(undefined)
 	}, [withdrawAmount, supBalance, withdrawContractAmount, earlyLimit, xsynSups, isInfinite])
 
-	const withDrawAttempt = useCallback(async () => {
-		if (!user || !user.public_address || user.public_address === "" || state !== SocketState.OPEN) return
-
-		try {
-			if (!signer || !withdrawAmount) return
-
-			await send(HubKey.SupsWithdraw, { amount: withdrawAmount })
-		} catch (e) {
-			const message = metamaskErrorHandling(e)
-			!!message ? setError(message) : setError("Issue withdrawing, please try again.")
-			setCurrentTransferState("error")
-		}
-	}, [signer, send, state, withdrawAmount, user, setCurrentTransferState, setError])
-
 	const withdrawAttemptSignature = useCallback(async () => {
 		setLoading(true)
 		try {
@@ -506,7 +492,7 @@ export const WithdrawSupsForm = ({
 							sx={{ borderRadius: "0", marginRight: "1rem" }}
 							onClick={() => {
 								//TODO: uncomment this after withdraw sups is available
-								UseSignatureMode ? withdrawAttemptSignature() : withDrawAttempt()
+								withdrawAttemptSignature()
 								setDialogOpen(false)
 							}}
 						>

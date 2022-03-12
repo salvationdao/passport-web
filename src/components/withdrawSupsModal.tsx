@@ -89,7 +89,7 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 				// "event Transfer(address indexed from, address indexed to, uint amount)",
 			]
 			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
-			const bal: BigNumber = await erc20.balanceOf(UseSignatureMode ? WITHDRAW_ADDRESS : REDEEM_ADDRESS)
+			const bal: BigNumber = await erc20.balanceOf(WITHDRAW_ADDRESS)
 			setWithdrawContractAmount(bal)
 			setErrorWalletBalance(undefined)
 		} catch (e) {
@@ -131,25 +131,6 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 			setLoadingWithdraw(false)
 		}
 	}, [provider, account, withdrawAmount])
-
-	const withDrawAttempt = useCallback(async () => {
-		if (!user || !user.public_address || user.public_address === "" || state !== SocketState.OPEN) return
-
-		try {
-			if (!provider) return
-			if (!withdrawAmount) return
-			setLoadingWithdraw(true)
-
-			await send(HubKey.SupsWithdraw, { amount: withdrawAmount })
-
-			setErrorWithdrawing(null)
-			onClose()
-		} catch (e) {
-			setErrorWithdrawing(e === "string" ? e : "Issue withdrawing, please try again.")
-		} finally {
-			setLoadingWithdraw(false)
-		}
-	}, [provider, send, state, withdrawAmount, user, onClose])
 
 	return (
 		<Dialog open={open} onClose={onClose} maxWidth={"xl"} key={currentChainId}>
@@ -219,7 +200,7 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 			{metaMaskState === MetaMaskState.Active && currentChainId?.toString() === BINANCE_CHAIN_ID && (
 				<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}>
 					{!loadingWithdraw && (
-						<FancyButton disabled={!!errorAmount} onClick={() => (UseSignatureMode ? withDrawAttemptSignature() : withDrawAttempt())}>
+						<FancyButton disabled={!!errorAmount} onClick={() => withDrawAttemptSignature()}>
 							Withdraw
 						</FancyButton>
 					)}
