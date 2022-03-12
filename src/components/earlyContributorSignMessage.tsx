@@ -1,6 +1,7 @@
 import { Box, Checkbox, Input, InputLabel, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useWeb3 } from "../containers/web3"
+import { EarlyContributorErrorModal } from "./earlyContributorErrorModal"
 import { EarlyContributorModal } from "./earlyContributorModal"
 import { FancyButton } from "./fancyButton"
 import { Loading } from "./loading"
@@ -21,6 +22,7 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 	const [showModal, setShowModal] = useState<boolean>(false)
 	const [checked, setChecked] = useState<boolean>(false)
 	const [wcLoading, setWcLoading] = useState<boolean>(false)
+	const [errorSigning, setErrorSigning] = useState<boolean>(false)
 	const currentDay = new Date()
 
 	useEffect(() => {
@@ -34,10 +36,10 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 	const signedSAFT = async () => {
 		try {
 			if (email && name && phone) {
-				return await signEarlyContributors(name, phone, email, agree)
+				return await signEarlyContributors(name, phone, email, agree, setErrorSigning)
 			}
 		} catch (e) {
-			console.log(e)
+			console.error(e)
 		}
 		return false
 	}
@@ -92,6 +94,7 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 
 	return (
 		<>
+			<EarlyContributorErrorModal open={errorSigning} />
 			<EarlyContributorModal open={showModal} onClose={modalOnClose} signedSAFT={signedSAFT} />
 			<Box sx={{ position: "relative", width: "100%", maxWidth: "45em" }}>
 				{wcLoading && (

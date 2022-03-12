@@ -561,7 +561,13 @@ export const Web3Container = createContainer(() => {
 	)
 
 	const signEarlyContributors = useCallback(
-		async (name: string, phone: string, email: string, agree: boolean): Promise<boolean> => {
+		async (
+			name: string,
+			phone: string,
+			email: string,
+			agree: boolean,
+			setErrorSigning: React.Dispatch<React.SetStateAction<boolean>>,
+		): Promise<boolean> => {
 			if (!provider) return false
 			try {
 				if (!wcProvider) {
@@ -577,6 +583,10 @@ export const Web3Container = createContainer(() => {
 							method: "POST",
 						},
 					)
+					if (resp.status != 200) {
+						setErrorSigning(true)
+						return false
+					}
 					const body = (await resp.clone().json()) as EarlyContributorCheck
 					return body.has_signed
 				}
@@ -594,10 +604,15 @@ export const Web3Container = createContainer(() => {
 						method: "POST",
 					},
 				)
+				if (resp.status != 200) {
+					setErrorSigning(true)
+					return false
+				}
 				const body = (await resp.clone().json()) as EarlyContributorCheck
 				return body.has_signed
 			} catch (e: any) {
-				console.log(e)
+				console.error(e)
+				setErrorSigning(true)
 				if (e.code === 4001) {
 					return false
 				}
