@@ -485,6 +485,21 @@ export const WithdrawSupsForm = ({
 						<Typography variant="h3">Confirm Your Withdrawal Request</Typography>
 					</DialogTitle>
 					<DialogContent>
+						<Typography variant="subtitle2" sx={{ color: colors.supremacyGold }}>
+							WARNING: When you start this process, the SUPS will be removed from your account. Before you begin, please make sure you have:
+							<br />
+							<br />
+							- Your wallet connected
+							<br />
+							- Hardware signer at the ready (if needed)
+							<br />- Enough gas in your wallet.
+						</Typography>
+						<br />
+						<br />
+						<Typography variant="subtitle2">
+							If you trigger the withdraw process but for any reason need to cancel the transaction, please contact the support team on Discord.
+						</Typography>
+						<br />
 						<Typography variant="subtitle2">
 							Please confirm your withdrawal of <b>{withdrawAmount ? formatUnits(withdrawAmount, 18) : null}</b> $SUPS from {user?.username} into
 							wallet address: {account ? AddressDisplay(account) : null}.
