@@ -181,21 +181,13 @@ export const WithdrawSupsForm = ({
 			const abi = ["function nonces(address user) view returns (uint256)", "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
-			await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
-				.then(async (resp) => {
-					const respJson: GetSignatureResponse = await resp.json()
-
-					const tx = await withdrawContract.withdrawSUPS(withdrawAmount.toString(), respJson.messageSignature, respJson.expiry)
-					setCurrentTransferHash(tx.hash)
-					setCurrentTransferState("confirm")
-					await tx.wait()
-					setWithdrawAmount(BigNumber.from(0))
-				})
-				.catch((e) => {
-					setCurrentTransferState("error")
-					const message = metamaskErrorHandling(e)
-					!!message ? setError(message) : setError("Issue withdrawing, please try again.")
-				})
+			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
+			const respJson: GetSignatureResponse = await resp.json()
+			const tx = await withdrawContract.withdrawSUPS(withdrawAmount.toString(), respJson.messageSignature, respJson.expiry)
+			setCurrentTransferHash(tx.hash)
+			setCurrentTransferState("confirm")
+			await tx.wait()
+			setWithdrawAmount(BigNumber.from(0))
 		} catch (e: any) {
 			setCurrentTransferState("error")
 			const message = metamaskErrorHandling(e)
