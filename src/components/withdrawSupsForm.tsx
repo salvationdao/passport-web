@@ -234,8 +234,7 @@ export const WithdrawSupsForm = ({
 			const newEarlyLimit = withdrawContractAmount.sub(earlyLimit)
 			console.log(newEarlyLimit.toString())
 			if (newEarlyLimit.isNegative()) {
-				console.log("Setting to 0")
-				setEarlyLimit(BigNumber.from("0"))
+				setEarlyLimit(withdrawContractAmount)
 				setLimitSet(true)
 				return
 			}
