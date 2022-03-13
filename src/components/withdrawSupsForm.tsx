@@ -212,8 +212,8 @@ export const WithdrawSupsForm = ({
 					// "event Transfer(address indexed from, address indexed to, uint amount)",
 				]
 				const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
-				const bal: { _hex: string } = await erc20.balanceOf(UseSignatureMode ? WITHDRAW_ADDRESS : REDEEM_ADDRESS)
-				setWithdrawContractAmount(BigNumber.from(bal._hex))
+				const bal = await erc20.balanceOf(UseSignatureMode ? WITHDRAW_ADDRESS : REDEEM_ADDRESS)
+				setWithdrawContractAmount(bal)
 			} catch (e) {
 				const message = metamaskErrorHandling(e)
 				!!message ? displayMessage(message) : displayMessage(e === "string" ? e : "Issue getting withdraw contract balance , please try again.")
@@ -313,35 +313,18 @@ export const WithdrawSupsForm = ({
 										Amount:
 									</Typography>
 									<TextField
+										type="number"
 										disabled={earlyLimit && earlyLimit.isZero() ? true : false}
 										color="secondary"
 										fullWidth
 										variant="filled"
-										value={withdrawDisplay}
+										value={parseFloat(withdrawDisplay)}
 										onChange={(e) => {
-											let num = Number(e.target.value)
-											if (e.target.value.charAt(0) !== "." && isNaN(num)) {
-												setWithdrawDisplay(e.target.value)
-												setImmediateError("Amount must be a number")
-											}
-
-											if (e.target.value.charAt(0) === "-") {
-												setWithdrawDisplay(e.target.value)
-												setImmediateError("Amount can't be negative")
-												return
-											}
-											if (e.target.value === "") {
-												setWithdrawDisplay(e.target.value)
-												setWithdrawAmount(BigNumber.from(0))
-												return
-											}
-											try {
-												setWithdrawDisplay(e.target.value)
-												const newValue = parseUnits(e.target.value, 18)
-												setWithdrawAmount(newValue)
-											} catch (err) {
-												console.error(err)
-											}
+											setWithdrawDisplay(e.target.value)
+										}}
+										onBlur={(e) => {
+											const newValue = parseUnits(e.target.value, 18)
+											setWithdrawAmount(newValue)
 										}}
 										sx={{
 											"& .MuiFilledInput-input": {
@@ -350,6 +333,7 @@ export const WithdrawSupsForm = ({
 											},
 											input: { color: colors.skyBlue, fontSize: "1.2rem", fontWeight: 800, lineHeight: 0.5 },
 										}}
+										inputProps={{ inputMode: "numeric", min: 0, pattern: "[0-9]" }}
 									/>
 								</Box>
 								<Box sx={{ display: "flex", justifyContent: "space-between" }}>
