@@ -385,9 +385,9 @@ export const WithdrawSupsForm = ({
 										disabled={!xsynSups || xsynSups._hex === BigNumber.from(0)._hex}
 										onClick={() => {
 											if (maxLimit) {
-												if (withdrawAmount.lt(maxLimit)) {
-													setWithdrawAmount(withdrawAmount)
-													setWithdrawDisplay(formatUnits(withdrawAmount, 18))
+												if (withdrawContractAmount && withdrawContractAmount.lt(maxLimit)) {
+													setWithdrawAmount(withdrawContractAmount)
+													setWithdrawDisplay(formatUnits(withdrawContractAmount, 18))
 													return
 												}
 												setWithdrawAmount(maxLimit)
