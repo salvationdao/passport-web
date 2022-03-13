@@ -455,7 +455,11 @@ export const WithdrawSupsForm = ({
 					</Box>
 					<FancyButton
 						disabled={
-							!withdrawAmount || !xsynSups || withdrawAmount.gt(xsynSups) || currentTransferState !== "none" || immediateError !== undefined
+							withdrawAmount.lte(BigNumber.from(0)) ||
+							!xsynSups ||
+							withdrawAmount.gt(xsynSups) ||
+							currentTransferState !== "none" ||
+							immediateError !== undefined
 						}
 						borderColor={colors.skyBlue}
 						sx={{ marginTop: "1.5rem", width: "50%" }}
