@@ -74,7 +74,23 @@ export const WithdrawSupsForm = ({
 	const [earlyLimit, setEarlyLimit] = useState<BigNumber>()
 	const [limitSet, setLimitSet] = useState<boolean>(false)
 	const [totalWithdrawn, setTotalWithdrawn] = useState<BigNumber>()
+	const [totalHeld, setTotalHeld] = useState<BigNumber | null>(null)
 	const [maxLimit, setMaxLimit] = useState<BigNumber>()
+
+	useEffect(() => {
+		if (totalHeld) return
+		fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/holding/${user?.public_address}`)
+			.then((resp) => {
+				return resp.clone().json()
+			})
+			.then((resp: { amount: string }) => {
+				setTotalHeld(BigNumber.from(resp.amount))
+			})
+			.catch((err) => {
+				setTotalHeld(BigNumber.from(0))
+				console.error(err)
+			})
+	}, [user?.public_address, setTotalHeld])
 
 	useEffect(() => {
 		try {
@@ -282,6 +298,14 @@ export const WithdrawSupsForm = ({
 								</Typography>
 								<Typography variant="h6" sx={{ color: colors.darkNeonPink }}>
 									{totalWithdrawn ? (+formatUnits(totalWithdrawn, 18)).toFixed(4) : "0"}
+								</Typography>
+							</Box>
+							<Box sx={{ display: "flex", alignSelf: "flex-end", margin: ".5rem 0" }}>
+								<Typography variant="h6" noWrap sx={{ fontWeight: "bold", marginRight: "1rem" }}>
+									Holding account:
+								</Typography>
+								<Typography variant="h6" sx={{ color: colors.darkNeonPink }}>
+									{totalHeld ? (+formatUnits(totalHeld, 18)).toFixed(4) : "0"}
 								</Typography>
 							</Box>
 						</>
