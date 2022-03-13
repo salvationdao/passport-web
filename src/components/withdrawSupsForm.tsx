@@ -181,7 +181,7 @@ export const WithdrawSupsForm = ({
 			const abi = ["function nonces(address user) view returns (uint256)", "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
-			await fetch(`/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
+			await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
 				.then(async (resp) => {
 					const respJson: GetSignatureResponse = await resp.json()
 
