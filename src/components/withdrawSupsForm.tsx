@@ -234,7 +234,8 @@ export const WithdrawSupsForm = ({
 			const newEarlyLimit = withdrawContractAmount.sub(earlyLimit)
 			console.log(newEarlyLimit.toString())
 			if (newEarlyLimit.isNegative()) {
-				setEarlyLimit(withdrawContractAmount)
+				// console.log("Setting to 0")
+				// setEarlyLimit(BigNumber.from("0"))
 				setLimitSet(true)
 				return
 			}
@@ -384,6 +385,11 @@ export const WithdrawSupsForm = ({
 										disabled={!xsynSups || xsynSups._hex === BigNumber.from(0)._hex}
 										onClick={() => {
 											if (maxLimit) {
+												if (withdrawAmount.lt(maxLimit)) {
+													setWithdrawAmount(withdrawAmount)
+													setWithdrawDisplay(formatUnits(withdrawAmount, 18))
+													return
+												}
 												setWithdrawAmount(maxLimit)
 												setWithdrawDisplay(formatUnits(maxLimit, 18))
 											}
