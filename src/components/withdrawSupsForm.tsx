@@ -103,7 +103,7 @@ export const WithdrawSupsForm = ({
 				const body = (await resp.clone().json()) as CheckEarlyResponse
 				setIsInfinite(body.unlimited)
 				if (!body.unlimited) {
-					setEarlyLimit(BigNumber.from(body.max_withdraw))
+					setEarlyLimit(BigNumber.from(body.max_withdraw).sub(BigNumber.from(body.total_withdrawn)))
 					setEarlyLimitDisplay(formatUnits(body.max_withdraw))
 					setTotalWithdrawn(BigNumber.from(body.total_withdrawn))
 					setMaxLimit(BigNumber.from(body.max_withdraw).sub(BigNumber.from(body.total_withdrawn)))
