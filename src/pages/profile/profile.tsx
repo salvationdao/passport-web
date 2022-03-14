@@ -186,7 +186,7 @@ export const ProfilePage: React.FC = () => {
 						<Box minHeight="2rem" minWidth="2rem" />
 					</>
 				)}
-				{!!asset_hash ? <AssetViewContainer user={user} assetHash={asset_hash} /> : <CollectionView user={user} />}
+				{!!asset_hash ? <AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} /> : <CollectionView user={user} />}
 			</Box>
 		</Box>
 	)
