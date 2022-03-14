@@ -58,13 +58,15 @@ interface AssetViewProps {
 	openseaURL: string
 	showOpenseaURL: boolean
 	onWorld: boolean
+	edit: boolean
 }
 interface AssetViewContainerProps {
 	user: User
 	assetHash: string
+	edit: boolean
 }
 
-export const AssetViewContainer = ({ user, assetHash }: AssetViewContainerProps) => {
+export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainerProps) => {
 	const { state, subscribe } = useWebsocket()
 	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem | null>(null)
 	const [collectionSlug, setCollectionSlug] = useState<string | null>(null)
@@ -150,6 +152,7 @@ export const AssetViewContainer = ({ user, assetHash }: AssetViewContainerProps)
 			collection={collection}
 			error={error}
 			numberAttributes={numberAttributes}
+			edit={edit}
 		/>
 	)
 }
@@ -169,6 +172,7 @@ export const AssetView = ({
 	onWorld,
 	openseaURL,
 	showOpenseaURL,
+	edit,
 }: AssetViewProps) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	useInterval(() => {
@@ -280,7 +284,7 @@ export const AssetView = ({
 							marginBottom: "1rem",
 						}}
 					>
-						{Buttons()}
+						{edit && Buttons()}
 					</Box>
 				)}
 				<Box
@@ -408,7 +412,7 @@ export const AssetView = ({
 										gap: ".5rem",
 									}}
 								>
-									{Buttons()}
+									{edit && Buttons()}
 								</Box>
 							)}
 						</Box>
