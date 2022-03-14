@@ -82,6 +82,9 @@ export const WithdrawSupsForm = ({
 		if (totalHeld) return
 		fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/holding/${user?.public_address}`)
 			.then((resp) => {
+				if (resp.status === 500) {
+					throw resp.clone().json()
+				}
 				return resp.clone().json()
 			})
 			.then((resp: { amount: string }) => {
@@ -100,7 +103,7 @@ export const WithdrawSupsForm = ({
 				const body = (await resp.clone().json()) as CheckEarlyResponse
 				setIsInfinite(body.unlimited)
 				if (!body.unlimited) {
-					setEarlyLimit(BigNumber.from(body.max_withdraw).sub(BigNumber.from(body.total_withdrawn)))
+					setEarlyLimit(BigNumber.from(body.max_withdraw))
 					setEarlyLimitDisplay(formatUnits(body.max_withdraw))
 					setTotalWithdrawn(BigNumber.from(body.total_withdrawn))
 					setMaxLimit(BigNumber.from(body.max_withdraw).sub(BigNumber.from(body.total_withdrawn)))
@@ -200,15 +203,19 @@ export const WithdrawSupsForm = ({
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
 			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
+			if (resp.status === 500) {
+				throw await resp.clone().json()
+			}
 			const respJson: GetSignatureResponse = await resp.json()
 			const tx = await withdrawContract.withdrawSUPS(withdrawAmount.toString(), respJson.messageSignature, respJson.expiry)
 			setCurrentTransferHash(tx.hash)
 			setCurrentTransferState("confirm")
 			await tx.wait()
 			setWithdrawAmount(BigNumber.from(0))
-		} catch (e: any) {
+		} catch (err: any) {
+			console.log(err)
 			setCurrentTransferState("error")
-			const message = metamaskErrorHandling(e)
+			const message = metamaskErrorHandling(err)
 			!!message ? setError(message) : setError("Issue withdrawing, please try again.")
 		} finally {
 			setLoading(false)
