@@ -91,7 +91,13 @@ export const ProfileEditPage: React.FC = () => {
 						}}
 						color={colors.white}
 						component={"button"}
-						onClick={() => history.goBack()}
+						onClick={() => {
+							if (history.length === 1) {
+								history.push("/profile")
+								return
+							}
+							history.goBack()
+						}}
 					>
 						<ChevronLeftIcon />
 						Go Back
