@@ -72,6 +72,7 @@ export const WithdrawSupsForm = ({
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false)
 	const [isInfinite, setIsInfinite] = useState<boolean>(false)
 	const [earlyLimit, setEarlyLimit] = useState<BigNumber>()
+	const [earlyLimitDisplay, setEarlyLimitDisplay] = useState<string | undefined>()
 	const [limitSet, setLimitSet] = useState<boolean>(false)
 	const [totalWithdrawn, setTotalWithdrawn] = useState<BigNumber>()
 	const [totalHeld, setTotalHeld] = useState<BigNumber | null>(null)
@@ -99,7 +100,8 @@ export const WithdrawSupsForm = ({
 				const body = (await resp.clone().json()) as CheckEarlyResponse
 				setIsInfinite(body.unlimited)
 				if (!body.unlimited) {
-					setEarlyLimit(BigNumber.from(body.max_withdraw))
+					setEarlyLimit(BigNumber.from(body.max_withdraw).sub(BigNumber.from(body.total_withdrawn)))
+					setEarlyLimitDisplay(formatUnits(body.max_withdraw))
 					setTotalWithdrawn(BigNumber.from(body.total_withdrawn))
 					setMaxLimit(BigNumber.from(body.max_withdraw).sub(BigNumber.from(body.total_withdrawn)))
 					return
@@ -289,7 +291,7 @@ export const WithdrawSupsForm = ({
 									Early Contributor Limit:
 								</Typography>
 								<Typography variant="h5" sx={{ color: colors.darkNeonPink }}>
-									{earlyLimit ? (+formatUnits(earlyLimit, 18)).toFixed(4) : "0"}
+									{earlyLimitDisplay ? parseFloat(earlyLimitDisplay).toFixed(4) : "-"}
 								</Typography>
 							</Box>
 							<Box sx={{ display: "flex", alignSelf: "flex-end", margin: ".5rem 0" }}>
