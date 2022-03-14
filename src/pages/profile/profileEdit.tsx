@@ -92,11 +92,7 @@ export const ProfileEditPage: React.FC = () => {
 						color={colors.white}
 						component={"button"}
 						onClick={() => {
-							if (history.length === 1) {
-								history.push("/profile")
-								return
-							}
-							history.goBack()
+							history.push("/profile")
 						}}
 					>
 						<ChevronLeftIcon />
