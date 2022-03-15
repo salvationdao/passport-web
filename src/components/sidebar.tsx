@@ -1,5 +1,6 @@
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import AppsIcon from "@mui/icons-material/Apps"
+import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
@@ -28,10 +29,9 @@ import { colors } from "../theme"
 import { Faction, FactionTheme, User } from "../types/types"
 import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
-import { ProfileButton } from "./home/navbar"
+import { ProfileButton } from "./profileButton"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 
 const drawerWidth = 260
 
