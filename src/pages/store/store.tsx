@@ -1,10 +1,10 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import OpenseaLogo from "../../assets/images/opensea_logomark_white.svg"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import { Box, Collapse, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
+import OpenseaLogo from "../../assets/images/opensea_logomark_white.svg"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
@@ -299,7 +299,6 @@ export const StorePage: React.FC = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					minHeight: "100%",
 					overflowX: "hidden",
 				}}
 			>
@@ -311,7 +310,6 @@ export const StorePage: React.FC = () => {
 				<Box
 					sx={{
 						display: "flex",
-						width: "100%",
 						flexDirection: "column",
 						alignItems: "center",
 						marginBottom: "2rem",
@@ -511,10 +509,10 @@ export const StorePage: React.FC = () => {
 								</Paper>
 							)}
 						</Box>
+						{collection && <BlackMarketCTA mint_contract={collection.mint_contract} />}
 					</Box>
 				</Box>
 			</Box>
-			{collection && <BlackMarketCTA mint_contract={collection.mint_contract} />}
 		</>
 	)
 }
@@ -530,11 +528,17 @@ const BlackMarketCTA = ({ mint_contract }: { mint_contract: string }) => {
 				flexDirection: "column",
 				display: "flex",
 				justifyContent: "center",
-				marginTop: "2rem",
 				alignItems: "center",
+				marginTop: "2rem",
 			}}
 		>
-			<Typography>Looking for other factions? </Typography>
+			<Typography
+				sx={{
+					marginBottom: ".5rem",
+				}}
+			>
+				Looking for other factions?
+			</Typography>
 			<Link
 				underline="none"
 				color={colors.white}

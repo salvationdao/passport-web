@@ -11,7 +11,9 @@ import { useAuth } from "./containers/auth"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
 import { useWebsocket } from "./containers/socket"
+import { useWeb3 } from "./containers/web3"
 import { AssetRedirectPage } from "./pages/assetRedirect"
+import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
 import { LoginPage } from "./pages/auth/login"
 import { LogoutPage } from "./pages/auth/logout"
 import { PassportReady } from "./pages/auth/onboarding"
@@ -19,6 +21,7 @@ import { SignUpPage } from "./pages/auth/signup"
 import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
 import { CollectionPage } from "./pages/collections/collection"
+import { DepositPage } from "./pages/deposit/depositPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
@@ -29,10 +32,7 @@ import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
 import { TransactionsPage } from "./pages/transactions/transactions"
-import { DepositPage } from "./pages/deposit/depositPage"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
-import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
-import { useWeb3 } from "./containers/web3"
 
 export const Routes = () => {
 	const { setSessionID, user, loading: authLoading } = useAuth()
@@ -101,7 +101,11 @@ export const Routes = () => {
 	}
 
 	return (
-		<Box sx={{ height: "100%", width: "100%", maxHeight: "100%", maxWidth: "100%" }}>
+		<Box
+			sx={{
+				height: "100%",
+			}}
+		>
 			<BrowserRouter>
 				<Snackbar
 					anchorOrigin={{

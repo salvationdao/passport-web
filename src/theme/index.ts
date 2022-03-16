@@ -227,12 +227,17 @@ const lightTheme = createTheme({
 		MuiCssBaseline: {
 			styleOverrides: {
 				html: {
+					height: "100%",
 					"@media (max-width: 1080px)": {
 						fontSize: "80%",
 					},
 				},
 				body: {
+					height: "100%",
 					backgroundColor: colors.darkerNavyBlue,
+				},
+				"#root": {
+					height: "100%",
 				},
 				"*, *::after, *::before": {
 					":focus": {
