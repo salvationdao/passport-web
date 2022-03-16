@@ -1,10 +1,8 @@
 import { LoadingButton } from "@mui/lab"
-import { Avatar, Box, BoxProps, IconButton, IconButtonProps, SxProps, Theme, useMediaQuery } from "@mui/material"
+import { Box, BoxProps, SxProps, Theme } from "@mui/material"
 import React from "react"
-import { Link, useHistory } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { XSYNLogoImagePath } from "../../assets"
-import { API_ENDPOINT_HOSTNAME } from "../../config"
-import { AuthContainer } from "../../containers"
 import { useSidebarState } from "../../containers/sidebar"
 
 interface NavbarProps extends BoxProps {}
@@ -66,99 +64,6 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 // 		)
 // 	}
 // }
-
-interface ProfileButtonProps extends Omit<IconButtonProps, "size"> {
-	size?: string
-}
-
-export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx, onClick, ...props }) => {
-	const history = useHistory()
-	const { user } = AuthContainer.useContainer()
-	const token = localStorage.getItem("token")
-
-	const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-		if (onClick) onClick(event)
-		history.push("/profile")
-	}
-
-	if (!user) return null
-
-	return (
-		<IconButton
-			onClick={handleClick}
-			sx={{
-				position: "relative",
-				width: "fit-content",
-				padding: 0,
-				"& .Avatar, & .Avatar-border": {
-					transition: "transform .2s cubic-bezier(.3, .7, .4, 1.5)",
-				},
-				"&:hover .Avatar": {
-					transform: "translate3d(-1px, -1px, 0)",
-				},
-				"&:hover .Avatar-border": {
-					transform: "translate3d(1px, 1px, 0)",
-				},
-				"&:active .Avatar": {
-					transform: "translate3d(1px, 1px, 0)",
-				},
-				"&:active .Avatar-border": {
-					transform: "translate3d(-1px, -1px, 0)",
-				},
-				"&:disabled": {
-					"&:hover .Avatar": {
-						transform: "translate3d(0, 0, 0)",
-					},
-					"&:hover .Avatar-border": {
-						transform: "translate3d(0, 0, 0)",
-					},
-					"&:active .Avatar": {
-						transform: "translate3d(0, 0, 0)",
-					},
-					"&:active .Avatar-border": {
-						transform: "translate3d(0, 0, 0)",
-					},
-				},
-				...sx,
-			}}
-			{...props}
-		>
-			<Box
-				className="Avatar-border"
-				sx={(theme) => ({
-					zIndex: -1,
-					position: "absolute",
-					top: "10%",
-					left: "10%",
-					display: "block",
-					width: "100%",
-					height: "100%",
-					borderRadius: "50%",
-					border: `2px solid ${theme.palette.secondary.main}`,
-				})}
-			/>
-			{!!user && user.faction && !user.avatar_id ? (
-				<Avatar
-					className="Avatar"
-					src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id}`}
-					sx={{
-						height: size,
-						width: size,
-					}}
-				/>
-			) : (
-				<Avatar
-					className="Avatar"
-					src={user.avatar_id ? `/api/files/${user.avatar_id}?token=${encodeURIComponent(token || "")}` : undefined}
-					sx={{
-						height: size,
-						width: size,
-					}}
-				/>
-			)}
-		</IconButton>
-	)
-}
 
 interface MenuButtonProps {
 	sx?: SxProps<Theme>
