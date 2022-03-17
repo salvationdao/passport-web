@@ -356,8 +356,14 @@ export const WithdrawSupsForm = ({
 											setWithdrawDisplay(e.target.value)
 										}}
 										onBlur={(e) => {
-											const newValue = parseUnits(e.target.value, 18)
-											setWithdrawAmount(newValue)
+											try {
+												if (e.target.value.length > 0) {
+													const newValue = parseUnits(e.target.value, 18)
+													setWithdrawAmount(newValue)
+												}
+											} catch (error) {
+												setImmediateError("Error setting withdraw amount")
+											}
 										}}
 										sx={{
 											"& .MuiFilledInput-input": {
@@ -391,7 +397,7 @@ export const WithdrawSupsForm = ({
 										disabled={!xsynSups || xsynSups._hex === BigNumber.from(0)._hex}
 										onClick={() => {
 											if (maxLimit) {
-												if (withdrawContractAmount && withdrawContractAmount.lt(maxLimit)) {
+												if (withdrawContractAmount && withdrawContractAmount.lte(maxLimit)) {
 													setWithdrawAmount(withdrawContractAmount)
 													setWithdrawDisplay(formatUnits(withdrawContractAmount, 18))
 													return
