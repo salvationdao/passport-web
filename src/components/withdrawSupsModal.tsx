@@ -1,18 +1,14 @@
+import { formatUnits, parseUnits } from "@ethersproject/units"
 import { Alert, Box, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Skeleton, TextField, Typography } from "@mui/material"
+import { BigNumber, ethers } from "ethers"
+import React, { useCallback, useEffect, useState } from "react"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { supFormatter } from "../helpers/items"
 import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
-import React, { useCallback, useEffect, useState } from "react"
-import { MetaMaskState, useWeb3 } from "../containers/web3"
-import { BigNumber, ethers } from "ethers"
-import { supFormatter } from "../helpers/items"
-import { FancyButton } from "./fancyButton"
-import { SocketState, useWebsocket } from "../containers/socket"
-import { useAuth } from "../containers/auth"
-import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
 import { ConnectWallet } from "./connectWallet"
-import { formatUnits, parseUnits } from "@ethersproject/units"
-
-const UseSignatureMode = true
+import { FancyButton } from "./fancyButton"
 
 interface WithdrawModalProps {
 	open: boolean
@@ -28,8 +24,6 @@ interface GetSignatureResponse {
 
 export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }: WithdrawModalProps) => {
 	const { account, provider, currentChainId, metaMaskState, changeChain } = useWeb3()
-	const { send, state } = useWebsocket()
-	const { user } = useAuth()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber | null>(null)
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string | null>(null)
