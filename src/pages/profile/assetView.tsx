@@ -29,6 +29,7 @@ import { ConnectWallet } from "../../components/connectWallet"
 import { FancyButton } from "../../components/fancyButton"
 import { InputField } from "../../components/form/inputField"
 import { Loading } from "../../components/loading"
+import { SwitchNetworkButton } from "../../components/switchNetwortButton"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
 import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
@@ -628,7 +629,7 @@ interface StakeModelProps {
 }
 
 const UnstakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => {
-	const { account, provider } = useWeb3()
+	const { account, provider, currentChainId, changeChain } = useWeb3()
 	const [error, setError] = useState<string>()
 	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
 	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
@@ -702,16 +703,20 @@ const UnstakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => 
 					padding: "16px 24px",
 				}}
 			>
-				<FancyButton
-					loading={unstakingLoading}
-					disabled={unstakingSuccess || unstakingLoading}
-					onClick={() => {
-						setError(undefined)
-						unstake()
-					}}
-				>
-					{unstakingSuccess ? "Successfully Transitioned" : "Begin Transition Off-world"}
-				</FancyButton>
+				{currentChainId && currentChainId.toString() === ETHEREUM_CHAIN_ID ? (
+					<FancyButton
+						loading={unstakingLoading}
+						disabled={unstakingSuccess || unstakingLoading}
+						onClick={() => {
+							setError(undefined)
+							unstake()
+						}}
+					>
+						{unstakingSuccess ? "Successfully Transitioned" : "Begin Transition Off-world"}
+					</FancyButton>
+				) : (
+					<SwitchNetworkButton open={open} changeChain={changeChain} currentChainId={currentChainId} setError={setError} />
+				)}
 			</DialogActions>
 			{!!error && <Alert severity="error">{error}</Alert>}
 		</Dialog>
@@ -750,7 +755,7 @@ const LockedModal = ({ remainingTime, open, unlocked_at, setClose }: { open: boo
 }
 
 const StakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => {
-	const { account, provider } = useWeb3()
+	const { account, provider, currentChainId, changeChain } = useWeb3()
 	const [error, setError] = useState<string>()
 	const [approvalLoading, setApprovalLoading] = useState<boolean>(false)
 	const [approvalSuccess, setApprovalSuccess] = useState<boolean>(false)
@@ -851,11 +856,22 @@ const StakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => {
 				)}
 			</DialogTitle>
 			<DialogContent sx={{ paddingY: 0 }}>
-				<Typography variant="h5" color="error" marginBottom=".5rem">
-					GABS WARNING:
-				</Typography>
-				<Typography>To transition your items back on world it is a 2 part process, with each part requiring fees.</Typography>
+				{currentChainId && currentChainId.toString() === ETHEREUM_CHAIN_ID ? (
+					<>
+						<Typography variant="h5" color="error" marginBottom=".5rem">
+							GABS WARNING:
+						</Typography>
+						<Typography>To transition your items back on world it is a 2 part process, with each part requiring fees.</Typography>
+					</>
+				) : (
+					<>
+						<Typography variant="h5" color="error" marginBottom=".5rem">
+							Switch network to continue
+						</Typography>
+					</>
+				)}
 			</DialogContent>
+
 			<DialogActions
 				sx={{
 					display: "flex",
@@ -865,24 +881,29 @@ const StakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => {
 				}}
 				disableSpacing
 			>
-				<Typography variant="subtitle1">Step 1: Approve the transaction to transition your item.</Typography>
-				<FancyButton
-					sx={{
-						marginBottom: "1rem",
-					}}
-					loading={approvalLoading}
-					disabled={approvalSuccess || approvalLoading}
-					onClick={approve}
-				>
-					{approvalSuccess ? "Successfully Approved" : "Approve"}
-				</FancyButton>
-
-				<Typography variant="subtitle1" color={!approvalSuccess ? colors.darkerGrey : colors.white}>
-					Step 2: Transition your item on world.
-				</Typography>
-				<FancyButton loading={stakingLoading} disabled={!approvalSuccess || stakingSuccess || stakingLoading} onClick={stake}>
-					{stakingSuccess ? "Successfully Transitioned" : "Transition"}
-				</FancyButton>
+				{currentChainId && currentChainId.toString() === ETHEREUM_CHAIN_ID ? (
+					<>
+						<Typography variant="subtitle1">Step 1: Approve the transaction to transition your item.</Typography>
+						<FancyButton
+							sx={{
+								marginBottom: "1rem",
+							}}
+							loading={approvalLoading}
+							disabled={approvalSuccess || approvalLoading}
+							onClick={approve}
+						>
+							{approvalSuccess ? "Successfully Approved" : "Approve"}
+						</FancyButton>
+						<Typography variant="subtitle1" color={!approvalSuccess ? colors.darkerGrey : colors.white}>
+							Step 2: Transition your item on world.
+						</Typography>
+						<FancyButton loading={stakingLoading} disabled={!approvalSuccess || stakingSuccess || stakingLoading} onClick={stake}>
+							{stakingSuccess ? "Successfully Transitioned" : "Transition"}
+						</FancyButton>
+					</>
+				) : (
+					<SwitchNetworkButton open={open} changeChain={changeChain} currentChainId={currentChainId} setError={setError} />
+				)}
 				{!!error && (
 					<Typography variant={"body1"} color={colors.supremacy.red}>
 						{error}
@@ -912,20 +933,12 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 	const [errorMinting, setErrorMinting] = useState<string>()
 
 	// check on chain ID and if chain Id != eth chain display button to change
-	const changeChainToETH = useCallback(async () => {
-		if (open && currentChainId?.toString() !== ETHEREUM_CHAIN_ID) {
-			await changeChain(parseInt(ETHEREUM_CHAIN_ID, 0))
-		}
-	}, [currentChainId, changeChain, open])
-
-	useEffect(() => {
-		changeChainToETH()
-	}, [changeChainToETH])
 
 	const mintAttempt = useCallback(
 		async (mintingContract: string, assetExternalTokenID: number, collectionSlug: string) => {
+			if (!currentChainId) return
 			try {
-				if (currentChainId?.toString() !== ETHEREUM_CHAIN_ID) {
+				if (currentChainId.toString() !== ETHEREUM_CHAIN_ID) {
 					setErrorMinting("Connected to wrong chain.")
 					return
 				}
@@ -943,7 +956,6 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
 				const signer = provider.getSigner()
 				const mintContract = new ethers.Contract(mintingContract, abi, signer)
-
 				const nonce = await mintContract.nonces(account)
 				const mint_endpoint = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/owner_address/${account}/nonce/${nonce}/collection_slug/${collectionSlug}/token_id/${assetExternalTokenID}`
 				const resp = await fetch(mint_endpoint)
@@ -1023,7 +1035,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 			>
 				{metaMaskState !== MetaMaskState.Active ? (
 					<ConnectWallet />
-				) : currentChainId?.toString() === ETHEREUM_CHAIN_ID ? (
+				) : currentChainId && currentChainId.toString() === ETHEREUM_CHAIN_ID ? (
 					<FancyButton
 						loading={loadingMint}
 						onClick={() => {
@@ -1034,9 +1046,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 						Confirm and start transition
 					</FancyButton>
 				) : (
-					<FancyButton borderColor={colors.darkGrey} onClick={async () => await changeChainToETH()}>
-						Switch Network
-					</FancyButton>
+					<SwitchNetworkButton open={open} changeChain={changeChain} currentChainId={currentChainId} setError={setErrorMinting} />
 				)}
 				{errorMinting && <Typography sx={{ marginTop: "1rem", color: colors.supremacy.red }}>{errorMinting}</Typography>}
 			</DialogActions>
