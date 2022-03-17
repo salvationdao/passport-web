@@ -5,8 +5,9 @@ import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../assets"
 import WarMachine from "../../assets/images/WarMachine.png"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
-import { Navbar, ProfileButton } from "../../components/home/navbar"
+import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { ProfileButton } from "../../components/profileButton"
 import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
 import { useAuth } from "../../containers/auth"
@@ -18,7 +19,7 @@ import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
 import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
-import { AssetView, AssetViewContainer } from "./assetView"
+import { AssetViewContainer } from "./assetView"
 
 export const ProfilePage: React.FC = () => {
 	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
@@ -186,7 +187,7 @@ export const ProfilePage: React.FC = () => {
 						<Box minHeight="2rem" minWidth="2rem" />
 					</>
 				)}
-				{!!asset_hash ? <AssetViewContainer user={user} assetHash={asset_hash} /> : <CollectionView user={user} />}
+				{!!asset_hash ? <AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} /> : <CollectionView user={user} />}
 			</Box>
 		</Box>
 	)

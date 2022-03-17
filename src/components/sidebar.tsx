@@ -1,5 +1,6 @@
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import AppsIcon from "@mui/icons-material/Apps"
+import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
 import LoginIcon from "@mui/icons-material/Login"
@@ -9,9 +10,8 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import SavingsIcon from "@mui/icons-material/Savings"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Box, Button, Divider, Drawer, Stack, SxProps, Theme, Typography, useMediaQuery, useTheme } from "@mui/material"
+import { Box, Button, Divider, Drawer, Stack, SxProps, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
-import { formatUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
@@ -20,7 +20,6 @@ import SupsTokenLogo from "../assets/images/sups-token-logo.png"
 import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK, TOKEN_SALE_ENDPOINT } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
-import { useSnackbar } from "../containers/snackbar"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
@@ -30,11 +29,11 @@ import { colors } from "../theme"
 import { Faction, FactionTheme, User } from "../types/types"
 import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
-import { ProfileButton } from "./home/navbar"
+import { ProfileButton } from "./profileButton"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 
-const drawerWidth = 250
+const drawerWidth = 260
 
 export interface SidebarLayoutProps {
 	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
@@ -44,7 +43,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const history = useHistory()
 	const { send, state } = useWebsocket()
 	const { sidebarOpen } = useSidebarState()
-	const { displayMessage } = useSnackbar()
 	const { user, logout } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -61,6 +59,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
+	const [pendingRefund, setPendingRefunds] = useState<BigNumber>(BigNumber.from(0))
 
 	useEffect(() => {
 		if (userSups) {
@@ -83,7 +82,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			return
 		}
 
-		if (supBalance) setWalletSups(formatUnits(supBalance, 18))
+		if (supBalance) setWalletSups(supBalance.toString())
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
@@ -98,6 +97,18 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			}
 		})()
 	}, [send, state])
+
+	useEffect(() => {
+		;(async () => {
+			try {
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/holding/${user?.public_address}`)
+				const body = (await resp.clone().json()) as { amount: string }
+				setPendingRefunds(BigNumber.from(body.amount))
+			} catch (e) {
+				console.error(e)
+			}
+		})()
+	}, [user])
 
 	let truncatedUsername = ""
 	if (user) {
@@ -177,7 +188,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 							gridColumnStart: "1",
 							gridColumnEnd: "2",
 							gridRowStart: "1",
-							gridRowEnd: "3",
+							gridRowEnd: "4",
 							justifySelf: "center",
 							alignSelf: "center",
 							border: `.5px solid ${colors.lightNavyBlue}`,
@@ -200,7 +211,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						}}
 					>
 						<Box sx={{ display: "flex", alignItems: "center", width: "100%", marginBottom: ".2rem" }}>
-							<SportsEsportsIcon sx={{ fontSize: "1.2rem", color: colors.darkGrey }} />
+							<Tooltip title="Passport Amount">
+								<SportsEsportsIcon sx={{ fontSize: "1.2rem", color: colors.darkGrey }} />
+							</Tooltip>
 							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: " 0 .5rem" }} />
 							<Typography variant="body1">{xsynSups ? supFormatter(xsynSups.toString()) : "--"}</Typography>
 						</Box>
@@ -217,12 +230,33 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					>
 						<Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
 							{metaMaskState === MetaMaskState.NotInstalled ? (
-								<WalletConnectIcon height={"1.2rem"} width={"1.2rem"} />
+								<Tooltip title="Wallet Amount">
+									<WalletConnectIcon height={"1.2rem"} width={"1.2rem"} />
+								</Tooltip>
 							) : (
-								<MetaMaskIcon height={"1.2rem"} width={"1.2rem"} />
+								<Tooltip title="Wallet Amount">
+									<MetaMaskIcon height={"1.2rem"} width={"1.2rem"} />
+								</Tooltip>
 							)}
 							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: "0 .5rem" }} />
 							<Typography variant="body1">{walletSups ? supFormatter(walletSups) : "--"}</Typography>
+						</Box>
+						<Divider />
+					</Box>
+					<Box
+						sx={{
+							gridColumnStart: "2",
+							gridColumnEnd: "5",
+							gridRowStart: "3",
+							gridRowEnd: "3",
+						}}
+					>
+						<Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+							<Tooltip title="Holding amount">
+								<CurrencyExchangeIcon sx={{ maxWidth: "1.1rem" }} />
+							</Tooltip>
+							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: "0 .5rem" }} />
+							<Typography variant="body1">{pendingRefund ? supFormatter(pendingRefund.toString()) : "--"}</Typography>
 						</Box>
 					</Box>
 				</Box>
@@ -598,7 +632,7 @@ const FactionWarMachineRemain = () => {
 									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{mega_amount}</Typography>
 								</Stack>
 								<Stack direction="row">
-									<Typography sx={{ fontWeight: "fontWeightBold" }}>Lootbox:&nbsp;</Typography>
+									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates:&nbsp;</Typography>
 									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{lootbox_amount}</Typography>
 								</Stack>
 							</Stack>

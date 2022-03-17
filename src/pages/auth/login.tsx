@@ -19,7 +19,7 @@ interface LogInInput {
 
 export const LoginPage: React.FC = () => {
 	const history = useHistory()
-	const { user, recheckAuth, loading: authLoading } = useAuth()
+	const { user, recheckAuth } = useAuth()
 	const { setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
 
@@ -105,12 +105,10 @@ export const LoginPage: React.FC = () => {
 		<Box
 			sx={{
 				display: "flex",
-				flex: 1,
-				position: "relative",
-				height: "100%",
 				justifyContent: "center",
 				alignItems: "center",
 				flexDirection: "column",
+				minHeight: "100vh",
 				padding: "3rem",
 			}}
 		>

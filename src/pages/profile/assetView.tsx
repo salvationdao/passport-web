@@ -1,4 +1,3 @@
-import OpenseaLogo from "../../assets/images/opensea_logomark_white.svg"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import CloseIcon from "@mui/icons-material/Close"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
@@ -19,20 +18,22 @@ import {
 	Typography,
 	useMediaQuery,
 } from "@mui/material"
+import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
 import { ethers } from "ethers"
 import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useHistory } from "react-router-dom"
-import { SupTokenIcon } from "../../assets"
+import { useInterval } from "react-use"
+import { ConnectWallet } from "../../components/connectWallet"
 import { FancyButton } from "../../components/fancyButton"
 import { InputField } from "../../components/form/inputField"
 import { Loading } from "../../components/loading"
+import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
 import { useSnackbar } from "../../containers/snackbar"
 import { useWebsocket } from "../../containers/socket"
 import { MetaMaskState, useWeb3 } from "../../containers/web3"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
-import { supFormatter } from "../../helpers/items"
 import { metamaskErrorHandling } from "../../helpers/web3"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
@@ -41,10 +42,6 @@ import { OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemRes
 import { Attribute, Collection, User } from "../../types/types"
 import { PercentageDisplay } from "./percentageDisplay"
 import { rarityTextStyles } from "./profile"
-import { formatDistanceToNow, formatDuration } from "date-fns"
-import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
-import { ConnectWallet } from "../../components/connectWallet"
-import { useInterval } from "react-use"
 
 interface AssetViewProps {
 	user: User
@@ -61,14 +58,16 @@ interface AssetViewProps {
 	openseaURL: string
 	showOpenseaURL: boolean
 	onWorld: boolean
+	edit: boolean
 }
 interface AssetViewContainerProps {
 	user: User
 	assetHash: string
+	edit: boolean
 }
 
-export const AssetViewContainer = ({ user, assetHash }: AssetViewContainerProps) => {
-	const { state, subscribe, send } = useWebsocket()
+export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainerProps) => {
+	const { state, subscribe } = useWebsocket()
 	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem | null>(null)
 	const [collectionSlug, setCollectionSlug] = useState<string | null>(null)
 	const [collection, setCollection] = useState<Collection | null>(null)
@@ -85,7 +84,7 @@ export const AssetViewContainer = ({ user, assetHash }: AssetViewContainerProps)
 			},
 			{ slug: collectionSlug },
 		)
-	}, [collectionSlug])
+	}, [collectionSlug, subscribe])
 
 	useEffect(() => {
 		setLoading(true)
@@ -95,7 +94,6 @@ export const AssetViewContainer = ({ user, assetHash }: AssetViewContainerProps)
 				(payload) => {
 					if (!payload) return
 					let numberAttributes = new Array<Attribute>()
-					let regularAttributes = new Array<Attribute>()
 
 					const attributes = PurchasedItemAttributes(payload.purchased_item)
 					attributes.forEach((a) => {
@@ -154,6 +152,7 @@ export const AssetViewContainer = ({ user, assetHash }: AssetViewContainerProps)
 			collection={collection}
 			error={error}
 			numberAttributes={numberAttributes}
+			edit={edit}
 		/>
 	)
 }
@@ -173,6 +172,7 @@ export const AssetView = ({
 	onWorld,
 	openseaURL,
 	showOpenseaURL,
+	edit,
 }: AssetViewProps) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	useInterval(() => {
@@ -284,7 +284,7 @@ export const AssetView = ({
 							marginBottom: "1rem",
 						}}
 					>
-						{Buttons()}
+						{edit && Buttons()}
 					</Box>
 				)}
 				<Box
@@ -412,7 +412,7 @@ export const AssetView = ({
 										gap: ".5rem",
 									}}
 								>
-									{Buttons()}
+									{edit && Buttons()}
 								</Box>
 							)}
 						</Box>
@@ -575,7 +575,7 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Pur
 	// set default name
 	useEffect(() => {
 		setValue("name", asset.data.mech.name)
-	}, [setValue])
+	}, [setValue, asset.data.mech.name])
 
 	return (
 		<Dialog onClose={() => onClose()} open={open}>
@@ -594,7 +594,7 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Pur
 						style={{ width: "300px" }}
 						autoFocus
 						disabled={loading}
-						inputProps={{ maxLength: 10 }}
+						inputProps={{ maxLength: 25 }}
 					/>
 					<DialogActions>
 						<>
@@ -651,7 +651,7 @@ const UnstakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => 
 		} finally {
 			setUnstakingLoading(false)
 		}
-	}, [provider, asset])
+	}, [provider, asset, account, collection])
 
 	return (
 		<Dialog
@@ -759,15 +759,23 @@ const StakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => {
 	const [stakingSuccess, setStakingSuccess] = useState<boolean>(false)
 
 	useEffect(() => {
-		if (!provider) return
-		// Check already approved
-		const abi = ["function getApproved(uint256) view returns (address)"]
+		if (!provider) return // Check already approved
+		;(async () => {
+			try {
+				const abi = ["function getApproved(uint256) view returns (address)"]
 
-		const nftContract = new ethers.Contract(collection.mint_contract, abi, provider)
-		nftContract.getApproved(asset.external_token_id).then((resp: string) => {
-			setApprovalSuccess(resp === collection.stake_contract)
-		})
-	}, [provider])
+				const nftContract = new ethers.Contract(collection.mint_contract, abi, provider)
+				const resp = await nftContract.getApproved(asset.external_token_id)
+
+				if (!!resp) {
+					setApprovalSuccess(resp === collection.stake_contract)
+				}
+			} catch (e) {
+				const err = metamaskErrorHandling(e)
+				err ? setError(err) : setError("Could not check if already approved")
+			}
+		})()
+	}, [provider, collection, asset])
 
 	const approve = useCallback(async () => {
 		if (!provider) return
@@ -781,12 +789,12 @@ const StakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => {
 			await tx.wait()
 			setApprovalSuccess(true)
 		} catch (e) {
-			console.log(e)
-			// setError(e)
+			const err = metamaskErrorHandling(e)
+			err ? setError(err) : setError("Could not check if already approved")
 		} finally {
 			setApprovalLoading(false)
 		}
-	}, [provider, asset])
+	}, [provider, asset, collection])
 
 	const stake = useCallback(async () => {
 		if (!account) return
@@ -807,7 +815,7 @@ const StakeModel = ({ open, onClose, asset, collection }: StakeModelProps) => {
 		} finally {
 			setStakingLoading(false)
 		}
-	}, [provider, asset])
+	}, [provider, account, asset, collection])
 
 	return (
 		<Dialog
@@ -937,7 +945,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				const mintContract = new ethers.Contract(mintingContract, abi, signer)
 
 				const nonce = await mintContract.nonces(account)
-				const mint_endpoint = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/nfts/owner_address/${account}/nonce/${nonce}/collection_slug/${collectionSlug}/token_id/${assetExternalTokenID}`
+				const mint_endpoint = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/owner_address/${account}/nonce/${nonce}/collection_slug/${collectionSlug}/token_id/${assetExternalTokenID}`
 				const resp = await fetch(mint_endpoint)
 				if (resp.status !== 200) {
 					const err = await resp.json()
@@ -950,7 +958,6 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				onClose()
 			} catch (e: any) {
 				const err = metamaskErrorHandling(e)
-				console.error(err)
 				err ? setErrorMinting(err) : setErrorMinting("Issue minting, please try again or contact support.")
 			} finally {
 				setLoadingMint(false)

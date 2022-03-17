@@ -1,6 +1,6 @@
 import WalletConnectProvider from "@walletconnect/web3-provider"
-import { BigNumber, ethers, utils } from "ethers"
-import { arrayify, hexlify } from "ethers/lib/utils"
+import { BigNumber, ethers } from "ethers"
+import { hexlify } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useInterval } from "react-use"
 import { createContainer } from "unstated-next"
@@ -9,25 +9,25 @@ import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
 import Ethereum from "../assets/images/crypto/ethereum-eth-logo.svg"
 import Usdc from "../assets/images/crypto/usd-coin-usdc-logo.svg"
 import {
+	API_ENDPOINT_HOSTNAME,
 	BINANCE_CHAIN_ID,
 	BSC_SCAN_SITE,
 	BUSD_CONTRACT_ADDRESS,
 	ETHEREUM_CHAIN_ID,
 	ETH_SCAN_SITE,
 	PURCHASE_ADDRESS,
+	SIGN_MESSAGE,
 	SUPS_CONTRACT_ADDRESS,
 	USDC_CONTRACT_ADDRESS,
 	WALLET_CONNECT_RPC,
-	SIGN_MESSAGE,
-	API_ENDPOINT_HOSTNAME,
 } from "../config"
+import { metamaskErrorHandling } from "../helpers/web3"
 import HubKey from "../keys"
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { SocketState, useWebsocket } from "./socket"
 import { genericABI } from "./web3GenericABI"
-import { metamaskErrorHandling } from "../helpers/web3"
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -278,73 +278,96 @@ export const Web3Container = createContainer(() => {
 		[provider, currentChainId],
 	)
 
+	const getNonce = useCallback(async (publicAddress: string): Promise<string> => {
+		const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/get-nonce?public-address=${publicAddress}`)
+		if (resp.status !== 200) {
+			const err = await resp.json()
+			throw (err as any).message
+		}
+		const jsn: GetNonceResponse = await resp.json()
+		return jsn.nonce
+	}, [])
+
+	const getNonceFromID = useCallback(async (userId: string): Promise<string> => {
+		const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/get-nonce?user-id=${userId}`)
+		if (resp.status !== 200) {
+			const err = await resp.json()
+			throw (err as any).message
+		}
+		const jsn: GetNonceResponse = await resp.json()
+		return jsn.nonce
+	}, [])
+
 	useEffect(() => {
 		if (!account) return
 		handleWalletSups(account)
 	}, [account, handleWalletSups])
 
-	const createWcProvider = useCallback(async (showQrCode: boolean = true) => {
-		const acceptedWallets = ["metamask", "rainbow", "gnosis", "trust", "argent", "ledgerlive"]
+	const createWcProvider = useCallback(
+		async (showQrCode: boolean = true) => {
+			const acceptedWallets = ["metamask", "rainbow", "gnosis", "trust", "argent", "ledgerlive"]
 
-		//  Create WalletConnect Provider
-		const walletConnectProvider = new WalletConnectProvider({
-			rpc: {
-				1: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/mainnet`,
-				5: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/goerli`,
-				56: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/mainnet`,
-				97: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/testnet`,
-			},
-			qrcode: showQrCode,
-			qrcodeModalOptions: {
-				mobileLinks: acceptedWallets,
-				desktopLinks: acceptedWallets,
-			},
-		})
+			//  Create WalletConnect Provider
+			const walletConnectProvider = new WalletConnectProvider({
+				rpc: {
+					1: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/mainnet`,
+					5: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/goerli`,
+					56: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/mainnet`,
+					97: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/testnet`,
+				},
+				qrcode: showQrCode,
+				qrcodeModalOptions: {
+					mobileLinks: acceptedWallets,
+					desktopLinks: acceptedWallets,
+				},
+			})
 
-		//  Wrap with Web3Provider from ethers.js
-		const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
-		setProvider(web3Provider)
-		setCurrentChainId(walletConnectProvider.chainId)
-		setWcProvider(walletConnectProvider)
+			//  Wrap with Web3Provider from ethers.js
+			const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
+			setProvider(web3Provider)
+			setCurrentChainId(walletConnectProvider.chainId)
+			setWcProvider(walletConnectProvider)
 
-		// Subscribe to connect
-		walletConnectProvider.on("connect", async () => {
-			const connector = await walletConnectProvider.getWalletConnector()
-			const acc = connector.accounts[0]
-			let nonce: string
-			if (acc) {
-				nonce = await getNonce(acc)
-			} else return ""
-			if (nonce === "") return ""
-			const rawMessage = `${SIGN_MESSAGE}:\n ${nonce}`
-			const rawMessageLength = new Blob([rawMessage]).size
-			const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
-			const signMsg = ethers.utils.keccak256(convertMsg)
-			const signature = await connector.signMessage([acc, signMsg])
-			setWcSignature(signature)
-		})
+			// Subscribe to connect
+			walletConnectProvider.on("connect", async () => {
+				const connector = await walletConnectProvider.getWalletConnector()
+				const acc = connector.accounts[0]
+				let nonce: string
+				if (acc) {
+					nonce = await getNonce(acc)
+				} else return ""
+				if (nonce === "") return ""
+				const rawMessage = `${SIGN_MESSAGE}:\n ${nonce}`
+				const rawMessageLength = new Blob([rawMessage]).size
+				const convertMsg = ethers.utils.toUtf8Bytes("\x19Ethereum Signed Message:\n" + rawMessageLength + rawMessage)
+				const signMsg = ethers.utils.keccak256(convertMsg)
+				const signature = await connector.signMessage([acc, signMsg])
+				setWcSignature(signature)
+			})
 
-		// Subscribe to accounts change
-		walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
-			if (accounts.length > 0) {
-				setAccount(accounts[0])
-				setMetaMaskState(MetaMaskState.Active)
-			}
-		})
-		// Subscribe to chainId change
-		walletConnectProvider.on("chainChanged", (chainId: number) => {
-			setCurrentChainId(chainId)
-		})
-		// Subscribe to session disconnection
-		walletConnectProvider.on("disconnect", (code: number, reason: string) => {
-			setAccount(undefined)
-			setProvider(undefined)
-			setWcProvider(undefined)
-			setMetaMaskState(MetaMaskState.NotInstalled)
-			localStorage.removeItem("token")
-		})
-		return walletConnectProvider
-	}, [])
+			// Subscribe to accounts change
+			walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
+				if (accounts.length > 0) {
+					setAccount(accounts[0])
+					setMetaMaskState(MetaMaskState.Active)
+				}
+			})
+			// Subscribe to chainId change
+			walletConnectProvider.on("chainChanged", (chainId: number) => {
+				setCurrentChainId(chainId)
+			})
+			// Subscribe to session disconnection
+			walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+				setAccount(undefined)
+				setProvider(undefined)
+				setWcProvider(undefined)
+				setMetaMaskState(MetaMaskState.NotInstalled)
+				localStorage.removeItem("token")
+			})
+			return walletConnectProvider
+		},
+		[getNonce],
+	)
 
 	useEffect(() => {
 		// Run on every new block
@@ -418,7 +441,7 @@ export const Web3Container = createContainer(() => {
 				console.error(err)
 			}
 		},
-		[provider],
+		[provider, account],
 	)
 	const connect = useCallback(async (): Promise<string> => {
 		if (provider) {
@@ -515,26 +538,6 @@ export const Web3Container = createContainer(() => {
 		[],
 	)
 
-	const getNonce = useCallback(async (publicAddress: string): Promise<string> => {
-		const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/get-nonce?public-address=${publicAddress}`)
-		if (resp.status !== 200) {
-			const err = await resp.json()
-			throw (err as any).message
-		}
-		const jsn: GetNonceResponse = await resp.json()
-		return jsn.nonce
-	}, [])
-
-	const getNonceFromID = useCallback(async (userId: string): Promise<string> => {
-		const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/get-nonce?user-id=${userId}`)
-		if (resp.status !== 200) {
-			const err = await resp.json()
-			throw (err as any).message
-		}
-		const jsn: GetNonceResponse = await resp.json()
-		return jsn.nonce
-	}, [])
-
 	// Returns an empty string if user does not exist
 	const sign = useCallback(
 		async (userID?: string): Promise<string> => {
@@ -558,7 +561,13 @@ export const Web3Container = createContainer(() => {
 	)
 
 	const signEarlyContributors = useCallback(
-		async (name: string, phone: string, email: string, agree: boolean): Promise<boolean> => {
+		async (
+			name: string,
+			phone: string,
+			email: string,
+			agree: boolean,
+			setErrorSigning: React.Dispatch<React.SetStateAction<boolean>>,
+		): Promise<boolean> => {
 			if (!provider) return false
 			try {
 				if (!wcProvider) {
@@ -574,6 +583,10 @@ export const Web3Container = createContainer(() => {
 							method: "POST",
 						},
 					)
+					if (resp.status != 200) {
+						setErrorSigning(true)
+						return false
+					}
 					const body = (await resp.clone().json()) as EarlyContributorCheck
 					return body.has_signed
 				}
@@ -591,17 +604,22 @@ export const Web3Container = createContainer(() => {
 						method: "POST",
 					},
 				)
+				if (resp.status != 200) {
+					setErrorSigning(true)
+					return false
+				}
 				const body = (await resp.clone().json()) as EarlyContributorCheck
 				return body.has_signed
 			} catch (e: any) {
-				console.log(e)
+				console.error(e)
+				setErrorSigning(true)
 				if (e.code === 4001) {
 					return false
 				}
 			}
 			return false
 		},
-		[provider],
+		[provider, wcProvider],
 	)
 
 	const signWalletConnect = useCallback(async () => {

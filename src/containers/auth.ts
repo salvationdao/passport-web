@@ -1,7 +1,7 @@
-import { useSnackbar } from "./snackbar"
 import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../config"
+import { metamaskErrorHandling } from "../helpers/web3"
 import HubKey from "../keys"
 import {
 	AddDiscordRequest,
@@ -34,7 +34,6 @@ import { Perm } from "../types/enums"
 import { User } from "../types/types"
 import { useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
-import { metamaskErrorHandling } from "../helpers/web3"
 
 export enum VerificationType {
 	EmailVerification,
@@ -54,7 +53,6 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const { state, send, subscribe } = useWebsocket()
-	const { displayMessage } = useSnackbar()
 	const [showSimulation, setShowSimulation] = useState(false)
 
 	// const [impersonatedUser, setImpersonatedUser] = useState<User>()

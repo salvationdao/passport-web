@@ -32,6 +32,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 		return subscribe<StoreItemResponse>(
 			HubKey.StoreItemSubscribe,
 			(payload) => {
+				if (!payload) return
 				setItem(payload.item)
 				setPriceInSups(payload.price_in_sups)
 			},

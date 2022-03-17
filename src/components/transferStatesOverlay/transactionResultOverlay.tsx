@@ -124,6 +124,10 @@ export const TransactionResultOverlay = ({
 				<Typography variant="h4" sx={{ margin: "1rem 0" }}>
 					Transaction has been submitted.
 				</Typography>
+				<Typography variant="body1" sx={{ margin: "1rem 0" }}>
+					The deposit will take around five minutes to appear in your account. If no activity has been recorded after 24 hours please create a ticket
+					on Discord.
+				</Typography>
 				<Typography variant="body1">
 					<Link href={`https://${BSC_SCAN_SITE}/tx/${currentTransferHash}`} target="_blank">
 						View on Explorer
@@ -134,7 +138,10 @@ export const TransactionResultOverlay = ({
 					loading={loading}
 					disabled={loading}
 					sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
-					onClick={() => setCurrentTransferState("none")}
+					onClick={() => {
+						window.location.reload()
+						setCurrentTransferState("none")
+					}}
 				>
 					{loading ? " " : "Close"}
 				</FancyButton>

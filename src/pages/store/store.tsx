@@ -1,10 +1,10 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import OpenseaLogo from "../../assets/images/opensea_logomark_white.svg"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import { Box, Collapse, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
+import OpenseaLogo from "../../assets/images/opensea_logomark_white.svg"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
@@ -103,14 +103,14 @@ export const StorePage: React.FC = () => {
 		const attributeFilterItems: any[] = []
 		if (assetType && assetType !== "All") {
 			attributeFilterItems.push({
-				trait: "Asset Type",
+				trait: "asset_type",
 				value: assetType,
 				operatorValue: "contains",
 			})
 		}
 		rarities.forEach((v) =>
 			attributeFilterItems.push({
-				trait: "Rarity",
+				trait: "tier",
 				value: v,
 				operatorValue: "contains",
 			}),
@@ -118,8 +118,8 @@ export const StorePage: React.FC = () => {
 
 		query({
 			search,
-			attributeFilter: {
-				linkOperator: "or",
+			attribute_filter: {
+				linkOperator: assetType && assetType !== "All" ? "and" : "or",
 				items: attributeFilterItems,
 			},
 			filter: {
@@ -272,6 +272,7 @@ export const StorePage: React.FC = () => {
 			</Box>
 		</>
 	)
+
 	return (
 		<>
 			{!isWiderThan1000px && (
@@ -298,7 +299,6 @@ export const StorePage: React.FC = () => {
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					minHeight: "100%",
 					overflowX: "hidden",
 				}}
 			>
@@ -310,7 +310,6 @@ export const StorePage: React.FC = () => {
 				<Box
 					sx={{
 						display: "flex",
-						width: "100%",
 						flexDirection: "column",
 						alignItems: "center",
 						marginBottom: "2rem",
@@ -510,37 +509,47 @@ export const StorePage: React.FC = () => {
 								</Paper>
 							)}
 						</Box>
+						{collection && <BlackMarketCTA mint_contract={collection.mint_contract} />}
 					</Box>
 				</Box>
 			</Box>
-			<BlackMarketCTA />
 		</>
 	)
 }
 
-const BlackMarketCTA = () => {
+const BlackMarketCTA = ({ mint_contract }: { mint_contract: string }) => {
+	const openseaURL =
+		mint_contract === "0xEEfaF47acaa803176F1711c1cE783e790E4E750D"
+			? `https://testnets.opensea.io/collection/supremacy-genesis-v4`
+			: `https://opensea.io/collection/supremacy-genesis`
 	return (
 		<Box
 			sx={{
 				flexDirection: "column",
 				display: "flex",
 				justifyContent: "center",
-				marginTop: "2rem",
 				alignItems: "center",
+				marginTop: "2rem",
 			}}
 		>
-			<Typography>Looking for other factions? </Typography>
+			<Typography
+				sx={{
+					marginBottom: ".5rem",
+				}}
+			>
+				Looking for other factions?
+			</Typography>
 			<Link
 				underline="none"
 				color={colors.white}
 				component={StyledFancyButton}
 				sx={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 2rem", height: "4rem" }}
-				href="https://opensea.io/collection/supremacy-genesis"
+				href={openseaURL}
 				target="_blank"
 				rel="noopener noreferrer"
 			>
 				Check out the black market.
-				<img src={OpenseaLogo} style={{ maxHeight: "100%" }} />
+				<img src={OpenseaLogo} style={{ maxHeight: "100%" }} alt="Open Sea logo" />
 			</Link>
 		</Box>
 	)

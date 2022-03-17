@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Collapse, IconButton, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
+import { Box, Collapse, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
@@ -29,12 +29,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const { loading, error, payload } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
-	const {
-		loading: offWorldLoading,
-		error: offWorldError,
-		payload: offWorldPayload,
-		query: offWorldQuery,
-	} = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.WalletCollectionList, false)
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
@@ -44,11 +38,6 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 		if (!payload || loading || error) return
 		setAssetHashes(payload.asset_hashes)
 	}, [payload, loading, error])
-
-	useEffect(() => {
-		if (!offWorldPayload || offWorldLoading || offWorldError) return
-		setAssetHashes(Array.from(new Set(offWorldPayload.asset_hashes)))
-	}, [offWorldPayload, offWorldLoading, offWorldError])
 
 	if (user && !user.faction) {
 		return <PleaseEnlist />

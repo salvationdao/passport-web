@@ -1,7 +1,7 @@
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import { Box, Button, TextField, Typography } from "@mui/material"
-import { BigNumber, ethers } from "ethers"
-import { formatUnits } from "ethers/lib/utils"
+import { BigNumber } from "ethers"
+import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
@@ -24,8 +24,8 @@ interface DepositSupsProps {
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
 	currentTransferState: string
-	depositAmount: string | undefined
-	setDepositAmount: React.Dispatch<React.SetStateAction<string | undefined>>
+	depositAmount: BigNumber
+	setDepositAmount: React.Dispatch<React.SetStateAction<BigNumber>>
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
 	setError: React.Dispatch<React.SetStateAction<string>>
 }
@@ -47,6 +47,7 @@ export const DepositSups = ({
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsTotal, setSupsTotal] = useState<BigNumber>()
 	const [immediateError, setImmediateError] = useState<string>()
+	const [depositDisplay, setDepositDisplay] = useState<string>("")
 
 	useEffect(() => {
 		if (userSups) {
@@ -55,13 +56,9 @@ export const DepositSups = ({
 	}, [userSups])
 
 	useEffect(() => {
-		handleTotalAmount()
-	}, [depositAmount, xsynSups])
-
-	const handleTotalAmount = () => {
 		if (!depositAmount) return
 
-		const bigNumDepositAmt = ethers.utils.parseUnits(depositAmount, 18)
+		const bigNumDepositAmt = depositAmount
 		if (bigNumDepositAmt && xsynSups) {
 			const totalSups = bigNumDepositAmt.add(xsynSups)
 			setSupsTotal(totalSups)
@@ -76,12 +73,12 @@ export const DepositSups = ({
 			return
 		}
 		setSupsTotal(BigNumber.from(0))
-	}
+	}, [depositAmount, xsynSups])
 
 	async function handleDeposit() {
 		setLoading(true)
 		if (!depositAmount || !user || !provider) return
-		const bigNumDepositAmt = ethers.utils.parseUnits(depositAmount, 18)
+		const bigNumDepositAmt = depositAmount
 
 		try {
 			setCurrentTransferState("waiting")
@@ -99,6 +96,14 @@ export const DepositSups = ({
 			setLoading(false)
 		}
 	}
+
+	useEffect(() => {
+		if (supBalance) {
+			if (depositAmount.gt(supBalance)) {
+				setImmediateError("Deposit amount above max value")
+			}
+		}
+	}, [depositAmount, setImmediateError, supBalance])
 
 	return (
 		<Box sx={{ width: "80%", minWidth: "300px" }}>
@@ -142,35 +147,33 @@ export const DepositSups = ({
 								color="secondary"
 								fullWidth
 								variant="filled"
-								value={depositAmount ? depositAmount : ""}
+								value={depositDisplay ? depositDisplay : ""}
 								onChange={(e) => {
 									let num = Number(e.target.value)
-									e.preventDefault()
 
-									if (e.target.value === "") {
-										setDepositAmount(undefined)
-										return
-									}
-
-									const decimalIndex = e.target.value.indexOf(".")
-									if (decimalIndex !== -1) {
-										const decimalLength = e.target.value.slice(decimalIndex + 1).length
-										if (decimalLength > 18) {
-											return
-										}
-									}
-									if (e.target.value.charAt(0) === ".") {
-										setDepositAmount("0" + e.target.value)
-										return
-									}
-									if (e.target.value.indexOf("-") > -1) {
-										setImmediateError("Amount must be a positive value")
-										return
-									}
-									if (!isNaN(num)) {
-										setDepositAmount(e.target.value)
-									} else {
+									if (e.target.value.charAt(0) !== "." && isNaN(num)) {
+										setDepositDisplay(e.target.value)
 										setImmediateError("Amount must be a number")
+									}
+									if (e.target.value === "") {
+										setDepositDisplay(e.target.value)
+										setDepositAmount(BigNumber.from(0))
+										setImmediateError(undefined)
+										return
+									}
+
+									if (e.target.value.charAt(0) === "-") {
+										setDepositDisplay(e.target.value)
+										setImmediateError("Amount can't be negative")
+										return
+									}
+
+									try {
+										setDepositDisplay(e.target.value)
+										const newValue = parseUnits(e.target.value, 18)
+										setDepositAmount(newValue)
+									} catch (err) {
+										console.error(err)
 									}
 								}}
 								sx={{
@@ -187,12 +190,13 @@ export const DepositSups = ({
 							disabled={!supBalance || supBalance._hex === BigNumber.from(0)._hex}
 							onClick={() => {
 								if (supBalance) {
-									setDepositAmount(supFormatter(supBalance.toString()))
+									setDepositAmount(supBalance)
+									setDepositDisplay(formatUnits(supBalance, 18))
 								}
 							}}
 						>
 							<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
-								Max: <b>{supBalance ? parseFloat(formatUnits(supBalance, 18)).toPrecision(4) : "--"}</b>
+								Max: <b>{supBalance ? (+formatUnits(supBalance, 18)).toFixed(4) : "--"}</b>
 							</Typography>
 						</Button>
 					</Box>
@@ -252,13 +256,7 @@ export const DepositSups = ({
 					</Box>
 				</Box>
 				<FancyButton
-					disabled={
-						!depositAmount ||
-						!supBalance ||
-						ethers.utils.parseUnits(depositAmount).gt(supBalance) ||
-						currentTransferState !== "none" ||
-						immediateError !== undefined
-					}
+					disabled={!depositAmount || !supBalance || depositAmount.gt(supBalance) || currentTransferState !== "none" || immediateError !== undefined}
 					borderColor={colors.skyBlue}
 					sx={{ marginTop: "1.5rem", width: "50%" }}
 					onClick={() => {

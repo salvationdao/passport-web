@@ -20,7 +20,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	const history = useHistory()
 	const { subscribe } = useWebsocket()
 	const [item, setItem] = useState<PurchasedItem>()
-	const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
+	//const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
 	const [showPreview, setShowPreview] = useState(false)
 	const [noAsset, setNoAsset] = useState<boolean>(false) //used if asset doesn't exist in our metadata (shouldn't happen, fixes local dev stuff)
 
@@ -47,7 +47,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 					return
 				}
 				setItem(payload.purchased_item)
-				setOwnerUsername(payload.owner_username)
+				//setOwnerUsername(payload.owner_username)
 			},
 			{ asset_hash: assetHash },
 		)
