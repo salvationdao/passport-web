@@ -583,7 +583,7 @@ export const Web3Container = createContainer(() => {
 							method: "POST",
 						},
 					)
-					if (resp.status != 200) {
+					if (resp.status !== 200) {
 						setErrorSigning(true)
 						return false
 					}
@@ -604,7 +604,7 @@ export const Web3Container = createContainer(() => {
 						method: "POST",
 					},
 				)
-				if (resp.status != 200) {
+				if (resp.status !== 200) {
 					setErrorSigning(true)
 					return false
 				}

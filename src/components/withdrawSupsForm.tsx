@@ -66,7 +66,6 @@ export const WithdrawSupsForm = ({
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsWalletTotal, setSupsWalletTotal] = useState<BigNumber>()
-	const [supsAccountTotal, setSupsAccountTotal] = useState<BigNumber>()
 	const [withdrawContractAmount, setWithdrawContractAmount] = useState<BigNumber>()
 	const [immediateError, setImmediateError] = useState<string>()
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false)
@@ -126,7 +125,6 @@ export const WithdrawSupsForm = ({
 
 	useEffect(() => {
 		if (xsynSups && supBalance) {
-			setSupsAccountTotal(xsynSups)
 			setSupsWalletTotal(supBalance)
 		}
 	}, [xsynSups, supBalance])
@@ -134,15 +132,11 @@ export const WithdrawSupsForm = ({
 	useEffect(() => {
 		if (xsynSups === undefined || supBalance === undefined) return
 		if (withdrawAmount && xsynSups && supBalance) {
-			const totalAccountSups = xsynSups.sub(withdrawAmount)
-			setSupsAccountTotal(totalAccountSups)
-
 			const totalWalletSups = supBalance.add(withdrawAmount)
 			setSupsWalletTotal(totalWalletSups)
 			return
 		}
 		if (!withdrawAmount) {
-			setSupsAccountTotal(xsynSups)
 			setSupsWalletTotal(supBalance)
 			return
 		}
