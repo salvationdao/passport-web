@@ -157,6 +157,16 @@ export const ProfileEditPage: React.FC = () => {
 									<li>not contain any special characters (excluding underscores)</li>
 									<li>not contain any spaces</li>
 								</Box>
+								<br />
+								Your mobile number must:
+								<Box
+									component="ul"
+									sx={{
+										margin: 0,
+									}}
+								>
+									<li>contain international country code</li>
+								</Box>
 							</Box>
 						)}
 					</DialogContent>
@@ -172,6 +182,7 @@ export const ProfileEditPage: React.FC = () => {
 }
 
 interface UserInput {
+	mobile_number?: string
 	email?: string
 	new_username?: string
 	first_name?: string
@@ -289,6 +300,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 			first_name: user.first_name,
 			last_name: user.last_name,
 			organisation_id: user.organisation?.id,
+			mobile_number: user.mobile_number,
 			two_factor_authentication_activated: user.two_factor_authentication_activated,
 			current_password: "",
 			new_password: "",
@@ -370,21 +382,32 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					>
 						<InputField label="First Name" name="first_name" control={control} disabled={submitting} fullWidth />
 						<InputField label="Last Name" name="last_name" control={control} disabled={submitting} fullWidth />
-					</Box>
-					<InputField
-						name="email"
-						label="Email"
-						type="email"
-						control={control}
-						rules={{
-							required: changePassword && "Email must be provided if you are changing your password.",
-							pattern: {
-								value: /.+@.+\..+/,
-								message: "Invalid email address",
+					</Box>{" "}
+					<Box
+						sx={{
+							display: "flex",
+							"& > *:not(:last-child)": {
+								marginRight: ".5rem",
 							},
 						}}
-						disabled={submitting}
-					/>
+					>
+						<InputField
+							name="email"
+							label="Email"
+							type="email"
+							fullWidth
+							control={control}
+							rules={{
+								required: changePassword && "Email must be provided if you are changing your password.",
+								pattern: {
+									value: /.+@.+\..+/,
+									message: "Invalid email address",
+								},
+							}}
+							disabled={submitting}
+						/>
+						<InputField label="Mobile Number" name="mobile_number" control={control} disabled={submitting} fullWidth />
+					</Box>
 				</Section>
 
 				{/* Temporarily removed for public sale */}

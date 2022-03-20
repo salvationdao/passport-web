@@ -11,6 +11,7 @@ export interface User {
 	faction_id: string
 	faction: Faction | undefined
 	verified: boolean
+	mobile_number: string
 	created_at: Date
 	updated_at: Date
 	deleted_at: Date | null

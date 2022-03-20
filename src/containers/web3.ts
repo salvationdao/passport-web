@@ -141,22 +141,6 @@ export const Web3Container = createContainer(() => {
 		})()
 	}, [provider])
 
-	//Setting up websocket to listen to remaining supply
-	useInterval(() => {
-		if (state !== SocketState.OPEN) return
-		return send<string>(HubKey.SupTotalRemaining, (amount: any) => {
-			setAmountRemaining(BigNumber.from(amount))
-			if (loadingAmountRemaining) setLoadingAmountRemaining(false)
-		})
-	}, 5000)
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
-			setAmountRemaining(BigNumber.from(amount))
-			setLoadingAmountRemaining(false)
-		})
-	}, [subscribe, state])
 	const [nativeBalance, setNativeBalance] = useState<BigNumber | null>(null)
 	const [stableBalance, setStableBalance] = useState<BigNumber | null>(null)
 
