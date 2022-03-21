@@ -11,10 +11,6 @@ env:
   NINJA_NPM_TOKEN: ${{ secrets.NINJA_NPM_TOKEN }}
   FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
 
-env:
-  NINJA_NPM_TOKEN: ${{ secrets.NINJA_NPM_TOKEN }}
-  FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
-
 jobs:
   lint:
     runs-on: ubuntu-latest
