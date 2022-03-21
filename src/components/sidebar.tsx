@@ -608,7 +608,7 @@ const FactionWarMachineRemain = () => {
 
 			<Stack justifyContent="space-around" spacing={1.5}>
 				{factionAvailables.map((fa) => {
-					const { id, logo_blob_id, theme, mega_amount, lootbox_amount } = fa
+					const { id, logo_blob_id, theme, lootbox_amount } = fa
 
 					return (
 						<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
