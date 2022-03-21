@@ -6,6 +6,10 @@ name: Node.js CI
 on:
   pull_request:
     branches: [ develop, staging, main ]
+    
+env:
+  NINJA_NPM_TOKEN: ${{ secrets.NINJA_NPM_TOKEN }}
+  FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
 
 jobs:
   build:
