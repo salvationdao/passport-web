@@ -93,7 +93,7 @@ export const WithdrawSupsForm = ({
 				setTotalHeld(BigNumber.from(0))
 				console.error(err)
 			})
-	}, [user?.public_address, setTotalHeld])
+	}, [totalHeld, user?.public_address, setTotalHeld])
 
 	useEffect(() => {
 		try {

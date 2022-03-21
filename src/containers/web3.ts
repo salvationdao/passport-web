@@ -2,7 +2,6 @@ import WalletConnectProvider from "@walletconnect/web3-provider"
 import { BigNumber, ethers } from "ethers"
 import { hexlify } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useInterval } from "react-use"
 import { createContainer } from "unstated-next"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
 import BinanceUSD from "../assets/images/crypto/binance-usd-busd-logo.svg"
@@ -22,11 +21,9 @@ import {
 	WALLET_CONNECT_RPC,
 } from "../config"
 import { metamaskErrorHandling } from "../helpers/web3"
-import HubKey from "../keys"
 import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
-import { SocketState, useWebsocket } from "./socket"
 import { genericABI } from "./web3GenericABI"
 
 export enum MetaMaskState {
@@ -114,7 +111,6 @@ const tokenOptions: tokenSelect[] = [
  * A Container that handles Web3
  */
 export const Web3Container = createContainer(() => {
-	const { subscribe, state, send } = useWebsocket()
 	const { displayMessage } = useSnackbar()
 	const [block, setBlock] = useState<number>(-1)
 	const [metaMaskState, setMetaMaskState] = useState<MetaMaskState>(MetaMaskState.NotInstalled)
@@ -124,7 +120,6 @@ export const Web3Container = createContainer(() => {
 	const [currentChainId, setCurrentChainId] = useState<number>()
 	const [supBalance, setSupBalance] = useState<BigNumber>()
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
-	const [amountRemaining, setAmountRemaining] = useState<BigNumber>(BigNumber.from(0))
 	const [loadingAmountRemaining, setLoadingAmountRemaining] = useState<boolean>(true)
 	const [wcSignature, setWcSignature] = useState<string | undefined>()
 	const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>()
@@ -698,6 +693,7 @@ export const Web3Container = createContainer(() => {
 		sign,
 		account,
 		changeChain,
+		amountRemaining: BigNumber.from(0),
 		currentChainId,
 		provider,
 		nativeBalance,
@@ -711,7 +707,6 @@ export const Web3Container = createContainer(() => {
 		currentToken,
 		setCurrentToken,
 		checkNeoBalance,
-		amountRemaining,
 		loadingAmountRemaining,
 		setLoadingAmountRemaining,
 		wcProvider,
