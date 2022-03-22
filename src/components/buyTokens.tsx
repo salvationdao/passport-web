@@ -8,6 +8,7 @@ import Arrow from "../assets/images/arrow.png"
 import SupsToken from "../assets/images/supsToken.png"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../config"
 import { useAuth } from "../containers/auth"
+import { useSnackbar } from "../containers/snackbar"
 import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { AddressDisplay } from "../helpers/web3"
@@ -18,9 +19,7 @@ import { ExchangeRates, tokenSelect } from "../types/types"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
 import { MetaMaskLogin } from "./loginMetaMask"
-import { SupFancyButton } from "./supremacy/supFancyButton"
 import { TokenSelect } from "./tokenSelect"
-import { useSnackbar } from "../containers/snackbar"
 
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
@@ -369,7 +368,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 						publicSale={publicSale}
 						render={(props) => (
 							<>
-								<SupFancyButton
+								<FancyButton
 									onClick={(e) => {
 										props.onClick(e)
 										setShowWalletNag(true)
@@ -380,7 +379,7 @@ export const BuyTokens: React.FC<{ publicSale?: boolean }> = ({ publicSale }) =>
 									sx={{ height: "3.5rem", fontSize: "1.2rem" }}
 								>
 									Connect Wallet
-								</SupFancyButton>
+								</FancyButton>
 								{!account && showWalletNag ? "Check your wallet for a login notification" : null}
 							</>
 						)}

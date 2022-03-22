@@ -26,7 +26,6 @@ import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
 import { ProfileEditPage } from "./pages/profile/profileEdit"
-import { SalePage } from "./pages/sale/salePage"
 import { LootBoxPage } from "./pages/store/lootBox"
 import { StorePage } from "./pages/store/store"
 import { StoreItemPage } from "./pages/store/storeItem"
@@ -233,10 +232,6 @@ export const Routes = () => {
 				) : (
 					<LoginPage />
 				)}
-
-				<Route path="/sale-sup">
-					<SalePage />
-				</Route>
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />

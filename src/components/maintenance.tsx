@@ -3,7 +3,7 @@ import YouTubeIcon from "@mui/icons-material/YouTube"
 import { Box, IconButton, Link, Stack, Typography } from "@mui/material"
 import { LogoWEBP } from "../assets"
 import { SUPREMACY_IMAGE_FOLDER } from "../config"
-import { IMAGE_FOLDER } from "../pages/sale/salePage"
+import { colors } from "../theme"
 
 export const Maintenance = () => {
 	return (
@@ -39,7 +39,7 @@ export const Maintenance = () => {
 						width: "100%",
 						height: 120,
 						"@media (max-width:600px)": {
-							height: 50,
+							height: 100,
 						},
 					}}
 				>
@@ -64,6 +64,9 @@ export const Maintenance = () => {
 							py: 3,
 							borderRadius: 1,
 							backgroundColor: "#00000099",
+							"@media (max-width:600px)": {
+								px: 2,
+							},
 						}}
 					>
 						<Typography
@@ -72,21 +75,28 @@ export const Maintenance = () => {
 								textAlign: "center",
 								fontFamily: "Nostromo Regular Heavy",
 								fontSize: "1.9rem",
+								"@media (max-width:600px)": {
+									fontSize: "5vw",
+								},
 							}}
 						>
-							{"WE'LL BE BACK SOON"}
+							WE'LL BE BACK SOON
 						</Typography>
 
-						{/* <Typography
-                            variant="h5"
-                            sx={{
-                                mb: 0.5,
-                                color: colors.neonBlue,
-                                textAlign: "center",
-                            }}
-                        >
-                            03/01/2022 10PM PST
-                        </Typography> */}
+						<Typography
+							sx={{
+								fontFamily: "Share Tech",
+								mb: ".4rem",
+								color: colors.neonBlue,
+								textAlign: "center",
+								fontSize: "1.4rem",
+								"@media (max-width:600px)": {
+									fontSize: "4vw",
+								},
+							}}
+						>
+							FOLLOW OUR SOCIALS FOR MORE UPDATES
+						</Typography>
 
 						<Stack
 							direction="row"
@@ -101,8 +111,8 @@ export const Maintenance = () => {
 									},
 								},
 								"& svg, & img": {
-									height: "4rem",
-									width: "4rem",
+									height: "3rem",
+									width: "3rem",
 									transition: "all .2s",
 									"@media (max-width: 1440px)": {
 										height: "3rem",
@@ -116,7 +126,7 @@ export const Maintenance = () => {
 							}}
 						>
 							<IconButton size="small" target="_blank" href="https://discord.com/invite/supremacygame">
-								<img src={IMAGE_FOLDER + "/icons/discord.svg"} alt="discord" />
+								<img src={SUPREMACY_IMAGE_FOLDER + "/icons/discord.svg"} alt="discord" />
 							</IconButton>
 							<IconButton size="small" target="_blank" href="https://twitter.com/SupremacyMeta">
 								<TwitterIcon />
@@ -127,62 +137,7 @@ export const Maintenance = () => {
 						</Stack>
 					</Stack>
 				</Box>
-
-				{/* Perth time */}
-				{/* <CountdownTimer endTime={new Date("Wed Mar 02 2022 14:00:00 GMT+0800")} /> */}
 			</Stack>
 		</Box>
 	)
 }
-
-// const CountdownTimer = ({ endTime }: { endTime: Date }) => {
-// 	const [, setTimeRemain] = useState<number>(0)
-// 	const [delay, setDelay] = useState<number | null>(null)
-// 	const [hours, setHours] = useState<number>()
-// 	const [minutes, setMinutes] = useState<number>()
-// 	const [seconds, setSeconds] = useState<number>()
-
-// 	useEffect(() => {
-// 		if (endTime) {
-// 			setDelay(1000)
-// 			const d = moment.duration(moment(endTime).diff(moment()))
-// 			setTimeRemain(Math.max(Math.round(d.asSeconds()), 0))
-// 			return
-// 		}
-// 		setDelay(null)
-// 	}, [])
-
-// 	useInterval(() => {
-// 		setTimeRemain((t) => Math.max(t - 1, 0))
-// 		const d = moment.duration(moment(endTime).diff(moment()))
-// 		const hours = Math.floor(d.asHours())
-// 		const minutes = Math.floor(d.asMinutes()) - hours * 60
-// 		const seconds = Math.floor(d.asSeconds()) - hours * 60 * 60 - minutes * 60
-// 		setHours(Math.max(hours, 0))
-// 		setMinutes(Math.max(minutes, 0))
-// 		setSeconds(Math.max(seconds, 0))
-// 	}, delay)
-
-// 	return (
-// 		<Stack direction="row" justifyContent="space-around" sx={{ mt: 2, backgroundColor: "#00000099", borderRadius: 1 }}>
-// 			<Stack alignItems="center" sx={{ px: 2, py: 1.5, width: 110, backgroundColor: "#00000099" }}>
-// 				<Typography variant="h5" sx={{ color: colors.neonBlue }}>
-// 					{hours}
-// 				</Typography>
-// 				<Typography variant="h6">HOURS</Typography>
-// 			</Stack>
-// 			<Stack alignItems="center" sx={{ px: 2, py: 1.5, width: 110, backgroundColor: "#00000099" }}>
-// 				<Typography variant="h5" sx={{ color: colors.neonBlue }}>
-// 					{minutes}
-// 				</Typography>
-// 				<Typography variant="h6">MINUTES</Typography>
-// 			</Stack>
-// 			<Stack alignItems="center" sx={{ px: 2, py: 1.5, width: 110, backgroundColor: "#00000099" }}>
-// 				<Typography variant="h5" sx={{ color: colors.neonBlue }}>
-// 					{seconds}
-// 				</Typography>
-// 				<Typography variant="h6">SECONDS</Typography>
-// 			</Stack>
-// 		</Stack>
-// 	)
-// }
