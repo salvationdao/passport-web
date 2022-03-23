@@ -1,5 +1,5 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, Chip, ChipProps, IconButton, Paper, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
+import { Box, Chip, ChipProps, IconButton, Paper, styled, SwipeableDrawer, Typography, useMediaQuery, Pagination, Select, MenuItem } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../assets"
@@ -10,10 +10,10 @@ import { Loading } from "../../components/loading"
 import { ProfileButton } from "../../components/profileButton"
 import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
+import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { middleTruncate } from "../../helpers"
-import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
@@ -206,10 +206,14 @@ interface CollectionViewProps {
 }
 
 const CollectionView = ({ user }: CollectionViewProps) => {
-	const { loading, error } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string>()
 	const history = useHistory()
 
 	// Collection data
+	const [currentPage, setCurrentPage] = useState(1)
+	const [pageSize, setPageSize] = useState(20)
+	const [total, setTotal] = useState(0)
 	const [search, setSearch] = useState("")
 	const [assetHashes, setAssetHashes] = useState<string[]>([])
 	// Filter/Sort
@@ -234,7 +238,18 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 					},
 				}}
 			>
-				<Sort pillSizeSmall={true} showOffWorldFilter={false} assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
+				<Sort
+					pillSizeSmall={true}
+					showOffWorldFilter={false}
+					page={currentPage - 1}
+					pageSize={pageSize}
+					assetType={assetType}
+					search={search}
+					setAssetHashes={setAssetHashes}
+					setTotal={setTotal}
+					setLoading={setLoading}
+					setError={setError}
+				/>
 			</SwipeableDrawer>
 			<Paper
 				sx={{
@@ -369,6 +384,28 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						)}
 					</Box>
 				)}
+				<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
+					<Select
+						value={pageSize}
+						onChange={(e) => {
+							setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
+							setCurrentPage(1)
+						}}
+						input={<PageSizeSelectionInput />}
+					>
+						<MenuItem value={5}>Showing 5 results per page</MenuItem>
+						<MenuItem value={10}>Showing 10 results per page</MenuItem>
+						<MenuItem value={20}>Showing 20 results per page</MenuItem>
+						<MenuItem value={50}>Showing 50 results per page</MenuItem>
+						<MenuItem value={100}>Showing 100 results per page</MenuItem>
+					</Select>
+					<Pagination
+						page={currentPage}
+						count={Math.ceil(total / pageSize)}
+						color="primary"
+						onChange={(_, newPageNumber) => setCurrentPage(newPageNumber)}
+					/>
+				</Box>
 			</Paper>
 		</>
 	)

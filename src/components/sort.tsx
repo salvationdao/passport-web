@@ -15,14 +15,31 @@ import { Collection } from "../types/types"
 
 interface SortProps {
 	assetType?: string
+	page?: number
+	pageSize?: number
 	search: string
 	pillSizeSmall?: boolean
 	showOffWorldFilter?: boolean
 	showCollectionFilter?: boolean
 	setAssetHashes: React.Dispatch<React.SetStateAction<string[]>>
+	setTotal?: React.Dispatch<React.SetStateAction<number>>
+	setLoading?: React.Dispatch<React.SetStateAction<boolean>>
+	setError?: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
-export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFilter = true, showCollectionFilter = true, setAssetHashes }: SortProps) => {
+export const Sort = ({
+	assetType,
+	search,
+	page,
+	pageSize,
+	pillSizeSmall = false,
+	showOffWorldFilter = true,
+	showCollectionFilter = true,
+	setAssetHashes,
+	setTotal,
+	setLoading,
+	setError,
+}: SortProps) => {
 	const [showOffWorldOnly, setShowOffWorldOnly] = useState<boolean>()
 	const [aquisitionDir, setAquisitionDir] = useState<boolean>()
 	const [alphabetical, setAlphabetical] = useState<boolean>()
@@ -115,18 +132,6 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 	}, [send, state, user, displayMessage])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send) return
-		;(async () => {
-			try {
-				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
-				setCollections(resp.records)
-			} catch (e) {
-				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error")
-			}
-		})()
-	}, [send, state, user, displayMessage])
-
-	useEffect(() => {
 		const newSort = {
 			sortBy: "",
 			sortDir: "",
@@ -202,6 +207,8 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 
 		query({
 			search,
+			page,
+			page_size: pageSize,
 			attribute_filter: {
 				linkOperator: assetType && assetType !== "All" ? "and" : "or",
 				items: attributeFilterItems,
@@ -212,13 +219,23 @@ export const Sort = ({ assetType, search, pillSizeSmall = false, showOffWorldFil
 			},
 			...sort,
 		})
-	}, [user, query, collection, state, assetType, rarities, search, username, sort, showOffWorldOnly])
+	}, [user, query, collection, state, assetType, rarities, search, username, sort, showOffWorldOnly, page, pageSize])
 
 	useEffect(() => {
 		if (!payload || loading || error) return
-
+		if (setTotal) setTotal(payload.total)
 		setAssetHashes(payload.asset_hashes)
-	}, [payload, loading, error, setAssetHashes])
+	}, [payload, loading, error, setAssetHashes, setTotal])
+
+	useEffect(() => {
+		if (!setLoading) return
+		setLoading(loading)
+	}, [loading, setLoading])
+
+	useEffect(() => {
+		if (!setError) return
+		setError(error)
+	}, [error, setError])
 
 	const renderRarities = () => {
 		const rarityArray: string[] = []

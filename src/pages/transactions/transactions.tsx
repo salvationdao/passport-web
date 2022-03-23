@@ -7,6 +7,7 @@ import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { SearchBar } from "../../components/searchBar"
+import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
@@ -316,59 +317,59 @@ export const TransactionsPage = () => {
 									},
 								}}
 							>
-									<Stack spacing=".5rem" direction="row" alignItems="baseline">
-								<Select
-									value={selectedGroup}
-									onChange={(e) => {
-										setSelectedGroup(e.target.value)
-										setSelectedSubGroup("All")
-										setCurrentPage(1)
-									}}
-									input={<GroupSelectionInput />}
-									displayEmpty
-								>
-									<MenuItem value="All">
-										<em>All</em>
-									</MenuItem>
-									<MenuItem value="Ungrouped">Ungrouped</MenuItem>
-									{Object.keys(transactionGroups).map((g, index) => (
-										<MenuItem key={`${g}-${index}-group_filter`} value={g}>
-											{g}
+								<Stack spacing=".5rem" direction="row" alignItems="baseline">
+									<Select
+										value={selectedGroup}
+										onChange={(e) => {
+											setSelectedGroup(e.target.value)
+											setSelectedSubGroup("All")
+											setCurrentPage(1)
+										}}
+										input={<GroupSelectionInput />}
+										displayEmpty
+									>
+										<MenuItem value="All">
+											<em>All</em>
 										</MenuItem>
-									))}
-								</Select>
-								{transactionGroups[selectedGroup] && transactionGroups[selectedGroup].length > 0 && (
-										<>
-										<Typography
-											variant="caption"
-											color={colors.darkGrey}
-											sx={{
-												textTransform: "uppercase",
-											}}
-										>
-											Subgroup
-										</Typography>
-										<Select
-											value={selectedSubGroup}
-											onChange={(e) => {
-												setSelectedSubGroup(e.target.value)
-												setCurrentPage(1)
-											}}
-											input={<SubGroupSelectionInput />}
-										>
-											<MenuItem value="All">
-												<em>All</em>
+										<MenuItem value="Ungrouped">Ungrouped</MenuItem>
+										{Object.keys(transactionGroups).map((g, index) => (
+											<MenuItem key={`${g}-${index}-group_filter`} value={g}>
+												{g}
 											</MenuItem>
-											<MenuItem value="Ungrouped">No Sub Group</MenuItem>
-											{transactionGroups[selectedGroup].map((s, index) => (
-												<MenuItem key={`${s}-${index}-sub_group_filter`} value={s}>
-													{s}
+										))}
+									</Select>
+									{transactionGroups[selectedGroup] && transactionGroups[selectedGroup].length > 0 && (
+										<>
+											<Typography
+												variant="caption"
+												color={colors.darkGrey}
+												sx={{
+													textTransform: "uppercase",
+												}}
+											>
+												Subgroup
+											</Typography>
+											<Select
+												value={selectedSubGroup}
+												onChange={(e) => {
+													setSelectedSubGroup(e.target.value)
+													setCurrentPage(1)
+												}}
+												input={<SubGroupSelectionInput />}
+											>
+												<MenuItem value="All">
+													<em>All</em>
 												</MenuItem>
-											))}
-										</Select>
+												<MenuItem value="Ungrouped">No Sub Group</MenuItem>
+												{transactionGroups[selectedGroup].map((s, index) => (
+													<MenuItem key={`${s}-${index}-sub_group_filter`} value={s}>
+														{s}
+													</MenuItem>
+												))}
+											</Select>
 										</>
-								)}
-									</Stack>
+									)}
+								</Stack>
 								<Box
 									sx={{
 										flex: 1,
@@ -504,28 +505,6 @@ const SubGroupSelectionInput = styled(InputBase)(({ theme }) => ({
 		fontStyle: "italic",
 		letterSpacing: "2px",
 		textTransform: "uppercase",
-		"&:focus": {
-			borderRadius: 4,
-			borderColor: "#80bdff",
-			boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
-		},
-	},
-}))
-
-const PageSizeSelectionInput = styled(InputBase)(({ theme }) => ({
-	padding: 2,
-	borderRadius: ".5rem",
-	transition: theme.transitions.create(["background-color"]),
-	"&:hover": {
-		backgroundColor: "rgba(255, 255, 255, .2)",
-	},
-	"& .MuiInputBase-input": {
-		display: "flex",
-		alignItems: "end",
-		borderRadius: ".5rem",
-		padding: 0,
-		fontSize: ".9em",
-		color: colors.darkGrey,
 		"&:focus": {
 			borderRadius: 4,
 			borderColor: "#80bdff",
