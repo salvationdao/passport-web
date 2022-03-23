@@ -115,7 +115,7 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 					flexGrow: 1,
 				}}
 			>
-				<Loading text={"Loading asset information..."} />.
+				<Loading text={"Loading asset information..."} />
 			</Paper>
 		)
 	}
