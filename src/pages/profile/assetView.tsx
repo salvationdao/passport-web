@@ -39,28 +39,11 @@ import { metamaskErrorHandling } from "../../helpers/web3"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
-import { OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemResponse } from "../../types/purchased_item"
-import { Attribute, Collection, User } from "../../types/types"
+import { AssetStatPercentageResponse, OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemResponse } from "../../types/purchased_item"
+import { AttributeWithPercentage, Collection, User } from "../../types/types"
 import { PercentageDisplay } from "./percentageDisplay"
 import { rarityTextStyles } from "./profile"
 
-interface AssetViewProps {
-	user: User
-	purchasedItem: PurchasedItem
-	collection: Collection
-	numberAttributes: Attribute[]
-	locked: boolean
-	error: string | null
-	ownerUsername: string
-	disableRename: boolean
-	showMint: boolean
-	showStake: boolean
-	showUnstake: boolean
-	openseaURL: string
-	showOpenseaURL: boolean
-	onWorld: boolean
-	edit: boolean
-}
 interface AssetViewContainerProps {
 	user: User
 	assetHash: string
@@ -74,8 +57,9 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 	const [collection, setCollection] = useState<Collection | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
+	const [numberAttributes, setNumberAttributes] = useState<AttributeWithPercentage[]>([])
 	const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
+
 	useEffect(() => {
 		if (!collectionSlug) return
 		subscribe<Collection>(
@@ -92,16 +76,25 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 		try {
 			return subscribe<PurchasedItemResponse>(
 				HubKey.AssetUpdated,
-				(payload) => {
+				async (payload) => {
 					if (!payload) return
-					let numberAttributes = new Array<Attribute>()
+					let numberAttributes = new Array<AttributeWithPercentage>()
 
 					const attributes = PurchasedItemAttributes(payload.purchased_item)
-					attributes.forEach((a) => {
+					for (let a of attributes) {
 						if (a.display_type === "number") {
-							numberAttributes.push(a)
+							const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
+							if (!resp.ok || resp.status !== 200) {
+								console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
+								continue
+							}
+							const body = (await resp.json()) as AssetStatPercentageResponse
+							numberAttributes.push({
+								...a,
+								...body,
+							})
 						}
-					})
+					}
 					setNumberAttributes(numberAttributes)
 					setPurchasedItem(payload.purchased_item)
 					setOwnerUsername(payload.owner_username)
@@ -156,6 +149,24 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 			edit={edit}
 		/>
 	)
+}
+
+interface AssetViewProps {
+	user: User
+	purchasedItem: PurchasedItem
+	collection: Collection
+	numberAttributes: AttributeWithPercentage[]
+	locked: boolean
+	error: string | null
+	ownerUsername: string
+	disableRename: boolean
+	showMint: boolean
+	showStake: boolean
+	showUnstake: boolean
+	openseaURL: string
+	showOpenseaURL: boolean
+	onWorld: boolean
+	edit: boolean
 }
 
 export const AssetView = ({
@@ -453,9 +464,10 @@ export const AssetView = ({
 									numberAttributes.map((attr, i) => {
 										return (
 											<PercentageDisplay
-												key={`${attr.trait_type}-${attr.value}-${i}`}
+												key={`${attr.label}-${attr.value}-${i}`}
 												displayValue={`${attr.value}`}
-												label={attr.trait_type}
+												label={attr.label}
+												percentage={attr.percentage}
 											/>
 										)
 									})}

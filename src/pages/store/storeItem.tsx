@@ -14,8 +14,9 @@ import { supFormatter, usdFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
+import { AssetStatPercentageResponse } from "../../types/purchased_item"
 import { StoreItem, StoreItemAttibutes, StoreItemResponse } from "../../types/store_item"
-import { Attribute, Collection } from "../../types/types"
+import { Attribute, AttributeWithPercentage, Collection } from "../../types/types"
 import { PercentageDisplay } from "../profile/percentageDisplay"
 import { rarityTextStyles } from "../profile/profile"
 
@@ -31,7 +32,7 @@ export const StoreItemPage = () => {
 	const [storeItem, setStoreItem] = useState<StoreItem>()
 	const [collection, setCollection] = useState<Collection>()
 	const [priceInSups, setPriceInSups] = useState<string | null>(null)
-	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
+	const [numberAttributes, setNumberAttributes] = useState<AttributeWithPercentage[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
 
@@ -57,24 +58,35 @@ export const StoreItemPage = () => {
 		try {
 			return subscribe<StoreItemResponse>(
 				HubKey.StoreItemSubscribe,
-				(payload) => {
+				async (payload) => {
 					if (!payload) return
 					let assetAttributes = new Array<Attribute>()
-					let numberAttributes = new Array<Attribute>()
+					let numberAttributes = new Array<AttributeWithPercentage>()
 					let regularAttributes = new Array<Attribute>()
 					const att = StoreItemAttibutes(payload.item)
-					att.forEach((a) => {
+					for (let a of att) {
 						if (a.asset_hash) {
 							// If is an asset attribute
 							assetAttributes.push(a)
 						} else if (a.display_type === "number") {
 							// If is a number attribute
-							numberAttributes.push(a)
+							const resp = await fetch(
+								`${window.location.protocol}//${window.location.hostname}:8084/api/stat/mech?stat=${a.identifier}&value=${a.value}`,
+							)
+							if (!resp.ok || resp.status !== 200) {
+								console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
+								continue
+							}
+							const body = (await resp.json()) as AssetStatPercentageResponse
+							numberAttributes.push({
+								...a,
+								...body,
+							})
 						} else {
 							// Is a regular attribute
 							regularAttributes.push(a)
 						}
-					})
+					}
 					// setAssetAttributes(assetAttributes)
 					setNumberAttributes(numberAttributes)
 					// setRegularAttributes(regularAttributes)
@@ -466,9 +478,10 @@ export const StoreItemPage = () => {
 										numberAttributes.map((attr, i) => {
 											return (
 												<PercentageDisplay
-													key={`${attr.trait_type}-${attr.value}-${i}`}
+													key={`${attr.label}-${attr.value}-${i}`}
 													displayValue={`${attr.value}`}
-													label={attr.trait_type}
+													label={attr.label}
+													percentage={attr.percentage}
 												/>
 											)
 										})}

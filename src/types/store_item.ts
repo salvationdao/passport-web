@@ -2,23 +2,43 @@ import { Attribute } from "./types"
 
 export const StoreItemAttibutes = (storeItem: StoreItem): Attribute[] => {
 	let result: Attribute[] = []
-	result.push({ trait_type: "Model", value: storeItem.data.blueprint_chassis.model })
-	result.push({ trait_type: "SubModel", value: storeItem.data.blueprint_chassis.skin })
-	result.push({ trait_type: "Rarity", value: storeItem.data.template.tier })
-	result.push({ trait_type: "Asset Type", value: "War Machine" })
-	result.push({ trait_type: "Name", value: storeItem.data.template.label })
-	result.push({ display_type: "number", trait_type: "Speed", value: storeItem.data.blueprint_chassis.speed })
-	result.push({ display_type: "number", trait_type: "Max Structure Hit Points", value: storeItem.data.blueprint_chassis.max_hitpoints })
-	result.push({ display_type: "number", trait_type: "Max Shield Hit Points", value: storeItem.data.blueprint_chassis.max_shield })
-	result.push({ display_type: "number", trait_type: "Weapon Hardpoints", value: storeItem.data.blueprint_chassis.weapon_hardpoints })
-	result.push({ display_type: "number", trait_type: "Turret Hardpoints", value: storeItem.data.blueprint_chassis.turret_hardpoints })
-	result.push({ display_type: "number", trait_type: "Utility Slots", value: storeItem.data.blueprint_chassis.utility_slots })
-	result.push({ display_type: "number", trait_type: "Shield Recharge Rate", value: storeItem.data.blueprint_chassis.shield_recharge_rate })
-	if (storeItem.data.blueprint_weapons["0"]) result.push({ trait_type: "Weapon One", value: storeItem.data.blueprint_weapons["0"].label })
-	if (storeItem.data.blueprint_weapons["1"]) result.push({ trait_type: "Weapon Two", value: storeItem.data.blueprint_weapons["1"].label })
-	if (storeItem.data.blueprint_turrets["0"]) result.push({ trait_type: "Turret One", value: storeItem.data.blueprint_turrets["0"].label })
-	if (storeItem.data.blueprint_turrets["1"]) result.push({ trait_type: "Turret Two", value: storeItem.data.blueprint_turrets["1"].label })
-	if (storeItem.data.blueprint_modules["0"]) result.push({ trait_type: "Utility One", value: storeItem.data.blueprint_modules["0"].label })
+	result.push({ label: "Asset Type", value: "War Machine" })
+	result.push({ label: "Model", value: storeItem.data.blueprint_chassis.model, identifier: "model" })
+	result.push({ label: "SubModel", value: storeItem.data.blueprint_chassis.skin, identifier: "skin" })
+	result.push({ label: "Rarity", value: storeItem.data.template.tier, identifier: "tier" })
+	result.push({ label: "Name", value: storeItem.data.template.label, identifier: "label" })
+	result.push({ display_type: "number", label: "Speed", value: storeItem.data.blueprint_chassis.speed, identifier: "speed" })
+	result.push({
+		display_type: "number",
+		label: "Max Structure Hit Points",
+		value: storeItem.data.blueprint_chassis.max_hitpoints,
+		identifier: "max_hitpoints",
+	})
+	result.push({ display_type: "number", label: "Max Shield Hit Points", value: storeItem.data.blueprint_chassis.max_shield, identifier: "max_shield" })
+	result.push({
+		display_type: "number",
+		label: "Weapon Hardpoints",
+		value: storeItem.data.blueprint_chassis.weapon_hardpoints,
+		identifier: "weapon_hardpoints",
+	})
+	result.push({
+		display_type: "number",
+		label: "Turret Hardpoints",
+		value: storeItem.data.blueprint_chassis.turret_hardpoints,
+		identifier: "turret_hardpoints",
+	})
+	result.push({ display_type: "number", label: "Utility Slots", value: storeItem.data.blueprint_chassis.utility_slots, identifier: "utility_slots" })
+	result.push({
+		display_type: "number",
+		label: "Shield Recharge Rate",
+		value: storeItem.data.blueprint_chassis.shield_recharge_rate,
+		identifier: "shield_recharge_rate",
+	})
+	if (storeItem.data.blueprint_weapons["0"]) result.push({ label: "Weapon One", value: storeItem.data.blueprint_weapons["0"].label })
+	if (storeItem.data.blueprint_weapons["1"]) result.push({ label: "Weapon Two", value: storeItem.data.blueprint_weapons["1"].label })
+	if (storeItem.data.blueprint_turrets["0"]) result.push({ label: "Turret One", value: storeItem.data.blueprint_turrets["0"].label })
+	if (storeItem.data.blueprint_turrets["1"]) result.push({ label: "Turret Two", value: storeItem.data.blueprint_turrets["1"].label })
+	if (storeItem.data.blueprint_modules["0"]) result.push({ label: "Utility One", value: storeItem.data.blueprint_modules["0"].label })
 	return result
 }
 export interface StoreItemResponse {

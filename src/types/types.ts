@@ -143,10 +143,17 @@ export interface Collection {
 // }
 
 export interface Attribute {
-	display_type?: "number"
-	trait_type: string
-	asset_hash?: string
+	label: string
 	value: string | number
+	identifier?: string // indicates column name in the chassis table in gameserver db
+	display_type?: "number"
+	asset_hash?: string
+}
+
+export interface AttributeWithPercentage extends Attribute {
+	percentile: number
+	percentage: number
+	total: number
 }
 
 // export interface StoreItem {

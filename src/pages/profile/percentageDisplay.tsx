@@ -44,7 +44,7 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 						right: 0,
 						bottom: 0,
 						borderRadius: "50%",
-						background: `conic-gradient(${percentage ? colors.neonPink : colors.skyBlue} calc(${percentage || 100}*1%),#0000 0)`,
+						background: `conic-gradient(${percentage ? colors.neonPink : colors.skyBlue} calc(${percentage || 100}*1%),${colors.darkNavyBlue} 0)`,
 					}}
 				/>
 				<Box

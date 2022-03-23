@@ -5,7 +5,6 @@ import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -23,7 +22,7 @@ export const CollectionsPage: React.FC = () => {
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
-	const [walletAssetHashes, setWalletAssetHashes] = useState<string[]>([])
+	const [walletAssetHashes] = useState<string[]>([])
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !send) return
