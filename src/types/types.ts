@@ -179,6 +179,17 @@ export interface AttributeWithPercentage extends Attribute {
 // 	updated_at: Date
 // }
 
+export interface DepositTransaction {
+	id: string
+	user_id: string
+	tx_hash: string
+	amount: string
+	status: "pending" | "confirmed"
+	deleted_at?: Date
+	updated_at: Date
+	created_at: Date
+}
+
 export interface Transaction {
 	id: string
 	credit: string

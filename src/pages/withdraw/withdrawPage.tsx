@@ -62,13 +62,14 @@ export const WithdrawPage = () => {
 			>
 				<Paper
 					sx={{
-						width: "100%",
 						display: "flex",
 						flexDirection: "column",
 						alignItems: "center",
 						justifyContent: "center",
 						height: "100vh",
+						width: "100%",
 						position: "relative",
+						marginBottom: "3rem",
 					}}
 				>
 					<TransactionResultOverlay

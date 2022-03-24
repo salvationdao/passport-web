@@ -1,19 +1,24 @@
-import { Box, Paper, Typography } from "@mui/material"
+import RefreshIcon from "@mui/icons-material/Refresh"
+import { Box, CircularProgress, IconButton, Paper, Typography, useMediaQuery } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import Coin from "../../assets/images/gradient/coin.png"
 import { DepositSups } from "../../components/depositSups"
-import { GradientCircleThing } from "../../components/home/gradientCircleThing"
 import { Navbar } from "../../components/home/navbar"
 import { ConnectWalletOverlay } from "../../components/transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
+import { SocketState, useWebsocket } from "../../containers/socket"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
-import { transferStateType } from "../../types/types"
+import HubKey from "../../keys"
+import { colors } from "../../theme"
+import { DepositTransaction, transferStateType } from "../../types/types"
+import { DesktopDepositTransactionTable } from "./desktopDepositTransactionTable"
+import { MobileDepositTransactionTable } from "./mobileDepositTransactionTable"
 
 interface CanEnterResponse {
 	can_withdraw: boolean
@@ -34,8 +39,10 @@ export const DepositPage = () => {
 			console.error(e)
 		}
 	}, [])
-	const { account, changeChain, currentChainId } = useWeb3()
 	const { user } = useAuth()
+	const { state, send } = useWebsocket()
+	const { account, changeChain, currentChainId } = useWeb3()
+	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 
@@ -44,45 +51,73 @@ export const DepositPage = () => {
 	const [error, setError] = useState<string>("")
 	const [depositAmount, setDepositAmount] = useState<BigNumber>(BigNumber.from("0"))
 
+	// Recent deposit transaction history
+	const [depositTransactions, setDepositTransactions] = useState<DepositTransaction[]>([])
+	const [dtLoading, setDTLoading] = useState(false)
+	const [dtError, setDTError] = useState<string>()
+
+	const fetchDepositTransactions = useCallback(async () => {
+		setDTLoading(true)
+		try {
+			const resp = await send<{
+				total: number
+				transactions: DepositTransaction[]
+			}>(HubKey.SupsDepositList)
+
+			setDepositTransactions(resp.transactions)
+		} catch (e) {
+			if (typeof e === "string") {
+				setDTError(e)
+			} else if (e instanceof Error) {
+				setDTError(e.message)
+			}
+		} finally {
+			setDTLoading(false)
+		}
+	}, [send])
+
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !send || !user) return
+		fetchDepositTransactions()
+	}, [user, state, send, fetchDepositTransactions])
+
 	return (
-		<div>
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				minHeight: "100%",
+			}}
+		>
 			<Navbar sx={{ marginBottom: "2rem" }} />
 			<Box
 				sx={{
+					flex: 1,
 					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					flexWrap: "wrap",
+					flexDirection: "column",
 					padding: "0 3rem",
-					"@media (max-width: 630px)": {
-						flexDirection: "column",
-						alignItems: "stretch",
-					},
+					marginBottom: "3rem",
 				}}
 			>
 				<Paper
 					sx={{
-						width: "100%",
+						flexGrow: 1,
+						position: "relative",
 						display: "flex",
 						flexDirection: "column",
 						alignItems: "center",
-						justifyContent: "center",
-						height: "100vh",
-						position: "relative",
+						width: "100%",
+						maxWidth: "1700px",
+						margin: "0 auto",
+						padding: "2rem",
 					}}
 				>
-					<GradientCircleThing
-						sx={{ position: "absolute", height: "100%", maxHeight: "950px", maxWidth: "950px", display: { xs: "none", xl: "block" } }}
-						hideInner
-					/>
 					<Box
 						component="img"
 						src={Coin}
 						alt="Image of a Safe"
 						sx={{
 							height: "12rem",
-							marginBottom: "1.5rem",
-							marginTop: { xs: "1.5rem", xl: "-8rem" },
 						}}
 					/>
 					<SwitchNetworkOverlay currentChainId={currentChainId} changeChain={changeChain} />
@@ -123,7 +158,80 @@ export const DepositPage = () => {
 						/>
 					</Box>
 				</Paper>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						width: "100%",
+						maxWidth: "1700px",
+						margin: "0 auto",
+						paddingTop: "2rem",
+					}}
+				>
+					<Box
+						sx={{
+							display: "flex",
+							justifyContent: "space-between",
+						}}
+					>
+						<Typography variant="h2">Recent Deposit History</Typography>
+						<Box
+							sx={{
+								minHeight: "2rem",
+								minWidth: "2rem",
+							}}
+						/>
+						<IconButton onClick={() => fetchDepositTransactions()}>
+							<RefreshIcon />
+						</IconButton>
+					</Box>
+					<Box
+						sx={{
+							flex: "1",
+							overflowX: "auto",
+							display: "flex",
+							alignSelf: "stretch",
+							flexDirection: "column",
+							minWidth: 0,
+							"&:not(:last-child)": {
+								marginBottom: "2rem",
+							},
+						}}
+					>
+						{isWiderThan1000px ? (
+							<Box
+								sx={{
+									overflowX: "auto",
+								}}
+							>
+								<DesktopDepositTransactionTable transactions={depositTransactions} />
+							</Box>
+						) : (
+							<MobileDepositTransactionTable transactions={depositTransactions} />
+						)}
+						{depositTransactions.length === 0 && (
+							<Box
+								sx={{
+									flex: 1,
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									padding: "1rem",
+									minHeight: "200px",
+								}}
+							>
+								{dtLoading ? (
+									<CircularProgress />
+								) : (
+									<Typography variant="subtitle2" color={colors.darkerGrey}>
+										{dtError ? dtError : `No recent deposit history.`}
+									</Typography>
+								)}
+							</Box>
+						)}
+					</Box>
+				</Box>
 			</Box>
-		</div>
+		</Box>
 	)
 }

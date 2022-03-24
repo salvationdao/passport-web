@@ -405,6 +405,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		<Box
 			sx={{
 				display: "flex",
+				height: "100%",
 			}}
 		>
 			<Box
