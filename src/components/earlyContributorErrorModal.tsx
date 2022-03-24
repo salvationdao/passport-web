@@ -1,5 +1,4 @@
-import { Dialog, DialogActions, DialogContent, DialogTitle, Typography } from "@mui/material"
-
+import { Dialog, DialogActions, DialogTitle } from "@mui/material"
 import { FancyButton } from "./fancyButton"
 
 interface EarlyContributorModalProps {

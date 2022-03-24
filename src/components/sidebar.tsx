@@ -608,14 +608,14 @@ const FactionWarMachineRemain = () => {
 
 			<Stack justifyContent="space-around" spacing={1.5}>
 				{factionAvailables.map((fa) => {
-					const { id, logo_blob_id, theme, mega_amount, lootbox_amount } = fa
+					const { id, logo_blob_id, theme, lootbox_amount } = fa
 
 					return (
 						<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
 							<Box
 								sx={{
-									width: 41,
-									height: 41,
+									width: 30,
+									height: 30,
 									flexShrink: 0,
 									backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logo_blob_id})`,
 									backgroundRepeat: "no-repeat",
@@ -627,10 +627,6 @@ const FactionWarMachineRemain = () => {
 								}}
 							/>
 							<Stack>
-								<Stack direction="row">
-									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mega:&nbsp;</Typography>
-									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{mega_amount}</Typography>
-								</Stack>
 								<Stack direction="row">
 									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates:&nbsp;</Typography>
 									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{lootbox_amount}</Typography>

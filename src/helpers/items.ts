@@ -16,7 +16,7 @@ BigNumber.config({ FORMAT: fmt })
 
 export const getItemAttributeValue = (attributes: Attribute[], traitToGet: string): string => {
 	// get asset type from attributes array
-	const arr = attributes.filter((a) => a.trait_type === traitToGet)
+	const arr = attributes.filter((a) => a.label === traitToGet)
 	if (arr[0]) {
 		return arr[0].value as string
 	}

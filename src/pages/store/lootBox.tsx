@@ -25,7 +25,7 @@ import { SocketState, useWebsocket } from "../../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { Rarity } from "../../types/enums"
+import { Faction, Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
 
@@ -47,19 +47,19 @@ export const LootBoxPage = () => {
 	useEffect(() => {
 		if (user && user.faction) {
 			switch (user.faction.label) {
-				case "Red Mountain Offworld Mining Corporation":
+				case Faction.RedMountain:
 					setImg("https://afiles.ninja-cdn.com/passport/rm_crate.png")
 					setVideoURL(
 						"https://player.vimeo.com/progressive_redirect/playback/681923579/rendition/1080p?loc=external&signature=7e9fff2e4ea09ee28997c53f80f28dd581269d8af04195885821f65e5f533f10",
 					)
 					break
-				case "Boston Cybernetics":
+				case Faction.BostonCybernetics:
 					setImg("https://afiles.ninja-cdn.com/passport/boston_crate.png")
 					setVideoURL(
 						"https://player.vimeo.com/progressive_redirect/playback/681930319/rendition/1080p?loc=external&signature=11bf8ce5eb133e5e53b12d05894f991157672b2aa9661455230c948f7b823e89",
 					)
 					break
-				case "Zaibatsu Heavy Industries":
+				case Faction.ZaibatsuIndustries:
 					setImg("https://afiles.ninja-cdn.com/passport/zaibatsu_crate.png")
 					setVideoURL(
 						"https://player.vimeo.com/progressive_redirect/playback/681917273/rendition/1080p?loc=external&signature=e0c40d7d63d7019bcf9b7b789107bf1eb716479e5e3cd4e9d9e5a9c4c38ede2d",

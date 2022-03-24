@@ -1,11 +1,11 @@
 import { Box, BoxProps, styled, Typography } from "@mui/material"
 import { useHistory } from "react-router-dom"
-import { colors } from "../theme"
-import { FancyButton } from "../components/fancyButton"
 import EthLogo from "../assets/images/crypto/binance-coin-bnb-logo.svg" // TODO switch to Ethereum logo
 import EpicIcon from "../assets/images/icons/badges/Epic.png"
 import PlaceholderMech from "../assets/images/placeholder_mech.png"
 import PlaceholderLogo from "../assets/images/Zaibatsu_Logo.svg"
+import { FancyButton } from "../components/fancyButton"
+import { colors } from "../theme"
 import { PurchasedItem, PurchasedItemAttributes } from "../types/purchased_item"
 
 interface AssetCardProps extends BoxProps {
@@ -50,7 +50,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ item }) => {
 		let output = ""
 		const attributes = PurchasedItemAttributes(item)
 		// get asset type from attributes array
-		const arr = attributes.filter((a) => a.trait_type === "Asset Type")
+		const arr = attributes.filter((a) => a.label === "Asset Type")
 		if (arr && arr.length > 0) {
 			output = `${arr[0].value}`
 		}

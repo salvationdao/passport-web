@@ -8,6 +8,7 @@ interface PercentageDisplayProps {
 }
 
 export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayProps> = ({ displayValue, percentage, label }) => {
+	const percentageDefined = typeof percentage !== "undefined"
 	return (
 		<Box
 			sx={{
@@ -44,7 +45,9 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 						right: 0,
 						bottom: 0,
 						borderRadius: "50%",
-						background: `conic-gradient(${percentage ? colors.neonPink : colors.skyBlue} calc(${percentage || 100}*1%),#0000 0)`,
+						background: `conic-gradient(${percentageDefined ? colors.neonPink : colors.skyBlue} calc(${percentageDefined ? percentage : 100}*1%),${
+							colors.darkNavyBlue
+						} 0)`,
 					}}
 				/>
 				<Box
@@ -56,7 +59,7 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 						bottom: 0,
 						transform: "scale(.8)",
 						borderRadius: "50%",
-						backgroundColor: percentage ? colors.darkNeonPink : colors.darkSkyBlue,
+						backgroundColor: percentageDefined ? colors.darkNeonPink : colors.darkSkyBlue,
 					}}
 				/>
 				<Typography

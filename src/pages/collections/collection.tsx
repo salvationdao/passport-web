@@ -1,8 +1,8 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Collapse, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
+import { Box, Collapse, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery, Pagination, Select, MenuItem } from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
@@ -10,17 +10,21 @@ import { Navbar } from "../../components/home/navbar"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
+import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { useAuth } from "../../containers/auth"
-import { useQuery } from "../../hooks/useSend"
-import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { CollectionItemCard } from "./collectionItemCard"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string>()
 	const [assetHashes, setAssetHashes] = useState<string[]>([])
-	const [openFilterDrawer, setOpenFilterDrawer] = React.useState(false)
+	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
 
 	// search and filter
+	const [currentPage, setCurrentPage] = useState(1)
+	const [pageSize, setPageSize] = useState(20)
+	const [total, setTotal] = useState(0)
 	const [search, setSearch] = useState("")
 	const [assetType, setAssetType] = useState<string>()
 
@@ -28,16 +32,10 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 	const history = useHistory()
 	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
-	const { loading, error, payload } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
 	}
-
-	useEffect(() => {
-		if (!payload || loading || error) return
-		setAssetHashes(payload.asset_hashes)
-	}, [payload, loading, error])
 
 	if (user && !user.faction) {
 		return <PleaseEnlist />
@@ -62,7 +60,16 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						},
 					}}
 				>
-					<Sort assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
+					<Sort
+						assetType={assetType}
+						search={search}
+						page={currentPage - 1}
+						pageSize={pageSize}
+						setAssetHashes={setAssetHashes}
+						setTotal={setTotal}
+						setLoading={setLoading}
+						setError={setError}
+					/>
 				</SwipeableDrawer>
 			)}
 			<Box
@@ -230,7 +237,16 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 												},
 											}}
 										>
-											<Sort assetType={assetType} search={search} setAssetHashes={setAssetHashes} />
+											<Sort
+												assetType={assetType}
+												search={search}
+												page={currentPage - 1}
+												pageSize={pageSize}
+												setAssetHashes={setAssetHashes}
+												setTotal={setTotal}
+												setLoading={setLoading}
+												setError={setError}
+											/>
 										</Paper>
 									</Box>
 								</Collapse>
@@ -277,6 +293,28 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 									</Paper>
 								)}
 							</Box>
+						</Box>
+						<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
+							<Select
+								value={pageSize}
+								onChange={(e) => {
+									setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
+									setCurrentPage(1)
+								}}
+								input={<PageSizeSelectionInput />}
+							>
+								<MenuItem value={5}>Showing 5 results per page</MenuItem>
+								<MenuItem value={10}>Showing 10 results per page</MenuItem>
+								<MenuItem value={20}>Showing 20 results per page</MenuItem>
+								<MenuItem value={50}>Showing 50 results per page</MenuItem>
+								<MenuItem value={100}>Showing 100 results per page</MenuItem>
+							</Select>
+							<Pagination
+								page={currentPage}
+								count={Math.ceil(total / pageSize)}
+								color="primary"
+								onChange={(_, newPageNumber) => setCurrentPage(newPageNumber)}
+							/>
 						</Box>
 					</Box>
 				</Box>

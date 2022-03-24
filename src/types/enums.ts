@@ -12,6 +12,12 @@ export enum Rarity {
 	Titan = "TITAN",
 }
 
+export enum Faction {
+	RedMountain = "Red Mountain Offworld Mining Corporation",
+	BostonCybernetics = "Boston Cybernetics",
+	ZaibatsuIndustries = "Zaibatsu Heavy Industries",
+}
+
 export enum Perm {
 	RoleList = "RoleList",
 	RoleCreate = "RoleCreate",

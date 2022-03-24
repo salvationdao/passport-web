@@ -66,7 +66,6 @@ export const WithdrawSupsForm = ({
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsWalletTotal, setSupsWalletTotal] = useState<BigNumber>()
-	const [supsAccountTotal, setSupsAccountTotal] = useState<BigNumber>()
 	const [withdrawContractAmount, setWithdrawContractAmount] = useState<BigNumber>()
 	const [immediateError, setImmediateError] = useState<string>()
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false)
@@ -94,7 +93,7 @@ export const WithdrawSupsForm = ({
 				setTotalHeld(BigNumber.from(0))
 				console.error(err)
 			})
-	}, [user?.public_address, setTotalHeld])
+	}, [totalHeld, user?.public_address, setTotalHeld])
 
 	useEffect(() => {
 		try {
@@ -126,7 +125,6 @@ export const WithdrawSupsForm = ({
 
 	useEffect(() => {
 		if (xsynSups && supBalance) {
-			setSupsAccountTotal(xsynSups)
 			setSupsWalletTotal(supBalance)
 		}
 	}, [xsynSups, supBalance])
@@ -134,15 +132,11 @@ export const WithdrawSupsForm = ({
 	useEffect(() => {
 		if (xsynSups === undefined || supBalance === undefined) return
 		if (withdrawAmount && xsynSups && supBalance) {
-			const totalAccountSups = xsynSups.sub(withdrawAmount)
-			setSupsAccountTotal(totalAccountSups)
-
 			const totalWalletSups = supBalance.add(withdrawAmount)
 			setSupsWalletTotal(totalWalletSups)
 			return
 		}
 		if (!withdrawAmount) {
-			setSupsAccountTotal(xsynSups)
 			setSupsWalletTotal(supBalance)
 			return
 		}
@@ -356,8 +350,14 @@ export const WithdrawSupsForm = ({
 											setWithdrawDisplay(e.target.value)
 										}}
 										onBlur={(e) => {
-											const newValue = parseUnits(e.target.value, 18)
-											setWithdrawAmount(newValue)
+											try {
+												if (e.target.value.length > 0) {
+													const newValue = parseUnits(e.target.value, 18)
+													setWithdrawAmount(newValue)
+												}
+											} catch (error) {
+												setImmediateError("Error setting withdraw amount")
+											}
 										}}
 										sx={{
 											"& .MuiFilledInput-input": {
@@ -391,7 +391,7 @@ export const WithdrawSupsForm = ({
 										disabled={!xsynSups || xsynSups._hex === BigNumber.from(0)._hex}
 										onClick={() => {
 											if (maxLimit) {
-												if (withdrawContractAmount && withdrawContractAmount.lt(maxLimit)) {
+												if (withdrawContractAmount && withdrawContractAmount.lte(maxLimit)) {
 													setWithdrawAmount(withdrawContractAmount)
 													setWithdrawDisplay(formatUnits(withdrawContractAmount, 18))
 													return

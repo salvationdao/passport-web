@@ -1,6 +1,22 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Collapse, Link, Paper, styled, SwipeableDrawer, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery } from "@mui/material"
+import {
+	Box,
+	Collapse,
+	Link,
+	Paper,
+	styled,
+	SwipeableDrawer,
+	Tab,
+	TabProps,
+	Tabs,
+	tabsClasses,
+	Typography,
+	useMediaQuery,
+	Pagination,
+	Select,
+	MenuItem,
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
@@ -9,6 +25,7 @@ import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
+import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
@@ -31,6 +48,9 @@ export const StorePage: React.FC = () => {
 	const [tabLoading, setTabLoading] = useState(true)
 
 	// search and filter
+	const [currentPage, setCurrentPage] = useState(1)
+	const [pageSize, setPageSize] = useState(20)
+	const [total, setTotal] = useState(0)
 	const [search, setSearch] = useState("")
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const [assetType, setAssetType] = useState<string>()
@@ -118,6 +138,8 @@ export const StorePage: React.FC = () => {
 
 		query({
 			search,
+			page: currentPage - 1,
+			page_size: pageSize,
 			attribute_filter: {
 				linkOperator: assetType && assetType !== "All" ? "and" : "or",
 				items: attributeFilterItems,
@@ -130,11 +152,12 @@ export const StorePage: React.FC = () => {
 		}).then(() => {
 			setTabLoading(false)
 		})
-	}, [user, query, collection, state, assetType, rarities, search, sort])
+	}, [user, query, collection, state, assetType, rarities, currentPage, pageSize, search, sort])
 
 	useEffect(() => {
 		if (!payload || queryLoading || error) return
 		setStoreItemIDs(payload.store_item_ids)
+		setTotal(payload.total)
 	}, [payload, queryLoading, error])
 
 	if (user && !user.faction) {
@@ -143,7 +166,7 @@ export const StorePage: React.FC = () => {
 
 	const loading = tabLoading || queryLoading
 
-	const showLootBox = collection?.name === "Supremacy Genesis" && (!assetType || assetType === "All")
+	const showLootBox = collection?.name === "Supremacy Genesis" && (!assetType || assetType === "All") && currentPage === 1
 
 	const renderFilters = () => (
 		<>
@@ -484,7 +507,6 @@ export const StorePage: React.FC = () => {
 											gap: "1rem",
 										}}
 									>
-										{/* NOTE: You might need to remove the lootbox if pagination is added */}
 										{showLootBox && <LootBoxCard />}
 										{collection &&
 											storeItemIDs.map((a) => {
@@ -509,6 +531,30 @@ export const StorePage: React.FC = () => {
 								</Paper>
 							)}
 						</Box>
+
+						<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
+							<Select
+								value={pageSize}
+								onChange={(e) => {
+									setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
+									setCurrentPage(1)
+								}}
+								input={<PageSizeSelectionInput />}
+							>
+								<MenuItem value={5}>Showing 5 results per page</MenuItem>
+								<MenuItem value={10}>Showing 10 results per page</MenuItem>
+								<MenuItem value={20}>Showing 20 results per page</MenuItem>
+								<MenuItem value={50}>Showing 50 results per page</MenuItem>
+								<MenuItem value={100}>Showing 100 results per page</MenuItem>
+							</Select>
+							<Pagination
+								page={currentPage}
+								count={Math.ceil(total / pageSize)}
+								color="primary"
+								onChange={(_, newPageNumber) => setCurrentPage(newPageNumber)}
+							/>
+						</Box>
+
 						{collection && <BlackMarketCTA mint_contract={collection.mint_contract} />}
 					</Box>
 				</Box>
