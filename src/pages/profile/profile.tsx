@@ -131,7 +131,7 @@ export const ProfilePage: React.FC = () => {
 								<Typography variant="h3" component="p">
 									{user.username}
 								</Typography>
-								{(user.first_name || user.last_name) && (
+								{loggedInUser?.username === user.username && (user.first_name || user.last_name) && (
 									<Typography variant="subtitle2">
 										{user.first_name} {user.last_name}
 									</Typography>
