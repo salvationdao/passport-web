@@ -48,7 +48,7 @@ export const ProfilePage: React.FC = () => {
 					})
 					setUser(resp)
 				} catch (e) {
-					setError(typeof e === "string" ? e : "Something went wrong while fetching the user. Please try again.")
+					setError(typeof e === "string" ? e : "Something went wrong while fetching the user. Please try again or contact support.")
 				}
 			} else {
 				if (loggedInUser) {

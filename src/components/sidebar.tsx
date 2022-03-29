@@ -60,6 +60,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [pendingRefund, setPendingRefunds] = useState<BigNumber>(BigNumber.from(0))
+	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
 		if (userSups) {
@@ -87,15 +88,13 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
-		;(async () => {
-			try {
-				const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
-
-				setFactionsData(resp)
-			} catch (e) {
+		setError(null)
+		send<Faction[]>(HubKey.GetFactionsDetail)
+			.then((data) => setFactionsData(data))
+			.catch((e) => {
 				setFactionsData([])
-			}
-		})()
+				typeof e === "string" ? setError(e) : setError("Issue getting faction details, try again or contact support.")
+			})
 	}, [send, state])
 
 	useEffect(() => {
@@ -271,9 +270,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 						Token Sale
 					</FancyButton>
 				</Box>
-				{
-					//TODO: these buttons to be display: flex after launch
-				}
 			</Box>
 			<Box
 				sx={{
@@ -290,6 +286,13 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				</Typography>
 				<RenderEnlist factionsData={factionsData} user={user} />
 				<FactionWarMachineRemain />
+
+				{error ? (
+					<Typography color={colors.errorRed} sx={{ mt: ".5rem" }}>
+						<b>Error:</b> {error}
+					</Typography>
+				) : null}
+
 				<Divider />
 				<Button
 					sx={{

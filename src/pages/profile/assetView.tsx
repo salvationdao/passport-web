@@ -579,7 +579,7 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Pur
 			displayMessage("Asset successfully updated", "success")
 			onClose()
 		} catch (e) {
-			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
+			displayMessage(typeof e === "string" ? e : "Issue updating asset name, try again or contact support.", "error")
 		} finally {
 			setLoading(false)
 		}

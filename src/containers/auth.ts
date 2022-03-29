@@ -95,23 +95,27 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const loginPassword = useCallback(
 		async (email: string, password: string) => {
-			if (state !== WebSocket.OPEN) {
-				return
-			}
+			try {
+				if (state !== WebSocket.OPEN) {
+					return
+				}
 
-			const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
-				email,
-				password,
-				session_id: sessionId,
-			})
-			if (!resp || !resp.user || !resp.token) {
-				localStorage.clear()
-				setUser(undefined)
-				return
+				const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
+					email,
+					password,
+					session_id: sessionId,
+				})
+				if (!resp || !resp.user || !resp.token) {
+					localStorage.clear()
+					setUser(undefined)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			setUser(resp.user)
-			localStorage.setItem("token", resp.token)
-			setAuthorised(true)
 		},
 		[send, state, sessionId],
 	)
@@ -137,9 +141,10 @@ export const AuthContainer = createContainer(() => {
 				})
 				setUser(resp.user)
 				setAuthorised(true)
-			} catch {
+			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			} finally {
 				setLoading(false)
 				setReconnecting(false)
@@ -173,7 +178,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				return typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Metamask, try again or contact support."
 			}
 			return undefined
 		},
@@ -248,7 +253,7 @@ export const AuthContainer = createContainer(() => {
 		} catch (e) {
 			localStorage.clear()
 			setUser(undefined)
-			console.error(e)
+			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
 	}, [send, state, account, sessionId, signWalletConnect, wcSignature])
 
@@ -287,7 +292,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Google, try again or contact support."
 			}
 			return undefined
 		},
@@ -320,7 +325,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Google, try again or contact support."
 			}
 		},
 		[send, state, sessionId],
@@ -352,7 +357,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Facebook, try again or contact support."
 			}
 			return
 		},
@@ -387,7 +392,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Facebook, try again or contact support."
 			}
 		},
 		[send, state, sessionId],
@@ -420,7 +425,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Twitch, try again or contact support."
 			}
 			return
 		},
@@ -454,7 +459,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Twitch, try again or contact support."
 			}
 		},
 		[send, state, sessionId],
@@ -487,7 +492,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Twitter, try again or contact support."
 			}
 			return
 		},
@@ -521,7 +526,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Twitter, try again or contact support."
 			}
 		},
 		[send, state, sessionId],
@@ -554,7 +559,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Discord, try again or contact support."
 			}
 			return
 		},
@@ -588,7 +593,7 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Discord, try again or contact support."
 			}
 		},
 		[send, state, sessionId],
@@ -612,7 +617,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -636,7 +641,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
@@ -661,7 +666,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -685,7 +690,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
@@ -710,7 +715,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -735,7 +740,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
@@ -760,7 +765,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -785,7 +790,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
@@ -810,7 +815,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -837,7 +842,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
