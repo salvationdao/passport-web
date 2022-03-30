@@ -8,10 +8,12 @@ import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
 import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
+import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
-import { useWebsocket } from "./containers/socket"
+import { SocketState, useWebsocket } from "./containers/socket"
 import { useWeb3 } from "./containers/web3"
+import HubKey from "./keys"
 import { AssetRedirectPage } from "./pages/assetRedirect"
 import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
 import { LoginPage } from "./pages/auth/login"
@@ -34,16 +36,27 @@ import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 
 export const Routes = () => {
-	const { setSessionID, user, loading: authLoading } = useAuth()
-	const { state } = useWebsocket()
 	const { account } = useWeb3()
+	const { state, send } = useWebsocket()
 	const { setSidebarOpen } = useSidebarState()
+	const { fingerprint } = useFingerprint()
+	const { setSessionID, user, loading: authLoading } = useAuth()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
 	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
 	const [loadingText, setLoadingText] = useState<string>()
 	const searchParams = new URLSearchParams(window.location.search)
 	const sessionID = searchParams.get("sessionID")
 	const mobileScreen = useMediaQuery("(max-width:1024px)")
+
+	// Fingerprinting
+	useEffect(() => {
+		if (state !== SocketState.OPEN || !send || !fingerprint) return
+		;(async () => {
+			await send(HubKey.UserFingerprint, {
+				fingerprint,
+			})
+		})()
+	}, [state, send, fingerprint])
 
 	useEffect(() => {
 		if (mobileScreen) setSidebarOpen(false)

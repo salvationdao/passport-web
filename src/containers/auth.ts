@@ -32,6 +32,7 @@ import {
 } from "../types/auth"
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
+import { useFingerprint } from "./fingerprint"
 import { useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
 
@@ -44,7 +45,10 @@ export enum VerificationType {
  * A Container that handles Authorisation
  */
 export const AuthContainer = createContainer(() => {
+	const { fingerprint } = useFingerprint()
+	const { state, send, subscribe } = useWebsocket()
 	const { metaMaskState, sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
+
 	const [user, setUser] = useState<User>()
 	const [recheckAuth, setRecheckAuth] = useState(!!localStorage.getItem("token"))
 	const [authorised, setAuthorised] = useState(false)
@@ -52,7 +56,6 @@ export const AuthContainer = createContainer(() => {
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
-	const { state, send, subscribe } = useWebsocket()
 	const [showSimulation, setShowSimulation] = useState(false)
 
 	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
@@ -104,6 +107,7 @@ export const AuthContainer = createContainer(() => {
 					email,
 					password,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -117,7 +121,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -138,6 +142,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					session_id: sessionId,
 					twitch_extension_jwt: searchParams.get("twitchExtensionJWT"),
+					fingerprint,
 				})
 				setUser(resp.user)
 				setAuthorised(true)
@@ -150,7 +155,7 @@ export const AuthContainer = createContainer(() => {
 				setReconnecting(false)
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -165,6 +170,7 @@ export const AuthContainer = createContainer(() => {
 					public_address: account,
 					username,
 					session_id: sessionId,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -182,7 +188,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return undefined
 		},
-		[send, state, account, metaMaskState, sessionId],
+		[send, state, account, metaMaskState, sessionId, fingerprint],
 	)
 
 	/**
@@ -200,6 +206,7 @@ export const AuthContainer = createContainer(() => {
 					public_address: acc,
 					signature: signature,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -222,7 +229,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			throw e
 		}
-	}, [send, state, sign, sessionId, connect])
+	}, [send, state, sign, sessionId, connect, fingerprint])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -239,6 +246,7 @@ export const AuthContainer = createContainer(() => {
 					public_address: account as string,
 					signature: wcSignature || "",
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -255,7 +263,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [send, state, account, sessionId, signWalletConnect, wcSignature])
+	}, [send, state, account, sessionId, signWalletConnect, wcSignature, fingerprint])
 
 	// Effect
 	useEffect(() => {
@@ -279,6 +287,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					username,
 					session_id: sessionId,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -296,7 +305,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return undefined
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -311,6 +320,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<PasswordLoginResponse, GoogleLoginRequest>(HubKey.AuthLoginGoogle, {
 					token: token,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -328,7 +338,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Issue logging in with Google, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -344,6 +354,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					username,
 					session_id: sessionId,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -361,7 +372,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -378,6 +389,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<PasswordLoginResponse, FacebookLoginRequest>(HubKey.AuthLoginFacebook, {
 					token: token,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -395,7 +407,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Issue logging in with Facebook, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -412,6 +424,7 @@ export const AuthContainer = createContainer(() => {
 					username,
 					session_id: sessionId,
 					website: true,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -429,7 +442,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -445,6 +458,7 @@ export const AuthContainer = createContainer(() => {
 					token: token,
 					session_id: sessionId,
 					website: true,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -462,7 +476,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Issue logging in with Twitch, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -479,6 +493,7 @@ export const AuthContainer = createContainer(() => {
 					oauth_verifier,
 					username,
 					session_id: sessionId,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -496,7 +511,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -512,6 +527,7 @@ export const AuthContainer = createContainer(() => {
 					oauth_token,
 					oauth_verifier,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -529,7 +545,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Issue logging in with Twitter, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -546,6 +562,7 @@ export const AuthContainer = createContainer(() => {
 					username,
 					session_id: sessionId,
 					redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -563,7 +580,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			return
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -579,6 +596,7 @@ export const AuthContainer = createContainer(() => {
 					code,
 					session_id: sessionId,
 					redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -596,7 +614,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Issue logging in with Discord, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**

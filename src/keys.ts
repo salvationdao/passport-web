@@ -53,6 +53,7 @@ enum HubKey {
 	UserRemoveDiscord = "USER:REMOVE_DISCORD",
 	UserAddDiscord = "USER:ADD_DISCORD",
 	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
+	UserFingerprint = "USER:FINGERPRINT",
 
 	RoleGet = "ROLE:GET",
 	RoleList = "ROLE:LIST",
