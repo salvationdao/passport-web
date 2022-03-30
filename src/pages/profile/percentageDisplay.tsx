@@ -1,14 +1,16 @@
-import { Box, Typography } from "@mui/material"
+import { Box, keyframes, styled, Typography } from "@mui/material"
 import { colors } from "../../theme"
 
 interface PercentageDisplayProps {
 	displayValue: string
-	percentage?: number
+	percentage: number
 	label: string
 }
 
+const radius = 22.5
+const circumference = Math.PI * 2 * radius
+
 export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayProps> = ({ displayValue, percentage, label }) => {
-	const percentageDefined = typeof percentage !== "undefined"
 	return (
 		<Box
 			sx={{
@@ -26,42 +28,35 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 					marginBottom: "1rem",
 				}}
 			>
-				<Box
+				<StyledSVG
+					width="100"
+					height="100"
 					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						borderRadius: "50%",
-						backgroundColor: colors.darkerNavyBlue,
+						transform: "rotate(-90deg)",
 					}}
-				/>
-				<Box
-					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						borderRadius: "50%",
-						background: `conic-gradient(${percentageDefined ? colors.neonPink : colors.skyBlue} calc(${percentageDefined ? percentage : 100}*1%),${
-							colors.darkNavyBlue
-						} 0)`,
-					}}
-				/>
-				<Box
-					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						transform: "scale(.8)",
-						borderRadius: "50%",
-						backgroundColor: percentageDefined ? colors.darkNeonPink : colors.darkSkyBlue,
-					}}
-				/>
+				>
+					<StyledCircle
+						r="50"
+						cx="50"
+						cy="50"
+						sx={{
+							fill: colors.lightNavyBlue,
+						}}
+					/>
+					<StyledCircle
+						r="45"
+						cx="50"
+						cy="50"
+						sx={{
+							fill: colors.darkerNavyBlue,
+							stroke: colors.neonBlue,
+							strokeDasharray: `${(circumference * percentage) / 100} ${circumference}`,
+							strokeWidth: 10,
+							transition: "stroke-dasharray .2s ease-out",
+							animation: `${generateStrokeKeyframes(percentage)} 1s ease-out`,
+						}}
+					/>
+				</StyledSVG>
 				<Typography
 					variant="h5"
 					sx={{
@@ -79,4 +74,19 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 			</Typography>
 		</Box>
 	)
+}
+
+const StyledSVG = styled("svg")({})
+
+const StyledCircle = styled("circle")({})
+
+const generateStrokeKeyframes = (percentage: number) => {
+	return keyframes`
+	0% {
+	  stroke-dasharray: 0;
+	}
+	100% {
+		stroke-dasharray: ${(circumference * percentage) / 100} ${circumference};
+	}
+  `
 }
