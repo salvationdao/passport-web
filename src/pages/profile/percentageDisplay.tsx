@@ -7,7 +7,7 @@ interface PercentageDisplayProps {
 	label: string
 }
 
-const radius = 22.5
+const radius = 45
 const circumference = Math.PI * 2 * radius
 
 export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayProps> = ({ displayValue, percentage, label }) => {
@@ -44,7 +44,7 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 						}}
 					/>
 					<StyledCircle
-						r="45"
+						r={radius}
 						cx="50"
 						cy="50"
 						sx={{
@@ -53,7 +53,7 @@ export const PercentageDisplay: React.VoidFunctionComponent<PercentageDisplayPro
 							strokeDasharray: `${(circumference * percentage) / 100} ${circumference}`,
 							strokeWidth: 10,
 							transition: "stroke-dasharray .2s ease-out",
-							animation: `${generateStrokeKeyframes(percentage)} 1s ease-out`,
+							animation: `${generateStrokeKeyframes(percentage)} 1.5s ease-out`,
 						}}
 					/>
 				</StyledSVG>
