@@ -24,6 +24,7 @@ import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
 import { CollectionPage } from "./pages/collections/collection"
 import { DepositPage } from "./pages/deposit/depositPage"
+import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
@@ -168,6 +169,9 @@ export const Routes = () => {
 
 							<Route path="/transactions">
 								<TransactionsPage />
+							</Route>
+							<Route path="/farms">
+								<FarmsPage />
 							</Route>
 							<Route path="/withdraw">
 								<WithdrawPage />

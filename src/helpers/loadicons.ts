@@ -25,6 +25,7 @@ import {
 	faBooks,
 } from "@fortawesome/pro-light-svg-icons"
 import {
+	faExternalLink as fasExternalLink,
 	faFilter as fasFilter,
 	faUserSecret as fasUserSecret,
 	faUser as fasUser,
@@ -68,6 +69,7 @@ export const loadIcons = () => {
 		faFileImport,
 		faBooks,
 
+		fasExternalLink,
 		fasFilter,
 		fasUserSecret,
 		fasUser,

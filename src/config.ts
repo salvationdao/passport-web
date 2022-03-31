@@ -44,3 +44,9 @@ export const REDEEM_ADDRESS = process.env.REACT_APP_REDEEM_ADDRESS || "0xc01c2f6
 export const WALLET_CONNECT_RPC = process.env.REACT_APP_WALLET_CONNECT_RPC || "1375aa321ac8ac6cfba6aa9c"
 
 export const SAFT_AGREEMENT_PDF = process.env.SAFT_AGREEMENT_PDF || "/09_03_22_Token_Subscription_Agreement_Wallet_Address_Signature_Sups.pdf"
+
+export const FARM_CONTRACT_ADDRESS = process.env.REACT_APP_FARM_CONTRACT_ADDRESS || "0x20034d860bf43ef6d6dded79a8d73e857e10960c"
+export const PANCAKE_POOL_ADDRESS = process.env.REACT_APP_PANCAKE_POOL_ADDRESS || "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
+export const LP_TOKEN_ADDRESS = process.env.REACT_APP_LP_TOKEN_ADDRESS || "0xd96e4e2e0b1b41cad0627431a8cda64aaa5acd01"
+export const WRAPPED_BNB_ADDRESS = process.env.REACT_APP_WRAPPED_BNB_ADDRESS || "0xae13d989dac2f0debff460ac112a837c89baa7cd"
+export const PANCAKE_SWAP_ADDRESS = process.env.REACT_APP_PANCAKE_SWAP_ADDRESS || "pancake.kiemtienonline360.com/#"

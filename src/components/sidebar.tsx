@@ -1,4 +1,5 @@
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
+import AgricultureIcon from "@mui/icons-material/Agriculture"
 import AppsIcon from "@mui/icons-material/Apps"
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
@@ -335,6 +336,11 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to="/deposit" startIcon={<SavingsIcon />}>
 					Deposit
 				</NavButton>
+				{localStorage.getItem("show_farms") === "true" && (
+					<NavButton to="/farms" startIcon={<AgricultureIcon />}>
+						Farms
+					</NavButton>
+				)}
 				<NavButton to="/transactions" startIcon={<ReceiptLongIcon />}>
 					Transactions
 				</NavButton>
