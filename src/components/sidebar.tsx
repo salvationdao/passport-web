@@ -336,11 +336,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to="/deposit" startIcon={<SavingsIcon />}>
 					Deposit
 				</NavButton>
-				{localStorage.getItem("show_farms") === "true" && (
-					<NavButton to="/farms" startIcon={<AgricultureIcon />}>
-						Farms
-					</NavButton>
-				)}
+				<NavButton to="/farms" startIcon={<AgricultureIcon />}>
+					Farms
+				</NavButton>
 				<NavButton to="/transactions" startIcon={<ReceiptLongIcon />}>
 					Transactions
 				</NavButton>
