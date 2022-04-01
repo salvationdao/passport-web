@@ -199,6 +199,7 @@ export const AssetView = ({
 	const [renameWindowOpen, setRenameWindowOpen] = useState(false)
 	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
 	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
+	const [enlarge, setEnlarge] = useState<boolean>(false)
 
 	if (error) {
 		return (
@@ -270,23 +271,25 @@ export const AssetView = ({
 					padding: "2rem",
 				}}
 			>
-				<Link
-					variant="h5"
-					underline="hover"
-					sx={{
-						alignSelf: "start",
-						display: "flex",
-						alignItems: "center",
-						marginBottom: "1rem",
-						textTransform: "uppercase",
-					}}
-					color={colors.white}
-					component={"button"}
-					onClick={() => history.goBack()}
-				>
-					<ChevronLeftIcon />
-					Go Back
-				</Link>
+				{!enlarge && (
+					<Link
+						variant="h5"
+						underline="hover"
+						sx={{
+							alignSelf: "start",
+							display: "flex",
+							alignItems: "center",
+							marginBottom: "1rem",
+							textTransform: "uppercase",
+						}}
+						color={colors.white}
+						component={"button"}
+						onClick={() => history.goBack()}
+					>
+						<ChevronLeftIcon />
+						Go Back
+					</Link>
+				)}
 				{!isWiderThan1000px && (
 					<Box
 						sx={{
@@ -318,17 +321,42 @@ export const AssetView = ({
 							sx={{
 								position: "relative",
 								width: "100%",
-								maxWidth: "350px",
+								maxWidth: "20rem",
 							}}
 						>
 							<Box
-								component="img"
-								src={purchasedItem.data.mech.image_url}
-								alt="Asset Image"
 								sx={{
-									width: "100%",
+									display: "flex",
+									justifyContent: "center",
+									alignItems: "center",
+									gap: "2rem",
+									px: "0",
+									position: "relative",
 								}}
-							/>
+							>
+								<Box
+									component="video"
+									sx={{
+										width: "100%",
+										cursor: enlarge ? "zoom-out" : "zoom-in",
+										transition: "all 0.2s ease-in",
+										":hover": {
+											boxShadow: `0px 5px 10px 5px ${colors.neonBlue}30`,
+											transform: "translateY(-5px)",
+										},
+									}}
+									loop
+									muted
+									autoPlay
+									onClick={() => {
+										setEnlarge(!enlarge)
+									}}
+									poster={`${purchasedItem.data.mech.image_url}`}
+								>
+									<source src={purchasedItem.data.mech.animation_url} type="video/mp4" />
+								</Box>
+							</Box>
+
 							<Box
 								component="img"
 								src={purchasedItem.data.mech.avatar_url}
@@ -345,6 +373,7 @@ export const AssetView = ({
 								}}
 							/>
 						</Box>
+
 						<Box
 							sx={{
 								flex: 1,
@@ -544,6 +573,33 @@ export const AssetView = ({
 						</Box>
 					</Box>
 				</Box>
+				{enlarge && (
+					<Dialog
+						open={enlarge}
+						PaperProps={{
+							sx: {
+								maxWidth: "unset",
+							},
+						}}
+					>
+						<Box
+							component="video"
+							sx={{
+								height: "80vh",
+								cursor: "zoom-out",
+							}}
+							loop
+							muted
+							autoPlay
+							onClick={() => {
+								setEnlarge(!enlarge)
+							}}
+							poster={`${purchasedItem.data.mech.large_image_url}`}
+						>
+							<source src={purchasedItem.data.mech.animation_url} type="video/mp4" />
+						</Box>
+					</Dialog>
+				)}
 				{provider && purchasedItem && (
 					<StakeModel collection={collection} open={stakeModelOpen} asset={purchasedItem} onClose={() => setStakeModelOpen(false)} />
 				)}

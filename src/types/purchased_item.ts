@@ -78,6 +78,8 @@ export interface Mech {
 	image_url: string
 	card_animation_url: string
 	avatar_url: string
+	large_image_url: string
+	animation_url: string
 	hash: string
 	name: string
 	label: string
