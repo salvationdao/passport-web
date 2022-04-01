@@ -60,9 +60,16 @@ export const Routes = () => {
 	}, [state, send, fingerprint])
 
 	useEffect(() => {
-		if (mobileScreen) setSidebarOpen(false)
-		else setSidebarOpen(true)
-	}, [mobileScreen, setSidebarOpen])
+		if (mobileScreen || window.location.pathname.includes("nosidebar")) {
+			setSidebarOpen(false)
+		} else {
+			if (authLoading) {
+				setSidebarOpen(false)
+			} else {
+				setSidebarOpen(true)
+			}
+		}
+	}, [setSidebarOpen, mobileScreen, authLoading])
 
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
@@ -73,7 +80,6 @@ export const Routes = () => {
 			setLoadingText("Loading...")
 			return
 		}
-		setSidebarOpen(true)
 	}, [authLoading, setSidebarOpen])
 
 	useEffect(() => {
@@ -193,7 +199,7 @@ export const Routes = () => {
 							<Route path="/buy">
 								<BuyPage />
 							</Route>
-							<Route path="/if-buy">
+							<Route path="/nosidebar/buy">
 								<IFrameBuyPage />
 							</Route>
 

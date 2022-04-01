@@ -925,7 +925,6 @@ export const Web3Container = createContainer(() => {
 		sign,
 		account,
 		changeChain,
-		amountRemaining: BigNumber.from(0),
 		currentChainId,
 		provider,
 		nativeBalance,

@@ -1,10 +1,31 @@
 import { Box } from "@mui/material"
-import React from "react"
-import { BuyTokens } from "../components/buyTokens"
+import React, { useEffect } from "react"
+import { useHistory } from "react-router-dom"
+import { BuyTokens } from "../components/buy/buyTokens"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
+import { Loading } from "../components/loading"
+import { useAuth } from "../containers/auth"
+import { useWeb3 } from "../containers/web3"
 
 export const IFrameBuyPage: React.FC = () => {
-	return (
+	const { currentChainId } = useWeb3()
+	const { user, loading } = useAuth()
+	const history = useHistory()
+
+	//placeholder for private routes
+	useEffect(() => {
+		if (user) return
+
+		const userTimeout = setTimeout(() => {
+			history.push("/login")
+		}, 2000)
+		return () => clearTimeout(userTimeout)
+	}, [user, history])
+
+	if (!user) {
+		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
+	}
+	return !loading && currentChainId && user ? (
 		<>
 			<Box sx={{ position: "relative", minHeight: "100%" }}>
 				<GradientCircleThing
@@ -39,5 +60,7 @@ export const IFrameBuyPage: React.FC = () => {
 				</Box>
 			</Box>
 		</>
+	) : (
+		<Loading text="Loading. Please wait..." />
 	)
 }

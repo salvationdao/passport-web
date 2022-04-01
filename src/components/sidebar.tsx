@@ -18,7 +18,7 @@ import { Link as RouterLink, useHistory } from "react-router-dom"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import SupsToken from "../assets/images/sup-token.svg"
 import SupsTokenLogo from "../assets/images/sups-token-logo.png"
-import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK, TOKEN_SALE_ENDPOINT } from "../config"
+import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { SocketState, useWebsocket } from "../containers/socket"
@@ -263,12 +263,13 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<Box>
 					<FancyButton
 						onClick={() => {
-							window.open(TOKEN_SALE_ENDPOINT, "_blank")?.focus()
+							history.push("/buy")
 						}}
 						borderColor={colors.skyBlue}
-						sx={{ fontWeight: 400, width: "100%", marginTop: "1rem" }}
+						sx={{ fontWeight: 800, width: "100%", marginTop: "1rem", fontSize: "1rem" }}
 					>
-						Token Sale
+						<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1.2rem", padding: "0 .5rem" }} />
+						Buy SUPS
 					</FancyButton>
 				</Box>
 			</Box>
