@@ -35,6 +35,7 @@ export const StoreItemPage = () => {
 	const [numberAttributes, setNumberAttributes] = useState<AttributeWithPercentage[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
+	const [enlarge, setEnlarge] = useState<boolean>(false)
 
 	// Purchase store item
 	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
@@ -202,13 +203,26 @@ export const StoreItemPage = () => {
 								}}
 							>
 								<Box
-									component="img"
-									src={storeItem.data.template.image_url}
-									alt="Store Item Image"
+									component="video"
 									sx={{
 										width: "100%",
+										cursor: enlarge ? "zoom-out" : "zoom-in",
+										transition: "all 0.2s ease-in",
+										":hover": {
+											boxShadow: `0px 5px 10px 5px ${colors.neonBlue}30`,
+											transform: "translateY(-5px)",
+										},
 									}}
-								/>
+									onClick={() => {
+										setEnlarge(!enlarge)
+									}}
+									muted
+									autoPlay
+									loop
+									poster={storeItem.data.template.image_url}
+								>
+									<source src={storeItem.data.template.animation_url} />
+								</Box>
 								<Box
 									component="img"
 									src={storeItem.data.template.avatar_url}
@@ -533,6 +547,33 @@ export const StoreItemPage = () => {
 							</Box>
 						</Box>
 					</Paper>
+					{enlarge && (
+						<Dialog
+							open={enlarge}
+							PaperProps={{
+								sx: {
+									maxWidth: "unset",
+								},
+							}}
+						>
+							<Box
+								component="video"
+								sx={{
+									height: "80vh",
+									cursor: "zoom-out",
+								}}
+								loop
+								muted
+								autoPlay
+								onClick={() => {
+									setEnlarge(!enlarge)
+								}}
+								poster={`${storeItem.data.template.animation_url}`}
+							>
+								<source src={storeItem.data.template.animation_url} type="video/mp4" />
+							</Box>
+						</Dialog>
+					)}
 					{isWiderThan1000px && (
 						<>
 							<Box minHeight="2rem" minWidth="2rem" />
