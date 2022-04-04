@@ -143,7 +143,7 @@ const FarmInfo = (props: FarmInfoProps) => {
 		if (isPast(fromUnixTime(props.periodFinish.toNumber()))) {
 			setRemainingTime("Rewards are inactive")
 		} else {
-			setRemainingTime(`Ends in ${formatDistanceToNow(fromUnixTime(props.periodFinish.toNumber()))}`)
+			setRemainingTime(`Next phase begins in ${formatDistanceToNow(fromUnixTime(props.periodFinish.toNumber()))}`)
 		}
 	}, 100)
 	useEffect(() => {
