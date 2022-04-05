@@ -21,7 +21,7 @@ import {
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
 import { ethers } from "ethers"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useHistory } from "react-router-dom"
 import { useInterval } from "react-use"
@@ -200,6 +200,16 @@ export const AssetView = ({
 	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
 	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
 	const [enlarge, setEnlarge] = useState<boolean>(false)
+	const videoDiv = useRef<HTMLVideoElement | undefined>()
+
+	useEffect(() => {
+		if (!videoDiv || !videoDiv.current) return
+		if (enlarge) {
+			videoDiv.current.pause()
+		} else {
+			videoDiv.current.play()
+		}
+	}, [enlarge])
 
 	if (error) {
 		return (
@@ -352,6 +362,7 @@ export const AssetView = ({
 										setEnlarge(!enlarge)
 									}}
 									poster={`${purchasedItem.data.mech.image_url}`}
+									ref={videoDiv}
 								>
 									<source src={purchasedItem.data.mech.animation_url} type="video/mp4" />
 								</Box>
@@ -580,6 +591,9 @@ export const AssetView = ({
 							sx: {
 								maxWidth: "unset",
 							},
+						}}
+						onClose={() => {
+							setEnlarge(!enlarge)
 						}}
 					>
 						<Box

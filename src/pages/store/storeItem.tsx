@@ -1,7 +1,7 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Link, Paper, Typography, useMediaQuery, useTheme } from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupTokenIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
@@ -36,6 +36,7 @@ export const StoreItemPage = () => {
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
 	const [enlarge, setEnlarge] = useState<boolean>(false)
+	const videoDiv = useRef<HTMLVideoElement | undefined>()
 
 	// Purchase store item
 	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
@@ -52,6 +53,16 @@ export const StoreItemPage = () => {
 			},
 		)
 	}, [collection_slug, subscribe, state])
+
+	useEffect(() => {
+		if (!videoDiv || !videoDiv.current) return
+		if (enlarge) {
+			videoDiv.current.pause()
+		} else {
+			videoDiv.current.play()
+		}
+	}, [enlarge])
+
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !user) return
 
@@ -220,6 +231,7 @@ export const StoreItemPage = () => {
 									autoPlay
 									loop
 									poster={storeItem.data.template.image_url}
+									ref={videoDiv}
 								>
 									<source src={storeItem.data.template.animation_url} />
 								</Box>
@@ -229,7 +241,7 @@ export const StoreItemPage = () => {
 									alt="Store Item avatar"
 									sx={{
 										position: "absolute",
-										bottom: "1rem",
+										bottom: "1.5rem",
 										right: "1rem",
 										height: "60px",
 										width: "60px",
@@ -549,6 +561,9 @@ export const StoreItemPage = () => {
 					</Paper>
 					{enlarge && (
 						<Dialog
+							onClose={() => {
+								setEnlarge(!enlarge)
+							}}
 							open={enlarge}
 							PaperProps={{
 								sx: {
