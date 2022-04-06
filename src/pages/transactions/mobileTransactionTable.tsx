@@ -1,5 +1,5 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, Button, Chip, Skeleton, styled, Typography, TypographyProps } from "@mui/material"
+import { Box, Button, Skeleton, styled, Typography, TypographyProps } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
@@ -90,10 +90,6 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					<EntryData color={colors.darkerGrey}>{error}</EntryData>
 				</EntryDataRow>
 				<EntryDataRow>
-					<EntryLabel>Status</EntryLabel>
-					<EntryData color={colors.darkerGrey}>{error}</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
 					<EntryLabel>Date</EntryLabel>
 					<EntryData color={colors.darkerGrey}>{error}</EntryData>
 				</EntryDataRow>
@@ -132,10 +128,6 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				</EntryDataRow>
 				<EntryDataRow>
 					<EntryLabel>From</EntryLabel>
-					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>Status</EntryLabel>
 					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
 				</EntryDataRow>
 				<EntryDataRow>
@@ -217,17 +209,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					{entry.from.username}
 				</EntryData>
 			</EntryDataRow>
-			<EntryDataRow>
-				<EntryLabel>Status</EntryLabel>
-				<Box
-					sx={{
-						minWidth: "50%",
-						textTransform: "capitalize",
-					}}
-				>
-					<Chip label={entry.status} size="small" color={entry.status === "success" ? "success" : "error"} />
-				</Box>
-			</EntryDataRow>
+
 			<EntryDataRow>
 				<EntryLabel>Date</EntryLabel>
 				<EntryData>{entry.created_at.toLocaleString()}</EntryData>
