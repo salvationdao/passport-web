@@ -10,7 +10,7 @@ import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
-import { supFormatter, usdFormatter } from "../../helpers/items"
+import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
@@ -82,9 +82,7 @@ export const StoreItemPage = () => {
 							assetAttributes.push(a)
 						} else if (a.display_type === "number") {
 							// If is a number attribute
-							const resp = await fetch(
-								`${window.location.protocol}//${window.location.hostname}:8084/api/stat/mech?stat=${a.identifier}&value=${a.value}`,
-							)
+							const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
 							if (!resp.ok || resp.status !== 200) {
 								console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
 								continue
@@ -451,9 +449,6 @@ export const StoreItemPage = () => {
 													justifyContent: "space-between",
 												}}
 											>
-												<Typography variant="caption" color={colors.darkGrey}>
-													({usdFormatter(storeItem.usd_cent_cost)} USD)
-												</Typography>
 												<Typography variant="caption">
 													Stock: {storeItem.amount_available - storeItem.amount_sold} / {storeItem.amount_available}
 												</Typography>
