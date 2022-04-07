@@ -8,10 +8,12 @@ import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
 import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
+import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
-import { useWebsocket } from "./containers/socket"
+import { SocketState, useWebsocket } from "./containers/socket"
 import { useWeb3 } from "./containers/web3"
+import HubKey from "./keys"
 import { AssetRedirectPage } from "./pages/assetRedirect"
 import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
 import { LoginPage } from "./pages/auth/login"
@@ -22,6 +24,7 @@ import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
 import { CollectionPage } from "./pages/collections/collection"
 import { DepositPage } from "./pages/deposit/depositPage"
+import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
@@ -34,10 +37,11 @@ import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 
 export const Routes = () => {
-	const { setSessionID, user, loading: authLoading } = useAuth()
-	const { state } = useWebsocket()
 	const { account } = useWeb3()
+	const { state, send } = useWebsocket()
 	const { setSidebarOpen } = useSidebarState()
+	const { fingerprint } = useFingerprint()
+	const { setSessionID, user, loading: authLoading } = useAuth()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
 	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
 	const [loadingText, setLoadingText] = useState<string>()
@@ -45,10 +49,27 @@ export const Routes = () => {
 	const sessionID = searchParams.get("sessionID")
 	const mobileScreen = useMediaQuery("(max-width:1024px)")
 
+	// Fingerprinting
 	useEffect(() => {
-		if (mobileScreen) setSidebarOpen(false)
-		else setSidebarOpen(true)
-	}, [mobileScreen, setSidebarOpen])
+		if (state !== SocketState.OPEN || !send || !fingerprint) return
+		;(async () => {
+			await send(HubKey.UserFingerprint, {
+				fingerprint,
+			})
+		})()
+	}, [state, send, fingerprint])
+
+	useEffect(() => {
+		if (mobileScreen || window.location.pathname.includes("nosidebar")) {
+			setSidebarOpen(false)
+		} else {
+			if (authLoading) {
+				setSidebarOpen(false)
+			} else {
+				setSidebarOpen(true)
+			}
+		}
+	}, [setSidebarOpen, mobileScreen, authLoading])
 
 	useEffect(() => {
 		if (sessionID) setSessionID(sessionID)
@@ -59,7 +80,6 @@ export const Routes = () => {
 			setLoadingText("Loading...")
 			return
 		}
-		setSidebarOpen(true)
 	}, [authLoading, setSidebarOpen])
 
 	useEffect(() => {
@@ -156,6 +176,9 @@ export const Routes = () => {
 							<Route path="/transactions">
 								<TransactionsPage />
 							</Route>
+							<Route path="/farms">
+								<FarmsPage />
+							</Route>
 							<Route path="/withdraw">
 								<WithdrawPage />
 							</Route>
@@ -176,7 +199,7 @@ export const Routes = () => {
 							<Route path="/buy">
 								<BuyPage />
 							</Route>
-							<Route path="/if-buy">
+							<Route path="/nosidebar/buy">
 								<IFrameBuyPage />
 							</Route>
 

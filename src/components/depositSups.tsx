@@ -42,7 +42,7 @@ export const DepositSups = ({
 	const { metaMaskState, supBalance, provider, sendTransferToPurchaseAddress, account } = useWeb3()
 	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
 	const { user } = useAuth()
-	const { state } = useWebsocket()
+	const { state, send } = useWebsocket()
 
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsTotal, setSupsTotal] = useState<BigNumber>()
@@ -87,6 +87,12 @@ export const DepositSups = ({
 			setCurrentTransferHash(tx.hash)
 			setCurrentTransferState("confirm")
 			await tx.wait()
+
+			// Store transaction in server
+			await send(HubKey.SupsDeposit, {
+				transaction_hash: tx.hash,
+				amount: bigNumDepositAmt.toString(),
+			})
 		} catch (e: any) {
 			//checking metamask Signature
 			const error = metamaskErrorHandling(e)
@@ -256,6 +262,7 @@ export const DepositSups = ({
 					</Box>
 				</Box>
 				<FancyButton
+					loading={state !== SocketState.OPEN || !send}
 					disabled={!depositAmount || !supBalance || depositAmount.gt(supBalance) || currentTransferState !== "none" || immediateError !== undefined}
 					borderColor={colors.skyBlue}
 					sx={{ marginTop: "1.5rem", width: "50%" }}

@@ -1,12 +1,12 @@
-import { Box, LinearProgress, Stack, Typography, useTheme, Link } from "@mui/material"
-import React from "react"
-import { colors } from "../../theme"
-import { FancyButton } from "../fancyButton"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
 import InfoIcon from "@mui/icons-material/Info"
+import { Box, LinearProgress, Link, Stack, Typography, useTheme } from "@mui/material"
+import React from "react"
 import { BSC_SCAN_SITE } from "../../config"
+import { colors } from "../../theme"
 import { transferStateType } from "../../types/types"
+import { FancyButton } from "../fancyButton"
 
 interface TransactionResultOverlayProps {
 	currentTransferState: transferStateType
@@ -32,8 +32,12 @@ export const TransactionResultOverlay = ({
 			sx={
 				currentTransferState !== "none"
 					? {
-							position: "absolute",
 							zIndex: 5,
+							position: "absolute",
+							top: 0,
+							left: 0,
+							right: 0,
+							bottom: 0,
 							padding: "1rem",
 							height: "100%",
 							width: "100%",

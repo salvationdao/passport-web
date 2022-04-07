@@ -1,7 +1,7 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Link, Paper, Typography, useMediaQuery, useTheme } from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupTokenIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
@@ -10,7 +10,7 @@ import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
-import { supFormatter, usdFormatter } from "../../helpers/items"
+import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
@@ -35,6 +35,8 @@ export const StoreItemPage = () => {
 	const [numberAttributes, setNumberAttributes] = useState<AttributeWithPercentage[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
+	const [enlarge, setEnlarge] = useState<boolean>(false)
+	const videoDiv = useRef<HTMLVideoElement | undefined>()
 
 	// Purchase store item
 	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
@@ -51,6 +53,16 @@ export const StoreItemPage = () => {
 			},
 		)
 	}, [collection_slug, subscribe, state])
+
+	useEffect(() => {
+		if (!videoDiv || !videoDiv.current) return
+		if (enlarge) {
+			videoDiv.current.pause()
+		} else {
+			videoDiv.current.play()
+		}
+	}, [enlarge])
+
 	useEffect(() => {
 		if (state !== SocketState.OPEN || !user) return
 
@@ -70,9 +82,7 @@ export const StoreItemPage = () => {
 							assetAttributes.push(a)
 						} else if (a.display_type === "number") {
 							// If is a number attribute
-							const resp = await fetch(
-								`${window.location.protocol}//${window.location.hostname}:8084/api/stat/mech?stat=${a.identifier}&value=${a.value}`,
-							)
+							const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
 							if (!resp.ok || resp.status !== 200) {
 								console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
 								continue
@@ -202,20 +212,34 @@ export const StoreItemPage = () => {
 								}}
 							>
 								<Box
-									component="img"
-									src={storeItem.data.template.image_url}
-									alt="Store Item Image"
+									component="video"
 									sx={{
 										width: "100%",
+										cursor: enlarge ? "zoom-out" : "zoom-in",
+										transition: "all 0.2s ease-in",
+										":hover": {
+											boxShadow: `0px 5px 10px 5px ${colors.neonBlue}30`,
+											transform: "translateY(-5px)",
+										},
 									}}
-								/>
+									onClick={() => {
+										setEnlarge(!enlarge)
+									}}
+									muted
+									autoPlay
+									loop
+									poster={storeItem.data.template.image_url}
+									ref={videoDiv}
+								>
+									<source src={storeItem.data.template.animation_url} />
+								</Box>
 								<Box
 									component="img"
 									src={storeItem.data.template.avatar_url}
 									alt="Store Item avatar"
 									sx={{
 										position: "absolute",
-										bottom: "1rem",
+										bottom: "1.5rem",
 										right: "1rem",
 										height: "60px",
 										width: "60px",
@@ -425,9 +449,6 @@ export const StoreItemPage = () => {
 													justifyContent: "space-between",
 												}}
 											>
-												<Typography variant="caption" color={colors.darkGrey}>
-													({usdFormatter(storeItem.usd_cent_cost)} USD)
-												</Typography>
 												<Typography variant="caption">
 													Stock: {storeItem.amount_available - storeItem.amount_sold} / {storeItem.amount_available}
 												</Typography>
@@ -533,6 +554,36 @@ export const StoreItemPage = () => {
 							</Box>
 						</Box>
 					</Paper>
+					{enlarge && (
+						<Dialog
+							onClose={() => {
+								setEnlarge(!enlarge)
+							}}
+							open={enlarge}
+							PaperProps={{
+								sx: {
+									maxWidth: "unset",
+								},
+							}}
+						>
+							<Box
+								component="video"
+								sx={{
+									height: "80vh",
+									cursor: "zoom-out",
+								}}
+								loop
+								muted
+								autoPlay
+								onClick={() => {
+									setEnlarge(!enlarge)
+								}}
+								poster={`${storeItem.data.template.animation_url}`}
+							>
+								<source src={storeItem.data.template.animation_url} type="video/mp4" />
+							</Box>
+						</Dialog>
+					)}
 					{isWiderThan1000px && (
 						<>
 							<Box minHeight="2rem" minWidth="2rem" />

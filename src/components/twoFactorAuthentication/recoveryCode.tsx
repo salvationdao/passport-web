@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Typography } from "@mui/material"
+import { Alert, Box, Button, Paper, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
@@ -8,8 +8,14 @@ export const TwoFactorAuthenticationRecoveryCode = () => {
 	const { send } = useWebsocket()
 	const [recoveryCode, setRecoveryCode] = useState<string[]>([])
 	const [clickDownload, setClickDownload] = useState(false)
+	const [error, setError] = useState<string>()
+
 	useEffect(() => {
-		send<string[]>(HubKey.AuthTFARecoveryCodeGet).then((data) => setRecoveryCode(data))
+		send<string[]>(HubKey.AuthTFARecoveryCodeGet)
+			.then((data) => setRecoveryCode(data))
+			.catch((e) => {
+				typeof e === "string" ? setError(e) : setError("Issue getting recovery code, try again or contact support.")
+			})
 	}, [send])
 
 	const download = () => {
@@ -51,6 +57,7 @@ export const TwoFactorAuthenticationRecoveryCode = () => {
 				<Typography sx={{ marginBottom: "5px" }} variant="h6">
 					Two Factor Authentication Recovery Code
 				</Typography>
+				{error && <Alert severity="error">{error}</Alert>}
 
 				{recoveryCode.length > 0 && (
 					<Box

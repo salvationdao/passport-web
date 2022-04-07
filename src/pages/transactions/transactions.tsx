@@ -299,11 +299,7 @@ export const TransactionsPage = () => {
 								fullWidth
 							/>
 						</Box>
-						<TransactionGroupBox
-							sx={{
-								minWidth: 0,
-							}}
-						>
+						<TransactionGroupBox>
 							<Box
 								sx={{
 									display: "flex",
@@ -454,10 +450,11 @@ export const TransactionsPage = () => {
 
 const TransactionGroupBox = styled("div")({
 	flex: "1",
-	alignSelf: "stretch",
-	display: "flex",
-	flexDirection: "column",
 	overflowX: "auto",
+	display: "flex",
+	alignSelf: "stretch",
+	flexDirection: "column",
+	minWidth: 0,
 	"&:not(:last-child)": {
 		marginBottom: "2rem",
 	},

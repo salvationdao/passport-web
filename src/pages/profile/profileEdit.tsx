@@ -155,7 +155,16 @@ export const ProfileEditPage: React.FC = () => {
 								>
 									<li>be between 3 and 15 characters long</li>
 									<li>not contain any special characters (excluding underscores)</li>
-									<li>not contain any spaces</li>
+								</Box>
+								<br />
+								Your mobile number must:
+								<Box
+									component="ul"
+									sx={{
+										margin: 0,
+									}}
+								>
+									<li>contain international country code</li>
 								</Box>
 								<br />
 								Your mobile number must:

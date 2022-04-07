@@ -1,6 +1,6 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, Button, Chip, styled, Typography, TypographyProps } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import { Box, Button, styled, Typography, TypographyProps } from "@mui/material"
+import { useEffect, useState } from "react"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import { supFormatter } from "../../helpers/items"
@@ -28,7 +28,6 @@ export const DesktopTransactionTable = ({ transactionIDs }: TransactionTableProp
 					<th align="left">Description</th>
 					<th align="left">To</th>
 					<th align="left">From</th>
-					<th align="center">Status</th>
 					<th align="right">Date</th>
 				</EntryRow>
 			</EntryHeader>
@@ -231,9 +230,6 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				>
 					{entry.from.username}
 				</EntryData>
-			</td>
-			<td align="center">
-				<Chip label={entry.status} size="small" color={entry.status === "success" ? "success" : "error"} />
 			</td>
 			<td align="right">
 				<EntryData

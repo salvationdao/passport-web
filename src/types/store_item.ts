@@ -44,6 +44,7 @@ export const StoreItemAttibutes = (storeItem: StoreItem): Attribute[] => {
 export interface StoreItemResponse {
 	item: StoreItem
 	price_in_sups: string
+	host_url: string
 }
 export interface StoreItem {
 	amount_available: number
@@ -78,6 +79,7 @@ export interface Template {
 	slug: string
 	is_default: boolean
 	image_url: string
+	animation_url: string
 	card_animation_url: string
 	avatar_url: string
 	deleted_at?: string

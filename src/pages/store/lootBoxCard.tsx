@@ -48,7 +48,7 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 
 				setMCAmount(resp)
 			} catch (e) {
-				displayMessage("Could not get amount of mystery crates left.", "error")
+				displayMessage(typeof e === "string" ? e : "Could not get amount of mystery crates left, try again or contact support.", "error")
 			}
 		})()
 	}, [user, send, state, displayMessage])

@@ -32,6 +32,7 @@ import {
 } from "../types/auth"
 import { Perm } from "../types/enums"
 import { User } from "../types/types"
+import { useFingerprint } from "./fingerprint"
 import { useWebsocket } from "./socket"
 import { MetaMaskState, useWeb3 } from "./web3"
 
@@ -44,7 +45,10 @@ export enum VerificationType {
  * A Container that handles Authorisation
  */
 export const AuthContainer = createContainer(() => {
+	const { fingerprint } = useFingerprint()
+	const { state, send, subscribe } = useWebsocket()
 	const { metaMaskState, sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
+
 	const [user, setUser] = useState<User>()
 	const [recheckAuth, setRecheckAuth] = useState(!!localStorage.getItem("token"))
 	const [authorised, setAuthorised] = useState(false)
@@ -52,7 +56,6 @@ export const AuthContainer = createContainer(() => {
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
-	const { state, send, subscribe } = useWebsocket()
 	const [showSimulation, setShowSimulation] = useState(false)
 
 	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
@@ -95,25 +98,30 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const loginPassword = useCallback(
 		async (email: string, password: string) => {
-			if (state !== WebSocket.OPEN) {
-				return
-			}
+			try {
+				if (state !== WebSocket.OPEN) {
+					return
+				}
 
-			const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
-				email,
-				password,
-				session_id: sessionId,
-			})
-			if (!resp || !resp.user || !resp.token) {
-				localStorage.clear()
-				setUser(undefined)
-				return
+				const resp = await send<PasswordLoginResponse, PasswordLoginRequest>(HubKey.AuthLogin, {
+					email,
+					password,
+					session_id: sessionId,
+					fingerprint,
+				})
+				if (!resp || !resp.user || !resp.token) {
+					localStorage.clear()
+					setUser(undefined)
+					return
+				}
+				setUser(resp.user)
+				localStorage.setItem("token", resp.token)
+				setAuthorised(true)
+			} catch (e) {
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
-			setUser(resp.user)
-			localStorage.setItem("token", resp.token)
-			setAuthorised(true)
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -134,18 +142,20 @@ export const AuthContainer = createContainer(() => {
 					token,
 					session_id: sessionId,
 					twitch_extension_jwt: searchParams.get("twitchExtensionJWT"),
+					fingerprint,
 				})
 				setUser(resp.user)
 				setAuthorised(true)
-			} catch {
+			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
+				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			} finally {
 				setLoading(false)
 				setReconnecting(false)
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -160,6 +170,7 @@ export const AuthContainer = createContainer(() => {
 					public_address: account,
 					username,
 					session_id: sessionId,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -173,11 +184,11 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				return typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Metamask, try again or contact support."
 			}
 			return undefined
 		},
-		[send, state, account, metaMaskState, sessionId],
+		[send, state, account, metaMaskState, sessionId, fingerprint],
 	)
 
 	/**
@@ -195,6 +206,7 @@ export const AuthContainer = createContainer(() => {
 					public_address: acc,
 					signature: signature,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -217,7 +229,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			throw e
 		}
-	}, [send, state, sign, sessionId, connect])
+	}, [send, state, sign, sessionId, connect, fingerprint])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -234,6 +246,7 @@ export const AuthContainer = createContainer(() => {
 					public_address: account as string,
 					signature: wcSignature || "",
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -248,9 +261,9 @@ export const AuthContainer = createContainer(() => {
 		} catch (e) {
 			localStorage.clear()
 			setUser(undefined)
-			console.error(e)
+			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [send, state, account, sessionId, signWalletConnect, wcSignature])
+	}, [send, state, account, sessionId, signWalletConnect, wcSignature, fingerprint])
 
 	// Effect
 	useEffect(() => {
@@ -274,6 +287,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					username,
 					session_id: sessionId,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -287,11 +301,11 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Google, try again or contact support."
 			}
 			return undefined
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -306,6 +320,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<PasswordLoginResponse, GoogleLoginRequest>(HubKey.AuthLoginGoogle, {
 					token: token,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -320,10 +335,10 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Google, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -339,6 +354,7 @@ export const AuthContainer = createContainer(() => {
 					token,
 					username,
 					session_id: sessionId,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -352,11 +368,11 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Facebook, try again or contact support."
 			}
 			return
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -373,6 +389,7 @@ export const AuthContainer = createContainer(() => {
 				const resp = await send<PasswordLoginResponse, FacebookLoginRequest>(HubKey.AuthLoginFacebook, {
 					token: token,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -387,10 +404,10 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Facebook, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -407,6 +424,7 @@ export const AuthContainer = createContainer(() => {
 					username,
 					session_id: sessionId,
 					website: true,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -420,11 +438,11 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Twitch, try again or contact support."
 			}
 			return
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -440,6 +458,7 @@ export const AuthContainer = createContainer(() => {
 					token: token,
 					session_id: sessionId,
 					website: true,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -454,10 +473,10 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Twitch, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -474,6 +493,7 @@ export const AuthContainer = createContainer(() => {
 					oauth_verifier,
 					username,
 					session_id: sessionId,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -487,11 +507,11 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Twitter, try again or contact support."
 			}
 			return
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -507,6 +527,7 @@ export const AuthContainer = createContainer(() => {
 					oauth_token,
 					oauth_verifier,
 					session_id: sessionId,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -521,10 +542,10 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Twitter, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -541,6 +562,7 @@ export const AuthContainer = createContainer(() => {
 					username,
 					session_id: sessionId,
 					redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+					fingerprint,
 				})
 				setUser(resp.user)
 				if (!resp || !resp.user) {
@@ -554,11 +576,11 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue signing up with Discord, try again or contact support."
 			}
 			return
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -574,6 +596,7 @@ export const AuthContainer = createContainer(() => {
 					code,
 					session_id: sessionId,
 					redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+					fingerprint,
 				})
 				if (!resp || !resp.user || !resp.token) {
 					localStorage.clear()
@@ -588,10 +611,10 @@ export const AuthContainer = createContainer(() => {
 			} catch (e) {
 				localStorage.clear()
 				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue logging in with Discord, try again or contact support."
 			}
 		},
-		[send, state, sessionId],
+		[send, state, sessionId, fingerprint],
 	)
 
 	/**
@@ -612,7 +635,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -636,7 +659,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
@@ -661,7 +684,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -685,7 +708,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
@@ -710,7 +733,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -735,7 +758,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
@@ -760,7 +783,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -785,7 +808,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},
@@ -810,7 +833,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue removing account, try again or contact support."
 			}
 			return
 		},
@@ -837,7 +860,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.user)
 			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+				throw typeof e === "string" ? e : "Issue adding account, try again or contact support."
 			}
 			return
 		},

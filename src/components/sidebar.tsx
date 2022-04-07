@@ -1,4 +1,5 @@
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
+import AgricultureIcon from "@mui/icons-material/Agriculture"
 import AppsIcon from "@mui/icons-material/Apps"
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
@@ -17,7 +18,7 @@ import { Link as RouterLink, useHistory } from "react-router-dom"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import SupsToken from "../assets/images/sup-token.svg"
 import SupsTokenLogo from "../assets/images/sups-token-logo.png"
-import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK, TOKEN_SALE_ENDPOINT } from "../config"
+import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { SocketState, useWebsocket } from "../containers/socket"
@@ -60,6 +61,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [pendingRefund, setPendingRefunds] = useState<BigNumber>(BigNumber.from(0))
+	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
 		if (userSups) {
@@ -87,15 +89,13 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	useEffect(() => {
 		if (state !== SocketState.OPEN) return
-		;(async () => {
-			try {
-				const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
-
-				setFactionsData(resp)
-			} catch (e) {
+		setError(null)
+		send<Faction[]>(HubKey.GetFactionsDetail)
+			.then((data) => setFactionsData(data))
+			.catch((e) => {
 				setFactionsData([])
-			}
-		})()
+				typeof e === "string" ? setError(e) : setError("Issue getting faction details, try again or contact support.")
+			})
 	}, [send, state])
 
 	useEffect(() => {
@@ -263,17 +263,15 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<Box>
 					<FancyButton
 						onClick={() => {
-							window.open(TOKEN_SALE_ENDPOINT, "_blank")?.focus()
+							history.push("/buy")
 						}}
 						borderColor={colors.skyBlue}
-						sx={{ fontWeight: 400, width: "100%", marginTop: "1rem" }}
+						sx={{ fontWeight: 800, width: "100%", marginTop: "1rem", fontSize: "1rem" }}
 					>
-						Token Sale
+						<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1.2rem", padding: "0 .5rem" }} />
+						Buy SUPS
 					</FancyButton>
 				</Box>
-				{
-					//TODO: these buttons to be display: flex after launch
-				}
 			</Box>
 			<Box
 				sx={{
@@ -290,6 +288,13 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				</Typography>
 				<RenderEnlist factionsData={factionsData} user={user} />
 				<FactionWarMachineRemain />
+
+				{error ? (
+					<Typography color={colors.errorRed} sx={{ mt: ".5rem" }}>
+						<b>Error:</b> {error}
+					</Typography>
+				) : null}
+
 				<Divider />
 				<Button
 					sx={{
@@ -332,6 +337,11 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to="/deposit" startIcon={<SavingsIcon />}>
 					Deposit
 				</NavButton>
+				{localStorage.getItem("show_farms") === "true" && (
+					<NavButton to="/farms" startIcon={<AgricultureIcon />}>
+						Farms
+					</NavButton>
+				)}
 				<NavButton to="/transactions" startIcon={<ReceiptLongIcon />}>
 					Transactions
 				</NavButton>
@@ -405,6 +415,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		<Box
 			sx={{
 				display: "flex",
+				height: "100%",
 			}}
 		>
 			<Box
@@ -608,7 +619,7 @@ const FactionWarMachineRemain = () => {
 
 			<Stack justifyContent="space-around" spacing={1.5}>
 				{factionAvailables.map((fa) => {
-					const { id, logo_blob_id, theme, lootbox_amount } = fa
+					const { id, logo_blob_id, theme } = fa
 
 					return (
 						<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
@@ -627,9 +638,9 @@ const FactionWarMachineRemain = () => {
 								}}
 							/>
 							<Stack>
-								<Stack direction="row">
-									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates:&nbsp;</Typography>
-									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>{lootbox_amount}</Typography>
+								<Stack direction="column">
+									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates: </Typography>
+									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>Sold Out</Typography>
 								</Stack>
 							</Stack>
 						</Stack>

@@ -1,6 +1,8 @@
 import WalletConnectProvider from "@walletconnect/web3-provider"
-import { BigNumber, ethers } from "ethers"
-import { hexlify } from "ethers/lib/utils"
+import { MultiCall } from "@indexed-finance/multicall"
+
+import { BigNumber, constants, ethers } from "ethers"
+import { formatUnits, hexlify, Interface, parseUnits } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
 import BinanceCoin from "../assets/images/crypto/binance-coin-bnb-logo.svg"
@@ -14,6 +16,7 @@ import {
 	BUSD_CONTRACT_ADDRESS,
 	ETHEREUM_CHAIN_ID,
 	ETH_SCAN_SITE,
+	LP_TOKEN_ADDRESS,
 	PURCHASE_ADDRESS,
 	SIGN_MESSAGE,
 	SUPS_CONTRACT_ADDRESS,
@@ -25,6 +28,17 @@ import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { genericABI } from "./web3GenericABI"
+import { TransactionResponse } from "@ethersproject/abstract-provider"
+
+export interface FarmData {
+	earned: BigNumber
+	stakingBalance: BigNumber
+	lpBalance: BigNumber
+	yieldPercentage: number
+	userRewardRate: BigNumber
+	rewardRate: BigNumber
+	periodFinish: BigNumber
+}
 
 export enum MetaMaskState {
 	NotInstalled,
@@ -153,20 +167,20 @@ export const Web3Container = createContainer(() => {
 	)
 	useEffect(() => {
 		const updateNativeBalance = async () => {
+			if (!provider) {
+				return
+			}
+			if (!currentChainId) {
+				return
+			}
+			if (!account) {
+				return
+			}
+			const signer = provider.getSigner()
+			if (!signer) {
+				return
+			}
 			try {
-				if (!provider) {
-					return
-				}
-				if (!currentChainId) {
-					return
-				}
-				if (!account) {
-					return
-				}
-				const signer = provider.getSigner()
-				if (!signer) {
-					return
-				}
 				const bal = await signer.getBalance()
 
 				if (!bal) {
@@ -175,25 +189,25 @@ export const Web3Container = createContainer(() => {
 				}
 				setNativeBalance(bal)
 			} catch (e) {
-				console.error(e)
+				console.error("updateNativeBalance:", e)
 			}
 		}
 		const updateStableBalance = async () => {
+			if (!provider) {
+				return
+			}
+			if (!currentChainId) {
+				return
+			}
+			if (!account) {
+				return
+			}
+			let erc20Addr = USDC_CONTRACT_ADDRESS
+			if (currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId) {
+				erc20Addr = BUSD_CONTRACT_ADDRESS
+			}
+			const contract = new ethers.Contract(erc20Addr, genericABI, provider)
 			try {
-				if (!provider) {
-					return
-				}
-				if (!currentChainId) {
-					return
-				}
-				if (!account) {
-					return
-				}
-				let erc20Addr = USDC_CONTRACT_ADDRESS
-				if (currentChainId === web3Constants.binanceChainId || currentChainId === web3Constants.bscTestNetChainId) {
-					erc20Addr = BUSD_CONTRACT_ADDRESS
-				}
-				const contract = new ethers.Contract(erc20Addr, genericABI, provider)
 				const bal = await contract.balanceOf(account)
 				if (!bal) {
 					setStableBalance(BigNumber.from(0))
@@ -201,13 +215,11 @@ export const Web3Container = createContainer(() => {
 				}
 				setStableBalance(bal)
 			} catch (e) {
-				console.error(e)
+				console.error(`updateStableBalance (${erc20Addr}):`, e)
 			}
 		}
-		;(async () => {
-			await updateNativeBalance()
-			await updateStableBalance()
-		})()
+		updateNativeBalance()
+		updateStableBalance()
 	}, [provider, currentChainId, account])
 
 	const handleChainChange = useCallback((chainId: string) => {
@@ -280,7 +292,7 @@ export const Web3Container = createContainer(() => {
 	useEffect(() => {
 		if (!account) return
 		handleWalletSups(account)
-	}, [account, handleWalletSups])
+	}, [account, handleWalletSups, block])
 
 	const createWcProvider = useCallback(
 		async (showQrCode: boolean = true) => {
@@ -686,7 +698,227 @@ export const Web3Container = createContainer(() => {
 		}
 	}
 
+	const farmInfo = useCallback<
+		(farmContractAddr: string, pancakePoolAddr: string, lpTokenAddr: string, supsContractAddr: string, wbnbContractAddr: string) => Promise<FarmData | null>
+	>(
+		async (farmContractAddr: string, pancakePoolAddr: string, lpTokenAddr: string, supsContractAddr: string, wbnbContractAddr: string) => {
+			if (!provider || !account) return null
+			const multi = new MultiCall(provider)
+			const pancakeABI = new Interface([
+				"function getAmountsOut(uint256, address[]) public view returns (uint256[])",
+				"function getReserves() public view returns (uint112, uint112, uint32)",
+				"function balanceOf(address) public view returns (uint256)",
+				"function token0() public view returns (address)",
+				"function token1() public view returns (address)",
+				"function totalSupply() public view returns (uint256)",
+			])
+			const farmABI = new Interface([
+				"function duration() public view returns (uint256)",
+				"function lastTimeRewardApplicable() public view returns (uint256)",
+				"function lastUpdateTime() public view returns (uint256)",
+				"function periodFinish() public view returns (uint256)",
+				"function rewardToken() public view returns (uint256)",
+				"function rewardPerTokenStored() public view returns (uint256)",
+				"function rewardRate() public view returns (uint256)",
+				"function stakeToken() public view returns (uint256)",
+				"function totalSupply() public view returns (uint256)",
+				"function balanceOf(address) public view returns (uint256)",
+				"function earned(address) public view returns (uint256)",
+				"function rewards(address) public view returns (uint256)",
+				"function userRewardPerTokenPaid(address) public view returns (uint256)",
+			])
+
+			const erc20ABI = new Interface(["function symbol() public view returns (string)"])
+
+			const inputs = [
+				{ target: farmContractAddr, function: "duration", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "lastTimeRewardApplicable", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "lastUpdateTime", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "periodFinish", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "rewardToken", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "rewardPerTokenStored", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "rewardRate", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "stakeToken", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "totalSupply", args: [], interface: farmABI },
+				{ target: farmContractAddr, function: "balanceOf", args: [account], interface: farmABI },
+				{ target: farmContractAddr, function: "earned", args: [account], interface: farmABI },
+				{ target: farmContractAddr, function: "rewards", args: [account], interface: farmABI },
+				{ target: farmContractAddr, function: "userRewardPerTokenPaid", args: [account], interface: farmABI },
+				{
+					target: pancakePoolAddr,
+					function: "getAmountsOut",
+					args: ["1000000000000000000", [supsContractAddr, wbnbContractAddr]],
+					interface: pancakeABI,
+				},
+				{
+					target: lpTokenAddr,
+					function: "getReserves",
+					args: [],
+					interface: pancakeABI,
+				},
+				{
+					target: lpTokenAddr,
+					function: "balanceOf",
+					args: [account],
+					interface: pancakeABI,
+				},
+				{
+					target: lpTokenAddr,
+					function: "token0",
+					args: [],
+					interface: pancakeABI,
+				},
+				{
+					target: lpTokenAddr,
+					function: "token1",
+					args: [],
+					interface: pancakeABI,
+				},
+				{
+					target: lpTokenAddr,
+					function: "totalSupply",
+					args: [],
+					interface: pancakeABI,
+				},
+			]
+			const farmData = await multi.multiCall(inputs, true)
+			if (!farmData || !farmData[1]) return null
+
+			// Fetched value
+			const periodFinish: BigNumber = farmData[1][3]
+			const rewardRate: BigNumber = farmData[1][6]
+			const farmTotalSupply: BigNumber = farmData[1][8]
+			const stakingBalance: BigNumber = farmData[1][9]
+			const earned: BigNumber = farmData[1][10]
+			const supsPerBnb: BigNumber = farmData[1][13][1]
+			const reserves0: BigNumber = farmData[1][14][0]
+			const reserves1: BigNumber = farmData[1][14][1]
+			const lpBalance: BigNumber = farmData[1][15]
+			const token0Addr: string = farmData[1][16]
+			const token1Addr: string = farmData[1][17]
+			const lpTotalSupply: string = farmData[1][18]
+
+			const tokenData = await multi.multiCall([
+				{ target: token0Addr, function: "symbol", args: [], interface: erc20ABI },
+				{ target: token1Addr, function: "symbol", args: [], interface: erc20ABI },
+			])
+
+			const token0Sym = tokenData[1][0]
+			const token1Sym = tokenData[1][1]
+			let circulatingLPValueInSUPS = BigNumber.from(0)
+			if (token0Sym === "WBNB") {
+				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(supsPerBnb.mul(reserves0))
+			}
+			if (token0Sym === "SUPS") {
+				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(parseUnits("1", 18).mul(reserves0))
+			}
+			if (token1Sym === "WBNB") {
+				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(supsPerBnb.mul(reserves1))
+			}
+			if (token1Sym === "SUPS") {
+				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(parseUnits("1", 18).mul(reserves1))
+			}
+
+			const LPValueInSUPS = circulatingLPValueInSUPS.div(lpTotalSupply)
+
+			const secondsPerYear = BigNumber.from(31536000)
+			const supsRewardPerYear = rewardRate.mul(secondsPerYear)
+			const stakedLPValueInSUPS = farmTotalSupply.mul(LPValueInSUPS)
+
+			const supsRewardPerYearSmall = +formatUnits(supsRewardPerYear, 18)
+			const stakedLPinSUPSValueSmall = +formatUnits(stakedLPValueInSUPS, 18)
+			const yieldPercentage = supsRewardPerYearSmall / stakedLPinSUPSValueSmall || 0
+			let userRewardRate = BigNumber.from(0)
+			let rewardRateSmall = 0
+			let userPoolProportion = 0
+			if (stakingBalance.gt(0)) {
+				const userPoolSmall = +formatUnits(stakingBalance, 18)
+				const globalPoolSmall = +formatUnits(farmTotalSupply, 18)
+				userPoolProportion = userPoolSmall / globalPoolSmall
+				rewardRateSmall = +formatUnits(rewardRate, 18)
+
+				const userRewardRateSmall = rewardRateSmall * userPoolProportion
+				userRewardRate = parseUnits(userRewardRateSmall.toFixed(18), 18)
+			}
+			const result = {
+				earned,
+				stakingBalance,
+				lpBalance,
+				userRewardRate,
+				yieldPercentage,
+				rewardRate,
+				periodFinish,
+			}
+			// console.table(result)
+			return result
+		},
+		[account, provider],
+	)
+	const farmStake = useCallback(
+		async (farmContractAddr: string, amount: BigNumber): Promise<TransactionResponse> => {
+			if (!provider || !account || !signer) throw new Error("provider not ready")
+			const farmABI = new Interface(["function stake(uint256)"])
+			const contract = new ethers.Contract(farmContractAddr, farmABI, signer)
+			return await contract.stake(amount)
+		},
+		[account, provider, signer],
+	)
+	const farmWithdraw = useCallback(
+		async (farmContractAddr: string, amount: BigNumber): Promise<TransactionResponse> => {
+			if (!provider || !account || !signer) throw new Error("provider not ready")
+			const farmABI = new Interface(["function withdraw(uint256)"])
+			const contract = new ethers.Contract(farmContractAddr, farmABI, signer)
+			return contract.withdraw(amount)
+		},
+		[account, provider, signer],
+	)
+	const farmGetReward = useCallback(
+		async (farmContractAddr: string): Promise<TransactionResponse> => {
+			if (!provider || !account || !signer) throw new Error("provider not ready")
+			const farmABI = new Interface(["function getReward()"])
+			const contract = new ethers.Contract(farmContractAddr, farmABI, signer)
+			return contract.getReward()
+		},
+		[account, provider, signer],
+	)
+
+	const farmExit = useCallback(
+		async (farmContractAddr: string): Promise<TransactionResponse> => {
+			if (!provider || !account || !signer) throw new Error("provider not ready")
+			const farmABI = new Interface(["function exit()"])
+			const contract = new ethers.Contract(farmContractAddr, farmABI, signer)
+			return contract.exit()
+		},
+		[account, provider, signer],
+	)
+	const farmLPApproveMax = useCallback(
+		async (farmContractAddr: string): Promise<TransactionResponse> => {
+			if (!provider || !account || !signer) throw new Error("provider not ready")
+			const erc20ABI = new Interface(["function approve(address, uint256)"])
+			const contract = new ethers.Contract(LP_TOKEN_ADDRESS, erc20ABI, signer)
+			return contract.approve(farmContractAddr, constants.MaxUint256)
+		},
+		[account, provider, signer],
+	)
+
+	const farmCheckAllowance = useCallback(
+		async (farmContractAddr: string, amount: BigNumber) => {
+			if (!provider || !account || !signer) throw new Error("provider not ready")
+			const erc20ABI = new Interface(["function allowance(address, address) view returns (uint256)"])
+			const contract = new ethers.Contract(LP_TOKEN_ADDRESS, erc20ABI, provider)
+			const allowance: BigNumber = await contract.allowance(account, farmContractAddr)
+			return allowance.gte(amount)
+		},
+		[account, provider, signer],
+	)
 	return {
+		farmGetReward,
+		farmLPApproveMax,
+		farmCheckAllowance,
+		farmStake,
+		farmWithdraw,
+		farmExit,
+		farmInfo,
 		block,
 		connect,
 		metaMaskState,

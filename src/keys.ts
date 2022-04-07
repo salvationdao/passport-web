@@ -53,6 +53,7 @@ enum HubKey {
 	UserRemoveDiscord = "USER:REMOVE_DISCORD",
 	UserAddDiscord = "USER:ADD_DISCORD",
 	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
+	UserFingerprint = "USER:FINGERPRINT",
 
 	RoleGet = "ROLE:GET",
 	RoleList = "ROLE:LIST",
@@ -113,6 +114,8 @@ enum HubKey {
 	SupTotalRemaining = "SUPS:TREASURY",
 	SupExchangeRates = "SUPS:EXCHANGE",
 	SupsWithdraw = "SUPS:WITHDRAW",
+	SupsDeposit = "SUPS:DEPOSIT",
+	SupsDepositList = "SUPS:DEPOSIT:LIST",
 
 	FactionAvailables = "AVAILABLE:ITEM:AMOUNT",
 }

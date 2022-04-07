@@ -315,6 +315,10 @@ const lightTheme = createTheme({
 					color: "#0F0F0F",
 					fontSize: "0.75rem",
 					backdropFilter: "blur(4px)",
+					marginTop: "0 !important",
+				},
+				popper: {
+					marginTop: "0 !important",
 				},
 			},
 		},

@@ -5,6 +5,7 @@
 [CD Docs](.github/workflows/README.md)
 
 ### Staging
+
 https://test-sale.supremacy.game/
 https://test-passport.supremacy.game/
 
@@ -22,6 +23,12 @@ REACT_APP_SENTRY_DSN_FRONTEND=
 REACT_APP_SENTRY_CURRENT_RELEASE_NAME=syndicate-passport_web@version # client-project@version (snake_case)
 REACT_APP_SENTRY_ENVIRONMENT=
 REACT_APP_SENTRY_SAMPLERATE=
+
+REACT_APP_STAKING_CONTRACT_ADDRESS=
+REACT_APP_PANCAKE_POOL_ADDRESS=
+REACT_APP_LP_TOKEN_ADDRESS=
+REACT_APP_WRAPPED_BNB_ADDRESS=
+REACT_APP_PANCAKE_SWAP_ADDRESS=
 ```
 
 ### To init
