@@ -567,18 +567,20 @@ export const BuyTokens: React.FC = () => {
 						p: "1rem",
 					}}
 				>
-					<Typography
-						variant="h2"
-						align="center"
-						sx={{
-							fontWeight: 800,
-							fontSize: "1.2rem",
-							textTransform: "uppercase",
-							paddingBottom: "1rem",
-						}}
-					>
-						Purchase $SUPS
-					</Typography>
+					<Stack sx={{ alignItems: "center", paddingBottom: "1rem" }}>
+						<Typography
+							variant="h2"
+							align="center"
+							sx={{
+								fontWeight: 800,
+								fontSize: "1.4rem",
+								textTransform: "uppercase",
+							}}
+						>
+							Purchase $SUPS
+						</Typography>
+						<Typography sx={{ fontSize: ".9rem", color: colors.darkGrey }}>Directly from Supremacy</Typography>
+					</Stack>
 					<form onSubmit={handleSubmit}>
 						<Box
 							sx={{
@@ -726,6 +728,35 @@ export const BuyTokens: React.FC = () => {
 												<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 													To:
 												</Typography>
+												<Box sx={{ alignItems: "end" }}>
+													<Typography
+														variant="body1"
+														sx={{
+															textTransform: "uppercase",
+															fontSize: ".7rem",
+															fontWeight: 600,
+														}}
+													>
+														1{" "}
+														<span
+															style={{
+																fontSize: ".8rem",
+																marginRight: "0.3rem",
+															}}
+														>
+															x
+														</span>{" "}
+														$Sups = 12
+														<span
+															style={{
+																fontSize: ".7rem",
+																textTransform: "lowercase",
+															}}
+														>
+															c
+														</span>
+													</Typography>
+												</Box>
 											</Box>
 											<Box sx={{ position: "relative" }}>
 												<Box
