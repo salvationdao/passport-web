@@ -76,26 +76,30 @@ export const StoreItemPage = () => {
 					let numberAttributes = new Array<AttributeWithPercentage>()
 					let regularAttributes = new Array<Attribute>()
 					const att = StoreItemAttibutes(payload.item)
-					for (let a of att) {
-						if (a.asset_hash) {
-							// If is an asset attribute
-							assetAttributes.push(a)
-						} else if (a.display_type === "number") {
-							// If is a number attribute
-							const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
-							if (!resp.ok || resp.status !== 200) {
-								console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
-								continue
+					try {
+						for (let a of att) {
+							if (a.asset_hash) {
+								// If is an asset attribute
+								assetAttributes.push(a)
+							} else if (a.display_type === "number") {
+								// If is a number attribute
+								const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
+								if (!resp.ok || resp.status !== 200) {
+									console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
+									continue
+								}
+								const body = (await resp.json()) as AssetStatPercentageResponse
+								numberAttributes.push({
+									...a,
+									...body,
+								})
+							} else {
+								// Is a regular attribute
+								regularAttributes.push(a)
 							}
-							const body = (await resp.json()) as AssetStatPercentageResponse
-							numberAttributes.push({
-								...a,
-								...body,
-							})
-						} else {
-							// Is a regular attribute
-							regularAttributes.push(a)
 						}
+					} catch (e) {
+						setError(typeof e === "string" ? e : "Something went wrong while fetching store item data. Please try again.")
 					}
 					// setAssetAttributes(assetAttributes)
 					setNumberAttributes(numberAttributes)
@@ -125,7 +129,22 @@ export const StoreItemPage = () => {
 						marginBottom: "2rem",
 					}}
 				/>
-				<Typography variant="subtitle1">{error}</Typography>
+				<Box
+					sx={{
+						flex: 1,
+						display: "flex",
+						width: "100%",
+						maxWidth: "1700px",
+						margin: "0 auto",
+						marginBottom: "3rem",
+						padding: "0 3rem",
+						"@media (max-width: 1000px)": {
+							flexDirection: "column",
+						},
+					}}
+				>
+					{error}
+				</Box>
 			</Box>
 		)
 	}

@@ -82,17 +82,21 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 
 					const attributes = PurchasedItemAttributes(payload.purchased_item)
 					for (let a of attributes) {
-						if (a.display_type === "number") {
-							const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
-							if (!resp.ok || resp.status !== 200) {
-								console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
-								continue
+						try {
+							if (a.display_type === "number") {
+								const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
+								if (!resp.ok || resp.status !== 200) {
+									console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
+									continue
+								}
+								const body = (await resp.json()) as AssetStatPercentageResponse
+								numberAttributes.push({
+									...a,
+									...body,
+								})
 							}
-							const body = (await resp.json()) as AssetStatPercentageResponse
-							numberAttributes.push({
-								...a,
-								...body,
-							})
+						} catch (e) {
+							setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
 						}
 					}
 					setNumberAttributes(numberAttributes)
