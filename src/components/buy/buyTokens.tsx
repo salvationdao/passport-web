@@ -579,7 +579,7 @@ export const BuyTokens: React.FC = () => {
 						>
 							Purchase $SUPS
 						</Typography>
-						<Typography sx={{ fontSize: ".9rem", color: colors.darkGrey }}>Directly from Supremacy</Typography>
+						<Typography sx={{ fontSize: ".8rem", color: colors.darkGrey, textTransform: "uppercase" }}>Directly from Supremacy</Typography>
 					</Stack>
 					<form onSubmit={handleSubmit}>
 						<Box
@@ -746,7 +746,7 @@ export const BuyTokens: React.FC = () => {
 														>
 															x
 														</span>{" "}
-														$Sups = 12
+														$Sups = {exchangeRates?.sup_to_usd && (exchangeRates?.sup_to_usd * 100).toFixed(0)}
 														<span
 															style={{
 																fontSize: ".7rem",
