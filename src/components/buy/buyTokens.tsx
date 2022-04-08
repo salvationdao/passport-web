@@ -223,7 +223,7 @@ export const BuyTokens: React.FC = () => {
 			}
 
 			const newToken = tokenOptions.find((el) => {
-				return el.name === currentToken.name
+				return el.chainId === currentChainId
 			})
 
 			if (!newToken) {
@@ -441,13 +441,16 @@ export const BuyTokens: React.FC = () => {
 						Success
 					</Typography>
 					<Typography variant="h4" sx={{ margin: "1rem 0" }}>
-						Transaction has been submitted
+						Transaction has been submitted.
 					</Typography>
+					{!loading && <Typography>Please allow some time for SUPS to be transferred to your account.</Typography>}
+					<br />
 					<Typography variant="body1">
 						<Link href={`https://${currentToken.scanSite}/tx/${currentTransferHash}`} target="_blank">
 							View on Explorer
 						</Link>
 					</Typography>
+
 					<FancyButton
 						borderColor={colors.skyBlue}
 						loading={loading}
@@ -455,11 +458,14 @@ export const BuyTokens: React.FC = () => {
 						sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
 						onClick={() => setTransferState("none")}
 					>
-						{loading ? " " : "Close"}
+						{!loading && "Close"}
 					</FancyButton>
-					<Typography sx={loading ? { display: "flex", width: "100%", justifyContent: "center" } : { display: "none" }} variant="body1">
-						Please wait, your transaction is pending.
-					</Typography>
+
+					{loading && (
+						<Typography sx={{ display: "flex", width: "100%", justifyContent: "center" }} variant="body1">
+							Please wait, your transaction is pending.
+						</Typography>
+					)}
 				</Box>
 
 				<Box
@@ -829,7 +835,6 @@ export const BuyTokens: React.FC = () => {
 											$SUPS in Account: <b>{userSups ? parseFloat(formatUnits(userSups, supsDecimals)).toFixed(2) : "--"}</b>
 										</Typography>
 									)}
-
 									<Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
 										Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, supsDecimals)).toFixed(2) : "--"}</b>
 									</Typography>
