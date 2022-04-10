@@ -223,7 +223,7 @@ export const BuyTokens: React.FC = () => {
 			}
 
 			const newToken = tokenOptions.find((el) => {
-				return el.name === currentToken.name
+				return el.chainId === currentChainId
 			})
 
 			if (!newToken) {
@@ -441,13 +441,16 @@ export const BuyTokens: React.FC = () => {
 						Success
 					</Typography>
 					<Typography variant="h4" sx={{ margin: "1rem 0" }}>
-						Transaction has been submitted
+						Transaction has been submitted.
 					</Typography>
+					{!loading && <Typography>Please allow some time for SUPS to be transferred to your account.</Typography>}
+					<br />
 					<Typography variant="body1">
 						<Link href={`https://${currentToken.scanSite}/tx/${currentTransferHash}`} target="_blank">
 							View on Explorer
 						</Link>
 					</Typography>
+
 					<FancyButton
 						borderColor={colors.skyBlue}
 						loading={loading}
@@ -455,11 +458,14 @@ export const BuyTokens: React.FC = () => {
 						sx={{ minWidth: "50%", margin: "2rem 0 .5rem 0", minHeight: "2.5rem" }}
 						onClick={() => setTransferState("none")}
 					>
-						{loading ? " " : "Close"}
+						{!loading && "Close"}
 					</FancyButton>
-					<Typography sx={loading ? { display: "flex", width: "100%", justifyContent: "center" } : { display: "none" }} variant="body1">
-						Please wait, your transaction is pending.
-					</Typography>
+
+					{loading && (
+						<Typography sx={{ display: "flex", width: "100%", justifyContent: "center" }} variant="body1">
+							Please wait, your transaction is pending.
+						</Typography>
+					)}
 				</Box>
 
 				<Box
@@ -561,18 +567,20 @@ export const BuyTokens: React.FC = () => {
 						p: "1rem",
 					}}
 				>
-					<Typography
-						variant="h2"
-						align="center"
-						sx={{
-							fontWeight: 800,
-							fontSize: "1.2rem",
-							textTransform: "uppercase",
-							paddingBottom: "1rem",
-						}}
-					>
-						Purchase $SUPS
-					</Typography>
+					<Stack sx={{ alignItems: "center", paddingBottom: "1rem" }}>
+						<Typography
+							variant="h2"
+							align="center"
+							sx={{
+								fontWeight: 800,
+								fontSize: "1.4rem",
+								textTransform: "uppercase",
+							}}
+						>
+							Purchase $SUPS
+						</Typography>
+						<Typography sx={{ fontSize: ".8rem", color: colors.darkGrey, textTransform: "uppercase" }}>Directly from Supremacy</Typography>
+					</Stack>
 					<form onSubmit={handleSubmit}>
 						<Box
 							sx={{
@@ -720,6 +728,35 @@ export const BuyTokens: React.FC = () => {
 												<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 													To:
 												</Typography>
+												<Box sx={{ alignItems: "end" }}>
+													<Typography
+														variant="body1"
+														sx={{
+															textTransform: "uppercase",
+															fontSize: ".7rem",
+															fontWeight: 600,
+														}}
+													>
+														1{" "}
+														<span
+															style={{
+																fontSize: ".8rem",
+																marginRight: "0.3rem",
+															}}
+														>
+															x
+														</span>{" "}
+														$Sups = {exchangeRates?.sup_to_usd && (exchangeRates?.sup_to_usd * 100).toFixed(0)}
+														<span
+															style={{
+																fontSize: ".7rem",
+																textTransform: "lowercase",
+															}}
+														>
+															c
+														</span>
+													</Typography>
+												</Box>
 											</Box>
 											<Box sx={{ position: "relative" }}>
 												<Box
@@ -829,7 +866,6 @@ export const BuyTokens: React.FC = () => {
 											$SUPS in Account: <b>{userSups ? parseFloat(formatUnits(userSups, supsDecimals)).toFixed(2) : "--"}</b>
 										</Typography>
 									)}
-
 									<Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
 										Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, supsDecimals)).toFixed(2) : "--"}</b>
 									</Typography>
