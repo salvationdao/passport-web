@@ -579,7 +579,7 @@ export const BuyTokens: React.FC = () => {
 						>
 							Purchase $SUPS
 						</Typography>
-						<Typography sx={{ fontSize: ".8rem", color: colors.darkGrey, textTransform: "uppercase" }}>Directly from Supremacy</Typography>
+						<Typography sx={{ fontSize: ".9rem", color: colors.darkGrey, textTransform: "uppercase" }}>Directly from Supremacy</Typography>
 					</Stack>
 					<form onSubmit={handleSubmit}>
 						<Box
@@ -731,17 +731,17 @@ export const BuyTokens: React.FC = () => {
 												</Typography>
 												<Box sx={{ alignItems: "end" }}>
 													<Typography
-														variant="body1"
+														component="span"
 														sx={{
 															textTransform: "uppercase",
-															fontSize: ".7rem",
+															fontSize: ".8rem",
 															fontWeight: 600,
 														}}
 													>
 														1{" "}
 														<span
 															style={{
-																fontSize: ".5rem",
+																fontSize: ".6rem",
 																marginRight: "0.3rem",
 															}}
 														>
@@ -750,7 +750,7 @@ export const BuyTokens: React.FC = () => {
 														$Sups = {exchangeRates?.sup_to_usd && (exchangeRates?.sup_to_usd * 100).toFixed(0)}
 														<span
 															style={{
-																fontSize: ".7rem",
+																fontSize: ".8rem",
 																textTransform: "lowercase",
 															}}
 														>
@@ -872,37 +872,41 @@ export const BuyTokens: React.FC = () => {
 									</Typography>
 								</Box>
 							</Box>
-
-							<FancyButton
-								borderColor={colors.skyBlue}
-								disabled={
-									!acceptedChainExceptions ||
-									!tokenBalance ||
-									tokenAmt.gte(tokenBalance) ||
-									tokenAmt.eq(0) ||
-									supsAmt.gt(amountRemaining) ||
-									loading ||
-									exchangeRates === undefined
-								}
-								sx={{ width: "60%", minWidth: "200px", alignSelf: "center" }}
-								type="submit"
-								fancy
-							>
-								{(() => {
-									if (!tokenBalance) return "Fetching Balance"
-									if (tokenAmt.gte(tokenBalance)) {
-										return `Insufficient ${currentToken.name.toUpperCase()} Balance`
-									} else if (!tokenDisplay) {
-										return "Enter values"
-									} else if (supsAmt.gt(amountRemaining)) {
-										return `Insufficient SUPS Remaining`
-									} else if (exchangeRates === undefined) {
-										return `Retrieving Exchange Rates`
-									} else {
-										return "Purchase Your Sups"
+							<Stack gap="1em">
+								<FancyButton
+									borderColor={colors.skyBlue}
+									disabled={
+										!acceptedChainExceptions ||
+										!tokenBalance ||
+										tokenAmt.gte(tokenBalance) ||
+										tokenAmt.eq(0) ||
+										supsAmt.gt(amountRemaining) ||
+										loading ||
+										exchangeRates === undefined
 									}
-								})()}
-							</FancyButton>
+									sx={{ width: "60%", minWidth: "200px", alignSelf: "center" }}
+									type="submit"
+									fancy
+								>
+									{(() => {
+										if (!tokenBalance) return "Fetching Balance"
+										if (tokenAmt.gte(tokenBalance)) {
+											return `Insufficient ${currentToken.name.toUpperCase()} Balance`
+										} else if (!tokenDisplay) {
+											return "Enter values"
+										} else if (supsAmt.gt(amountRemaining)) {
+											return `Insufficient SUPS Remaining`
+										} else if (exchangeRates === undefined) {
+											return `Retrieving Exchange Rates`
+										} else {
+											return "Purchase Your Sups"
+										}
+									})()}
+								</FancyButton>
+								<Typography fontSize="12px" color={colors.darkGrey}>
+									$SUPS may be available in other martkets.
+								</Typography>
+							</Stack>
 						</Box>
 					</form>
 				</Box>
