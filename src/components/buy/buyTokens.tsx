@@ -601,7 +601,7 @@ export const BuyTokens: React.FC = () => {
 										sx={{
 											height: "2.5rem",
 											position: "absolute",
-											top: "50%",
+											top: "calc(50% - 8px)",
 											left: "50%",
 											transform: "translate(-50%,-50%)",
 											zIndex: 2,
