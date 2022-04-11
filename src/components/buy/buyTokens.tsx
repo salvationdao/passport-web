@@ -1,6 +1,6 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
-import { Box, Button, LinearProgress, Link, Stack, TextField, Tooltip, Typography, useTheme } from "@mui/material"
+import { Box, Button, LinearProgress, Link, Stack, TextField, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
@@ -56,6 +56,7 @@ export const BuyTokens: React.FC = () => {
 	const acceptedChainExceptions = currentChainId?.toString() === BINANCE_CHAIN_ID || currentChainId?.toString() === ETHEREUM_CHAIN_ID
 	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
 	const [tokenDecimals, setTokenDecimals] = useState(18)
+	const mobileScreen = useMediaQuery("(min-width:510px)")
 
 	// Set Min purchase amount
 	useEffect(() => {
@@ -904,7 +905,8 @@ export const BuyTokens: React.FC = () => {
 									})()}
 								</FancyButton>
 								<Typography fontSize="12px" color={colors.darkGrey}>
-									*Please note: these tokens will be purchased directly from Supremacy, $SUPS are also available via secondary markets. 
+									*Please note: this purchase directly supports the Supremacy project, {mobileScreen && <br />}
+									$SUPS are also available via secondary markets.
 								</Typography>
 							</Stack>
 						</Box>
