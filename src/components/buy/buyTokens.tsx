@@ -904,7 +904,7 @@ export const BuyTokens: React.FC = () => {
 									})()}
 								</FancyButton>
 								<Typography fontSize="12px" color={colors.darkGrey}>
-									$SUPS may be available in secondary markets.
+									*Please note: these tokens will be purchased directly from Supremacy, $SUPS are also available via secondary markets. 
 								</Typography>
 							</Stack>
 						</Box>
