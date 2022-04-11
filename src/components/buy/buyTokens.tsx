@@ -904,7 +904,7 @@ export const BuyTokens: React.FC = () => {
 									})()}
 								</FancyButton>
 								<Typography fontSize="12px" color={colors.darkGrey}>
-									$SUPS may be available in other martkets.
+									$SUPS may be available in secondary markets.
 								</Typography>
 							</Stack>
 						</Box>
