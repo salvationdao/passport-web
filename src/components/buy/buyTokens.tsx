@@ -633,6 +633,7 @@ export const BuyTokens: React.FC = () => {
 													setSupsAmt(BigNumber.from(0))
 													setSupsDisplay(null)
 													setCurrentToken(newToken)
+													changeChain(newToken.chainId)
 												}}
 											/>
 										</Box>
@@ -740,7 +741,7 @@ export const BuyTokens: React.FC = () => {
 														1{" "}
 														<span
 															style={{
-																fontSize: ".8rem",
+																fontSize: ".5rem",
 																marginRight: "0.3rem",
 															}}
 														>
