@@ -1,6 +1,6 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import ErrorIcon from "@mui/icons-material/Error"
-import { Box, Button, LinearProgress, Link, Stack, TextField, Tooltip, Typography, useTheme } from "@mui/material"
+import { Box, Button, LinearProgress, Link, Stack, TextField, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
@@ -56,6 +56,7 @@ export const BuyTokens: React.FC = () => {
 	const acceptedChainExceptions = currentChainId?.toString() === BINANCE_CHAIN_ID || currentChainId?.toString() === ETHEREUM_CHAIN_ID
 	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
 	const [tokenDecimals, setTokenDecimals] = useState(18)
+	const mobileScreen = useMediaQuery("(min-width:510px)")
 
 	// Set Min purchase amount
 	useEffect(() => {
@@ -579,7 +580,7 @@ export const BuyTokens: React.FC = () => {
 						>
 							Purchase $SUPS
 						</Typography>
-						<Typography sx={{ fontSize: ".8rem", color: colors.darkGrey, textTransform: "uppercase" }}>Directly from Supremacy</Typography>
+						<Typography sx={{ fontSize: ".9rem", color: colors.darkGrey, textTransform: "uppercase" }}>Directly from Supremacy</Typography>
 					</Stack>
 					<form onSubmit={handleSubmit}>
 						<Box
@@ -601,7 +602,7 @@ export const BuyTokens: React.FC = () => {
 										sx={{
 											height: "2.5rem",
 											position: "absolute",
-											top: "50%",
+											top: "calc(50% - 8px)",
 											left: "50%",
 											transform: "translate(-50%,-50%)",
 											zIndex: 2,
@@ -633,6 +634,7 @@ export const BuyTokens: React.FC = () => {
 													setSupsAmt(BigNumber.from(0))
 													setSupsDisplay(null)
 													setCurrentToken(newToken)
+													changeChain(newToken.chainId)
 												}}
 											/>
 										</Box>
@@ -730,17 +732,17 @@ export const BuyTokens: React.FC = () => {
 												</Typography>
 												<Box sx={{ alignItems: "end" }}>
 													<Typography
-														variant="body1"
+														component="span"
 														sx={{
 															textTransform: "uppercase",
-															fontSize: ".7rem",
+															fontSize: ".8rem",
 															fontWeight: 600,
 														}}
 													>
 														1{" "}
 														<span
 															style={{
-																fontSize: ".8rem",
+																fontSize: ".6rem",
 																marginRight: "0.3rem",
 															}}
 														>
@@ -749,7 +751,7 @@ export const BuyTokens: React.FC = () => {
 														$Sups = {exchangeRates?.sup_to_usd && (exchangeRates?.sup_to_usd * 100).toFixed(0)}
 														<span
 															style={{
-																fontSize: ".7rem",
+																fontSize: ".8rem",
 																textTransform: "lowercase",
 															}}
 														>
@@ -871,37 +873,42 @@ export const BuyTokens: React.FC = () => {
 									</Typography>
 								</Box>
 							</Box>
-
-							<FancyButton
-								borderColor={colors.skyBlue}
-								disabled={
-									!acceptedChainExceptions ||
-									!tokenBalance ||
-									tokenAmt.gte(tokenBalance) ||
-									tokenAmt.eq(0) ||
-									supsAmt.gt(amountRemaining) ||
-									loading ||
-									exchangeRates === undefined
-								}
-								sx={{ width: "60%", minWidth: "200px", alignSelf: "center" }}
-								type="submit"
-								fancy
-							>
-								{(() => {
-									if (!tokenBalance) return "Fetching Balance"
-									if (tokenAmt.gte(tokenBalance)) {
-										return `Insufficient ${currentToken.name.toUpperCase()} Balance`
-									} else if (!tokenDisplay) {
-										return "Enter values"
-									} else if (supsAmt.gt(amountRemaining)) {
-										return `Insufficient SUPS Remaining`
-									} else if (exchangeRates === undefined) {
-										return `Retrieving Exchange Rates`
-									} else {
-										return "Purchase Your Sups"
+							<Stack gap="1em">
+								<FancyButton
+									borderColor={colors.skyBlue}
+									disabled={
+										!acceptedChainExceptions ||
+										!tokenBalance ||
+										tokenAmt.gte(tokenBalance) ||
+										tokenAmt.eq(0) ||
+										supsAmt.gt(amountRemaining) ||
+										loading ||
+										exchangeRates === undefined
 									}
-								})()}
-							</FancyButton>
+									sx={{ width: "60%", minWidth: "200px", alignSelf: "center" }}
+									type="submit"
+									fancy
+								>
+									{(() => {
+										if (!tokenBalance) return "Fetching Balance"
+										if (tokenAmt.gte(tokenBalance)) {
+											return `Insufficient ${currentToken.name.toUpperCase()} Balance`
+										} else if (!tokenDisplay) {
+											return "Enter values"
+										} else if (supsAmt.gt(amountRemaining)) {
+											return `Insufficient SUPS Remaining`
+										} else if (exchangeRates === undefined) {
+											return `Retrieving Exchange Rates`
+										} else {
+											return "Purchase Your Sups"
+										}
+									})()}
+								</FancyButton>
+								<Typography fontSize="12px" color={colors.darkGrey}>
+									*Please note: this purchase directly supports the Supremacy project, {mobileScreen && <br />}
+									$SUPS are also available via secondary markets.
+								</Typography>
+							</Stack>
 						</Box>
 					</form>
 				</Box>
