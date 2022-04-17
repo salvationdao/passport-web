@@ -127,57 +127,14 @@ export interface Collection {
 	deleted_at?: Date
 }
 
-// export interface NFTOwner {
-// 	token_address: string
-// 	token_id: string
-// 	contract_type: string
-// 	owner_of: string
-// 	block_number: string
-// 	block_number_minted: string
-// 	token_uri: string
-// 	metadata: string
-// 	synced_at: string
-// 	amount: string
-// 	name: string
-// 	symbol: string
-// }
-
 export interface Attribute {
 	label: string
 	value: string | number
 	identifier?: string // indicates column name in the chassis table in gameserver db
-	display_type?: "number"
+	display_type?: string
 	asset_hash?: string
+	host_url?: string
 }
-
-export interface AttributeWithPercentage extends Attribute {
-	percentile: number
-	percentage: number
-	total: number
-}
-
-// export interface StoreItem {
-// 	ID: string
-// 	name: string
-// 	faction_id: string
-// 	faction?: Faction
-// 	collection_id: string
-// 	collection: Collection
-// 	description: string
-// 	image: string
-// 	image_avatar: string
-// 	card_animation_url: string
-// 	attributes: Attribute[]
-// 	usd_cent_cost: number
-// 	amount_sold: number
-// 	sup_cost: string
-// 	amount_available: number
-// 	sold_after: Date
-// 	sold_before: Date
-// 	deleted_at: Date
-// 	created_at: Date
-// 	updated_at: Date
-// }
 
 export interface DepositTransaction {
 	id: string

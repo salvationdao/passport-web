@@ -545,7 +545,6 @@ export const Web3Container = createContainer(() => {
 			}
 			if (nonce === "") return ""
 			const signedMessage = await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
-			console.log(signedMessage)
 			return signedMessage
 		},
 		[provider, getNonce, getNonceFromID],

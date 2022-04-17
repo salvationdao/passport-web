@@ -15,8 +15,10 @@ import {
 	Link,
 	Paper,
 	styled,
+	Switch,
 	Typography,
 	useMediaQuery,
+	FormControlLabel,
 } from "@mui/material"
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
@@ -39,9 +41,9 @@ import { metamaskErrorHandling } from "../../helpers/web3"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
-import { AssetStatPercentageResponse, OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemResponse } from "../../types/purchased_item"
-import { AttributeWithPercentage, Collection, User } from "../../types/types"
-import { PercentageDisplay } from "./percentageDisplay"
+import { OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemResponse } from "../../types/purchased_item"
+import { Attribute, Collection, User } from "../../types/types"
+import { NumberAttribute } from "./numberAttribute"
 import { rarityTextStyles } from "./profile"
 
 interface AssetViewContainerProps {
@@ -52,13 +54,16 @@ interface AssetViewContainerProps {
 
 export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainerProps) => {
 	const { state, subscribe } = useWebsocket()
-	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem | null>(null)
 	const [collectionSlug, setCollectionSlug] = useState<string | null>(null)
 	const [collection, setCollection] = useState<Collection | null>(null)
+	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const [numberAttributes, setNumberAttributes] = useState<AttributeWithPercentage[]>([])
+	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
 	const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
+	const [itemHost, setItemHost] = useState<string>()
+	// const [itemType, setItemType] = useState<string>()
+	const [itemModel, setItemModel] = useState<string>()
 
 	useEffect(() => {
 		if (!collectionSlug) return
@@ -78,39 +83,39 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 				HubKey.AssetUpdated,
 				async (payload) => {
 					if (!payload) return
-					let numberAttributes = new Array<AttributeWithPercentage>()
-
-					const attributes = PurchasedItemAttributes(payload.purchased_item)
-					for (let a of attributes) {
-						try {
-							if (a.display_type === "number") {
-								const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
-								if (!resp.ok || resp.status !== 200) {
-									console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
-									continue
-								}
-								const body = (await resp.json()) as AssetStatPercentageResponse
-								numberAttributes.push({
-									...a,
-									...body,
-								})
-							}
-						} catch (e) {
-							setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
-						}
-					}
-					setNumberAttributes(numberAttributes)
 					setPurchasedItem(payload.purchased_item)
 					setOwnerUsername(payload.owner_username)
-					setLoading(false)
+					setItemHost(payload.host_url)
 					setCollectionSlug(payload.collection_slug)
 				},
 				{ asset_hash: assetHash },
 			)
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
+		} finally {
+			setLoading(false)
 		}
 	}, [state, assetHash, subscribe])
+
+	// set attributes
+	useEffect(() => {
+		if (!purchasedItem) return
+		let numberAttributes: Attribute[] = []
+		const att = PurchasedItemAttributes(purchasedItem)
+
+		for (let a of att) {
+			if (a.display_type === "number") {
+				numberAttributes.push({
+					...a,
+					host_url: itemHost || "",
+				})
+			}
+			if (a.label === "Model" && typeof a.value === "string") {
+				setItemModel(a.value)
+			}
+		}
+		setNumberAttributes(numberAttributes)
+	}, [purchasedItem, itemHost])
 
 	if (loading || !purchasedItem || !ownerUsername || !collection) {
 		return (
@@ -136,6 +141,7 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 	const onWorld = purchasedItem.on_chain_status !== OnChainStatus.STAKABLE
 	return (
 		<AssetView
+			itemModel={itemModel}
 			locked={locked}
 			onWorld={onWorld}
 			openseaURL={openseaURL}
@@ -159,7 +165,8 @@ interface AssetViewProps {
 	user: User
 	purchasedItem: PurchasedItem
 	collection: Collection
-	numberAttributes: AttributeWithPercentage[]
+	numberAttributes: Attribute[]
+	itemModel?: string
 	locked: boolean
 	error: string | null
 	ownerUsername: string
@@ -174,6 +181,7 @@ interface AssetViewProps {
 }
 
 export const AssetView = ({
+	itemModel,
 	user,
 	locked,
 	purchasedItem,
@@ -197,6 +205,7 @@ export const AssetView = ({
 
 	const history = useHistory()
 	const [openLocked, setOpenLocked] = useState(isFuture(purchasedItem.unlocked_at))
+	const [global, setGlobal] = useState<boolean>(true)
 	const { provider } = useWeb3()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
@@ -487,16 +496,23 @@ export const AssetView = ({
 								flexBasis: "400px",
 							}}
 						>
-							<Typography
-								variant="subtitle1"
-								color={colors.neonPink}
-								sx={{
-									textTransform: "uppercase",
-									marginBottom: ".5rem",
-								}}
-							>
-								Properties
-							</Typography>
+							<Box sx={{ display: "flex", justifyContent: "space-between" }}>
+								<Typography
+									variant="subtitle1"
+									color={colors.neonPink}
+									sx={{
+										textTransform: "uppercase",
+										marginBottom: ".5rem",
+									}}
+								>
+									Properties
+								</Typography>
+								<FormControlLabel
+									control={<Switch checked={global} onChange={(e) => setGlobal(e.target.checked)} />}
+									label={`Global Compare`}
+								/>
+							</Box>
+
 							<Box
 								sx={{
 									display: "grid",
@@ -507,11 +523,12 @@ export const AssetView = ({
 								{numberAttributes &&
 									numberAttributes.map((attr, i) => {
 										return (
-											<PercentageDisplay
+											<NumberAttribute
 												key={`${attr.label}-${attr.value}-${i}`}
-												displayValue={`${attr.value}`}
-												label={attr.label}
-												percentage={attr.percentage}
+												type={"chassis"} // TODO: remove hardcoding
+												model={itemModel}
+												attribute={attr}
+												global={global}
 											/>
 										)
 									})}

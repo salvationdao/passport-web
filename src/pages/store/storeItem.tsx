@@ -14,10 +14,9 @@ import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
-import { AssetStatPercentageResponse } from "../../types/purchased_item"
 import { StoreItem, StoreItemAttibutes, StoreItemResponse } from "../../types/store_item"
-import { Attribute, AttributeWithPercentage, Collection } from "../../types/types"
-import { PercentageDisplay } from "../profile/percentageDisplay"
+import { Attribute, Collection } from "../../types/types"
+import { NumberAttribute } from "../profile/numberAttribute"
 import { rarityTextStyles } from "../profile/profile"
 
 export const StoreItemPage = () => {
@@ -30,9 +29,10 @@ export const StoreItemPage = () => {
 
 	// Store item data
 	const [storeItem, setStoreItem] = useState<StoreItem>()
+	const [storeItemHost, setStoreItemHost] = useState<string>()
 	const [collection, setCollection] = useState<Collection>()
 	const [priceInSups, setPriceInSups] = useState<string | null>(null)
-	const [numberAttributes, setNumberAttributes] = useState<AttributeWithPercentage[]>([])
+	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
 	const [enlarge, setEnlarge] = useState<boolean>(false)
@@ -72,48 +72,36 @@ export const StoreItemPage = () => {
 				HubKey.StoreItemSubscribe,
 				async (payload) => {
 					if (!payload) return
-					let assetAttributes = new Array<Attribute>()
-					let numberAttributes = new Array<AttributeWithPercentage>()
-					let regularAttributes = new Array<Attribute>()
-					const att = StoreItemAttibutes(payload.item)
-					try {
-						for (let a of att) {
-							if (a.asset_hash) {
-								// If is an asset attribute
-								assetAttributes.push(a)
-							} else if (a.display_type === "number") {
-								// If is a number attribute
-								const resp = await fetch(`${payload.host_url}/api/stat/mech?stat=${a.identifier}&value=${a.value}`)
-								if (!resp.ok || resp.status !== 200) {
-									console.warn(`Could not fetch percentile data for ${a.identifier} (${a.label})`)
-									continue
-								}
-								const body = (await resp.json()) as AssetStatPercentageResponse
-								numberAttributes.push({
-									...a,
-									...body,
-								})
-							} else {
-								// Is a regular attribute
-								regularAttributes.push(a)
-							}
-						}
-					} catch (e) {
-						setError(typeof e === "string" ? e : "Something went wrong while fetching store item data. Please try again.")
-					}
-					// setAssetAttributes(assetAttributes)
-					setNumberAttributes(numberAttributes)
-					// setRegularAttributes(regularAttributes)
+
 					setStoreItem(payload.item)
+					setStoreItemHost(payload.host_url)
 					setPriceInSups(payload.price_in_sups)
-					setLoading(false)
 				},
 				{ store_item_id: id },
 			)
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching store item data. Please try again.")
+		} finally {
+			setLoading(false)
 		}
 	}, [subscribe, id, state, user])
+
+	useEffect(() => {
+		if (!storeItem) return
+		let numberAttributes: Attribute[] = []
+		const att = StoreItemAttibutes(storeItem)
+
+		for (let a of att) {
+			if (a.display_type === "number") {
+				numberAttributes.push({
+					...a,
+					host_url: storeItemHost || "",
+				})
+			}
+		}
+
+		setNumberAttributes(numberAttributes)
+	}, [storeItem, storeItemHost])
 
 	if (error) {
 		return (
@@ -517,11 +505,12 @@ export const StoreItemPage = () => {
 									{numberAttributes &&
 										numberAttributes.map((attr, i) => {
 											return (
-												<PercentageDisplay
+												<NumberAttribute
 													key={`${attr.label}-${attr.value}-${i}`}
-													displayValue={`${attr.value}`}
-													label={attr.label}
-													percentage={attr.percentage}
+													type={"chassis"}
+													model={""}
+													attribute={attr}
+													global={true}
 												/>
 											)
 										})}
