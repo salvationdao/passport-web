@@ -1,13 +1,17 @@
 import { formatUnits, parseUnits } from "@ethersproject/units"
+import AddIcon from "@mui/icons-material/Add"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
-import { Box, Button, InputBase, Paper, Stack, styled, Typography, useMediaQuery } from "@mui/material"
+import RemoveIcon from "@mui/icons-material/Remove"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, InputBase, Paper, Stack, styled, Typography, useMediaQuery } from "@mui/material"
 import { formatDistanceToNow, fromUnixTime, isPast } from "date-fns"
 import { BigNumber, constants } from "ethers"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useInterval } from "react-use"
 import Axe from "../../assets/images/gradient/axe.png"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import { Loading } from "../../components/loading"
 import { ConnectWalletOverlay } from "../../components/transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import {
@@ -25,7 +29,6 @@ import { colors } from "../../theme"
 
 export const FarmsPage = () => {
 	const { changeChain, currentChainId, account } = useWeb3()
-
 	return (
 		<Box
 			sx={{
@@ -59,6 +62,7 @@ export const FarmsPage = () => {
 						maxWidth: "1700px",
 						margin: "0 auto",
 						padding: "2rem",
+						gap: "2rem",
 						"@media (max-width:600px)": {
 							p: "1em",
 						},
@@ -68,17 +72,25 @@ export const FarmsPage = () => {
 						<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} />
 					)}
 					{!account && <ConnectWalletOverlay walletIsConnected={!!account} />}
-					<Box
-						component="img"
-						src={Axe}
-						alt="Image of a Safe"
-						sx={{
-							height: "12rem",
-						}}
-					/>
-					<Typography variant="h1" sx={{ textTransform: "uppercase" }}>
-						Liquidity Farming
-					</Typography>
+					<Stack gap="1rem">
+						<Box
+							component="img"
+							src={Axe}
+							alt="Image of an axe"
+							sx={{
+								mx: "auto",
+								maxWidth: "10rem",
+								height: "10rem",
+								objectFit: "contain",
+								"@media (max-height:1100px)": {
+									height: "6rem",
+								},
+							}}
+						/>
+						<Typography variant="h1" sx={{ textTransform: "uppercase", fontFamily: "bizmobold" }}>
+							Liquidity Farming
+						</Typography>
+					</Stack>
 					{currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account && <FarmCard />}
 				</Paper>
 			</Box>
@@ -93,86 +105,73 @@ interface FarmInfoProps {
 	loading: boolean
 	lpBalance: BigNumber
 	stakingBalance: BigNumber
-	earned: BigNumber
 	userRewardRate: BigNumber
 	rewardRate: BigNumber
 	yieldPercentage: number
-	periodFinish: BigNumber
+	remainingTime: string
+	hasAllowance: boolean
 }
 
 const InfoLabel = styled("span")({
-	fontFamily: "bizmosemi_bold",
-	fontWeight: 800,
+	fontFamily: "bizmobold",
 	textTransform: "uppercase",
 	display: "flex",
 	justifyContent: "flex-end",
-	width: "15rem",
-	"@media (max-width:500px)": {
-		width: "calc(50% - 1rem)",
-		fontSize: "3vw",
-	},
+	color: colors.darkNeonPink,
 })
 const InfoValue = styled("span")({
 	fontFamily: "bizmomedium",
-	textTransform: "uppercase",
+	textTransform: "capitalize",
 	justifySelf: "flex-start",
 	width: "fit-content",
-	minWidth: "15rem",
-	"@media (max-width:500px)": {
-		minWidth: "calc(50% - 1rem)",
-		fontSize: "3vw",
-	},
 })
 
 const LabelContainer = styled("div")({
+	fontSize: "1.1rem",
 	display: "flex",
 	alignItems: "center",
-	justifyContent: "center",
+	justifyContent: "space-between",
 	gap: "1rem",
 	width: "100%",
 })
 
 const FarmInfo = (props: FarmInfoProps) => {
-	const [displayEarned, setDisplayEarned] = useState((+formatUnits(props.earned, 18)).toFixed(4))
-	const [currentEarned, setCurrentEarned] = useState(props.earned)
-	const [remainingTime, setRemainingTime] = useState<string | null>(null)
-	useInterval(() => {
-		const newCurrent = currentEarned.add(props.userRewardRate.div(10))
-		setCurrentEarned(newCurrent)
-		setDisplayEarned((+formatUnits(newCurrent, 18)).toFixed(4))
-		if (isPast(fromUnixTime(props.periodFinish.toNumber()))) {
-			setRemainingTime("Rewards are inactive")
-		} else {
-			setRemainingTime(`Next phase begins in ${formatDistanceToNow(fromUnixTime(props.periodFinish.toNumber()))}`)
-		}
-	}, 100)
-	useEffect(() => {
-		setCurrentEarned(props.earned)
-	}, [props.earned])
+	let apr = props.loading ? "--- %" : `${(props.yieldPercentage !== Infinity ? props.yieldPercentage * 100 : 0).toFixed(4)}%`
 
-	let apr = props.loading ? "--- %" : `${(props.yieldPercentage * 100).toFixed(4)}%`
 	if (props.yieldPercentage === 0) {
 		apr = "--- %"
 	}
 	return (
-		<Stack gap=".5rem" justifyContent="center" sx={{ width: "100%" }}>
-			<Stack justifyContent="center" sx={{ width: "100%" }}>
-				<LabelContainer>
-					<InfoLabel>Earned:</InfoLabel> <InfoValue>{props.loading ? "---" : `${displayEarned} SUPS`}</InfoValue>
-				</LabelContainer>
+		<Stack gap=".2rem" justifyContent="center" sx={{ width: "100%" }}>
+			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
 				<LabelContainer>
 					<InfoLabel>APR:</InfoLabel> <InfoValue>{apr}</InfoValue>
 				</LabelContainer>
 			</Stack>
-			<Typography sx={{ fontFamily: "bizmosemi_bold", alignSelf: "center", fontSize: "1.2rem" }}>{props.loading ? "---" : remainingTime}</Typography>
+			<LabelContainer>
+				<InfoLabel>Ends in:</InfoLabel>
+				<InfoValue>{props.loading ? "---" : props.remainingTime}</InfoValue>
+			</LabelContainer>
 			<LabelContainer>
 				<InfoLabel>Global reward rate:</InfoLabel>
-				<InfoValue>{props.loading ? "--- %" : `${(+formatUnits(props.rewardRate)).toFixed(8)} SUPS/s`}</InfoValue>
+				<InfoValue>
+					{props.loading ? "---" : (+formatUnits(props.rewardRate)).toFixed(6)}{" "}
+					<span style={{ fontSize: "1rem" }}>
+						SUPS/<span style={{ fontSize: ".8rem" }}>s</span>
+					</span>
+				</InfoValue>
 			</LabelContainer>
-			<LabelContainer>
-				<InfoLabel>Your reward rate:</InfoLabel>{" "}
-				<InfoValue>{props.loading ? "--- %" : `${(+formatUnits(props.userRewardRate)).toFixed(8)} SUPS/s`}</InfoValue>
-			</LabelContainer>
+			{formatUnits(props.userRewardRate) && props.hasAllowance && (
+				<LabelContainer>
+					<InfoLabel>Your reward rate:</InfoLabel>{" "}
+					<InfoValue>
+						{props.loading ? "---" : (+formatUnits(props.userRewardRate)).toFixed(6)}{" "}
+						<span style={{ fontSize: "1rem" }}>
+							SUPS/<span style={{ fontSize: ".8rem" }}>s</span>
+						</span>
+					</InfoValue>
+				</LabelContainer>
+			)}
 		</Stack>
 	)
 }
@@ -184,12 +183,31 @@ const FarmCard = (props: FarmCardProps) => {
 	const [stakeDisplayAmount, setStakeDisplayAmount] = useState<string>("")
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber | null>(null)
 	const [withdrawDisplayAmount, setWithdrawDisplayAmount] = useState<string>("")
+	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	const [hasAllowance, setHasAllowance] = useState<boolean>(false)
 	const [withdrawError, setWithdrawError] = useState<string | null>(null)
 	const [stakeError, setStakeError] = useState<string | null>(null)
 	const [pending, setPending] = useState<{ [key: string]: boolean }>({})
 	const [web3error, setWeb3Error] = useState<string | null>(null)
+	const [openStaking, setOpenStaking] = useState<boolean | null>(false)
+	const [isStaking, setIsStaking] = useState<boolean | null>(false)
 	const isMobile = useMediaQuery("(max-width:600px)")
+
+	useInterval(() => {
+		if (data) {
+			if (!pending.claim) {
+				setData((prevState) => {
+					if (prevState) return { ...prevState, earned: prevState.earned.add(prevState.userRewardRate.div(10)) }
+					else return prevState
+				})
+			}
+			if (isPast(fromUnixTime(data.periodFinish.toNumber()))) {
+				setRemainingTime("Rewards are inactive")
+			} else {
+				setRemainingTime(formatDistanceToNow(fromUnixTime(data.periodFinish.toNumber())))
+			}
+		}
+	}, 100)
 
 	useEffect(() => {
 		setStakeError(null)
@@ -214,7 +232,9 @@ const FarmCard = (props: FarmCardProps) => {
 		farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
 			.then((data) => {
 				if (!data) return
-				setData(data)
+				if (!pending.claim) {
+					setData(data)
+				}
 			})
 			.catch((err) =>
 				console.error(
@@ -227,11 +247,7 @@ const FarmCard = (props: FarmCardProps) => {
 				setHasAllowance(can)
 			})
 			.catch((err) => console.error(`check farm allowance (${FARM_CONTRACT_ADDRESS}) for LP token (${LP_TOKEN_ADDRESS}):`, err))
-	}, [block, provider, signer, account, farmCheckAllowance, farmInfo])
-
-	let disableApproveButton = false
-	if (!stakeAmount || stakeAmount.eq(0) || stakeDisplayAmount === "") disableApproveButton = true
-	if (hasAllowance) disableApproveButton = true
+	}, [block, provider, signer, account, farmCheckAllowance, farmInfo, pending])
 
 	let disableStakeButton = false
 	if (!stakeAmount || stakeAmount.eq(0) || stakeDisplayAmount === "") disableStakeButton = true
@@ -247,15 +263,112 @@ const FarmCard = (props: FarmCardProps) => {
 		disableClaimButton = true
 	}
 
-	let disableExitButton = false
-	if (data && data.stakingBalance.lte(0)) {
-		disableExitButton = true
+	if (pending.claim || pending.exit || pending.withdraw || pending.stake) disableWithdrawButton = true
+	if (pending.claim || pending.exit || pending.withdraw || pending.stake) disableClaimButton = true
+	if (pending.claim || pending.exit || pending.withdraw || pending.stake) disableStakeButton = true
+
+	let showStakeButton = false
+	if (hasAllowance && !openStaking && data?.stakingBalance.lte(BigNumber.from(0))) showStakeButton = true
+
+	let showStakeText = false
+	if (hasAllowance && !showStakeButton && openStaking) showStakeText = true
+
+	let showAddMinusButtons = false
+	if (hasAllowance && !showStakeButton && !openStaking) showAddMinusButtons = true
+
+	const handleSubmitWithdraw = async () => {
+		if (pending.claim || pending.exit || pending.withdraw) disableWithdrawButton = true
+		if (!withdrawAmount) return
+		if (!data) return
+		if (withdrawAmount.gt(data.stakingBalance)) return
+		if (withdrawAmount.eq(data.stakingBalance)) {
+			try {
+				setPending({ ...pending, withdraw: true })
+				const tx = await farmExit(FARM_CONTRACT_ADDRESS)
+				await tx.wait()
+				setPending({ ...pending, withdraw: false })
+				setWithdrawDisplayAmount("")
+				setWithdrawAmount(BigNumber.from(0))
+			} catch (error: any) {
+				if (error && typeof error === "string") {
+					setWithdrawError(error)
+				}
+				if (error && typeof error === "object") {
+					if (error.message) {
+						setWeb3Error(error.message)
+					}
+				}
+				setPending({ ...pending, withdraw: false })
+			}
+			return
+		}
+
+		try {
+			setPending({ ...pending, withdraw: true })
+			const tx = await farmWithdraw(FARM_CONTRACT_ADDRESS, withdrawAmount)
+			await tx.wait()
+			setWithdrawDisplayAmount("")
+			setWithdrawAmount(BigNumber.from(0))
+			const newData = await farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
+			if (!newData) return
+			setData(newData)
+		} catch (err) {
+			console.error(err)
+		} finally {
+			setPending({ ...pending, withdraw: false })
+		}
 	}
 
-	if (pending.claim || pending.exit || pending.withdraw) disableWithdrawButton = true
-	if (pending.claim || pending.exit || pending.withdraw) disableExitButton = true
-	if (pending.claim || pending.exit || pending.withdraw) disableClaimButton = true
+	const handleSubmitStake = async () => {
+		setWeb3Error(null)
+		if (!stakeAmount) return
+		setPending({ ...pending, stake: true })
+		try {
+			const tx = await farmStake(FARM_CONTRACT_ADDRESS, stakeAmount)
+			await tx.wait()
+			setPending({ ...pending, stake: false })
+			setStakeDisplayAmount("")
+			setStakeAmount(BigNumber.from(0))
+			const newData = await farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
+			if (!newData) return
+			setData(newData)
+		} catch (error: any) {
+			if (error && typeof error === "string") {
+				setStakeError(error)
+			}
+			if (error && typeof error === "object") {
+				if (error.message) {
+					setWeb3Error(error.message)
+				}
+			}
+			setPending({ ...pending, stake: false })
+		}
+	}
 
+	const handleChangeStake = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setWeb3Error(null)
+
+		if (e.target.value === "") {
+			setStakeDisplayAmount("")
+			setStakeAmount(BigNumber.from(0))
+		}
+		const val = parseUnits(e.target.value, 18)
+		setStakeDisplayAmount(e.target.value)
+		setStakeAmount(val)
+	}
+	const handleChangeWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setWeb3Error(null)
+		if (e.target.value === "") {
+			setWithdrawDisplayAmount("")
+			setWithdrawAmount(BigNumber.from(0))
+			return
+		}
+		const val = parseUnits(e.target.value, 18)
+		setWithdrawDisplayAmount(e.target.value)
+		setWithdrawAmount(val)
+	}
+
+	if (!data) return <Loading text="Loading please wait..." />
 	return (
 		<Stack
 			gap="2rem"
@@ -266,91 +379,116 @@ const FarmCard = (props: FarmCardProps) => {
 			}}
 		>
 			<FarmInfo
-				periodFinish={data ? data.periodFinish : BigNumber.from(0)}
+				remainingTime={remainingTime || "---"}
 				rewardRate={data ? data.rewardRate : BigNumber.from(0)}
 				block={block}
 				loading={!data}
 				lpBalance={data ? data.lpBalance : BigNumber.from(0)}
 				stakingBalance={data ? data.stakingBalance : BigNumber.from(0)}
-				earned={data ? data.earned : BigNumber.from(0)}
 				userRewardRate={data ? data.userRewardRate : BigNumber.from(0)}
 				yieldPercentage={data ? data.yieldPercentage : 0}
+				hasAllowance={hasAllowance}
 			/>
 			<Stack gap="1rem">
 				<Stack
 					sx={{
 						justifyContent: "space-between",
 						width: isMobile ? "100%" : "30rem",
+						background: colors.formBg,
+						p: "1rem 1.5rem",
+						borderRadius: "15px",
 						gap: "1rem",
 					}}
 				>
-					<Typography variant="h3" sx={{ textAlign: "center", textTransform: "uppercase" }}>
-						Stake
-					</Typography>
-
-					<Stack>
-						<InputBase
-							sx={{
-								fontSize: "1.4rem",
-								color: colors.darkerGrey,
-								fontFamily: "bizmosemi_bold",
-								background: colors.inputBg,
-								display: "flext",
-								justifyContent: "center",
-								p: "1rem 2rem",
-								borderRadius: "7px",
-								"& *": {
-									textAlign: "center",
-								},
-								"@media (max-width:600px)": {
-									fontSize: "1rem",
-								},
-							}}
-							autoComplete="off"
-							value={stakeDisplayAmount}
-							onChange={(e) => {
-								setWeb3Error(null)
-								try {
-									if (e.target.value === "") {
-										setStakeDisplayAmount("")
-										setStakeAmount(BigNumber.from(0))
-									}
-									const val = parseUnits(e.target.value, 18)
-									setStakeDisplayAmount(e.target.value)
-									setStakeAmount(val)
-								} catch {}
-							}}
-						/>
-
-						<Typography style={{ textAlign: "center", alignSelf: "flex-end" }}>
-							Wallet:{" "}
-							<Button
-								sx={{ display: "inline", cursor: "pointer" }}
-								onClick={() => {
+					<FormSection>
+						<FormSectionInner>
+							<Stack sx={{ height: "100%", justifyContent: "space-between" }}>
+								<FormSectionHeading>Sups Earned</FormSectionHeading>
+								<FormSectionValue>{data ? (+formatUnits(data.earned, 18)).toFixed(6) : "0.000000"}</FormSectionValue>
+							</Stack>
+							<FancyButton
+								borderColor={colors.skyBlue}
+								disabled={disableClaimButton}
+								loading={pending.claim}
+								onClick={async () => {
 									if (!data) return
-									setStakeAmount(data.lpBalance)
-									setStakeDisplayAmount((+formatUnits(data.lpBalance, 18)).toFixed(4))
+									try {
+										setPending({ ...pending, claim: true })
+										const tx = await farmGetReward(FARM_CONTRACT_ADDRESS)
+										await tx.wait()
+									} catch (error: any) {
+										if (error && typeof error === "string") {
+											setWithdrawError(error)
+										}
+										if (error && typeof error === "object") {
+											if (error.message) {
+												setWeb3Error(error.message)
+											}
+										}
+									} finally {
+										setPending({ ...pending, claim: false })
+									}
 								}}
 							>
-								{!data ? "--- SUPS-BNB LP" : `${(+formatUnits(data.lpBalance, 18)).toFixed(4)} SUP-BNB LP`}{" "}
-							</Button>
-						</Typography>
+								Harvest
+							</FancyButton>
+						</FormSectionInner>
+					</FormSection>
+					<FormSection>
+						<FormSectionInner>
+							<Stack sx={{ height: "100%", justifyContent: "space-between" }}>
+								<FormSectionHeading>Sups-BNB LP STAKED</FormSectionHeading>
+								{hasAllowance && (
+									<FormSectionValue sx={{ color: data?.stakingBalance ? colors.neonPink : colors.darkNeonPink }}>
+										{data ? (+formatUnits(data.stakingBalance, 18)).toFixed(6) : "0.000000"}
+									</FormSectionValue>
+								)}
+							</Stack>
+							{showStakeButton && (
+								<FancyButton
+									loading={pending.claim}
+									onClick={() => {
+										setOpenStaking(true)
+										setIsStaking(true)
+									}}
+								>
+									Stake
+								</FancyButton>
+							)}
+							{showStakeText && (
+								<Typography
+									component="span"
+									sx={{ fontFamily: "bizmobold", textTransform: "uppercase", color: colors.neonPink, fontSize: "1rem" }}
+								>
+									{isStaking ? "Staking" : "Unstaking"}...
+								</Typography>
+							)}
 
-						<Box
-							sx={{
-								display: "flex",
-								justifyContent: "center",
-								margin: "0.5rem",
-								gap: "2rem",
-								"&>button": {
-									p: ".5em 1em",
-									textTransform: "uppercase",
-									minWidth: "10rem",
-								},
-							}}
-						>
+							{showAddMinusButtons && (
+								<Box sx={{ display: "flex", gap: "1rem" }}>
+									<FancyButton
+										onClick={() => {
+											setWeb3Error(null)
+											setOpenStaking(true)
+											setIsStaking(false)
+										}}
+									>
+										<RemoveIcon fontSize="large" />
+									</FancyButton>
+									<FancyButton
+										onClick={() => {
+											setWeb3Error(null)
+											setOpenStaking(true)
+											setIsStaking(true)
+										}}
+									>
+										<AddIcon fontSize="large" />
+									</FancyButton>
+								</Box>
+							)}
+						</FormSectionInner>
+						{!hasAllowance && (
 							<FancyButton
-								disabled={disableApproveButton}
 								loading={pending.approve}
 								onClick={async () => {
 									setPending({ ...pending, approve: true })
@@ -372,250 +510,224 @@ const FarmCard = (props: FarmCardProps) => {
 										setPending({ ...pending, approve: false })
 									}
 								}}
+								sx={{ minWidth: "fit-content", mx: "auto", p: ".5rem 2rem", fontSize: "1.2rem" }}
 							>
-								{hasAllowance ? "Approved" : "Approve"}
+								Enable Contract
 							</FancyButton>
-							<FancyButton
-								disabled={disableStakeButton}
-								loading={!!pending.stake}
-								onClick={async () => {
-									if (!stakeAmount) return
-									setPending({ ...pending, stake: true })
-									try {
-										const tx = await farmStake(FARM_CONTRACT_ADDRESS, stakeAmount)
-										await tx.wait()
-										setPending({ ...pending, stake: false })
-										setStakeDisplayAmount("")
-										setStakeAmount(BigNumber.from(0))
-										const newData = await farmInfo(
-											FARM_CONTRACT_ADDRESS,
-											PANCAKE_POOL_ADDRESS,
-											LP_TOKEN_ADDRESS,
-											SUPS_CONTRACT_ADDRESS,
-											WRAPPED_BNB_ADDRESS,
-										)
-										if (!newData) return
-										setData(newData)
-									} catch (error: any) {
-										if (error && typeof error === "string") {
-											setStakeError(error)
-										}
-										if (error && typeof error === "object") {
-											if (error.message) {
-												setWeb3Error(error.message)
-											}
-										}
-										setPending({ ...pending, stake: false })
-									}
-								}}
-							>
-								Stake
-							</FancyButton>
-						</Box>
+						)}
 
-						<Typography sx={{ color: colors.errorRed, textAlign: "center" }}>
+						{openStaking && (
+							<>
+								<StakingContainer>
+									<Stack gap=".5rem">
+										<StakingLabel>{isStaking ? "Stake" : "Unstake"}</StakingLabel>
+										<StakeInput
+											placeholder="0000"
+											autoComplete="off"
+											value={isStaking ? stakeDisplayAmount : withdrawDisplayAmount}
+											onChange={isStaking ? handleChangeStake : handleChangeWithdraw}
+										/>
+									</Stack>
+									<Stack gap=".5rem">
+										<StakingLabel sx={{ "& span": { ml: ".2rem" } }}>
+											Balance: <span>{!data ? "---" : (+formatUnits(data.lpBalance, 18)).toFixed(4)}</span>
+										</StakingLabel>
+
+										<Box sx={{ display: "flex", gap: "1rem" }}>
+											<MaxButton
+												onClick={() => {
+													if (!data) return
+													if (isStaking) {
+														setStakeAmount(data.lpBalance)
+														setStakeDisplayAmount((+formatUnits(data.lpBalance, 18)).toFixed(6))
+													} else {
+														setWithdrawAmount(data.stakingBalance)
+														setWithdrawDisplayAmount((+formatUnits(data.stakingBalance, 18)).toFixed(6))
+													}
+												}}
+											>
+												Max
+											</MaxButton>{" "}
+											<StakingLabel>SUPS-BNB-LP</StakingLabel>
+										</Box>
+									</Stack>
+								</StakingContainer>
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										gap: "2rem",
+										pt: "1rem",
+									}}
+								>
+									<FancyButton
+										disabled={isStaking ? !!pending.stake : !!pending.withdraw}
+										borderColor={colors.white}
+										sx={{ width: "calc(50% - 1rem)" }}
+										onClick={() => {
+											setWeb3Error(null)
+											setOpenStaking(false)
+											if (isStaking) {
+												setStakeDisplayAmount("")
+												setStakeAmount(BigNumber.from(0))
+											} else {
+												setWithdrawDisplayAmount("")
+												setWithdrawAmount(BigNumber.from(0))
+											}
+										}}
+									>
+										Cancel
+									</FancyButton>
+									<FancyButton
+										sx={{ width: "calc(50% - 1rem)" }}
+										disabled={isStaking ? disableStakeButton : disableWithdrawButton}
+										loading={isStaking ? !!pending.stake : !!pending.withdraw}
+										onClick={() => {
+											if (isStaking) {
+												handleSubmitStake()
+											} else {
+												handleSubmitWithdraw()
+											}
+										}}
+									>
+										{isStaking ? "Confirm" : "Withdraw"}
+									</FancyButton>
+								</Box>
+							</>
+						)}
+					</FormSection>
+					{(web3error || stakeError) && (
+						<Typography sx={{ color: colors.errorRed }}>
 							{web3error && web3error} {stakeError && stakeError}
 						</Typography>
-					</Stack>
-				</Stack>
+					)}
 
-				<Stack
+					{withdrawError && <Typography sx={{ color: colors.errorRed }}>{withdrawError}</Typography>}
+					<Typography component="span" sx={{ fontSize: "1rem" }}>
+						Wallet: {!data ? "--- SUPS-BNB LP" : `${(+formatUnits(data.lpBalance, 18)).toFixed(6)} SUP-BNB LP`}{" "}
+					</Typography>
+				</Stack>
+				<Accordion
 					sx={{
-						justifyContent: "space-between",
-						width: isMobile ? "100%" : "30rem",
-						gap: "1rem",
+						color: colors.skyBlue,
+						width: "100%",
+						background: colors.formBg,
+						borderRadius: "15px !important",
+						"&.MuiPaper-root::before": {
+							display: "none",
+						},
 					}}
 				>
-					<Typography variant="h3" sx={{ textAlign: "center", textTransform: "uppercase" }}>
-						Unstake
-					</Typography>
-					<Stack>
-						<InputBase
-							sx={{
-								fontSize: "1.4rem",
-								fontFamily: "bizmosemi_bold",
-								color: colors.darkerGrey,
-								background: colors.inputBg,
-								display: "flext",
-								justifyContent: "center",
-								p: "1rem 2rem",
-								borderRadius: "7px",
-								"& *": {
-									textAlign: "center",
-								},
-								"@media (max-width:600px)": {
-									fontSize: "1rem",
-								},
-							}}
-							autoComplete="off"
-							value={withdrawDisplayAmount}
-							onChange={(e) => {
-								setWeb3Error(null)
-								if (e.target.value === "") {
-									setWithdrawDisplayAmount("")
-									setWithdrawAmount(BigNumber.from(0))
-									return
-								}
-								try {
-									const val = parseUnits(e.target.value, 18)
-									setWithdrawDisplayAmount(e.target.value)
-									setWithdrawAmount(val)
-								} catch {}
-							}}
-						/>
-						<Typography style={{ textAlign: "center", alignSelf: "flex-end" }}>
-							Staked:{" "}
-							<Button
-								component={"span"}
-								sx={{ display: "inline", cursor: "pointer" }}
-								onClick={() => {
-									if (!data) return
-									setWithdrawAmount(data.stakingBalance)
-									setWithdrawDisplayAmount((+formatUnits(data.stakingBalance, 18)).toFixed(4))
-								}}
-							>
-								{!data ? "--- SUPS-BNB LP" : `${(+formatUnits(data.stakingBalance, 18)).toFixed(4)} SUP-BNB LP`}
-							</Button>
-						</Typography>
-					</Stack>
-					<Stack
-						gap=".5rem"
+					<AccordionSummary
 						sx={{
-							alignItems: "center",
-							"&>button": {
+							fontSize: "1rem",
+							minHeight: "3.5rem",
+							"&.Mui-expanded": {
+								minHeight: "3.5rem",
+							},
+							"&>div": {
+								my: "0rem !important",
 								width: "fit-content",
-								minWidth: "15rem",
+								flexGrow: "unset",
 							},
 						}}
+						expandIcon={<ExpandMoreIcon sx={{ color: colors.skyBlue }} />}
 					>
-						<FancyButton
-							disabled={disableWithdrawButton}
-							loading={!!pending.withdraw}
-							onClick={async () => {
-								if (pending.claim || pending.exit || pending.withdraw) disableWithdrawButton = true
-								if (!withdrawAmount) return
-								if (!data) return
-								if (withdrawAmount.gt(data.stakingBalance)) return
-								if (withdrawAmount.eq(data.stakingBalance)) {
-									try {
-										setPending({ ...pending, withdraw: true })
-										const tx = await farmExit(FARM_CONTRACT_ADDRESS)
-										await tx.wait()
-										setPending({ ...pending, withdraw: false })
-										setWithdrawDisplayAmount("")
-										setWithdrawAmount(BigNumber.from(0))
-									} catch (error: any) {
-										if (error && typeof error === "string") {
-											setWithdrawError(error)
-										}
-										if (error && typeof error === "object") {
-											if (error.message) {
-												setWeb3Error(error.message)
-											}
-										}
-										setPending({ ...pending, withdraw: false })
-									}
-									return
-								}
-
-								setPending({ ...pending, withdraw: true })
-								try {
-									const tx = await farmWithdraw(FARM_CONTRACT_ADDRESS, withdrawAmount)
-									await tx.wait()
-									setPending({ ...pending, withdraw: false })
-									setWithdrawDisplayAmount("")
-									setWithdrawAmount(BigNumber.from(0))
-									const newData = await farmInfo(
-										FARM_CONTRACT_ADDRESS,
-										PANCAKE_POOL_ADDRESS,
-										LP_TOKEN_ADDRESS,
-										SUPS_CONTRACT_ADDRESS,
-										WRAPPED_BNB_ADDRESS,
-									)
-									if (!newData) return
-									setData(newData)
-								} catch {
-									setPending({ ...pending, withdraw: false })
-								}
-							}}
+						Details
+					</AccordionSummary>
+					<AccordionDetails sx={{ display: "flex", flexDirection: "column", position: "relative" }}>
+						<Box sx={{ background: colors.darkerGrey, height: ".5px", width: "calc(100% - 2rem)", position: "absolute", top: 0, left: "1rem" }} />
+						<Button
+							component={"a"}
+							href={`https://${BSC_SCAN_SITE}/address/${FARM_CONTRACT_ADDRESS}`}
+							target="_blank"
+							rel="noopener noreferrer"
+							endIcon={<OpenInNewIcon />}
 						>
-							Withdraw SUPS-BNB LP
-						</FancyButton>
-						<FancyButton
-							disabled={disableClaimButton}
-							loading={pending.claim}
-							onClick={async () => {
-								if (!data) return
-								try {
-									setPending({ ...pending, claim: true })
-									const tx = await farmGetReward(FARM_CONTRACT_ADDRESS)
-									await tx.wait()
-								} catch (error: any) {
-									if (error && typeof error === "string") {
-										setWithdrawError(error)
-									}
-									if (error && typeof error === "object") {
-										if (error.message) {
-											setWeb3Error(error.message)
-										}
-									}
-								} finally {
-									setPending({ ...pending, claim: false })
-								}
-							}}
+							Liquidity Farm contract
+						</Button>
+						<Button
+							component={"a"}
+							href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`}
+							target="_blank"
+							rel="noopener noreferrer"
+							endIcon={<OpenInNewIcon />}
 						>
-							Claim Rewards
-						</FancyButton>
-						<FancyButton
-							disabled={disableExitButton}
-							loading={pending.exit}
-							onClick={async () => {
-								if (!data) return
-								try {
-									setPending({ ...pending, exit: true })
-									const tx = await farmExit(FARM_CONTRACT_ADDRESS)
-									await tx.wait()
-								} catch (error: any) {
-									if (error && typeof error === "string") {
-										setWithdrawError(error)
-									}
-									if (error && typeof error === "object") {
-										if (error.message) {
-											setWeb3Error(error.message)
-										}
-									}
-								} finally {
-									setPending({ ...pending, exit: false })
-								}
-							}}
-						>
-							Exit Pool
-						</FancyButton>
-					</Stack>
-				</Stack>
-				{withdrawError && <Typography sx={{ color: colors.errorRed, textAlign: "center" }}>{withdrawError}</Typography>}
-
-				<Stack>
-					<Button
-						component={"a"}
-						href={`https://${BSC_SCAN_SITE}/address/${FARM_CONTRACT_ADDRESS}`}
-						target="_blank"
-						rel="noopener noreferrer"
-						endIcon={<OpenInNewIcon />}
-					>
-						Liquidity Farm contract
-					</Button>
-					<Button
-						component={"a"}
-						href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`}
-						target="_blank"
-						rel="noopener noreferrer"
-						endIcon={<OpenInNewIcon />}
-					>
-						Get SUPS-BNB LP tokens
-					</Button>
-				</Stack>
+							Get SUPS-BNB LP tokens
+						</Button>
+					</AccordionDetails>
+				</Accordion>
 			</Stack>
 		</Stack>
 	)
 }
+
+const FormSection = styled("div")({
+	paddingBottom: "1rem",
+	borderBottom: `.5px solid ${colors.darkerGrey}`,
+	display: "flex",
+	flexDirection: "column",
+	gap: "1rem",
+})
+
+const FormSectionInner = styled("div")({
+	display: "flex",
+	justifyContent: "space-between",
+	alignItems: "center",
+	"& > button": {
+		width: "10rem",
+		fontSize: "1.2rem",
+		padding: ".5rem 2rem",
+		minHeight: "unset",
+	},
+})
+const FormSectionHeading = styled("span")({
+	fontSize: "1rem",
+	fontFamily: "bizmobold",
+	textTransform: "uppercase",
+})
+
+const FormSectionValue = styled("span")({
+	fontSize: "1.8rem",
+	fontFamily: "bizmobold",
+	textTransform: "uppercase",
+	color: colors.skyBlue,
+})
+
+const StakingContainer = styled("div")({
+	background: colors.inputBg,
+	padding: ".7rem",
+	borderRadius: "15px",
+	display: "flex",
+	justifyContent: "space-between",
+})
+
+const StakingLabel = styled("span")({
+	width: "fit-content",
+	whiteSpace: "nowrap",
+	fontSize: ".8rem",
+	fontFamily: "bizmomedium",
+	textTransform: "uppercase",
+	color: colors.lightGrey,
+})
+
+const MaxButton = styled(Button)({
+	fontFamily: "bizmomedium",
+	background: colors.neonPink,
+	color: colors.white,
+	fontSize: ".8rem",
+	padding: 0,
+	width: "fit-content",
+	minWidth: "3rem",
+	transition: "all .2s",
+	"&:hover": {
+		background: colors.darkerNeonPink,
+	},
+})
+
+const StakeInput = styled(InputBase)({
+	fontSize: "1.8rem",
+	fontFamily: "bizmobold",
+	textTransform: "uppercase",
+	height: "1.2rem",
+})
