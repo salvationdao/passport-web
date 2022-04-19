@@ -149,7 +149,7 @@ const FarmInfo = (props: FarmInfoProps) => {
 				</LabelContainer>
 			</Stack>
 			<LabelContainer>
-				<InfoLabel>Ends in:</InfoLabel>
+				<InfoLabel>Next phase in:</InfoLabel>
 				<InfoValue>{props.loading ? "---" : props.remainingTime}</InfoValue>
 			</LabelContainer>
 			<LabelContainer>
