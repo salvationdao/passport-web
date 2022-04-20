@@ -162,12 +162,6 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 										</Typography>
 									</Box>
 									{loadingWalletBalance && <Skeleton />}
-									{!loadingWalletBalance && (
-										<Box sx={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
-											<Typography>Available Withdraw Pool: </Typography>
-											<Typography>{supFormatter(withdrawContractAmount?.toString() || "0")}</Typography>
-										</Box>
-									)}
 									<TextField
 										fullWidth
 										sx={{ marginTop: "0.5rem" }}
