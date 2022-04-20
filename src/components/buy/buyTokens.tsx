@@ -8,9 +8,7 @@ import Arrow from "../../assets/images/arrow.png"
 import SupsToken from "../../assets/images/supsToken.png"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../../config"
 import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { MetaMaskState, useWeb3 } from "../../containers/web3"
-import { useSecureSubscription } from "../../hooks/useSecureSubscription"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { ExchangeRates, tokenSelect } from "../../types/types"
@@ -18,14 +16,17 @@ import { ConnectWallet } from "../connectWallet"
 import { FancyButton } from "../fancyButton"
 import { Loading } from "../loading"
 import { TokenSelect } from "./tokenSelect"
+import useWS from "../../hooks/useWS"
+import useSubscription from "../../hooks/useSubscription"
+
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 const BIG_NUMBER_FIX = 10 ** 6
 const MINIMUM_SPEND = "5"
 
 export const BuyTokens: React.FC = () => {
-	const { state, subscribe } = useWebsocket()
-	const { user } = useAuth()
+	const { user, userId } = useAuth()
+	const { state, subscribe } = useWS({ URI: `/user/${userId}/sups` })
 	const {
 		changeChain,
 		currentChainId,
@@ -52,7 +53,7 @@ export const BuyTokens: React.FC = () => {
 	const [minAmount, setMinAmount] = useState<BigNumber>()
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
-	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
+	const userSups = useSubscription<string>(`/user/${userId}/sups`, HubKey.UserSupsSubscribe)
 	const acceptedChainExceptions = currentChainId?.toString() === BINANCE_CHAIN_ID || currentChainId?.toString() === ETHEREUM_CHAIN_ID
 	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
 	const [tokenDecimals, setTokenDecimals] = useState(18)
@@ -69,7 +70,7 @@ export const BuyTokens: React.FC = () => {
 	}, [exchangeRates])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN) return
+		if (state() !== WebSocket.OPEN) return
 		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
 			const maxAmount = parseUnits("500000", 18)
 			setAmountRemaining(BigNumber.from(amount).lt(maxAmount) ? BigNumber.from(amount) : maxAmount)
@@ -238,7 +239,7 @@ export const BuyTokens: React.FC = () => {
 	}, [currentChainId, acceptedChainExceptions, setCurrentToken, tokenOptions, currentToken.name, currentToken.chainId])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN) return
+		if (state() !== WebSocket.OPEN) return
 		return subscribe<{ bnb_to_usd: string; eth_to_usd: string; sup_to_usd: string; enable_sale: boolean }>(HubKey.SupExchangeRates, (rates) => {
 			if (!rates) {
 				window.location.replace("https://supremacy.game/launch")
@@ -300,7 +301,7 @@ export const BuyTokens: React.FC = () => {
 		setLoading(true)
 		setTransferState("waiting")
 		try {
-			if (state !== SocketState.OPEN) return
+			if (state() !== WebSocket.OPEN) return
 			let tx
 			if (currentToken.isNative) {
 				tx = await sendNativeTransfer(tokenAmt)

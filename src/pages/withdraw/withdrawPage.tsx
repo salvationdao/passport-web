@@ -7,10 +7,10 @@ import { TransactionResultOverlay } from "../../components/transferStatesOverlay
 import { WithdrawSups } from "../../components/withdrawSups"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
-import { useWebsocket } from "../../containers/socket"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
 import { transferStateType } from "../../types/types"
+import useCommands from "../../containers/useCommands"
 
 interface CanEnterResponse {
 	can_withdraw: boolean
@@ -19,7 +19,7 @@ interface CanEnterResponse {
 export const WithdrawPage = () => {
 	const { account } = useWeb3()
 	const { user } = useAuth()
-	const { send, state } = useWebsocket()
+	const { send, state } = useCommands()
 
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 
@@ -102,7 +102,7 @@ export const WithdrawPage = () => {
 							setLoading={setLoading}
 							user={user}
 							send={send}
-							state={state}
+							state={state()}
 						/>
 					</Box>
 				</Paper>

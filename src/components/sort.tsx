@@ -5,13 +5,13 @@ import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
-import { SocketState, useWebsocket } from "../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../helpers"
 import { useQuery } from "../hooks/useSend"
 import HubKey from "../keys"
 import { FilterChip, SortChip } from "../pages/profile/profile"
 import { colors } from "../theme"
 import { Collection } from "../types/types"
+import useCommands from "../containers/useCommands"
 
 interface SortProps {
 	assetType?: string
@@ -47,7 +47,7 @@ export const Sort = ({
 	const [collections, setCollections] = useState<Collection[]>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
-	const { send, state } = useWebsocket()
+	const { send, state } = useCommands()
 	const { displayMessage } = useSnackbar()
 	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
@@ -120,7 +120,7 @@ export const Sort = ({
 	}
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send) return
+		if (state() !== WebSocket.OPEN || !send) return
 		;(async () => {
 			try {
 				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
@@ -159,7 +159,7 @@ export const Sort = ({
 	}, [alphabetical, aquisitionDir])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN) return
+		if (state() !== WebSocket.OPEN) return
 
 		const filtersItems: any[] = [
 			// filter by user id

@@ -6,10 +6,10 @@ import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
 import SoldOut from "../../assets/images/SoldOutTrimmed.png"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { ViewButton } from "../collections/collectionItemCard"
+import useCommands from "../../containers/useCommands"
 
 export const LootBoxCard: React.VoidFunctionComponent = () => {
 	const [imgURL, setImg] = useState("")
@@ -17,7 +17,7 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 	const { displayMessage } = useSnackbar()
 	const { user } = useAuth()
 	const history = useHistory()
-	const { send, state } = useWebsocket()
+	const { send, state } = useCommands()
 
 	useEffect(() => {
 		if (user && user.faction) {
@@ -39,7 +39,7 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 	}, [user])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !user) return
+		if (state() !== WebSocket.OPEN || !user) return
 		;(async () => {
 			try {
 				const resp = await send<number>(HubKey.StoreLootBoxAmount, {

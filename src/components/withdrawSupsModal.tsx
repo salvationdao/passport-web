@@ -5,10 +5,11 @@ import React, { useCallback, useEffect, useState } from "react"
 import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
+import useSubscription from "../hooks/useSubscription"
+import { useAuth } from "../containers/auth"
 
 interface WithdrawModalProps {
 	open: boolean
@@ -24,7 +25,8 @@ interface GetSignatureResponse {
 
 export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }: WithdrawModalProps) => {
 	const { account, provider, currentChainId, metaMaskState, changeChain } = useWeb3()
-	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
+	const { userId } = useAuth()
+	const userSups = useSubscription<string>(`/user/${userId}/sups`, HubKey.UserSupsSubscribe)
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber | null>(null)
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string | null>(null)
 	const [withdrawContractAmount, setWithdrawContractAmount] = useState<BigNumber>()

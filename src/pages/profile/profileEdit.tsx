@@ -12,9 +12,9 @@ import { InputField } from "../../components/form/inputField"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
-import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
+import useCommands from "../../containers/useCommands"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -212,7 +212,7 @@ interface ProfileEditProps {
 const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
 	const { user } = useAuth()
-	const { send } = useWebsocket()
+	const { send } = useCommands()
 	const history = useHistory()
 
 	// Setup form

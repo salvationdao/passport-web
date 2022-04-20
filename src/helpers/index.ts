@@ -94,3 +94,7 @@ export const getStringFromShoutingSnakeCase = (val: string) => {
 		.map((s) => s.charAt(0).toUpperCase() + s.slice(1))
 		.join(" ")
 }
+
+export function protocol() {
+	return window.location.protocol.match(/^https/) ? "wss" : "ws"
+}

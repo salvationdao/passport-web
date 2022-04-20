@@ -35,7 +35,7 @@ export const OnlineStatusBadge = styled(Badge)(({ theme }) => ({
 
 /** User Avatar w/ online status badge */
 export const UserAvatar = ({ user }: { user: User }) => {
-	const { payload: onlineStatus } = useSubscription<boolean>(HubKey.UserOnlineStatus, { id: user.id })
+	const onlineStatus = useSubscription<boolean>(`/user/${user.id}`, HubKey.UserOnlineStatus)
 	const avatar = (
 		<Avatar
 			alt={`${user.first_name} ${user.last_name}`}

@@ -9,19 +9,19 @@ import { Loading } from "../../components/loading"
 import { SearchBar } from "../../components/searchBar"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { SortChip } from "../profile/profile"
 import { DesktopTransactionTable } from "./desktopTransactionTable"
 import { MobileTransactionTable } from "./mobileTransactionTable"
+import useCommands from "../../containers/useCommands"
 
 type GroupType = "All" | "Ungrouped" | string
 
 export const TransactionsPage = () => {
 	const history = useHistory()
 	const { user } = useAuth()
-	const { send, state } = useWebsocket()
+	const { send, state } = useCommands()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
 
@@ -45,7 +45,7 @@ export const TransactionsPage = () => {
 	const [transactionGroups, setTransactionGroups] = useState<{ [key: string]: string[] }>({})
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send || !user) return
+		if (state() !== WebSocket.OPEN || !send || !user) return
 		;(async () => {
 			setLoading(true)
 			try {
@@ -119,7 +119,7 @@ export const TransactionsPage = () => {
 	}, [send, state, search, user, currentPage, pageSize, sort, selectedGroup, selectedSubGroup])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send || !user) return
+		if (state() !== WebSocket.OPEN || !send || !user) return
 		;(async () => {
 			setLoading(true)
 			try {

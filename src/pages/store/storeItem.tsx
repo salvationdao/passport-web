@@ -8,7 +8,6 @@ import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
@@ -18,11 +17,12 @@ import { StoreItem, StoreItemAttibutes, StoreItemResponse } from "../../types/st
 import { Attribute, Collection } from "../../types/types"
 import { NumberAttribute } from "../profile/numberAttribute"
 import { rarityTextStyles } from "../profile/profile"
+import useCommands from "../../containers/useCommands"
 
 export const StoreItemPage = () => {
 	const { store_item_id: id, collection_slug } = useParams<{ store_item_id: string; collection_slug: string }>()
 	const history = useHistory()
-	const { subscribe, state } = useWebsocket()
+	const { send, state } = useCommands()
 	const { user } = useAuth()
 
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
@@ -41,18 +41,13 @@ export const StoreItemPage = () => {
 	// Purchase store item
 	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_slug) return
-		return subscribe<Collection>(
-			HubKey.CollectionUpdated,
-			(payload) => {
-				if (!payload) return
-				setCollection(payload)
-			},
-			{
-				slug: collection_slug,
-			},
-		)
-	}, [collection_slug, subscribe, state])
+		if (state() !== WebSocket.OPEN || !collection_slug) return
+		send<Collection>(HubKey.CollectionUpdated, {
+			slug: collection_slug,
+		}).then((collection) => {
+			setCollection(collection)
+		})
+	}, [collection_slug, state])
 
 	useEffect(() => {
 		if (!videoDiv || !videoDiv.current) return
@@ -64,27 +59,19 @@ export const StoreItemPage = () => {
 	}, [enlarge])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !user) return
-
 		setLoading(true)
 		try {
-			return subscribe<StoreItemResponse>(
-				HubKey.StoreItemSubscribe,
-				async (payload) => {
-					if (!payload) return
-
-					setStoreItem(payload.item)
-					setStoreItemHost(payload.host_url)
-					setPriceInSups(payload.price_in_sups)
-				},
-				{ store_item_id: id },
-			)
+			send<StoreItemResponse>(HubKey.StoreItemSubscribe, { store_item_id: id }).then((payload) => {
+				setStoreItem(payload.item)
+				setStoreItemHost(payload.host_url)
+				setPriceInSups(payload.price_in_sups)
+			})
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching store item data. Please try again.")
 		} finally {
 			setLoading(false)
 		}
-	}, [subscribe, id, state, user])
+	}, [id, state, user])
 
 	useEffect(() => {
 		if (!storeItem) return
@@ -655,7 +642,7 @@ export const StoreItemPage = () => {
 
 const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; storeItem: StoreItem; collection_slug: string }) => {
 	const { open, onClose, storeItem, collection_slug } = props
-	const { send, state } = useWebsocket()
+	const { send, state } = useCommands()
 	const [loading, setLoading] = useState(false)
 	const [purchasedOpen, setPurchasedOpen] = useState(false)
 	const [errorOpen, setErrorOpen] = useState(false)
@@ -666,7 +653,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	const purchase = useCallback(async () => {
-		if (state !== SocketState.OPEN) return
+		if (state() !== WebSocket.OPEN) return
 		setLoading(true)
 		try {
 			await send(HubKey.StorePurchase, {

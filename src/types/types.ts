@@ -200,3 +200,10 @@ export interface metamaskError {
 }
 
 export type transferStateType = "waiting" | "error" | "confirm" | "none" | "unavailable"
+
+export interface Message<T = any> {
+	key: string
+	payload: T
+	mt: number
+	transactionId?: string
+}

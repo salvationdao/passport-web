@@ -12,7 +12,6 @@ import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { middleTruncate } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
@@ -20,29 +19,36 @@ import { Rarity } from "../../types/enums"
 import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 import { AssetViewContainer } from "./assetView"
+import useWS from "../../hooks/useWS"
+import useCommands from "../../containers/useCommands"
 
 export const ProfilePage: React.FC = () => {
+	const { user, loading } = useAuth()
+
+	if (loading || !user) {
+		return null
+	}
+
+	return <ProfilePageInner loggedInUser={user} />
+}
+
+const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) => {
 	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
 	const history = useHistory()
-	const { state, send } = useWebsocket()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
+	const { send, state } = useCommands()
+
 	// User
-	const { user: loggedInUser, loading: authLoading } = useAuth()
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
-		if (authLoading) {
-			setLoadingText("Loading. Please wait...")
-			return
-		}
 		let userTimeout: NodeJS.Timeout
 		;(async () => {
 			if (username) {
 				try {
-					if (state !== SocketState.OPEN) return
 					const resp = await send<User>(HubKey.UserGet, {
 						username,
 					})
@@ -66,7 +72,7 @@ export const ProfilePage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [loggedInUser, state, history, send, username, authLoading])
+	}, [loggedInUser, history, send, username])
 
 	if (error) {
 		return <Box>{error}</Box>

@@ -209,6 +209,5 @@ const UseWebsocket = (): WebSocketProperties => {
 
 const WebsocketContainer = createContainer(UseWebsocket)
 export const SocketProvider = WebsocketContainer.Provider
-export const useWebsocket = WebsocketContainer.useContainer
 
 export default WebsocketContainer

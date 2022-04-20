@@ -1,10 +1,10 @@
 import { Alert, Box, Button, IconButton, Paper, TextField, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import QRCode from "react-qr-code"
-import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
+import useCommands from "../../containers/useCommands"
 
 interface TFASecret {
 	secret: string
@@ -13,7 +13,7 @@ interface TFASecret {
 
 // TODO: fix 2fa stuff
 export const TwoFactorAuthenticationSetup = () => {
-	const { send } = useWebsocket()
+	const { send } = useCommands()
 	const [tfaSecret, setTFASecret] = useState<TFASecret>()
 	const [showSecretCode, setShowSecretCode] = useState(false)
 	const [passcode, setPasscode] = useState("")

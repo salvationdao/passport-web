@@ -4,7 +4,10 @@ import {
 	Box,
 	Collapse,
 	Link,
+	MenuItem,
+	Pagination,
 	Paper,
+	Select,
 	styled,
 	SwipeableDrawer,
 	Tab,
@@ -13,9 +16,6 @@ import {
 	tabsClasses,
 	Typography,
 	useMediaQuery,
-	Pagination,
-	Select,
-	MenuItem,
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
@@ -27,7 +27,6 @@ import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
@@ -35,11 +34,12 @@ import { Collection } from "../../types/types"
 import { FilterChip, SortChip } from "../profile/profile"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
+import useCommands from "../../containers/useCommands"
 
 export const StorePage: React.FC = () => {
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
-	const { subscribe, state } = useWebsocket()
+	const { state, send } = useCommands()
 	const { user } = useAuth()
 
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
@@ -77,18 +77,13 @@ export const StorePage: React.FC = () => {
 	}
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_slug) return
-		return subscribe<Collection>(
-			HubKey.CollectionUpdated,
-			(payload) => {
-				if (!payload) return
-				setCollection(payload)
-			},
-			{
-				slug: collection_slug,
-			},
-		)
-	}, [collection_slug, subscribe, state])
+		if (state() !== WebSocket.OPEN || !collection_slug) return
+		send<Collection>(HubKey.CollectionUpdated, {
+			slug: collection_slug,
+		}).then((collection) => {
+			setCollection(collection)
+		})
+	}, [collection_slug, state])
 
 	useEffect(() => {
 		if (user) {
@@ -102,7 +97,6 @@ export const StorePage: React.FC = () => {
 	}, [userLoad, user])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection) return
 		const filtersItems: any[] = []
 
 		if (collection && collection.id) {

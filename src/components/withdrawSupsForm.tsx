@@ -13,13 +13,14 @@ import { SocketState, WSSendFn } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import { AddressDisplay, metamaskErrorHandling } from "../helpers/web3"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
+import useSubscription from "../hooks/useSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { transferStateType, User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ConnectWalletOverlay } from "./transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "./transferStatesOverlay/switchNetworkOverlay"
+import { useAuth } from "../containers/auth"
 
 interface WithdrawSupsFormProps {
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
@@ -62,7 +63,8 @@ export const WithdrawSupsForm = ({
 }: WithdrawSupsFormProps) => {
 	const { account, metaMaskState, supBalance, provider, signer, changeChain, currentChainId } = useWeb3()
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
-	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
+	const { userId } = useAuth()
+	const userSups = useSubscription<string>(`/user/${userId}/sups`, HubKey.UserSupsSubscribe)
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsWalletTotal, setSupsWalletTotal] = useState<BigNumber>()

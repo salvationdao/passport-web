@@ -11,7 +11,6 @@ import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/swi
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
 import HubKey from "../../keys"
@@ -19,6 +18,7 @@ import { colors } from "../../theme"
 import { DepositTransaction, transferStateType } from "../../types/types"
 import { DesktopDepositTransactionTable } from "./desktopDepositTransactionTable"
 import { MobileDepositTransactionTable } from "./mobileDepositTransactionTable"
+import useCommands from "../../containers/useCommands"
 
 interface CanEnterResponse {
 	can_withdraw: boolean
@@ -40,7 +40,7 @@ export const DepositPage = () => {
 		}
 	}, [])
 	const { user } = useAuth()
-	const { state, send } = useWebsocket()
+	const { state, send } = useCommands()
 	const { account, changeChain, currentChainId } = useWeb3()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -77,7 +77,7 @@ export const DepositPage = () => {
 	}, [send])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send || !user) return
+		if (state() !== WebSocket.OPEN || !send || !user) return
 		fetchDepositTransactions()
 	}, [user, state, send, fetchDepositTransactions])
 

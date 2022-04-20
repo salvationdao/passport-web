@@ -11,6 +11,7 @@ import {
 	DialogContent,
 	DialogTitle,
 	Divider,
+	FormControlLabel,
 	IconButton,
 	Link,
 	Paper,
@@ -18,7 +19,6 @@ import {
 	Switch,
 	Typography,
 	useMediaQuery,
-	FormControlLabel,
 } from "@mui/material"
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
@@ -34,7 +34,6 @@ import { Loading } from "../../components/loading"
 import { SwitchNetworkButton } from "../../components/switchNetwortButton"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
 import { useSnackbar } from "../../containers/snackbar"
-import { useWebsocket } from "../../containers/socket"
 import { MetaMaskState, useWeb3 } from "../../containers/web3"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { metamaskErrorHandling } from "../../helpers/web3"
@@ -45,6 +44,7 @@ import { OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemRes
 import { Attribute, Collection, User } from "../../types/types"
 import { NumberAttribute } from "./numberAttribute"
 import { rarityTextStyles } from "./profile"
+import useCommands from "../../containers/useCommands"
 
 interface AssetViewContainerProps {
 	user: User
@@ -53,7 +53,7 @@ interface AssetViewContainerProps {
 }
 
 export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainerProps) => {
-	const { state, subscribe } = useWebsocket()
+	const { state, send } = useCommands()
 	const [collectionSlug, setCollectionSlug] = useState<string | null>(null)
 	const [collection, setCollection] = useState<Collection | null>(null)
 	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem | null>(null)
@@ -62,40 +62,35 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
 	const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
 	const [itemHost, setItemHost] = useState<string>()
-	// const [itemType, setItemType] = useState<string>()
 	const [itemModel, setItemModel] = useState<string>()
 
 	useEffect(() => {
 		if (!collectionSlug) return
-		subscribe<Collection>(
-			HubKey.CollectionUpdated,
-			(payload) => {
-				setCollection(payload)
-			},
-			{ slug: collectionSlug },
-		)
-	}, [collectionSlug, subscribe])
+		send<Collection>(HubKey.CollectionUpdated, {
+			slug: collectionSlug,
+		}).then((collection) => {
+			setCollection(collection)
+		})
+	}, [collectionSlug])
 
 	useEffect(() => {
 		setLoading(true)
 		try {
-			return subscribe<PurchasedItemResponse>(
-				HubKey.AssetUpdated,
-				async (payload) => {
-					if (!payload) return
-					setPurchasedItem(payload.purchased_item)
-					setOwnerUsername(payload.owner_username)
-					setItemHost(payload.host_url)
-					setCollectionSlug(payload.collection_slug)
-				},
-				{ asset_hash: assetHash },
-			)
+			send<PurchasedItemResponse>(HubKey.AssetUpdated, {
+				asset_hash: assetHash,
+			}).then((payload) => {
+				if (!payload) return
+				setPurchasedItem(payload.purchased_item)
+				setOwnerUsername(payload.owner_username)
+				setItemHost(payload.host_url)
+				setCollectionSlug(payload.collection_slug)
+			})
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
 		} finally {
 			setLoading(false)
 		}
-	}, [state, assetHash, subscribe])
+	}, [assetHash])
 
 	// set attributes
 	useEffect(() => {
@@ -653,7 +648,7 @@ const StyledDisabledButton = styled(({ navigate, ...props }: ButtonProps & { nav
 
 const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: PurchasedItem; userID: string }) => {
 	const { open, onClose, asset, userID } = props
-	const { send } = useWebsocket()
+	const { send } = useCommands()
 	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
 	const [loading, setLoading] = useState(false)
@@ -1048,7 +1043,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				if (!provider) return
 				setLoadingMint(true)
 				// get nonce from mint contract
-				// send nonce, amount and user wallet addr to server
+				// sen nonce, amount and user wallet addr to server
 				// server validates they have enough sups
 				// server generates a sig and returns it
 				// submit that sig to mint contract mintSups func

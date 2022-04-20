@@ -21,19 +21,21 @@ import LootboxVideo from "../../components/lootboxVideo"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
-import { SocketState, useWebsocket } from "../../containers/socket"
+import { SocketState } from "../../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Faction, Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
+import useCommands from "../../containers/useCommands"
+import useWS from "../../hooks/useWS"
 
 export const LootBoxPage = () => {
-	const { subscribe } = useWebsocket()
+	const { subscribe } = useWS({ URI: "/lootboxes" })
 	const [loading, setLoading] = useState(false)
 	const [asset, setAsset] = useState<PurchasedItem | null>(null)
-	const { state, send } = useWebsocket()
+	const { state, send } = useCommands()
 	const { user } = useAuth()
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
@@ -73,28 +75,18 @@ export const LootBoxPage = () => {
 	}, [user])
 
 	const purchase = async () => {
-		if (state !== SocketState.OPEN || !user) return
+		if (state() !== WebSocket.OPEN || !user) return
 
 		setLoading(true)
 		try {
-			const resp = await send(HubKey.StoreLootBox, {
+			const resp = await send<PurchasedItemResponse>(HubKey.StoreLootBox, {
 				faction_id: user.faction_id,
 			})
 
-			return subscribe<PurchasedItemResponse>(
-				HubKey.AssetUpdated,
-				(payload) => {
-					if (!payload) {
-						setError("Something went wrong while purchasing the item. Please contact support if this problem persists.")
-						return
-					}
-					setError(undefined)
-					setAsset(payload.purchased_item)
-					setSidebarOpen(false)
-					setOpen(true)
-				},
-				{ asset_hash: resp },
-			)
+			setError(undefined)
+			setAsset(resp.purchased_item)
+			setSidebarOpen(false)
+			setOpen(true)
 		} catch (e) {
 			if (typeof e === "string") {
 				setError(e)

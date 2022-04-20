@@ -1,9 +1,8 @@
 import ArrowRightAltSharpIcon from "@mui/icons-material/ArrowRightAltSharp"
 import { Box, Fade, IconButton, Popover, Stack, Typography, useMediaQuery } from "@mui/material"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { SupTokenIconPath } from "../../assets"
 import { useSnackbar } from "../../containers/snackbar"
-import { useWebsocket } from "../../containers/socket"
 import useSubscription from "../../hooks/useSubscription"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
@@ -11,6 +10,8 @@ import { DetailedFaction, Faction } from "../../types/types"
 import { ClipThing } from "./clipThing"
 import { FancyButton } from "./fancyButton"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
+import useCommands from "../../containers/useCommands"
+import { User } from "@sentry/react"
 
 interface StatProps {
 	title: string
@@ -45,17 +46,23 @@ interface PopoverContentProps {
 }
 
 const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ factionData, onClose }) => {
-	const factionDataMore = useSubscription<DetailedFaction>(HubKey.SubscribeFactionStat, { faction_id: factionData.id }).payload
+	const [factionDataMore, setFactionDataMore] = useState<DetailedFaction>()
+
+	useEffect(() => {
+		send<DetailedFaction>(HubKey.SubscribeFactionStat, { faction_id: factionData.id }).then((payload) => {
+			setFactionDataMore(payload)
+		})
+	}, [factionData.id])
 
 	const [page, setPage] = useState(0)
-	const { send, state } = useWebsocket()
+	const { send, state } = useCommands()
 	const { displayMessage } = useSnackbar()
 
 	// Media queries
 	const below780 = useMediaQuery("(max-width:780px)")
 
 	const enlistFaction = useCallback(async () => {
-		if (state !== WebSocket.OPEN) return
+		if (state() !== WebSocket.OPEN) return
 		onClose()
 		try {
 			await send<any, EnlistFactionRequest>(HubKey.FactionEnlist, { faction_id: factionData.id })

@@ -1,4 +1,5 @@
 import { User } from "./types"
+import { QueryResponse } from "react-fetching-library"
 
 export interface Fingerprint {
 	visitor_id: string
@@ -66,6 +67,14 @@ export interface GoogleSignUpRequest {
 	fingerprint?: Fingerprint
 }
 
+export interface SocialLoginRequest {
+	token: string
+	session_id?: string
+	username?: string
+	service: string
+	fingerprint?: Fingerprint
+}
+
 export interface GoogleLoginRequest {
 	token: string
 	session_id?: string
@@ -78,6 +87,39 @@ export interface FacebookSignUpRequest {
 	session_id?: string
 	fingerprint?: Fingerprint
 }
+
+export type LoginRequest =
+	| PasswordLoginRequest
+	| TokenLoginRequest
+	| WalletLoginRequest
+	| GoogleLoginRequest
+	| FacebookLoginRequest
+	| TwitchLoginRequest
+	| TwitterLoginRequest
+	| DiscordLoginRequest
+	| SocialLoginRequest
+export type SignUpRequest =
+	| WalletSignUpRequest
+	| GoogleSignUpRequest
+	| FacebookSignUpRequest
+	| TwitchSignUpRequest
+	| TwitterSignUpRequest
+	| DiscordSignUpRequest
+	| SocialSignupRequest
+
+export interface SocialProps {
+	login: LoginFunc
+	signup: SignupFunc
+	fingerprint?: Fingerprint
+	sessionId: string
+	setUser: (user?: User) => void
+	setToken: (token: string) => void
+	clear: () => void
+	setAuthorised: (authorized: boolean) => void
+}
+
+export type LoginFunc = (action: LoginRequest) => Promise<QueryResponse<PasswordLoginResponse>>
+export type SignupFunc = (action: SignUpRequest) => Promise<QueryResponse<RegisterResponse>>
 
 export interface FacebookLoginRequest {
 	token: string
@@ -121,6 +163,15 @@ export interface DiscordSignUpRequest {
 	session_id?: string
 	redirect_uri: string
 	fingerprint?: Fingerprint
+}
+
+export interface SocialSignupRequest {
+	code: string
+	username?: string
+	session_id?: string
+	redirect_uri: string
+	fingerprint?: Fingerprint
+	service: string
 }
 
 export interface DiscordLoginRequest {
