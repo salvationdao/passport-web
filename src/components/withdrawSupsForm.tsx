@@ -279,14 +279,6 @@ export const WithdrawSupsForm = ({
 						alignItems: "center",
 					}}
 				>
-					<Box sx={{ display: "flex", alignSelf: "flex-end", margin: ".5rem 0" }}>
-						<Typography variant="h4" noWrap sx={{ fontWeight: "bold", marginRight: "1rem" }}>
-							Available Withdraw Pool:
-						</Typography>
-						<Typography variant="h4" sx={{ color: colors.darkNeonPink }}>
-							{supFormatter(withdrawContractAmount?.toString() || "0")}
-						</Typography>
-					</Box>
 					{!isInfinite && (
 						<>
 							<Box sx={{ display: "flex", alignSelf: "flex-end", margin: ".5rem 0" }}>

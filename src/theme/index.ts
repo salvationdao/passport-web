@@ -52,6 +52,7 @@ export const colors = {
 	darkerNavyBackground: "rgb(5, 12, 18,0.95)",
 	black2: "#050C12",
 	black2Background: "rgb(5, 12, 18,0.7)",
+	formBg: "#1a182f",
 	inputBg: "#211E33",
 	gold: "#ffc400",
 	neonBlue: "#00FFFF",
