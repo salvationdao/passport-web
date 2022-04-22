@@ -102,7 +102,7 @@ export const WithdrawPage = () => {
 							setLoading={setLoading}
 							user={user}
 							send={send}
-							state={state()}
+							state={state}
 						/>
 					</Box>
 				</Paper>

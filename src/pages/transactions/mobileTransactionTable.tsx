@@ -39,7 +39,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !user) return
+		if (state !== WebSocket.OPEN || !user) return
 
 		try {
 			send<Transaction>(HubKey.TransactionSubscribe, { transaction_id: transactionID }).then((payload) => {

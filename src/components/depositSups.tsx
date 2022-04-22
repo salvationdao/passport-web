@@ -82,7 +82,7 @@ export const DepositSups = ({
 
 		try {
 			setCurrentTransferState("waiting")
-			if (state() !== WebSocket.OPEN) return
+			if (state !== WebSocket.OPEN) return
 			const tx = await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, bigNumDepositAmt)
 			setCurrentTransferHash(tx.hash)
 			setCurrentTransferState("confirm")
@@ -262,7 +262,7 @@ export const DepositSups = ({
 					</Box>
 				</Box>
 				<FancyButton
-					loading={state() !== WebSocket.OPEN || !send}
+					loading={state !== WebSocket.OPEN || !send}
 					disabled={!depositAmount || !supBalance || depositAmount.gt(supBalance) || currentTransferState !== "none" || immediateError !== undefined}
 					borderColor={colors.skyBlue}
 					sx={{ marginTop: "1.5rem", width: "50%" }}

@@ -37,7 +37,6 @@ const useSignup = () => {
 				}
 				localStorage.setItem("auth-token", resp.payload.token)
 			} catch (e) {
-				localStorage.clear()
 				throw typeof e === "string" ? e : "Issue signing up with Metamask, try again or contact support."
 			}
 			return undefined

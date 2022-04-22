@@ -154,7 +154,7 @@ export const Routes = () => {
 						</Route>
 						<Sidebar onClose={() => setSidebarOpen(false)}>
 							<Route exact path="/">
-								<LoginPage />
+								<Home />
 							</Route>
 							<Route exact path="/login">
 								<LoginPage />

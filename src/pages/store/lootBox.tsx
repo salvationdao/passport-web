@@ -29,7 +29,7 @@ import { Faction, Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
 import useCommands from "../../containers/useCommands"
-import useWS from "../../hooks/useWS"
+import useWS from "../../containers/useWS"
 
 export const LootBoxPage = () => {
 	const { subscribe } = useWS({ URI: "/lootboxes" })
@@ -75,7 +75,7 @@ export const LootBoxPage = () => {
 	}, [user])
 
 	const purchase = async () => {
-		if (state() !== WebSocket.OPEN || !user) return
+		if (state !== WebSocket.OPEN || !user) return
 
 		setLoading(true)
 		try {

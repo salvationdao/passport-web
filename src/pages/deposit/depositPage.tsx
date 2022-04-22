@@ -77,7 +77,7 @@ export const DepositPage = () => {
 	}, [send])
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !send || !user) return
+		if (state !== WebSocket.OPEN || !send || !user) return
 		fetchDepositTransactions()
 	}, [user, state, send, fetchDepositTransactions])
 

@@ -19,7 +19,7 @@ import { Rarity } from "../../types/enums"
 import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 import { AssetViewContainer } from "./assetView"
-import useWS from "../../hooks/useWS"
+import useWS from "../../containers/useWS"
 import useCommands from "../../containers/useCommands"
 
 export const ProfilePage: React.FC = () => {

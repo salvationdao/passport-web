@@ -62,15 +62,16 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 	const below780 = useMediaQuery("(max-width:780px)")
 
 	const enlistFaction = useCallback(async () => {
-		if (state() !== WebSocket.OPEN) return
-		onClose()
+		console.log(state, "state")
+		if (state !== WebSocket.OPEN) return
 		try {
 			await send<any, EnlistFactionRequest>(HubKey.FactionEnlist, { faction_id: factionData.id })
+			console.log("did the thing")
+			onClose()
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		}
 	}, [send, state, factionData, onClose, displayMessage])
-
 	const factionStatDisplay = () => {
 		if (!factionDataMore) return null
 		const { velocity, recruit_number, win_count, loss_count, kill_count, death_count, mvp } = factionDataMore

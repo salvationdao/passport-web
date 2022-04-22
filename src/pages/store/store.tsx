@@ -77,7 +77,7 @@ export const StorePage: React.FC = () => {
 	}
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !collection_slug) return
+		if (state !== WebSocket.OPEN || !collection_slug) return
 		send<Collection>(HubKey.CollectionUpdated, {
 			slug: collection_slug,
 		}).then((collection) => {

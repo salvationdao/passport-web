@@ -39,7 +39,7 @@ export const StoresPage = () => {
 	}, [userLoad, user])
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !send) return
+		if (state !== WebSocket.OPEN || !send) return
 		;(async () => {
 			setLoading(true)
 			try {
@@ -162,7 +162,7 @@ const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ co
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !send || !faction) return
+		if (state !== WebSocket.OPEN || !send || !faction) return
 		;(async () => {
 			setLoading(true)
 			try {

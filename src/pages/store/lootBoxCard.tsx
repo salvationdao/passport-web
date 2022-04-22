@@ -39,7 +39,7 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 	}, [user])
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !user) return
+		if (state !== WebSocket.OPEN || !user) return
 		;(async () => {
 			try {
 				const resp = await send<number>(HubKey.StoreLootBoxAmount, {

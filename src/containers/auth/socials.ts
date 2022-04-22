@@ -48,7 +48,6 @@ const useSocialConnect = ({ setUser, setToken, fingerprint, login, signup, clear
 				localStorage.setItem("auth-token", resp.payload.token)
 				setAuthorised(true)
 			} catch (e) {
-				localStorage.clear()
 				setUser(undefined)
 				throw typeof e === "string" ? e : "Issue signing up with Social, try again or contact support."
 			}
@@ -82,7 +81,6 @@ const useSocialConnect = ({ setUser, setToken, fingerprint, login, signup, clear
 
 				return resp
 			} catch (e) {
-				localStorage.clear()
 				setUser(undefined)
 				throw typeof e === "string" ? e : "Issue logging in with Social, try again or contact support."
 			}

@@ -2,7 +2,15 @@ import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
-import { PasswordLoginRequest, PasswordLoginResponse, TokenLoginRequest, TokenLoginResponse, VerifyAccountResponse, WalletLoginRequest } from "../../types/auth"
+import {
+	LoginRequest,
+	PasswordLoginRequest,
+	PasswordLoginResponse,
+	TokenLoginRequest,
+	TokenLoginResponse,
+	VerifyAccountResponse,
+	WalletLoginRequest,
+} from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
@@ -23,14 +31,12 @@ const logoutAction = (formValues: { token: string; session_id: string }): Action
 	body: formValues,
 })
 
-const loginAction =
-	(authType: string) =>
-	(formValues: WalletLoginRequest | PasswordLoginRequest | TokenLoginRequest): Action<PasswordLoginResponse> => ({
-		method: "POST",
-		endpoint: `/auth/${authType}`,
-		responseType: "json",
-		body: formValues,
-	})
+const loginAction = (formValues: LoginRequest & { authType: string }): Action<PasswordLoginResponse> => ({
+	method: "POST",
+	endpoint: `/auth/${formValues.authType}`,
+	responseType: "json",
+	body: formValues,
+})
 
 /**
  * A Container that handles Authorisation
@@ -48,13 +54,22 @@ export const AuthContainer = createContainer(() => {
 
 	const [authType, setAuthType] = useState<string>("wallet")
 
-	const [token, setToken, unsetToken] = useLocalStorage("auth-token")
 	const [recheckAuth, setRecheckAuth] = useState(!!localStorage.getItem("auth-token"))
 	const [authorised, setAuthorised] = useState(false)
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const [showSimulation, setShowSimulation] = useState(false)
+
+	const [token, _setToken] = useState<string>(localStorage.getItem("token") || "")
+
+	const setToken = useCallback(
+		(token: string) => {
+			localStorage.setItem("token", token)
+			_setToken(token)
+		},
+		[_setToken],
+	)
 
 	const { signUpMetamask, setSignupType, signupType } = useSignup()
 
@@ -65,12 +80,13 @@ export const AuthContainer = createContainer(() => {
 	const isLogoutPage = window.location.pathname.startsWith("/nosidebar/logout")
 
 	const clear = () => {
-		localStorage.clear()
+		console.info("clearing local storage")
+		console.trace()
+		//localStorage.clear()
 		setUser(undefined)
-		unsetToken()
 	}
 
-	const { loading: loginLoading, payload: loginPayload, mutate: login, error: loginError } = useMutation(loginAction(authType))
+	const { loading: loginLoading, payload: loginPayload, mutate: login, error: loginError } = useMutation(loginAction)
 	const { mutate: logoutMutation } = useMutation(logoutAction)
 
 	/////////////////
@@ -85,6 +101,7 @@ export const AuthContainer = createContainer(() => {
 			const token = localStorage.getItem("auth-token")
 			if (!token) return
 			await logoutMutation({ token: token, session_id: sessionId })
+			alert("logout")
 			localStorage.removeItem("auth-token")
 			setRecheckAuth(false)
 
@@ -116,6 +133,7 @@ export const AuthContainer = createContainer(() => {
 					password,
 					session_id: sessionId,
 					fingerprint,
+					authType,
 				})
 				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
 					clear()
@@ -147,15 +165,17 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					twitch_extension_jwt: searchParams.get("twitchExtensionJWT"),
 					fingerprint,
+					authType: "token",
 				})
 				if (!resp || !resp.payload || !resp.payload.user) {
+					console.log(resp)
 					clear()
 					return
 				}
 				setUser(resp.payload.user)
 				setAuthorised(true)
 			} catch (e) {
-				localStorage.clear()
+				clear()
 				setUser(undefined)
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			} finally {
@@ -175,12 +195,15 @@ export const AuthContainer = createContainer(() => {
 			const acc = await connect()
 			const signature = await sign()
 			if (acc) {
+				console.log("account", acc, "ACCOUNT")
 				const resp: QueryResponse<PasswordLoginResponse> = await login({
 					public_address: acc,
 					signature: signature,
 					session_id: sessionId,
 					fingerprint,
+					authType,
 				})
+
 				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
 					clear()
 					return
@@ -193,7 +216,8 @@ export const AuthContainer = createContainer(() => {
 				return resp
 			}
 		} catch (e: any) {
-			localStorage.clear()
+			console.error(e)
+			clear()
 			setUser(undefined)
 			//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
 			const err = metamaskErrorHandling(e)
@@ -211,7 +235,6 @@ export const AuthContainer = createContainer(() => {
 	const loginWalletConnect = useCallback(async () => {
 		try {
 			if (!wcSignature) {
-				localStorage.clear()
 				await signWalletConnect()
 			} else {
 				const resp: QueryResponse<PasswordLoginResponse> = await login({
@@ -219,6 +242,7 @@ export const AuthContainer = createContainer(() => {
 					signature: wcSignature || "",
 					session_id: sessionId,
 					fingerprint,
+					authType,
 				})
 				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
 					clear()
@@ -231,7 +255,7 @@ export const AuthContainer = createContainer(() => {
 				return resp
 			}
 		} catch (e) {
-			localStorage.clear()
+			clear()
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
@@ -287,12 +311,11 @@ export const AuthContainer = createContainer(() => {
 	// Effect: Login with saved login token when websocket is ready
 	useEffect(() => {
 		const token = localStorage.getItem("auth-token")
-		if (token && token !== "") {
+		if (token && token !== "" && !user) {
+			console.log("logging in!")
 			loginToken(token)
-		} else if (loading) {
-			setLoading(false)
 		}
-	}, [loading, user, loginToken])
+	}, [loginToken])
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {

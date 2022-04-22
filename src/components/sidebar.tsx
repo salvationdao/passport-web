@@ -67,6 +67,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	useEffect(() => {
 		if (userSups) {
+			console.log(userSups, "user sups")
 			setXsynSups(BigNumber.from(userSups))
 		}
 	}, [userSups])
@@ -90,7 +91,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN) return
+		if (state !== WebSocket.OPEN) return
 		setError(null)
 		send<Faction[]>(HubKey.GetFactionsDetail)
 			.then((data) => setFactionsData(data))
@@ -602,7 +603,7 @@ interface FactionAvailable {
 }
 
 const FactionWarMachineRemain = () => {
-	const factionAvailables = useSubscription<FactionAvailable[]>("/items/availability", "AVAILABLE:ITEM:AMOUNT")
+	const factionAvailables = useSubscription<FactionAvailable[]>("/store/availability", "AVAILABLE:ITEM:AMOUNT")
 
 	return (
 		<Stack spacing={1}>

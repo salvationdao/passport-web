@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import HubKey from "../keys"
-import useWS from "./useWS"
+import useWS from "../containers/useWS"
 
 /** Subscribe to a hub key
  * @param args optional arguments; if set will send a ":SUBSCRIBE" (and ":UNSUBSCRIBE") message to tell server we're listening

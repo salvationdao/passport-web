@@ -1,6 +1,5 @@
-import { API_ENDPOINT_HOSTNAME } from "../config"
-import useWS, { WSWindow } from "../hooks/useWS"
-import { useEffect, useRef } from "react"
+import useWS, { pool } from "./useWS"
+import { useEffect, useRef, useState } from "react"
 import { makeid } from "./socket"
 import { Message } from "../types/types"
 import { useAuth } from "./auth"
@@ -16,18 +15,12 @@ type Callback<T = any> = (data: T) => void
 
 const useCommands = (host?: string) => {
 	const { user } = useAuth()
+	const [backlog, setBacklog] = useState<string[]>([])
 
-	const { message, state, establish } = useWS({ URI: `/cmd/${user ? user.id : "not-ready"}`, ready: !!user && !!user.id, host })
+	const { message, state, establish, key } = useWS({ URI: `/commander/${user ? user.id : "not-ready"}/commands`, ready: !!user && !!user.id, host })
 	const callbacks = useRef<{ [key: string]: Callback }>({})
 
-	const win: WSWindow = window
-	const key = `${host}/api/ws/cmd/${user && user.id}`
-	const webSocket = useRef<WebSocket | undefined>(win.ws && win.ws[key].socket)
-
 	useEffect(() => {
-		if (win.ws && !win.ws[key] && win.ws[key].socket && !webSocket.current) {
-			webSocket.current = win.ws[key].socket
-		}
 		if (!message || !message.transactionId) return
 		if (message.transactionId) {
 			const { [message.transactionId]: cb, ...withoutCb } = callbacks.current
@@ -37,6 +30,19 @@ const useCommands = (host?: string) => {
 			}
 		}
 	}, [message])
+
+	useEffect(() => {
+		if (backlog.length === 0 || !pool[key] || !pool[key].socket) return
+		if (pool[key].socket.readyState === WebSocket.OPEN) {
+			setBacklog((b) => {
+				b.forEach((s) => {
+					const socket = pool[key].socket
+					socket.send(s)
+				})
+				return []
+			})
+		}
+	}, [key, state, backlog])
 
 	const send = useRef<SendFunc>(function send<Y = any, X = any>(key: string, payload?: X): Promise<Y> {
 		const transactionId = makeid()
@@ -50,20 +56,21 @@ const useCommands = (host?: string) => {
 				const result = (data as Message<Y>).payload
 				resolve(result)
 			}
-
-			if (!win.ws || !win.ws[key] || !win.ws[key].socket) throw new Error("no websocket connection present")
-			if (!webSocket.current) {
-				webSocket.current = win.ws[key].socket
+			const s = JSON.stringify({
+				key,
+				payload,
+				transactionId,
+			})
+			if (!pool[key] || !pool[key].socket || pool[key].socket.readyState !== WebSocket.OPEN) {
+				setBacklog((b) => {
+					return [...b, s]
+				})
+				return
 			}
 
-			if (webSocket.current)
-				webSocket.current.send(
-					JSON.stringify({
-						key,
-						payload,
-						transactionId,
-					}),
-				)
+			const socket = pool[key].socket
+			if (!pool[key] || !pool[key].socket) throw new Error("no websocket connection present")
+			socket.send(s)
 		})
 	})
 

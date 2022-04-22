@@ -45,7 +45,7 @@ export const TransactionsPage = () => {
 	const [transactionGroups, setTransactionGroups] = useState<{ [key: string]: string[] }>({})
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !send || !user) return
+		if (state !== WebSocket.OPEN || !send || !user) return
 		;(async () => {
 			setLoading(true)
 			try {
@@ -119,7 +119,7 @@ export const TransactionsPage = () => {
 	}, [send, state, search, user, currentPage, pageSize, sort, selectedGroup, selectedSubGroup])
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !send || !user) return
+		if (state !== WebSocket.OPEN || !send || !user) return
 		;(async () => {
 			setLoading(true)
 			try {

@@ -17,22 +17,22 @@ export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
 	const [countdown, setCountdown] = useState(MAX_COUNTDOWN_SECONDS)
 
 	useEffect(() => {
-		if (state() === WebSocket.CLOSED && !lostConnection && !init) {
+		if (state === WebSocket.CLOSED && !lostConnection && !init) {
 			setLostConnection(true)
-		} else if (state() === WebSocket.OPEN) {
+		} else if (state === WebSocket.OPEN) {
 			setReconnectAttempts(MAX_RECONNECT_ATTEMPTS)
 			setLostConnection(false)
-		} else if (state() === WebSocket.CONNECTING && !init) {
+		} else if (state === WebSocket.CONNECTING && !init) {
 			setInit(true)
 		}
-		if (state() === WebSocket.CLOSED && countdown === 0 && reconnectAttempts > 0) {
+		if (state === WebSocket.CLOSED && countdown === 0 && reconnectAttempts > 0) {
 			setCountdown(MAX_COUNTDOWN_SECONDS)
 			setReconnectAttempts((prev) => prev - 1)
 		}
 	}, [state, init, lostConnection, reconnectAttempts, countdown])
 
 	useEffect(() => {
-		if (state() !== WebSocket.CLOSED || reconnectAttempts === 0) {
+		if (state !== WebSocket.CLOSED || reconnectAttempts === 0) {
 			return
 		}
 		if (countdown === 0) {
@@ -49,7 +49,7 @@ export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
 	}, [state, countdown, reconnectAttempts, establish])
 
 	let snackbarSeverity: AlertColor = "warning"
-	if (state() === WebSocket.CLOSED && reconnectAttempts === 0) {
+	if (state === WebSocket.CLOSED && reconnectAttempts === 0) {
 		snackbarSeverity = "error"
 	}
 
@@ -65,10 +65,10 @@ export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
 			  }
 
 	return (
-		<Snackbar anchorOrigin={anchorOrigin} open={lostConnection && [WebSocket.CLOSED, WebSocket.CONNECTING].includes(state())}>
+		<Snackbar anchorOrigin={anchorOrigin} open={lostConnection && [WebSocket.CLOSED, WebSocket.CONNECTING].includes(state)}>
 			<Alert severity={snackbarSeverity}>
-				{state() === WebSocket.CLOSED && reconnectAttempts > 0 && `Lost connection to server, reconnecting in ${countdown} seconds.`}
-				{state() === WebSocket.CLOSED && reconnectAttempts === 0 && (
+				{state === WebSocket.CLOSED && reconnectAttempts > 0 && `Lost connection to server, reconnecting in ${countdown} seconds.`}
+				{state === WebSocket.CLOSED && reconnectAttempts === 0 && (
 					<Typography variant={"body2"}>
 						{"Failed to connect to the server, "}
 						<Link component={"button"} variant={"body2"} title={"Click to Reconnect"} onClick={establish}>
@@ -77,7 +77,7 @@ export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
 						{" to reconnect."}
 					</Typography>
 				)}
-				{state() === WebSocket.CONNECTING && `Re-connecting...`}
+				{state === WebSocket.CONNECTING && `Re-connecting...`}
 			</Alert>
 		</Snackbar>
 	)

@@ -41,7 +41,7 @@ export const StoreItemPage = () => {
 	// Purchase store item
 	const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !collection_slug) return
+		if (state !== WebSocket.OPEN || !collection_slug) return
 		send<Collection>(HubKey.CollectionUpdated, {
 			slug: collection_slug,
 		}).then((collection) => {
@@ -653,7 +653,7 @@ const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; sto
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	const purchase = useCallback(async () => {
-		if (state() !== WebSocket.OPEN) return
+		if (state !== WebSocket.OPEN) return
 		setLoading(true)
 		try {
 			await send(HubKey.StorePurchase, {

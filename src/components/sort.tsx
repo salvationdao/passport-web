@@ -120,7 +120,7 @@ export const Sort = ({
 	}
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN || !send) return
+		if (state !== WebSocket.OPEN || !send) return
 		;(async () => {
 			try {
 				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
@@ -159,7 +159,7 @@ export const Sort = ({
 	}, [alphabetical, aquisitionDir])
 
 	useEffect(() => {
-		if (state() !== WebSocket.OPEN) return
+		if (state !== WebSocket.OPEN) return
 
 		const filtersItems: any[] = [
 			// filter by user id
