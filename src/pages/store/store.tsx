@@ -26,7 +26,6 @@ import { Navbar } from "../../components/home/navbar"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
-import { useAuth } from "../../containers/auth"
 import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
@@ -34,13 +33,14 @@ import { Collection } from "../../types/types"
 import { FilterChip, SortChip } from "../profile/profile"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const StorePage: React.FC = () => {
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
 	const { state, send } = useCommands()
-	const { user } = useAuth()
+	const user = useUser()
 
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [collection, setCollection] = useState<Collection>()
@@ -261,7 +261,12 @@ export const StorePage: React.FC = () => {
 						gap: ".5rem",
 					}}
 				>
-					<FilterChip active={rarities.has("Colossal")} label="Colossal" color={colors.rarity.COLOSSAL} onClick={() => toggleRarity("Colossal")} />
+					<FilterChip
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.COLOSSAL}
+						onClick={() => toggleRarity("Colossal")}
+					/>
 					<FilterChip
 						active={rarities.has("Legendary")}
 						label="Legendary"
@@ -281,9 +286,19 @@ export const StorePage: React.FC = () => {
 						onClick={() => toggleRarity("Ultra Rare")}
 					/>
 					<FilterChip active={rarities.has("Exotic")} label="Exotic" color={colors.rarity.EXOTIC} onClick={() => toggleRarity("Exotic")} />
-					<FilterChip active={rarities.has("Guardian")} label="Guardian" color={colors.rarity.GUARDIAN} onClick={() => toggleRarity("Guardian")} />
+					<FilterChip
+						active={rarities.has("Guardian")}
+						label="Guardian"
+						color={colors.rarity.GUARDIAN}
+						onClick={() => toggleRarity("Guardian")}
+					/>
 					<FilterChip active={rarities.has("Mythic")} label="Mythic" color={colors.rarity.MYTHIC} onClick={() => toggleRarity("Mythic")} />
-					<FilterChip active={rarities.has("Deus ex")} label="Deus ex" color={colors.rarity.DEUS_EX} onClick={() => toggleRarity("Deus ex")} />
+					<FilterChip
+						active={rarities.has("Deus ex")}
+						label="Deus ex"
+						color={colors.rarity.DEUS_EX}
+						onClick={() => toggleRarity("Deus ex")}
+					/>
 					<FilterChip active={rarities.has("Titan")} label="Titan" color={colors.rarity.TITAN} onClick={() => toggleRarity("Titan")} />
 				</Box>
 			</Box>
@@ -520,7 +535,11 @@ export const StorePage: React.FC = () => {
 									}}
 								>
 									<Typography variant="subtitle2" color={colors.darkGrey}>
-										{loading ? "Loading store items..." : error ? "An error occurred while loading store items." : "No results found."}
+										{loading
+											? "Loading store items..."
+											: error
+											? "An error occurred while loading store items."
+											: "No results found."}
 									</Typography>
 								</Paper>
 							)}

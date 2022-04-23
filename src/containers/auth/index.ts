@@ -2,21 +2,12 @@ import { useCallback, useEffect, useState } from "react"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
-import {
-	LoginRequest,
-	PasswordLoginRequest,
-	PasswordLoginResponse,
-	TokenLoginRequest,
-	TokenLoginResponse,
-	VerifyAccountResponse,
-	WalletLoginRequest,
-} from "../../types/auth"
+import { LoginRequest, PasswordLoginResponse, TokenLoginResponse, VerifyAccountResponse } from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 import { Action, QueryResponse, useMutation } from "react-fetching-library"
-import { useLocalStorage } from "react-use"
 import useSignup from "./signup"
 
 export enum VerificationType {
@@ -43,14 +34,16 @@ const loginAction = (formValues: LoginRequest & { authType: string }): Action<Pa
  */
 export const AuthContainer = createContainer(() => {
 	const { fingerprint } = useFingerprint()
-	const { metaMaskState, sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
+	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
 
-	const [user, setUser] = useState<User>()
+	const [user, _setUser] = useState<User>()
 	const [userId, setUserId] = useState<string>("")
 
-	useEffect(() => {
-		if (user) setUserId(user.id)
-	}, [user])
+	const setUser = (user?: User) => {
+		console.log(user, user && user.faction)
+		setUserId(user ? user.id : "")
+		_setUser(user)
+	}
 
 	const [authType, setAuthType] = useState<string>("wallet")
 
@@ -82,7 +75,6 @@ export const AuthContainer = createContainer(() => {
 	const clear = () => {
 		console.info("clearing local storage")
 		console.trace()
-		//localStorage.clear()
 		setUser(undefined)
 	}
 
@@ -277,7 +269,9 @@ export const AuthContainer = createContainer(() => {
 		clear()
 
 		setVerifying(true)
-		const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/verify?token=${token}${forgotPassword ? "&forgot=true" : ""}`)
+		const resp = await fetch(
+			`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/verify?token=${token}${forgotPassword ? "&forgot=true" : ""}`,
+		)
 		const respObj: VerifyAccountResponse = await resp.json()
 		if (resp.status !== 200) {
 			// TODO: get the actual error
@@ -312,7 +306,6 @@ export const AuthContainer = createContainer(() => {
 	useEffect(() => {
 		const token = localStorage.getItem("auth-token")
 		if (token && token !== "" && !user) {
-			console.log("logging in!")
 			loginToken(token)
 		}
 	}, [loginToken])

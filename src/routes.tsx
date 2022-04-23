@@ -34,7 +34,7 @@ import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
-import useCommands from "./containers/useCommands"
+import useCommands from "./containers/ws/useCommands"
 
 export const Routes = () => {
 	const { account } = useWeb3()

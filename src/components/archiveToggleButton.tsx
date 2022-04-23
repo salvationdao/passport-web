@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { Perm } from "../types/enums"
 import { AuthContainer } from "../containers"
 import HubKey from "../keys"
-import useCommands from "../containers/useCommands"
+import useCommands from "../containers/ws/useCommands"
 
 interface Props {
 	/** The name of the object being archived/unarchived; used for dialog text */

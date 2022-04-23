@@ -19,7 +19,7 @@ import {
 import Alert from "@mui/material/Alert"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { SearchBar } from "./searchBar"
-import useCommands from "../containers/useCommands"
+import useCommands from "../containers/ws/useCommands"
 
 const pageSizeDefault = 20
 

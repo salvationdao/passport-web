@@ -18,7 +18,8 @@ import { colors } from "../../theme"
 import { DepositTransaction, transferStateType } from "../../types/types"
 import { DesktopDepositTransactionTable } from "./desktopDepositTransactionTable"
 import { MobileDepositTransactionTable } from "./mobileDepositTransactionTable"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 interface CanEnterResponse {
 	can_withdraw: boolean
@@ -39,7 +40,7 @@ export const DepositPage = () => {
 			console.error(e)
 		}
 	}, [])
-	const { user } = useAuth()
+	const user = useUser()
 	const { state, send } = useCommands()
 	const { account, changeChain, currentChainId } = useWeb3()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")

@@ -13,7 +13,7 @@ import { StoreItem, StoreItemResponse } from "../../types/store_item"
 import { Collection } from "../../types/types"
 import { ViewButton } from "../collections/collectionItemCard"
 import { rarityTextStyles } from "../profile/profile"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
 
 interface StoreItemCardProps {
 	storeItemID: string

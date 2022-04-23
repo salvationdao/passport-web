@@ -2,7 +2,7 @@ import { Alert, Box, Button, Paper, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
 
 export const TwoFactorAuthenticationRecoveryCode = () => {
 	const { send } = useCommands()

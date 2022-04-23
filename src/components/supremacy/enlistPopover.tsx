@@ -1,17 +1,13 @@
-import ArrowRightAltSharpIcon from "@mui/icons-material/ArrowRightAltSharp"
-import { Box, Fade, IconButton, Popover, Stack, Typography, useMediaQuery } from "@mui/material"
-import React, { useCallback, useEffect, useState } from "react"
-import { SupTokenIconPath } from "../../assets"
+import { Box, Fade, Popover, Stack, Typography, useMediaQuery } from "@mui/material"
+import React, { useCallback, useState } from "react"
 import { useSnackbar } from "../../containers/snackbar"
-import useSubscription from "../../hooks/useSubscription"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
-import { DetailedFaction, Faction } from "../../types/types"
+import { Faction } from "../../types/types"
 import { ClipThing } from "./clipThing"
 import { FancyButton } from "./fancyButton"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
-import useCommands from "../../containers/useCommands"
-import { User } from "@sentry/react"
+import useCommands from "../../containers/ws/useCommands"
 
 interface StatProps {
 	title: string
@@ -46,14 +42,6 @@ interface PopoverContentProps {
 }
 
 const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ factionData, onClose }) => {
-	const [factionDataMore, setFactionDataMore] = useState<DetailedFaction>()
-
-	useEffect(() => {
-		send<DetailedFaction>(HubKey.SubscribeFactionStat, { faction_id: factionData.id }).then((payload) => {
-			setFactionDataMore(payload)
-		})
-	}, [factionData.id])
-
 	const [page, setPage] = useState(0)
 	const { send, state } = useCommands()
 	const { displayMessage } = useSnackbar()
@@ -72,36 +60,6 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		}
 	}, [send, state, factionData, onClose, displayMessage])
-	const factionStatDisplay = () => {
-		if (!factionDataMore) return null
-		const { velocity, recruit_number, win_count, loss_count, kill_count, death_count, mvp } = factionDataMore
-		return (
-			<Fade in={true}>
-				<Stack direction="row" flexWrap="wrap" sx={{ pt: 1, px: 1, "& > *": { width: "50%", pb: 1 } }}>
-					<Stat
-						title="SUPS Velocity"
-						content={
-							velocity
-								? velocity.toLocaleString("en-US", {
-										minimumFractionDigits: 1,
-										maximumFractionDigits: 4,
-								  })
-								: ""
-						}
-						prefixImageUrl={SupTokenIconPath}
-					/>
-					<Stat title="Recruits" content={recruit_number} />
-					<Stat title="Wins" content={win_count} />
-					<Stat title="Losses" content={loss_count} />
-					<Stat title="Win Rate" content={win_count + loss_count === 0 ? "0%" : `${((win_count / (win_count + loss_count)) * 100).toFixed(0)}%`} />
-					<Stat title="Kills" content={kill_count} />
-					<Stat title="Deaths" content={death_count} />
-					<Stat title="K/D" content={death_count === 0 ? "0%" : `${((kill_count / death_count) * 100).toFixed(0)}%`} />
-					<Stat title="MVP" content={mvp?.username || ""} prefixImageUrl={mvp?.avatar_id ? `/api/files/${mvp.avatar_id}` : ""} />
-				</Stack>
-			</Fade>
-		)
-	}
 
 	const {
 		label,
@@ -196,8 +154,6 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 					</Fade>
 				)}
 
-				{page === 1 && factionStatDisplay()}
-
 				<Stack
 					direction="row"
 					spacing={0.6}
@@ -205,17 +161,6 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 					justifyContent="flex-start"
 					sx={{ mt: "auto", pt: 1.6, "& > .Mui-disabled": { color: `${colors.supremacy.darkerGrey} !important` } }}
 				>
-					{factionDataMore && (
-						<>
-							<IconButton sx={{ color: primary, transform: "rotate(180deg)" }} onClick={() => setPage(0)} disabled={page <= 0}>
-								<ArrowRightAltSharpIcon fontSize="inherit" />
-							</IconButton>
-							<IconButton sx={{ color: primary }} onClick={() => setPage(1)} disabled={page >= 1}>
-								<ArrowRightAltSharpIcon fontSize="inherit" />
-							</IconButton>
-						</>
-					)}
-
 					<FancyButton
 						clipSize="7px"
 						borderColor={primary}

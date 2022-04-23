@@ -16,7 +16,7 @@ import { ConnectWallet } from "../connectWallet"
 import { FancyButton } from "../fancyButton"
 import { Loading } from "../loading"
 import { TokenSelect } from "./tokenSelect"
-import useWS from "../../containers/useWS"
+import useWS from "../../containers/ws/useWS"
 import useSubscription from "../../hooks/useSubscription"
 
 type conversionType = "supsToTokens" | "tokensToSups"
@@ -53,7 +53,7 @@ export const BuyTokens: React.FC = () => {
 	const [minAmount, setMinAmount] = useState<BigNumber>()
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
-	const userSups = useSubscription<string>(`/user/${userId}/sups`, HubKey.UserSupsSubscribe)
+	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
 	const acceptedChainExceptions = currentChainId?.toString() === BINANCE_CHAIN_ID || currentChainId?.toString() === ETHEREUM_CHAIN_ID
 	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
 	const [tokenDecimals, setTokenDecimals] = useState(18)
@@ -487,7 +487,9 @@ export const BuyTokens: React.FC = () => {
 					<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
 						Error
 					</Typography>
-					<Typography variant="h4">{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}</Typography>
+					<Typography variant="h4">
+						{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}
+					</Typography>
 					{/* <Typography sx={{ marginTop: "1rem" }} variant="body1">
 						{transferError ? (transferError.code === undefined ? transferError : null) : null}
 					</Typography> */}
@@ -543,7 +545,10 @@ export const BuyTokens: React.FC = () => {
 			{/* Purchase Sups Form */}
 			<Box
 				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none" && metaMaskState === MetaMaskState.Active
+					acceptedChainExceptions &&
+					currentChainId === currentToken.chainId &&
+					transferState === "none" &&
+					metaMaskState === MetaMaskState.Active
 						? {
 								"@media (max-width:400px)": {
 									p: "1rem",
@@ -581,7 +586,9 @@ export const BuyTokens: React.FC = () => {
 						>
 							Purchase $SUPS
 						</Typography>
-						<Typography sx={{ fontSize: ".9rem", color: colors.darkGrey, textTransform: "uppercase" }}>Directly from Supremacy</Typography>
+						<Typography sx={{ fontSize: ".9rem", color: colors.darkGrey, textTransform: "uppercase" }}>
+							Directly from Supremacy
+						</Typography>
 					</Stack>
 					<form onSubmit={handleSubmit}>
 						<Box
@@ -720,12 +727,21 @@ export const BuyTokens: React.FC = () => {
 											}}
 										>
 											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
-												Max: <b>{tokenBalance ? parseFloat(formatUnits(tokenBalance, tokenDecimals)).toPrecision(4) : "--"}</b>
+												Max:{" "}
+												<b>{tokenBalance ? parseFloat(formatUnits(tokenBalance, tokenDecimals)).toPrecision(4) : "--"}</b>
 											</Typography>
 										</Button>
 									</Box>
 
-									<Box sx={{ display: "flex", backgroundColor: colors.inputBg, borderRadius: "10px", padding: ".5rem 1rem", gap: ".5em" }}>
+									<Box
+										sx={{
+											display: "flex",
+											backgroundColor: colors.inputBg,
+											borderRadius: "10px",
+											padding: ".5rem 1rem",
+											gap: ".5em",
+										}}
+									>
 										<Box sx={{ display: "flex", flexDirection: "column", gap: ".5em", width: "100%" }}>
 											<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 												<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">

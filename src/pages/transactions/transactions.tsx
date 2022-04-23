@@ -1,5 +1,18 @@
 import SortIcon from "@mui/icons-material/Sort"
-import { Box, CircularProgress, InputBase, MenuItem, Pagination, Paper, Select, Stack, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
+import {
+	Box,
+	CircularProgress,
+	InputBase,
+	MenuItem,
+	Pagination,
+	Paper,
+	Select,
+	Stack,
+	styled,
+	SwipeableDrawer,
+	Typography,
+	useMediaQuery,
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../../assets"
@@ -8,19 +21,19 @@ import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { SearchBar } from "../../components/searchBar"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
-import { useAuth } from "../../containers/auth"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { SortChip } from "../profile/profile"
 import { DesktopTransactionTable } from "./desktopTransactionTable"
 import { MobileTransactionTable } from "./mobileTransactionTable"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 type GroupType = "All" | "Ungrouped" | string
 
 export const TransactionsPage = () => {
 	const history = useHistory()
-	const { user } = useAuth()
+	const user = useUser()
 	const { send, state } = useCommands()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)

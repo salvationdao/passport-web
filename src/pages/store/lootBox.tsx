@@ -19,24 +19,21 @@ import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import LootboxVideo from "../../components/lootboxVideo"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
-import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
-import { SocketState } from "../../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Faction, Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
-import useCommands from "../../containers/useCommands"
-import useWS from "../../containers/useWS"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const LootBoxPage = () => {
-	const { subscribe } = useWS({ URI: "/lootboxes" })
 	const [loading, setLoading] = useState(false)
 	const [asset, setAsset] = useState<PurchasedItem | null>(null)
 	const { state, send } = useCommands()
-	const { user } = useAuth()
+	const user = useUser()
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const theme = useTheme()

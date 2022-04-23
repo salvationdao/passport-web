@@ -14,7 +14,7 @@ import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { RegisterResponse } from "../../types/auth"
 import { PasswordRequirement } from "./onboarding"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
 
 interface SignUpInput {
 	username: string

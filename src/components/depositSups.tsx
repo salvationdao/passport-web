@@ -15,7 +15,7 @@ import HubKey from "../keys"
 import { colors } from "../theme"
 import { transferStateType } from "../types/types"
 import { FancyButton } from "./fancyButton"
-import useCommands from "../containers/useCommands"
+import useCommands from "../containers/ws/useCommands"
 import useSubscription from "../hooks/useSubscription"
 
 //TODO: after transfer on blockchain, give user ON WORLD game tokens
@@ -41,7 +41,7 @@ export const DepositSups = ({
 }: DepositSupsProps) => {
 	const { metaMaskState, supBalance, provider, sendTransferToPurchaseAddress, account } = useWeb3()
 	const { user, userId } = useAuth()
-	const userSups = useSubscription<string>(`/user/${userId}/sups`, HubKey.UserSupsSubscribe)
+	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
 	const { state, send } = useCommands()
 
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
@@ -146,7 +146,10 @@ export const DepositSups = ({
 							)}
 						</Box>
 						<Box sx={{ display: "flex" }}>
-							<Typography variant="h6" sx={{ color: colors.lightNavyBlue2, fontWeight: 800, marginRight: ".5rem", alignSelf: "center" }}>
+							<Typography
+								variant="h6"
+								sx={{ color: colors.lightNavyBlue2, fontWeight: 800, marginRight: ".5rem", alignSelf: "center" }}
+							>
 								Amount:
 							</Typography>
 							<TextField
@@ -263,7 +266,13 @@ export const DepositSups = ({
 				</Box>
 				<FancyButton
 					loading={state !== WebSocket.OPEN || !send}
-					disabled={!depositAmount || !supBalance || depositAmount.gt(supBalance) || currentTransferState !== "none" || immediateError !== undefined}
+					disabled={
+						!depositAmount ||
+						!supBalance ||
+						depositAmount.gt(supBalance) ||
+						currentTransferState !== "none" ||
+						immediateError !== undefined
+					}
 					borderColor={colors.skyBlue}
 					sx={{ marginTop: "1.5rem", width: "50%" }}
 					onClick={() => {

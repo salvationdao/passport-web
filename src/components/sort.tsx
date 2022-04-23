@@ -3,7 +3,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { getStringFromShoutingSnakeCase } from "../helpers"
 import { useQuery } from "../hooks/useSend"
@@ -11,7 +10,8 @@ import HubKey from "../keys"
 import { FilterChip, SortChip } from "../pages/profile/profile"
 import { colors } from "../theme"
 import { Collection } from "../types/types"
-import useCommands from "../containers/useCommands"
+import useCommands from "../containers/ws/useCommands"
+import useUser from "../containers/useUser"
 
 interface SortProps {
 	assetType?: string
@@ -49,9 +49,10 @@ export const Sort = ({
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const { send, state } = useCommands()
 	const { displayMessage } = useSnackbar()
-	const { user } = useAuth()
+	const user = useUser()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const { username } = useParams<{ username: string }>()
+
 	const { loading, error, payload, query } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
 
 	const toggleRarity = (rarity: string) => {

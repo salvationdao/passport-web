@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import HubKey from "../keys"
-import useCommands from "../containers/useCommands"
+import useCommands from "../containers/ws/useCommands"
 
 export const useQuery = <P = any, R = any>(hubKey: HubKey, initFetch?: boolean, request?: R) => {
 	const { send } = useCommands()

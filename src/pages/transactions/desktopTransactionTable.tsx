@@ -1,13 +1,12 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import { Box, Button, styled, Typography, TypographyProps } from "@mui/material"
 import { useEffect, useState } from "react"
-import { useAuth } from "../../containers/auth"
 import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
-import useCommands from "../../containers/useCommands"
-import { StoreItemResponse } from "../../types/store_item"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export interface TransactionTableProps {
 	transactionIDs: string[]
@@ -89,7 +88,7 @@ export interface TransactionEntryProps {
 }
 
 const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
-	const { user } = useAuth()
+	const user = useUser()
 	const { state, send } = useCommands()
 	const [entry, setEntry] = useState<Transaction>()
 	const [error, setError] = useState<string>()

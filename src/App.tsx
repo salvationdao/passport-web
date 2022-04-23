@@ -7,11 +7,14 @@ import "./fonts.css"
 import { loadIcons } from "./helpers/loadicons"
 import { Routes } from "./routes"
 import Login from "./pages/login/login"
+import { WSProvider } from "./containers/ws/context"
+import { Loading } from "./components/loading"
 
 loadIcons()
 
 const AppInner = () => {
-	const { user } = useAuth()
+	const { user, loading } = useAuth()
+	if (loading) return <Loading />
 	if (!user) {
 		return <Login />
 	}
@@ -28,7 +31,9 @@ const AppAdmin = () => {
 	return (
 		<ThemeProvider theme={currentTheme}>
 			<CssBaseline />
-			<AppInner />
+			<WSProvider>
+				<AppInner />
+			</WSProvider>
 		</ThemeProvider>
 	)
 }

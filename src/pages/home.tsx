@@ -5,11 +5,11 @@ import TermsAndConditions from "../assets/documents/XSYN-Terms-and-Conditions.pd
 import { FancyButton } from "../components/fancyButton"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
 import { Navbar } from "../components/home/navbar"
-import { useAuth } from "../containers/auth"
+import useUser from "../containers/useUser"
 
 export const Home = () => {
 	const history = useHistory()
-	const { user } = useAuth()
+	const user = useUser()
 
 	return (
 		<>

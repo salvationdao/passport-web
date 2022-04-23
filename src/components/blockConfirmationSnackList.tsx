@@ -1,9 +1,7 @@
 import { Box, Snackbar } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
-import { useAuth } from "../containers/auth"
-import HubKey from "../keys"
 import { BlockConfirmationSnackbar } from "./blockConfirmationAlert"
-import useCommands from "../containers/useCommands"
+import useUser from "../containers/useUser"
 
 export interface ChainConfirmations {
 	tx: string
@@ -16,7 +14,7 @@ export interface ChainConfirmations {
 }
 
 export const BlockConfirmationSnackList = () => {
-	const { user } = useAuth()
+	const user = useUser()
 
 	const [txConfirms, setTxConfirms] = useState<ChainConfirmations[]>([])
 	const [filterArr, setFilterArr] = useState<string[]>([])
@@ -50,7 +48,11 @@ export const BlockConfirmationSnackList = () => {
 	}, [txConfirms, filterArr, handleFilter])
 
 	return (
-		<Snackbar anchorOrigin={{ vertical: "bottom", horizontal: "right" }} open={true} sx={results.length > 0 ? { display: "block" } : { display: "none" }}>
+		<Snackbar
+			anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+			open={true}
+			sx={results.length > 0 ? { display: "block" } : { display: "none" }}
+		>
 			<Box sx={{ display: "flex", flexDirection: "column" }}>
 				{results.map((x) => {
 					return <BlockConfirmationSnackbar key={x.tx} currentConfirmation={x} handleFilter={handleFilter} />

@@ -1,13 +1,25 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Link, Paper, Typography, useMediaQuery, useTheme } from "@mui/material"
+import {
+	Box,
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	Divider,
+	Link,
+	Paper,
+	Typography,
+	useMediaQuery,
+	useTheme,
+} from "@mui/material"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { SupTokenIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { useAuth } from "../../containers/auth"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
@@ -17,13 +29,14 @@ import { StoreItem, StoreItemAttibutes, StoreItemResponse } from "../../types/st
 import { Attribute, Collection } from "../../types/types"
 import { NumberAttribute } from "../profile/numberAttribute"
 import { rarityTextStyles } from "../profile/profile"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const StoreItemPage = () => {
 	const { store_item_id: id, collection_slug } = useParams<{ store_item_id: string; collection_slug: string }>()
 	const history = useHistory()
 	const { send, state } = useCommands()
-	const { user } = useAuth()
+	const user = useUser()
 
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -628,7 +641,10 @@ export const StoreItemPage = () => {
 										</Typography>
 									</Box>
 								</Box>
-								<FancyButton disabled={storeItem.amount_available - storeItem.amount_sold <= 0} onClick={() => setShowPurchaseModal(true)}>
+								<FancyButton
+									disabled={storeItem.amount_available - storeItem.amount_sold <= 0}
+									onClick={() => setShowPurchaseModal(true)}
+								>
 									{storeItem.amount_available - storeItem.amount_sold <= 0 ? "Sold out" : "Purchase Item"}
 								</FancyButton>
 							</Box>

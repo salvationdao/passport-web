@@ -31,8 +31,10 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import useCommands from "../containers/useCommands"
+import useCommands from "../containers/ws/useCommands"
 import useSubscription from "../hooks/useSubscription"
+import keys from "../keys"
+import useUser from "../containers/useUser"
 
 const drawerWidth = 260
 
@@ -44,7 +46,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const history = useHistory()
 	const { send, state } = useCommands()
 	const { sidebarOpen } = useSidebarState()
-	const { user, logout, userId } = useAuth()
+	const { logout, userId } = useAuth()
+	const user = useUser()
+
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	// Wallet
@@ -57,7 +61,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
 
-	const userSups = useSubscription<string>(`/user/${userId}/sups`, HubKey.UserSupsSubscribe)
+	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
 
 	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
@@ -67,7 +71,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	useEffect(() => {
 		if (userSups) {
-			console.log(userSups, "user sups")
 			setXsynSups(BigNumber.from(userSups))
 		}
 	}, [userSups])
@@ -603,7 +606,7 @@ interface FactionAvailable {
 }
 
 const FactionWarMachineRemain = () => {
-	const factionAvailables = useSubscription<FactionAvailable[]>("/store/availability", "AVAILABLE:ITEM:AMOUNT")
+	const factionAvailables = useSubscription<FactionAvailable[]>({ URI: "/store/availability", key: keys.FactionAvailables })
 
 	return (
 		<Stack spacing={1}>

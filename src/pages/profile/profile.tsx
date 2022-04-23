@@ -1,5 +1,18 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, Chip, ChipProps, IconButton, Paper, styled, SwipeableDrawer, Typography, useMediaQuery, Pagination, Select, MenuItem } from "@mui/material"
+import {
+	Box,
+	Chip,
+	ChipProps,
+	IconButton,
+	Paper,
+	styled,
+	SwipeableDrawer,
+	Typography,
+	useMediaQuery,
+	Pagination,
+	Select,
+	MenuItem,
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../assets"
@@ -19,14 +32,15 @@ import { Rarity } from "../../types/enums"
 import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 import { AssetViewContainer } from "./assetView"
-import useWS from "../../containers/useWS"
-import useCommands from "../../containers/useCommands"
+import useWS from "../../containers/ws/useWS"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const ProfilePage: React.FC = () => {
-	const { user, loading } = useAuth()
+	const user = useUser()
 
-	if (loading || !user) {
-		return null
+	if (!user) {
+		return <Loading />
 	}
 
 	return <ProfilePageInner loggedInUser={user} />
@@ -37,7 +51,7 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 	const history = useHistory()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
-	const { send, state } = useCommands()
+	const { send } = useCommands()
 
 	// User
 	const [user, setUser] = useState<User>()
@@ -49,7 +63,7 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 		;(async () => {
 			if (username) {
 				try {
-					const resp = await send<User>(HubKey.UserGet, {
+					const resp = await send<User>(HubKey.User, {
 						username,
 					})
 					setUser(resp)
@@ -184,16 +198,20 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 									<Typography variant="h6" component="p">
 										Manage
 									</Typography>
-									<RouterLink component={StyledFancyButton} to={`/profile/${user.username}/edit`}>
-										Edit Profile
-									</RouterLink>
+									<StyledFancyButton>
+										<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
+									</StyledFancyButton>
 								</Section>
 							)}
 						</Box>
 						<Box minHeight="2rem" minWidth="2rem" />
 					</>
 				)}
-				{!!asset_hash ? <AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} /> : <CollectionView user={user} />}
+				{!!asset_hash ? (
+					<AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} />
+				) : (
+					<CollectionView user={user} />
+				)}
 			</Box>
 		</Box>
 	)

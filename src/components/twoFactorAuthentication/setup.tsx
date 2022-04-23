@@ -4,7 +4,7 @@ import QRCode from "react-qr-code"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
 
 interface TFASecret {
 	secret: string

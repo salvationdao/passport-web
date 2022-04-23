@@ -26,7 +26,7 @@ interface GetSignatureResponse {
 export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }: WithdrawModalProps) => {
 	const { account, provider, currentChainId, metaMaskState, changeChain } = useWeb3()
 	const { userId } = useAuth()
-	const userSups = useSubscription<string>(`/user/${userId}/sups`, HubKey.UserSupsSubscribe)
+	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber | null>(null)
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string | null>(null)
 	const [withdrawContractAmount, setWithdrawContractAmount] = useState<BigNumber>()
@@ -116,7 +116,9 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 			const signer = provider.getSigner()
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
-			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
+			const resp = await fetch(
+				`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`,
+			)
 			const respJson: GetSignatureResponse = await resp.json()
 
 			await withdrawContract.withdrawSUPS(withdrawAmount, respJson.messageSignature, respJson.expiry)

@@ -3,7 +3,7 @@ import { red } from "@mui/material/colors"
 import { useState } from "react"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
 
 export const TwoFactorAuthenticationVerification = () => {
 	const { send } = useCommands()

@@ -9,7 +9,7 @@ import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
 
 export interface CollectionItemCardProps {
 	assetHash: string

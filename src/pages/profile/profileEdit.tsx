@@ -14,12 +14,15 @@ import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const { user, loading: authLoading } = useAuth()
+	const { loading: authLoading } = useAuth()
+	const user = useUser()
+
 	const [newUsername, setNewUsername] = useState<string | undefined>(user?.username)
 	const [displayResult, setDisplayResult] = useState<boolean>(false)
 	const [successful, setSuccessful] = useState<boolean>(false)
@@ -211,7 +214,7 @@ interface ProfileEditProps {
 
 const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
-	const { user } = useAuth()
+	const user = useUser()
 	const { send } = useCommands()
 	const history = useHistory()
 

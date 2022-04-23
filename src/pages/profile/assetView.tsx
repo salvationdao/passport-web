@@ -44,7 +44,7 @@ import { OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemRes
 import { Attribute, Collection, User } from "../../types/types"
 import { NumberAttribute } from "./numberAttribute"
 import { rarityTextStyles } from "./profile"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
 
 interface AssetViewContainerProps {
 	user: User

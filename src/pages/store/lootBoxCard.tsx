@@ -4,18 +4,18 @@ import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientSafeIconImagePath, SupTokenIcon } from "../../assets"
 import SoldOut from "../../assets/images/SoldOutTrimmed.png"
-import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
 import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { ViewButton } from "../collections/collectionItemCard"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const LootBoxCard: React.VoidFunctionComponent = () => {
 	const [imgURL, setImg] = useState("")
 	const [mcAmount, setMCAmount] = useState(-1)
 	const { displayMessage } = useSnackbar()
-	const { user } = useAuth()
+	const user = useUser()
 	const history = useHistory()
 	const { send, state } = useCommands()
 

@@ -16,7 +16,7 @@ import { fetching } from "../../fetching"
 import { formatBytes } from "../../helpers"
 import HubKey from "../../keys"
 import { User } from "../../types/types"
-import useCommands from "../../containers/useCommands"
+import useCommands from "../../containers/ws/useCommands"
 
 interface PasswordRequirementProps extends BoxProps {
 	fulfilled: boolean
