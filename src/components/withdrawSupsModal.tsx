@@ -8,7 +8,7 @@ import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
-import useSubscription from "../hooks/useSubscription"
+import useSubscription from "../containers/ws/useSubscription"
 import { useAuth } from "../containers/auth"
 
 interface WithdrawModalProps {

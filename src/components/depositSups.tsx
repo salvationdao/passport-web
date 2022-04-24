@@ -16,7 +16,7 @@ import { colors } from "../theme"
 import { transferStateType } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import useCommands from "../containers/ws/useCommands"
-import useSubscription from "../hooks/useSubscription"
+import useSubscription from "../containers/ws/useSubscription"
 
 //TODO: after transfer on blockchain, give user ON WORLD game tokens
 

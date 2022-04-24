@@ -1,6 +1,6 @@
 import { Avatar, Badge } from "@mui/material"
 import { styled } from "@mui/material/styles"
-import useSubscription from "../hooks/useSubscription"
+import useSubscription from "../containers/ws/useSubscription"
 import HubKey from "../keys"
 import { User } from "../types/types"
 

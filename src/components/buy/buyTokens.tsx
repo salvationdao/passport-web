@@ -17,7 +17,7 @@ import { FancyButton } from "../fancyButton"
 import { Loading } from "../loading"
 import { TokenSelect } from "./tokenSelect"
 import useWS from "../../containers/ws/useWS"
-import useSubscription from "../../hooks/useSubscription"
+import useSubscription from "../../containers/ws/useSubscription"
 
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"

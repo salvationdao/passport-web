@@ -32,7 +32,7 @@ import { ProfileButton } from "./profileButton"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 import useCommands from "../containers/ws/useCommands"
-import useSubscription from "../hooks/useSubscription"
+import useSubscription from "../containers/ws/useSubscription"
 import keys from "../keys"
 import useUser from "../containers/useUser"
 

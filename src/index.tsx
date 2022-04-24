@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom"
 import * as Sentry from "@sentry/react"
 import { Integrations } from "@sentry/tracing"
 import { createBrowserHistory } from "history"
-import { SENTRY_CONFIG, XGRID_LICENSE } from "./config"
+import { API_ENDPOINT_HOSTNAME, SENTRY_CONFIG, XGRID_LICENSE } from "./config"
 import { Themes } from "./containers"
 import { LicenseInfo } from "@mui/x-data-grid-pro"
 import App from "./App"
@@ -14,7 +14,7 @@ import { AuthProvider } from "./containers/auth"
 import { Web3Provider } from "./containers/web3"
 import { SnackbarProvider } from "./containers/snackbar"
 
-const prefixURL = (prefix: string) => (client: Client) => async (action: Action) => {
+const prefixURL = (prefix: string) => () => async (action: Action) => {
 	return {
 		...action,
 		headers: {
@@ -27,7 +27,7 @@ const prefixURL = (prefix: string) => (client: Client) => async (action: Action)
 
 const client = createClient({
 	//None of the options is required
-	requestInterceptors: [prefixURL("/api")],
+	requestInterceptors: [prefixURL(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api`)],
 	responseInterceptors: [],
 })
 
