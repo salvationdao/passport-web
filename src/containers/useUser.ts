@@ -1,5 +1,5 @@
 import { useAuth } from "./auth"
-import useSubscription from "../hooks/useSubscription"
+import useSubscription from "./ws/useSubscription"
 import { User } from "../types/types"
 import keys from "../keys"
 
