@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
@@ -56,6 +56,12 @@ export const AuthContainer = createContainer(() => {
 
 	const [token, _setToken] = useState<string>(localStorage.getItem("token") || "")
 
+	const redirectURL = useMemo(() => {
+		const queryString = window.location.search
+		const urlParams = new URLSearchParams(queryString)
+		return urlParams.get("redirectURL") || undefined
+	}, [])
+
 	const setToken = useCallback(
 		(token: string) => {
 			localStorage.setItem("token", token)
@@ -80,6 +86,35 @@ export const AuthContainer = createContainer(() => {
 
 	const { loading: loginLoading, payload: loginPayload, mutate: login, error: loginError } = useMutation(loginAction)
 	const { mutate: logoutMutation } = useMutation(logoutAction)
+
+	const externalAuth = useMemo(
+		() => (args: { [key: string]: string | null | undefined }) => {
+			const cleanArgs: { [key: string]: string } = {}
+			Object.keys(args).forEach((key) => {
+				if (args[key] === "" || args[key] === "null" || !args[key]) {
+					return
+				}
+				cleanArgs[key] = args[key] || ""
+			})
+
+			const form = document.createElement("form")
+			form.method = "post"
+			form.action = "/api/auth/external"
+
+			Object.keys(args).forEach((key) => {
+				const hiddenField = document.createElement("input")
+				hiddenField.type = "hidden"
+				hiddenField.name = key
+				hiddenField.value = args[key] || ""
+
+				form.appendChild(hiddenField)
+			})
+
+			document.body.appendChild(form)
+			form.submit()
+		},
+		[],
+	)
 
 	/////////////////
 	//  Functions  //
@@ -121,12 +156,14 @@ export const AuthContainer = createContainer(() => {
 		async (email: string, password: string) => {
 			try {
 				const resp: QueryResponse<PasswordLoginResponse> = await login({
+					redirectURL,
 					email,
 					password,
 					session_id: sessionId,
 					fingerprint,
 					authType,
 				})
+
 				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
 					clear()
 					return
@@ -149,16 +186,22 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const loginToken = useCallback(
 		async (token: string) => {
-			const searchParams = new URLSearchParams(window.location.search)
+			const args = {
+				redirectURL,
+				token,
+				session_id: sessionId,
+				fingerprint,
+				authType: "token",
+			}
+			if (redirectURL) {
+				externalAuth({ ...args, fingerprint: undefined })
+				return
+			}
+
 			setLoading(true)
 			try {
-				const resp: QueryResponse<TokenLoginResponse> = await login({
-					token,
-					session_id: sessionId,
-					twitch_extension_jwt: searchParams.get("twitchExtensionJWT"),
-					fingerprint,
-					authType: "token",
-				})
+				const resp: QueryResponse<TokenLoginResponse> = await login(args)
+
 				if (!resp || !resp.payload || !resp.payload.user) {
 					console.log(resp)
 					clear()
@@ -187,13 +230,26 @@ export const AuthContainer = createContainer(() => {
 			const acc = await connect()
 			const signature = await sign()
 			if (acc) {
-				console.log("account", acc, "ACCOUNT")
-				const resp: QueryResponse<PasswordLoginResponse> = await login({
+				const args = {
+					redirectURL,
 					public_address: acc,
 					signature: signature,
 					session_id: sessionId,
 					fingerprint,
-					authType,
+					authType: "wallet",
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+
+				const resp: QueryResponse<PasswordLoginResponse> = await login({
+					redirectURL,
+					public_address: acc,
+					signature: signature,
+					session_id: sessionId,
+					fingerprint,
+					authType: "wallet",
 				})
 
 				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
@@ -230,12 +286,14 @@ export const AuthContainer = createContainer(() => {
 				await signWalletConnect()
 			} else {
 				const resp: QueryResponse<PasswordLoginResponse> = await login({
+					redirectURL,
 					public_address: account as string,
 					signature: wcSignature || "",
 					session_id: sessionId,
 					fingerprint,
 					authType,
 				})
+
 				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
 					clear()
 					return

@@ -9,6 +9,7 @@ import { Routes } from "./routes"
 import Login from "./pages/login/login"
 import { WSProvider } from "./containers/ws/context"
 import { Loading } from "./components/loading"
+import { API_ENDPOINT_HOSTNAME } from "./config"
 
 loadIcons()
 
@@ -19,9 +20,11 @@ const AppInner = () => {
 		return <Login />
 	}
 	return (
-		<SidebarStateProvider>
-			<Routes />
-		</SidebarStateProvider>
+		<WSProvider defaultHost={API_ENDPOINT_HOSTNAME} commanderURI={`/user/${user.id}/commander`}>
+			<SidebarStateProvider>
+				<Routes />
+			</SidebarStateProvider>
+		</WSProvider>
 	)
 }
 
@@ -30,10 +33,7 @@ const AppAdmin = () => {
 
 	return (
 		<ThemeProvider theme={currentTheme}>
-			<CssBaseline />
-			<WSProvider>
-				<AppInner />
-			</WSProvider>
+			<AppInner />
 		</ThemeProvider>
 	)
 }

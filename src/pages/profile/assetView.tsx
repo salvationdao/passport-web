@@ -53,7 +53,7 @@ interface AssetViewContainerProps {
 }
 
 export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainerProps) => {
-	const { state, send } = useCommands()
+	const { send } = useCommands()
 	const [collectionSlug, setCollectionSlug] = useState<string | null>(null)
 	const [collection, setCollection] = useState<Collection | null>(null)
 	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem | null>(null)
@@ -578,7 +578,13 @@ export const AssetView = ({
 									}}
 								>
 									{showOpenseaURL && (
-										<Button component={"a"} href={openseaURL} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNewIcon />}>
+										<Button
+											component={"a"}
+											href={openseaURL}
+											target="_blank"
+											rel="noopener noreferrer"
+											endIcon={<OpenInNewIcon />}
+										>
 											View on OpenSea
 										</Button>
 									)}
@@ -825,7 +831,17 @@ const lock_endpoint = (account: string, collection_slug: string, token_id: numbe
 	return `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/owner_address/${account}/collection_slug/${collection_slug}/token_id/${token_id}`
 }
 
-const LockedModal = ({ remainingTime, open, unlocked_at, setClose }: { open: boolean; unlocked_at: Date; setClose: () => void; remainingTime: string }) => {
+const LockedModal = ({
+	remainingTime,
+	open,
+	unlocked_at,
+	setClose,
+}: {
+	open: boolean
+	unlocked_at: Date
+	setClose: () => void
+	remainingTime: string
+}) => {
 	return (
 		<Dialog
 			open={open}
@@ -1051,7 +1067,10 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 
 				// A Human-Readable ABI; for interacting with the contract,
 				// we must include any fragment we wish to use
-				const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
+				const abi = [
+					"function nonces(address) view returns (uint256)",
+					"function signedMint(uint256 tokenID, bytes signature, uint256 expiry)",
+				]
 				const signer = provider.getSigner()
 				const mintContract = new ethers.Contract(mintingContract, abi, signer)
 				const nonce = await mintContract.nonces(account)
