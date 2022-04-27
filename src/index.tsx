@@ -13,6 +13,7 @@ import { FingerprintProvider } from "./containers/fingerprint"
 import { AuthProvider } from "./containers/auth"
 import { Web3Provider } from "./containers/web3"
 import { SnackbarProvider } from "./containers/snackbar"
+import { BrowserRouter } from "react-router-dom"
 
 const prefixURL = (prefix: string) => () => async (action: Action) => {
 	return {
@@ -51,17 +52,19 @@ if (XGRID_LICENSE) LicenseInfo.setLicenseKey(XGRID_LICENSE)
 ReactDOM.render(
 	<React.StrictMode>
 		<Themes.Provider>
-			<ClientContextProvider client={client}>
-				<FingerprintProvider>
-					<SnackbarProvider>
-						<Web3Provider>
-							<AuthProvider>
-								<App />
-							</AuthProvider>
-						</Web3Provider>
-					</SnackbarProvider>
-				</FingerprintProvider>
-			</ClientContextProvider>
+			<BrowserRouter>
+				<ClientContextProvider client={client}>
+					<FingerprintProvider>
+						<SnackbarProvider>
+							<Web3Provider>
+								<AuthProvider>
+									<App />
+								</AuthProvider>
+							</Web3Provider>
+						</SnackbarProvider>
+					</FingerprintProvider>
+				</ClientContextProvider>
+			</BrowserRouter>
 		</Themes.Provider>
 	</React.StrictMode>,
 	document.getElementById("root") as HTMLElement,

@@ -172,6 +172,7 @@ export const AuthContainer = createContainer(() => {
 				setToken(resp.payload.token)
 				localStorage.setItem("auth-token", resp.payload.token)
 				setAuthorised(true)
+				setLoading(false)
 			} catch (e) {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
@@ -209,6 +210,7 @@ export const AuthContainer = createContainer(() => {
 				}
 				setUser(resp.payload.user)
 				setAuthorised(true)
+				setLoading(false)
 			} catch (e) {
 				clear()
 				setUser(undefined)
@@ -260,6 +262,7 @@ export const AuthContainer = createContainer(() => {
 				setToken(resp.payload.token)
 				localStorage.setItem("auth-token", resp.payload.token)
 				setAuthorised(true)
+				setLoading(false)
 
 				return resp
 			}
@@ -302,6 +305,7 @@ export const AuthContainer = createContainer(() => {
 				setToken(resp.payload.token)
 				localStorage.setItem("auth-token", resp.payload.token)
 				setAuthorised(true)
+				setLoading(false)
 				return resp
 			}
 		} catch (e) {
@@ -345,6 +349,7 @@ export const AuthContainer = createContainer(() => {
 		setVerifying(false)
 		setVerifyCompleteType(forgotPassword ? VerificationType.ForgotPassword : VerificationType.EmailVerification)
 		setAuthorised(true)
+		setLoading(false)
 		return respObj
 	}, [])
 
@@ -365,6 +370,8 @@ export const AuthContainer = createContainer(() => {
 		const token = localStorage.getItem("auth-token")
 		if (token && token !== "" && !user) {
 			loginToken(token)
+		} else {
+			setLoading(false)
 		}
 	}, [loginToken])
 

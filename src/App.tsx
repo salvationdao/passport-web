@@ -10,6 +10,8 @@ import Login from "./pages/login/login"
 import { WSProvider } from "./containers/ws/context"
 import { Loading } from "./components/loading"
 import { API_ENDPOINT_HOSTNAME } from "./config"
+import { Redirect, Route, Switch } from "react-router-dom"
+import LoginPage from "./pages/login/login"
 
 loadIcons()
 
@@ -17,7 +19,19 @@ const AppInner = () => {
 	const { user, loading } = useAuth()
 	if (loading) return <Loading />
 	if (!user) {
-		return <Login />
+		return (
+			<Switch>
+				<Route path="/nosidebar/login">
+					<LoginPage />
+				</Route>
+				<Route path="/login">
+					<LoginPage />
+				</Route>
+				<Route path="/">
+					<Redirect to={"/login"} />
+				</Route>
+			</Switch>
+		)
 	}
 	return (
 		<WSProvider defaultHost={API_ENDPOINT_HOSTNAME} commanderURI={`/user/${user.id}/commander`}>
@@ -33,6 +47,7 @@ const AppAdmin = () => {
 
 	return (
 		<ThemeProvider theme={currentTheme}>
+			<CssBaseline />
 			<AppInner />
 		</ThemeProvider>
 	)
