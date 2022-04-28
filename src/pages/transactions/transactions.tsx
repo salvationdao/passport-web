@@ -1,5 +1,20 @@
 import SortIcon from "@mui/icons-material/Sort"
-import { Box, CircularProgress, InputBase, MenuItem, Pagination, Paper, Select, Stack, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
+import {
+	Autocomplete,
+	Box,
+	CircularProgress,
+	InputBase,
+	MenuItem,
+	Pagination,
+	Paper,
+	Select,
+	Stack,
+	styled,
+	SwipeableDrawer,
+	TextField,
+	Typography,
+	useMediaQuery,
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../../assets"
@@ -314,7 +329,20 @@ export const TransactionsPage = () => {
 								}}
 							>
 								<Stack spacing=".5rem" direction="row" alignItems="baseline">
-									<Select
+									<Autocomplete
+										disablePortal
+										id="combo-box-demo"
+										options={["All", "No Sub Group", ...transactionGroups[selectedGroup].map((s) => s)]}
+										sx={{ minWidth: 300, marginTop: "-3rem" }}
+										onChange={(_, val) => {
+											if (val) {
+												setSelectedSubGroup(val)
+												setCurrentPage(1)
+											}
+										}}
+										renderInput={(params) => <TextField {...params} label={`Subgroup (${selectedSubGroup})`} />}
+									/>
+									{/* <Select
 										value={selectedGroup}
 										onChange={(e) => {
 											setSelectedGroup(e.target.value)
@@ -324,46 +352,54 @@ export const TransactionsPage = () => {
 										input={<GroupSelectionInput />}
 										displayEmpty
 									>
-										<MenuItem value="All">
+										<MenuItem
+											sx={{
+												"&:hover": {
+													backgroundColor: "#1c0927",
+												},
+											}}
+											value="All"
+										>
 											<em>All</em>
 										</MenuItem>
-										<MenuItem value="Ungrouped">Ungrouped</MenuItem>
+										<MenuItem
+											value="Ungrouped"
+											sx={{
+												"&:hover": {
+													backgroundColor: "#1c0927",
+												},
+											}}
+										>
+											Ungrouped
+										</MenuItem>
 										{Object.keys(transactionGroups).map((g, index) => (
-											<MenuItem key={`${g}-${index}-group_filter`} value={g}>
+											<MenuItem
+												sx={{
+													"&:hover": {
+														backgroundColor: "#1c0927",
+													},
+												}}
+												key={`${g}-${index}-group_filter`}
+												value={g}
+											>
 												{g}
 											</MenuItem>
 										))}
-									</Select>
+									</Select> */}
 									{transactionGroups[selectedGroup] && transactionGroups[selectedGroup].length > 0 && (
-										<>
-											<Typography
-												variant="caption"
-												color={colors.darkGrey}
-												sx={{
-													textTransform: "uppercase",
-												}}
-											>
-												Subgroup
-											</Typography>
-											<Select
-												value={selectedSubGroup}
-												onChange={(e) => {
-													setSelectedSubGroup(e.target.value)
+										<Autocomplete
+											disablePortal
+											id="combo-box-demo"
+											options={["All", "No Sub Group", ...transactionGroups[selectedGroup].map((s) => s)]}
+											sx={{ minWidth: 300, marginTop: "-3rem" }}
+											onChange={(_, val) => {
+												if (val) {
+													setSelectedSubGroup(val)
 													setCurrentPage(1)
-												}}
-												input={<SubGroupSelectionInput />}
-											>
-												<MenuItem value="All">
-													<em>All</em>
-												</MenuItem>
-												<MenuItem value="Ungrouped">No Sub Group</MenuItem>
-												{transactionGroups[selectedGroup].map((s, index) => (
-													<MenuItem key={`${s}-${index}-sub_group_filter`} value={s}>
-														{s}
-													</MenuItem>
-												))}
-											</Select>
-										</>
+												}
+											}}
+											renderInput={(params) => <TextField {...params} label={`Subgroup (${selectedSubGroup})`} />}
+										/>
 									)}
 								</Stack>
 								<Box
