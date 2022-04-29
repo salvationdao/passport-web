@@ -92,6 +92,45 @@ export const FarmsPage = () => {
 						</Typography>
 					</Stack>
 					{currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account && <FarmCard />}
+					{currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account && (
+						<Box
+							sx={{
+								zIndex: 5,
+								position: "absolute",
+								top: 0,
+								left: 0,
+								right: 0,
+								bottom: 0,
+								padding: "1rem",
+								height: "100%",
+								minWidth: "100%",
+								backgroundColor: colors.darkerNavyBackground,
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+							}}
+						>
+							<Typography
+								variant="h2"
+								sx={{
+									textAlign: "center",
+									fontFamily: "bizmoblack",
+									fontSize: "2rem",
+									textTransform: "uppercase",
+									letterSpacing: ".2rem",
+									WebkitTextStrokeWidth: "1px",
+									WebkitTextStrokeColor: colors.black,
+									textShadow: `1px 3px ${colors.black}`,
+								}}
+							>
+								Currently unavailable
+								<br />
+								<Typography variant="h4" sx={{ fontSize: "1.4rem", textShadow: "unset", WebkitTextStrokeWidth: 0 }}>
+									This page will be open soon, come back later.
+								</Typography>
+							</Typography>
+						</Box>
+					)}
 				</Paper>
 			</Box>
 		</Box>
