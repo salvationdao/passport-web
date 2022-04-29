@@ -378,7 +378,7 @@ export const TransactionsPage = () => {
 												...transactionGroups[selectedGroup].map((s) => s).sort((a, b) => a.localeCompare(b)),
 											]}
 											sx={{ minWidth: 370 }}
-											renderInput={(params) => <TextField {...params} label={`Subgroup (${selectedSubGroup})`} />}
+											renderInput={(params) => <TextField {...params} label="Subgroup" />}
 											renderOption={(_, val) => (
 												<MenuItem
 													onClick={() => {
