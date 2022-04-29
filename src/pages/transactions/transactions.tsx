@@ -328,77 +328,77 @@ export const TransactionsPage = () => {
 									},
 								}}
 							>
-								<Stack spacing=".5rem" direction="row" alignItems="baseline">
+								<Stack
+									spacing=".5rem"
+									direction="row"
+									alignItems="baseline"
+									sx={{
+										"@media (max-width: 850px)": {
+											marginBottom: "1rem",
+											marginTop: "1rem",
+										},
+									}}
+								>
 									<Autocomplete
+										value={selectedGroup}
 										disablePortal
 										id="combo-box-demo"
-										options={["All", "No Sub Group", ...transactionGroups[selectedGroup].map((s) => s)]}
-										sx={{ minWidth: 300, marginTop: "-3rem" }}
-										onChange={(_, val) => {
-											if (val) {
-												setSelectedSubGroup(val)
-												setCurrentPage(1)
-											}
-										}}
-										renderInput={(params) => <TextField {...params} label={`Subgroup (${selectedSubGroup})`} />}
-									/>
-									{/* <Select
-										value={selectedGroup}
-										onChange={(e) => {
-											setSelectedGroup(e.target.value)
-											setSelectedSubGroup("All")
-											setCurrentPage(1)
-										}}
-										input={<GroupSelectionInput />}
-										displayEmpty
-									>
-										<MenuItem
-											sx={{
-												"&:hover": {
-													backgroundColor: "#1c0927",
-												},
-											}}
-											value="All"
-										>
-											<em>All</em>
-										</MenuItem>
-										<MenuItem
-											value="Ungrouped"
-											sx={{
-												"&:hover": {
-													backgroundColor: "#1c0927",
-												},
-											}}
-										>
-											Ungrouped
-										</MenuItem>
-										{Object.keys(transactionGroups).map((g, index) => (
+										options={[
+											"All",
+											"No Sub Group",
+											...(Object.keys(transactionGroups) ? Object.keys(transactionGroups).map((k) => k) : []),
+										]}
+										sx={{ minWidth: 300 }}
+										renderInput={(params) => <TextField {...params} label="Group" />}
+										renderOption={(_, val) => (
 											<MenuItem
+												onClick={() => {
+													if (val) {
+														setSelectedGroup(val)
+														setSelectedSubGroup("All")
+														setCurrentPage(1)
+													}
+												}}
 												sx={{
 													"&:hover": {
 														backgroundColor: "#1c0927",
 													},
 												}}
-												key={`${g}-${index}-group_filter`}
-												value={g}
+												key={val}
+												value={val}
 											>
-												{g}
+												{val}
 											</MenuItem>
-										))}
-									</Select> */}
+										)}
+									/>
+
 									{transactionGroups[selectedGroup] && transactionGroups[selectedGroup].length > 0 && (
 										<Autocomplete
+											value={selectedSubGroup}
 											disablePortal
 											id="combo-box-demo"
 											options={["All", "No Sub Group", ...transactionGroups[selectedGroup].map((s) => s)]}
-											sx={{ minWidth: 300, marginTop: "-3rem" }}
-											onChange={(_, val) => {
-												if (val) {
-													setSelectedSubGroup(val)
-													setCurrentPage(1)
-												}
-											}}
+											sx={{ minWidth: 370 }}
 											renderInput={(params) => <TextField {...params} label={`Subgroup (${selectedSubGroup})`} />}
+											renderOption={(_, val) => (
+												<MenuItem
+													onClick={() => {
+														if (val) {
+															setSelectedSubGroup(val)
+															setCurrentPage(1)
+														}
+													}}
+													sx={{
+														"&:hover": {
+															backgroundColor: "#1c0927",
+														},
+													}}
+													key={val}
+													value={val}
+												>
+													{val}
+												</MenuItem>
+											)}
 										/>
 									)}
 								</Stack>
@@ -495,53 +495,3 @@ const TransactionGroupBox = styled("div")({
 		marginBottom: "2rem",
 	},
 })
-
-const GroupSelectionInput = styled(InputBase)(({ theme }) => ({
-	padding: 2,
-	borderRadius: ".5rem",
-	transition: theme.transitions.create(["background-color"]),
-	"&:hover": {
-		backgroundColor: "rgba(255, 255, 255, .2)",
-	},
-	"& .MuiInputBase-input": {
-		display: "flex",
-		alignItems: "end",
-		borderRadius: ".5rem",
-		padding: 0,
-		fontSize: "1.2rem",
-		fontFamily: fonts.bizmoblack,
-		fontStyle: "italic",
-		letterSpacing: "2px",
-		textTransform: "uppercase",
-		"&:focus": {
-			borderRadius: 4,
-			borderColor: "#80bdff",
-			boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
-		},
-	},
-}))
-
-const SubGroupSelectionInput = styled(InputBase)(({ theme }) => ({
-	padding: 2,
-	borderRadius: ".5rem",
-	transition: theme.transitions.create(["background-color"]),
-	"&:hover": {
-		backgroundColor: "rgba(255, 255, 255, .2)",
-	},
-	"& .MuiInputBase-input": {
-		display: "flex",
-		alignItems: "end",
-		borderRadius: ".5rem",
-		padding: 0,
-		fontSize: "1rem",
-		fontFamily: fonts.bizmosemi_bold,
-		fontStyle: "italic",
-		letterSpacing: "2px",
-		textTransform: "uppercase",
-		"&:focus": {
-			borderRadius: 4,
-			borderColor: "#80bdff",
-			boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
-		},
-	},
-}))
