@@ -333,7 +333,7 @@ export const TransactionsPage = () => {
 									direction="row"
 									alignItems="baseline"
 									sx={{
-										"@media (max-width: 850px)": {
+										"@media (max-width: 1250px)": {
 											marginBottom: "1rem",
 											marginTop: "1rem",
 										},
@@ -343,11 +343,7 @@ export const TransactionsPage = () => {
 										value={selectedGroup}
 										disablePortal
 										id="combo-box-demo"
-										options={[
-											"All",
-											"No Sub Group",
-											...(Object.keys(transactionGroups) ? Object.keys(transactionGroups).map((k) => k) : []),
-										]}
+										options={["All", "Ungrouped", ...(Object.keys(transactionGroups) ? Object.keys(transactionGroups).map((k) => k) : [])]}
 										sx={{ minWidth: 300 }}
 										renderInput={(params) => <TextField {...params} label="Group" />}
 										renderOption={(_, val) => (
@@ -377,7 +373,11 @@ export const TransactionsPage = () => {
 											value={selectedSubGroup}
 											disablePortal
 											id="combo-box-demo"
-											options={["All", "No Sub Group", ...transactionGroups[selectedGroup].map((s) => s)]}
+											options={[
+												"All",
+												"No Sub Group",
+												...transactionGroups[selectedGroup].map((s) => s).sort((a, b) => a.localeCompare(b)),
+											]}
 											sx={{ minWidth: 370 }}
 											renderInput={(params) => <TextField {...params} label={`Subgroup (${selectedSubGroup})`} />}
 											renderOption={(_, val) => (
