@@ -1,13 +1,27 @@
 import SortIcon from "@mui/icons-material/Sort"
-import { Box, CircularProgress, InputBase, MenuItem, Pagination, Paper, Select, Stack, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
+import {
+	Autocomplete,
+	Box,
+	CircularProgress,
+	MenuItem,
+	Pagination,
+	Paper,
+	Select,
+	Stack,
+	styled,
+	SwipeableDrawer,
+	TextField,
+	Typography,
+	useMediaQuery,
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { GradientCardIconImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { SearchBar } from "../../components/searchBar"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
+import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
@@ -313,57 +327,78 @@ export const TransactionsPage = () => {
 									},
 								}}
 							>
-								<Stack spacing=".5rem" direction="row" alignItems="baseline">
-									<Select
+								<Stack
+									spacing=".5rem"
+									direction="row"
+									alignItems="baseline"
+									sx={{
+										"@media (max-width: 1250px)": {
+											marginBottom: "1rem",
+											marginTop: "1rem",
+										},
+									}}
+								>
+									<Autocomplete
 										value={selectedGroup}
-										onChange={(e) => {
-											setSelectedGroup(e.target.value)
-											setSelectedSubGroup("All")
-											setCurrentPage(1)
-										}}
-										input={<GroupSelectionInput />}
-										displayEmpty
-									>
-										<MenuItem value="All">
-											<em>All</em>
-										</MenuItem>
-										<MenuItem value="Ungrouped">Ungrouped</MenuItem>
-										{Object.keys(transactionGroups).map((g, index) => (
-											<MenuItem key={`${g}-${index}-group_filter`} value={g}>
-												{g}
-											</MenuItem>
-										))}
-									</Select>
-									{transactionGroups[selectedGroup] && transactionGroups[selectedGroup].length > 0 && (
-										<>
-											<Typography
-												variant="caption"
-												color={colors.darkGrey}
+										disablePortal
+										id="combo-box-demo"
+										options={["All", "Ungrouped", ...(Object.keys(transactionGroups) ? Object.keys(transactionGroups).map((k) => k) : [])]}
+										sx={{ minWidth: 300 }}
+										renderInput={(params) => <TextField {...params} label="Group" />}
+										renderOption={(_, val) => (
+											<MenuItem
+												onClick={() => {
+													if (val) {
+														setSelectedGroup(val)
+														setSelectedSubGroup("All")
+														setCurrentPage(1)
+													}
+												}}
 												sx={{
-													textTransform: "uppercase",
+													"&:hover": {
+														backgroundColor: "#1c0927",
+													},
 												}}
+												key={val}
+												value={val}
 											>
-												Subgroup
-											</Typography>
-											<Select
-												value={selectedSubGroup}
-												onChange={(e) => {
-													setSelectedSubGroup(e.target.value)
-													setCurrentPage(1)
-												}}
-												input={<SubGroupSelectionInput />}
-											>
-												<MenuItem value="All">
-													<em>All</em>
+												{val}
+											</MenuItem>
+										)}
+									/>
+
+									{transactionGroups[selectedGroup] && transactionGroups[selectedGroup].length > 0 && (
+										<Autocomplete
+											value={selectedSubGroup}
+											disablePortal
+											id="combo-box-demo"
+											options={[
+												"All",
+												"No Sub Group",
+												...transactionGroups[selectedGroup].map((s) => s).sort((a, b) => a.localeCompare(b)),
+											]}
+											sx={{ minWidth: 370 }}
+											renderInput={(params) => <TextField {...params} label="Subgroup" />}
+											renderOption={(_, val) => (
+												<MenuItem
+													onClick={() => {
+														if (val) {
+															setSelectedSubGroup(val)
+															setCurrentPage(1)
+														}
+													}}
+													sx={{
+														"&:hover": {
+															backgroundColor: "#1c0927",
+														},
+													}}
+													key={val}
+													value={val}
+												>
+													{val}
 												</MenuItem>
-												<MenuItem value="Ungrouped">No Sub Group</MenuItem>
-												{transactionGroups[selectedGroup].map((s, index) => (
-													<MenuItem key={`${s}-${index}-sub_group_filter`} value={s}>
-														{s}
-													</MenuItem>
-												))}
-											</Select>
-										</>
+											)}
+										/>
 									)}
 								</Stack>
 								<Box
@@ -459,53 +494,3 @@ const TransactionGroupBox = styled("div")({
 		marginBottom: "2rem",
 	},
 })
-
-const GroupSelectionInput = styled(InputBase)(({ theme }) => ({
-	padding: 2,
-	borderRadius: ".5rem",
-	transition: theme.transitions.create(["background-color"]),
-	"&:hover": {
-		backgroundColor: "rgba(255, 255, 255, .2)",
-	},
-	"& .MuiInputBase-input": {
-		display: "flex",
-		alignItems: "end",
-		borderRadius: ".5rem",
-		padding: 0,
-		fontSize: "1.2rem",
-		fontFamily: fonts.bizmoblack,
-		fontStyle: "italic",
-		letterSpacing: "2px",
-		textTransform: "uppercase",
-		"&:focus": {
-			borderRadius: 4,
-			borderColor: "#80bdff",
-			boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
-		},
-	},
-}))
-
-const SubGroupSelectionInput = styled(InputBase)(({ theme }) => ({
-	padding: 2,
-	borderRadius: ".5rem",
-	transition: theme.transitions.create(["background-color"]),
-	"&:hover": {
-		backgroundColor: "rgba(255, 255, 255, .2)",
-	},
-	"& .MuiInputBase-input": {
-		display: "flex",
-		alignItems: "end",
-		borderRadius: ".5rem",
-		padding: 0,
-		fontSize: "1rem",
-		fontFamily: fonts.bizmosemi_bold,
-		fontStyle: "italic",
-		letterSpacing: "2px",
-		textTransform: "uppercase",
-		"&:focus": {
-			borderRadius: 4,
-			borderColor: "#80bdff",
-			boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
-		},
-	},
-}))
