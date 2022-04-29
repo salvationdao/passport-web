@@ -3,7 +3,6 @@ import {
 	Autocomplete,
 	Box,
 	CircularProgress,
-	InputBase,
 	MenuItem,
 	Pagination,
 	Paper,
@@ -21,8 +20,8 @@ import { GradientCardIconImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
-import { SearchBar } from "../../components/searchBar"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
+import { SearchBar } from "../../components/searchBar"
 import { useAuth } from "../../containers/auth"
 import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
