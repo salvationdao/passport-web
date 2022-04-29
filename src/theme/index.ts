@@ -49,7 +49,7 @@ export const colors = {
 	darkerNavyBlue: "#030208",
 	darkNavyBackground2: "rgba(16, 16, 25, 0.2)",
 	darkNavyBackground: "rgba(16, 16, 25, 0.7)",
-	darkerNavyBackground: "rgb(5, 12, 18,0.95)",
+	darkerNavyBackground: "rgb(5, 12, 18,0.8)",
 	black2: "#050C12",
 	black2Background: "rgb(5, 12, 18,0.7)",
 	formBg: "#1a182f",
