@@ -25,6 +25,7 @@ import {
 	WRAPPED_BNB_ADDRESS,
 } from "../../config"
 import { FarmData, useWeb3 } from "../../containers/web3"
+import { countDecimals } from "../../helpers"
 import { colors } from "../../theme"
 
 export const FarmsPage = () => {
@@ -299,6 +300,7 @@ const FarmCard = (props: FarmCardProps) => {
 				setPending({ ...pending, withdraw: false })
 				setWithdrawDisplayAmount("")
 				setWithdrawAmount(BigNumber.from(0))
+				setOpenStaking(false)
 			} catch (error: any) {
 				if (error && typeof error === "string") {
 					setWithdrawError(error)
@@ -362,8 +364,13 @@ const FarmCard = (props: FarmCardProps) => {
 			setStakeDisplayAmount("")
 			setStakeAmount(BigNumber.from(0))
 		}
-		const val = parseUnits(e.target.value, 18)
-		setStakeDisplayAmount(e.target.value)
+		let limitVal = e.target.value
+		const nDecimals = countDecimals(limitVal)
+		if (nDecimals > 6) {
+			limitVal = parseFloat(e.target.value).toFixed(6)
+		}
+		const val = parseUnits(limitVal, 18)
+		setStakeDisplayAmount(limitVal)
 		setStakeAmount(val)
 	}
 	const handleChangeWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -373,12 +380,17 @@ const FarmCard = (props: FarmCardProps) => {
 			setWithdrawAmount(BigNumber.from(0))
 			return
 		}
-		const val = parseUnits(e.target.value, 18)
-		setWithdrawDisplayAmount(e.target.value)
+		let limitVal = e.target.value
+		const nDecimals = countDecimals(limitVal)
+		if (nDecimals > 6) {
+			limitVal = parseFloat(e.target.value).toFixed(6)
+		}
+		const val = parseUnits(limitVal, 18)
+		setWithdrawDisplayAmount(limitVal)
 		setWithdrawAmount(val)
 	}
 
-	if (!data) return <Loading text="Loading please wait..." />
+	if (!data) return <Loading text="Loading data..." />
 	return (
 		<Stack
 			gap="2rem"
@@ -540,7 +552,7 @@ const FarmCard = (props: FarmCardProps) => {
 									</Stack>
 									<Stack gap=".5rem">
 										<StakingLabel sx={{ "& span": { ml: ".2rem" } }}>
-											Balance: <span>{!data ? "---" : (+formatUnits(data.lpBalance, 18)).toFixed(4)}</span>
+											Balance: <span>{!data ? "---" : (+formatUnits(data.lpBalance, 18)).toFixed(6)}</span>
 										</StakingLabel>
 
 										<Box sx={{ display: "flex", gap: "1rem" }}>
