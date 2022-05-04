@@ -96,6 +96,6 @@ export const getStringFromShoutingSnakeCase = (val: string) => {
 }
 
 export const countDecimals = (value: string) => {
-	if (parseFloat(value) % 1 !== 0) return value.toString().split(".")[1].length
+	if (parseFloat(value) % 1 !== 0) return value.split(".")[1].length
 	return 0
 }
