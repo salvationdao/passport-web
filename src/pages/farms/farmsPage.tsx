@@ -30,7 +30,7 @@ import { colors } from "../../theme"
 
 export const FarmsPage = () => {
 	const { changeChain, currentChainId, account } = useWeb3()
-	let showComingSoonOverlay = false
+	let showComingSoonOverlay = true
 	if (currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account) {
 		showComingSoonOverlay = true
 	}
