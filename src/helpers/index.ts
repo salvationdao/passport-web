@@ -94,3 +94,8 @@ export const getStringFromShoutingSnakeCase = (val: string) => {
 		.map((s) => s.charAt(0).toUpperCase() + s.slice(1))
 		.join(" ")
 }
+
+export const countDecimals = (value: string) => {
+	if (parseFloat(value) % 1 !== 0) return value.split(".")[1].length
+	return 0
+}

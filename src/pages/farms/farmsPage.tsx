@@ -25,10 +25,18 @@ import {
 	WRAPPED_BNB_ADDRESS,
 } from "../../config"
 import { FarmData, useWeb3 } from "../../containers/web3"
+import { countDecimals } from "../../helpers"
 import { colors } from "../../theme"
 
 export const FarmsPage = () => {
 	const { changeChain, currentChainId, account } = useWeb3()
+	let showComingSoonOverlay = false
+	if (currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account) {
+		showComingSoonOverlay = true
+	}
+	if (parseInt(BINANCE_CHAIN_ID) !== 56 || localStorage.getItem("farms_show") === "true") {
+		showComingSoonOverlay = false
+	}
 	return (
 		<Box
 			sx={{
@@ -92,45 +100,7 @@ export const FarmsPage = () => {
 						</Typography>
 					</Stack>
 					{currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account && <FarmCard />}
-					{currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account && (
-						<Box
-							sx={{
-								zIndex: 5,
-								position: "absolute",
-								top: 0,
-								left: 0,
-								right: 0,
-								bottom: 0,
-								padding: "1rem",
-								height: "100%",
-								minWidth: "100%",
-								backgroundColor: colors.darkerNavyBackground,
-								display: "flex",
-								justifyContent: "center",
-								alignItems: "center",
-							}}
-						>
-							<Typography
-								variant="h2"
-								sx={{
-									textAlign: "center",
-									fontFamily: "bizmoblack",
-									fontSize: "2rem",
-									textTransform: "uppercase",
-									letterSpacing: ".2rem",
-									WebkitTextStrokeWidth: "1px",
-									WebkitTextStrokeColor: colors.black,
-									textShadow: `1px 3px ${colors.black}`,
-								}}
-							>
-								Currently unavailable
-								<br />
-								<Typography variant="h4" sx={{ fontSize: "1.4rem", textShadow: "unset", WebkitTextStrokeWidth: 0 }}>
-									This page will be open soon, come back later.
-								</Typography>
-							</Typography>
-						</Box>
-					)}
+					{showComingSoonOverlay && <ComingSoonOverlay />}
 				</Paper>
 			</Box>
 		</Box>
@@ -183,9 +153,11 @@ const FarmInfo = (props: FarmInfoProps) => {
 	return (
 		<Stack gap=".2rem" justifyContent="center" sx={{ width: "100%" }}>
 			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
-				<LabelContainer>
-					<InfoLabel>APR:</InfoLabel> <InfoValue>{apr}</InfoValue>
-				</LabelContainer>
+				{localStorage.getItem("farms_show") === "true" && (
+					<LabelContainer>
+						<InfoLabel>APR:</InfoLabel> <InfoValue>{apr}</InfoValue>
+					</LabelContainer>
+				)}
 			</Stack>
 			<LabelContainer>
 				<InfoLabel>Next phase in:</InfoLabel>
@@ -328,6 +300,7 @@ const FarmCard = (props: FarmCardProps) => {
 				setPending({ ...pending, withdraw: false })
 				setWithdrawDisplayAmount("")
 				setWithdrawAmount(BigNumber.from(0))
+				setOpenStaking(false)
 			} catch (error: any) {
 				if (error && typeof error === "string") {
 					setWithdrawError(error)
@@ -391,8 +364,13 @@ const FarmCard = (props: FarmCardProps) => {
 			setStakeDisplayAmount("")
 			setStakeAmount(BigNumber.from(0))
 		}
-		const val = parseUnits(e.target.value, 18)
-		setStakeDisplayAmount(e.target.value)
+		let limitVal = e.target.value
+		const nDecimals = countDecimals(limitVal)
+		if (nDecimals > 6) {
+			limitVal = parseFloat(e.target.value).toFixed(6)
+		}
+		const val = parseUnits(limitVal, 18)
+		setStakeDisplayAmount(limitVal)
 		setStakeAmount(val)
 	}
 	const handleChangeWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -402,12 +380,17 @@ const FarmCard = (props: FarmCardProps) => {
 			setWithdrawAmount(BigNumber.from(0))
 			return
 		}
-		const val = parseUnits(e.target.value, 18)
-		setWithdrawDisplayAmount(e.target.value)
+		let limitVal = e.target.value
+		const nDecimals = countDecimals(limitVal)
+		if (nDecimals > 6) {
+			limitVal = parseFloat(e.target.value).toFixed(6)
+		}
+		const val = parseUnits(limitVal, 18)
+		setWithdrawDisplayAmount(limitVal)
 		setWithdrawAmount(val)
 	}
 
-	if (!data) return <Loading text="Loading please wait..." />
+	if (!data) return <Loading text="Loading data..." />
 	return (
 		<Stack
 			gap="2rem"
@@ -569,7 +552,7 @@ const FarmCard = (props: FarmCardProps) => {
 									</Stack>
 									<Stack gap=".5rem">
 										<StakingLabel sx={{ "& span": { ml: ".2rem" } }}>
-											Balance: <span>{!data ? "---" : (+formatUnits(data.lpBalance, 18)).toFixed(4)}</span>
+											Balance: <span>{!data ? "---" : (+formatUnits(data.lpBalance, 18)).toFixed(6)}</span>
 										</StakingLabel>
 
 										<Box sx={{ display: "flex", gap: "1rem" }}>
@@ -770,3 +753,43 @@ const StakeInput = styled(InputBase)({
 	textTransform: "uppercase",
 	height: "1.2rem",
 })
+
+const ComingSoonOverlay: React.FC = () => (
+	<Box
+		sx={{
+			zIndex: 5,
+			position: "absolute",
+			top: 0,
+			left: 0,
+			right: 0,
+			bottom: 0,
+			padding: "1rem",
+			height: "100%",
+			minWidth: "100%",
+			backgroundColor: colors.darkerNavyBackground,
+			display: "flex",
+			justifyContent: "center",
+			alignItems: "center",
+		}}
+	>
+		<Typography
+			variant="h2"
+			sx={{
+				textAlign: "center",
+				fontFamily: "bizmoblack",
+				fontSize: "2rem",
+				textTransform: "uppercase",
+				letterSpacing: ".2rem",
+				WebkitTextStrokeWidth: "1px",
+				WebkitTextStrokeColor: colors.black,
+				textShadow: `1px 3px ${colors.black}`,
+			}}
+		>
+			Currently unavailable
+			<br />
+			<Typography variant="h4" sx={{ fontSize: "1.4rem", textShadow: "unset", WebkitTextStrokeWidth: 0 }}>
+				This page will be open soon, come back later.
+			</Typography>
+		</Typography>
+	</Box>
+)
