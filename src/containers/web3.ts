@@ -805,17 +805,14 @@ export const Web3Container = createContainer(() => {
 			const token0Sym = tokenData[1][0]
 			const token1Sym = tokenData[1][1]
 			let circulatingLPValueInSUPS = BigNumber.from(0)
+			const FIX_BIG_NUMBER = 10 ** 10
+			const supsPerBnbSmall = (parseFloat(formatUnits(supsPerBnb)) * FIX_BIG_NUMBER).toFixed(0)
+
 			if (token0Sym === "WBNB") {
-				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(supsPerBnb.mul(reserves0))
-			}
-			if (token0Sym === "SUPS") {
-				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(parseUnits("1", 18).mul(reserves0))
-			}
-			if (token1Sym === "WBNB") {
-				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(supsPerBnb.mul(reserves1))
+				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(reserves0.mul(supsPerBnbSmall).div(FIX_BIG_NUMBER))
 			}
 			if (token1Sym === "SUPS") {
-				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(parseUnits("1", 18).mul(reserves1))
+				circulatingLPValueInSUPS = circulatingLPValueInSUPS.add(reserves1)
 			}
 
 			const LPValueInSUPS = circulatingLPValueInSUPS.div(lpTotalSupply)
