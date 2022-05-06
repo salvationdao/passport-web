@@ -176,9 +176,10 @@ export const Routes = () => {
 							<Route path="/transactions">
 								<TransactionsPage />
 							</Route>
-							<Route path="/farms">
+							<Route path="/staking">
 								<FarmsPage />
 							</Route>
+							<Redirect from="/farms" to="/staking" />
 							<Route path="/withdraw">
 								<WithdrawPage />
 							</Route>
