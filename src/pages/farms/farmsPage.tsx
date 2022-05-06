@@ -140,11 +140,11 @@ const LabelContainer = styled("div")({
 })
 
 const FarmInfo = (props: FarmInfoProps) => {
-	let apr = props.loading ? "--- %" : `${(props.yieldPercentage !== Infinity ? props.yieldPercentage * 100 : 0).toFixed(4)}%`
+	// let apr = props.loading ? "--- %" : `${(props.yieldPercentage !== Infinity ? props.yieldPercentage * 100 : 0).toFixed(4)}%`
 
-	if (props.yieldPercentage === 0) {
-		apr = "--- %"
-	}
+	// if (props.yieldPercentage === 0) {
+	// 	apr = "--- %"
+	// }
 	return (
 		<Stack gap=".2rem" justifyContent="center" sx={{ width: "100%" }}>
 			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
@@ -770,46 +770,6 @@ const StakeInput = styled(InputBase)({
 	textTransform: "uppercase",
 	height: "1.2rem",
 })
-
-const ComingSoonOverlay: React.FC = () => (
-	<Box
-		sx={{
-			zIndex: 5,
-			position: "absolute",
-			top: 0,
-			left: 0,
-			right: 0,
-			bottom: 0,
-			padding: "1rem",
-			height: "100%",
-			minWidth: "100%",
-			backgroundColor: colors.darkerNavyBackground,
-			display: "flex",
-			justifyContent: "center",
-			alignItems: "center",
-		}}
-	>
-		<Typography
-			variant="h2"
-			sx={{
-				textAlign: "center",
-				fontFamily: "bizmoblack",
-				fontSize: "2rem",
-				textTransform: "uppercase",
-				letterSpacing: ".2rem",
-				WebkitTextStrokeWidth: "1px",
-				WebkitTextStrokeColor: colors.black,
-				textShadow: `1px 3px ${colors.black}`,
-			}}
-		>
-			Currently unavailable
-			<br />
-			<Typography variant="h4" sx={{ fontSize: "1.4rem", textShadow: "unset", WebkitTextStrokeWidth: 0 }}>
-				Staking will open at 11PM PST.
-			</Typography>
-		</Typography>
-	</Box>
-)
 
 interface ITutorialProps {
 	cb: () => void
