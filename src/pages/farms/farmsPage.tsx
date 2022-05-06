@@ -140,17 +140,21 @@ const LabelContainer = styled("div")({
 })
 
 const FarmInfo = (props: FarmInfoProps) => {
-	// let apr = props.loading ? "--- %" : `${(props.yieldPercentage !== Infinity ? props.yieldPercentage * 100 : 0).toFixed(4)}%`
+	let apr = props.loading ? "--- %" : `${(props.yieldPercentage !== Infinity ? props.yieldPercentage * 100 : 0).toFixed(4)}%`
 
-	// if (props.yieldPercentage === 0) {
-	// 	apr = "--- %"
-	// }
+	if (props.yieldPercentage === 0) {
+		apr = "--- %"
+	}
+
+	const showAPR = false
 	return (
 		<Stack gap=".2rem" justifyContent="center" sx={{ width: "100%" }}>
 			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
-				{/* <LabelContainer>
-					<InfoLabel>APR:</InfoLabel> <InfoValue>{apr}</InfoValue>
-				</LabelContainer> */}
+				{showAPR && (
+					<LabelContainer>
+						<InfoLabel>APR:</InfoLabel> <InfoValue>{apr}</InfoValue>
+					</LabelContainer>
+				)}
 			</Stack>
 			<LabelContainer>
 				<InfoLabel>Next phase in:</InfoLabel>
