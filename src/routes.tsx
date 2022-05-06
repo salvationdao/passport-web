@@ -143,6 +143,7 @@ export const Routes = () => {
 				</Snackbar>
 				{user ? (
 					<Switch>
+						<Redirect from="/farms" to="/staking" exact />
 						<Route path="/nosidebar/login">
 							<LoginPage />
 						</Route>
@@ -172,14 +173,13 @@ export const Routes = () => {
 							<Route path="/terms-and-conditions">
 								<Home />
 							</Route>
-
 							<Route path="/transactions">
 								<TransactionsPage />
 							</Route>
+
 							<Route path="/staking">
 								<FarmsPage />
 							</Route>
-							<Redirect from="/farms" to="/staking" />
 							<Route path="/withdraw">
 								<WithdrawPage />
 							</Route>
