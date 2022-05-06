@@ -156,10 +156,7 @@ const FarmInfo = (props: FarmInfoProps) => {
 					</LabelContainer>
 				)}
 			</Stack>
-			<LabelContainer>
-				<InfoLabel>Next phase in:</InfoLabel>
-				<InfoValue>{props.loading ? "---" : props.remainingTime}</InfoValue>
-			</LabelContainer>
+
 			<LabelContainer>
 				<InfoLabel>Global reward rate:</InfoLabel>
 				<InfoValue>
