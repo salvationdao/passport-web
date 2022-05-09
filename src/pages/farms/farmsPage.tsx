@@ -1,18 +1,21 @@
 import { formatUnits, parseUnits } from "@ethersproject/units"
 import AddIcon from "@mui/icons-material/Add"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import HelpCenterIcon from "@mui/icons-material/HelpCenter"
+import InfoIcon from "@mui/icons-material/Info"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import RemoveIcon from "@mui/icons-material/Remove"
-import HelpCenterIcon from "@mui/icons-material/HelpCenter"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, InputBase, Paper, Stack, styled, Typography, useMediaQuery } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, InputBase, Paper, Stack, styled, Tooltip, Typography, useMediaQuery } from "@mui/material"
 import { formatDistanceToNow, fromUnixTime, isPast } from "date-fns"
 import { BigNumber, constants } from "ethers"
 import React, { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import { useInterval } from "react-use"
 import Axe from "../../assets/images/gradient/axe.png"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { ModalWithClose } from "../../components/modalWithClose"
 import { ConnectWalletOverlay } from "../../components/transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import {
@@ -28,8 +31,6 @@ import {
 import { FarmData, useWeb3 } from "../../containers/web3"
 import { countDecimals } from "../../helpers"
 import { colors } from "../../theme"
-import { ModalWithClose } from "../../components/modalWithClose"
-import { Link } from "react-router-dom"
 
 export const FarmsPage = () => {
 	const { changeChain, currentChainId, account } = useWeb3()
@@ -152,7 +153,13 @@ const FarmInfo = (props: FarmInfoProps) => {
 			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
 				{showAPR && (
 					<LabelContainer>
-						<InfoLabel>APR:</InfoLabel> <InfoValue>{apr}</InfoValue>
+						<InfoLabel>Dynamic APR:</InfoLabel>{" "}
+						<InfoValue sx={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
+							{apr}
+							<Tooltip title="Disclaimer here">
+								<InfoIcon sx={{ fontSize: "1.2rem" }} />
+							</Tooltip>
+						</InfoValue>
 					</LabelContainer>
 				)}
 			</Stack>
@@ -669,11 +676,11 @@ const FarmCard = (props: FarmCardProps) => {
 						>
 							Details
 						</AccordionSummary>
-						<AccordionDetails sx={{ display: "flex", flexDirection: "column", position: "relative" }}>
+						<AccordionDetails sx={{ display: "flex", flexDirection: "column", position: "relative", fontSize: ".8rem" }}>
 							<Box
 								sx={{ background: colors.darkerGrey, height: ".5px", width: "calc(100% - 2rem)", position: "absolute", top: 0, left: "1rem" }}
 							/>
-							<Button onClick={() => setOpenTutorial(true)} endIcon={<HelpCenterIcon />}>
+							<Button onClick={() => setOpenTutorial(true)} endIcon={<HelpCenterIcon />} sx={{ fontSize: "1rem" }}>
 								<strong>Learn how to participate</strong>
 							</Button>
 							<Button
@@ -684,6 +691,15 @@ const FarmCard = (props: FarmCardProps) => {
 								endIcon={<OpenInNewIcon />}
 							>
 								Liquidity Farm contract
+							</Button>
+							<Button
+								component={"a"}
+								href={`https://${BSC_SCAN_SITE}/address/${LP_TOKEN_ADDRESS}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								endIcon={<OpenInNewIcon />}
+							>
+								Cake-LP Token contract
 							</Button>
 							<Button
 								component={"a"}
@@ -795,17 +811,37 @@ const Tutorial: React.FC<ITutorialProps> = ({ cb }) => {
 					},
 				}}
 			>
-				<Typography
-					variant="h2"
-					sx={{
-						mb: ".5rem",
-						"@media (max-width:600px)": {
-							fontSize: "6vw",
-						},
-					}}
-				>
-					How to participate
-				</Typography>
+				<Stack gap="1rem">
+					<Box
+						sx={{
+							alignSelf: "flex-end",
+							display: "flex",
+							gap: "2rem",
+							textTransform: "uppercase",
+							"& > a": {
+								color: colors.neonPink,
+							},
+						}}
+					>
+						<Typography component="a" href="https://supremacy.game//news/supremacy-yield-farming---frequently-asked-questions" target="_blank">
+							FAQ
+						</Typography>
+						<Typography component="a" href="https://supremacy.game/news/supremacy-yield-farming-program" target="_blank">
+							More Info
+						</Typography>
+					</Box>
+					<Typography
+						variant="h2"
+						sx={{
+							mb: ".5rem",
+							"@media (max-width:600px)": {
+								fontSize: "6vw",
+							},
+						}}
+					>
+						How to participate
+					</Typography>
+				</Stack>
 				<Stack
 					sx={{
 						width: "100%",
