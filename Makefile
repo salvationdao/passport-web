@@ -45,7 +45,7 @@ watch:
 
 .PHONY: lb
 lb:
-	./bin/caddy run
+	sudo ./bin/caddy run
 
 .PHONY: lb-disown
 lb-disown:
