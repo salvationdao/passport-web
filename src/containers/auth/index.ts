@@ -99,7 +99,7 @@ export const AuthContainer = createContainer(() => {
 
 			const form = document.createElement("form")
 			form.method = "post"
-			form.action = "/api/auth/external"
+			form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/external`
 
 			Object.keys(args).forEach((key) => {
 				const hiddenField = document.createElement("input")

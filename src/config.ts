@@ -17,9 +17,9 @@ export const SENTRY_CONFIG = {
 
 export const SUPREMACY_IMAGE_FOLDER = process.env.REACT_APP_SUPREMACY_IMAGE_FOLDER || "https://afiles.ninja-cdn.com/supremacy/images"
 
-export const TOKEN_SALE_ENDPOINT = process.env.REACT_APP_TOKEN_SALE_ENDPOINT || `${window.location.protocol}//${window.location.host}/buy`
+export const TOKEN_SALE_ENDPOINT = process.env.REACT_APP_TOKEN_SALE_ENDPOINT || `${window.location.protocol}//${"api.xsyndev.io"}/buy`
 
-export const API_ENDPOINT_HOSTNAME = process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME || window.location.host
+export const API_ENDPOINT_HOSTNAME = process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME || "api.xsyndev.io"
 
 export const SIGN_MESSAGE = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
 export const BYPASS_WHITELIST = process.env.REACT_APP_BYPASS_WHITELIST || "false"
