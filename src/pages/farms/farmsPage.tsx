@@ -2,10 +2,23 @@ import { formatUnits, parseUnits } from "@ethersproject/units"
 import AddIcon from "@mui/icons-material/Add"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import HelpCenterIcon from "@mui/icons-material/HelpCenter"
-import InfoIcon from "@mui/icons-material/Info"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import RemoveIcon from "@mui/icons-material/Remove"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, InputBase, Paper, Stack, styled, Tooltip, Typography, useMediaQuery } from "@mui/material"
+import {
+	Accordion,
+	AccordionDetails,
+	AccordionSummary,
+	Box,
+	Button,
+	ClickAwayListener,
+	InputBase,
+	Paper,
+	Stack,
+	styled,
+	Tooltip,
+	Typography,
+	useMediaQuery,
+} from "@mui/material"
 import { formatDistanceToNow, fromUnixTime, isPast } from "date-fns"
 import { BigNumber, constants } from "ethers"
 import React, { useEffect, useState } from "react"
@@ -147,19 +160,13 @@ const FarmInfo = (props: FarmInfoProps) => {
 		apr = "--- %"
 	}
 
-	const showAPR = false
+	const showAPR = true
 	return (
 		<Stack gap=".2rem" justifyContent="center" sx={{ width: "100%" }}>
 			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
 				{showAPR && (
 					<LabelContainer>
-						<InfoLabel>Dynamic APR:</InfoLabel>{" "}
-						<InfoValue sx={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
-							{apr}
-							<Tooltip title="Disclaimer here">
-								<InfoIcon sx={{ fontSize: "1.2rem" }} />
-							</Tooltip>
-						</InfoValue>
+						<InfoLabel>* Dynamic APR:</InfoLabel> <InfoValue sx={{ display: "flex", alignItems: "center", gap: ".5rem" }}>{apr}</InfoValue>
 					</LabelContainer>
 				)}
 			</Stack>
@@ -204,6 +211,7 @@ const FarmCard = (props: FarmCardProps) => {
 	const [openStaking, setOpenStaking] = useState<boolean | null>(false)
 	const [isStaking, setIsStaking] = useState<boolean | null>(false)
 	const [openTutorial, setOpenTutorial] = useState<boolean | null>(false)
+	const [openInfoApr, setOpenInfoApr] = useState<boolean>(false)
 	const isMobile = useMediaQuery("(max-width:600px)")
 
 	useInterval(() => {
@@ -710,6 +718,52 @@ const FarmCard = (props: FarmCardProps) => {
 							>
 								Get SUPS-BNB LP tokens
 							</Button>
+							<ClickAwayListener onClickAway={() => setOpenInfoApr(false)}>
+								<Tooltip
+									open={openInfoApr}
+									title={
+										<Box
+											sx={{
+												whiteSpace: "pre-line",
+												"& p": {
+													mt: 0,
+													ml: "5px",
+												},
+											}}
+										>
+											*
+											<span
+												style={{
+													display: "inline-block",
+													textDecoration: "underline",
+													marginLeft: "5px",
+													marginBottom: "5px",
+												}}
+											>
+												Dynamic APR
+											</span>
+											<p>
+												The purpose of displaying APR is simply an indicator as to the current APR rewards received at the time you
+												place liquidity.
+											</p>
+											<p>
+												APR represented is not a reflection of the APR you will receive. There is no guarantee you will ever receive the
+												APR displayed to you.
+											</p>
+											<p>
+												By placing liquidity, you acknowledge that you understand the mechanics of the provision of liquidity in a
+												decentralised exchange.
+											</p>
+											<p>
+												You acknowledge and understand the more people that provide liquidity within the pool the lower APR you will
+												receive.
+											</p>
+										</Box>
+									}
+								>
+									<Button onClick={() => setOpenInfoApr(!openInfoApr)}>* Dynamic APR - Info</Button>
+								</Tooltip>
+							</ClickAwayListener>
 						</AccordionDetails>
 					</Accordion>
 				</Stack>
@@ -793,6 +847,23 @@ interface ITutorialProps {
 }
 
 const Tutorial: React.FC<ITutorialProps> = ({ cb }) => {
+	const [height, setHeight] = useState<string>("100vh")
+	const mobileScreen = useMediaQuery("(max-width:1000px)")
+
+	useEffect(() => {
+		if (mobileScreen) {
+			setHeight(`${window.innerHeight}px`)
+			const handleResize = () => {
+				// We execute the same script as before
+				const vh = window.innerHeight
+				setHeight(`${vh}px`)
+			}
+			window.addEventListener("resize", handleResize)
+			return () => {
+				window.removeEventListener("resize", handleResize)
+			}
+		}
+	}, [mobileScreen])
 	return (
 		<ModalWithClose cb={cb}>
 			<Box
@@ -800,7 +871,7 @@ const Tutorial: React.FC<ITutorialProps> = ({ cb }) => {
 					width: "90vw",
 					maxWidth: "70rem",
 					background: colors.darkerNavyBackground,
-					height: "calc(100vh - 10rem)",
+					height: `calc(${height} - 10rem)`,
 					overflowY: "scroll",
 					p: "2em",
 					"@media (min-height:1200px)": {
