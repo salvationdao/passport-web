@@ -71,10 +71,10 @@ export const LockModal = ({ open, option, setOpen }: LockBaseProps & LockModalPr
 					displayMessage(`Successfully locked ${type}.`, "success")
 				}
 			} catch (e) {
-				displayMessage(typeof e === "string" ? e : `Could not lock ${type}, try again or contact support.`)
+				displayMessage(typeof e === "string" ? e : `Could not lock ${type}, try again or contact support.`, "error")
 			}
 		},
-		[send],
+		[displayMessage, send],
 	)
 
 	return (
