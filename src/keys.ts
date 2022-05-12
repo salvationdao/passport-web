@@ -54,6 +54,7 @@ enum HubKey {
 	UserAddDiscord = "USER:ADD_DISCORD",
 	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
 	UserFingerprint = "USER:FINGERPRINT",
+	UserLock = "USER:LOCK",
 
 	RoleGet = "ROLE:GET",
 	RoleList = "ROLE:LIST",

@@ -1,6 +1,21 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, Chip, ChipProps, IconButton, Paper, styled, SwipeableDrawer, Typography, useMediaQuery, Pagination, Select, MenuItem } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import {
+	Box,
+	Chip,
+	ChipProps,
+	IconButton,
+	Paper,
+	styled,
+	SwipeableDrawer,
+	Typography,
+	useMediaQuery,
+	Pagination,
+	Select,
+	MenuItem,
+	Stack,
+	Tooltip,
+} from "@mui/material"
+import React, { useCallback, useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../assets"
 import WarMachine from "../../assets/images/WarMachine.png"
@@ -174,14 +189,27 @@ export const ProfilePage: React.FC = () => {
 							)}
 
 							{loggedInUser?.username === user.username && (
-								<Section>
-									<Typography variant="h6" component="p">
-										Manage
-									</Typography>
-									<RouterLink component={StyledFancyButton} to={`/profile/${user.username}/edit`}>
-										Edit Profile
-									</RouterLink>
-								</Section>
+								<>
+									<Section>
+										<Typography variant="h6" component="p">
+											Manage
+										</Typography>
+										<RouterLink component={StyledFancyButton} to={`/profile/${user.username}/edit`}>
+											Edit Profile
+										</RouterLink>
+									</Section>
+
+									<Section>
+										<Typography variant="h6" component="p">
+											Lock Account
+										</Typography>
+										<Stack>
+											{lockOptions.map((option) => (
+												<LockButton type={option.type} title={option.title} />
+											))}
+										</Stack>
+									</Section>
+								</>
 							)}
 						</Box>
 						<Box minHeight="2rem" minWidth="2rem" />
@@ -194,6 +222,51 @@ export const ProfilePage: React.FC = () => {
 }
 
 const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)({})
+
+const lockOptions: LockButtonProps[] = [
+	{
+		type: "withdrawals",
+		title: "This account will not be able to withdraw SUPs from the On-World Wallet.",
+	},
+	{
+		type: "minting",
+		title: "This account will not be able to mint any On-World Assets.",
+	},
+	{
+		type: "account",
+		title: "This account will not be able to withdraw SUPs, mint assets or spend On-World SUPs.",
+	},
+]
+
+interface LockButtonProps {
+	type: string
+	title: string
+}
+const LockButton: React.FC<LockButtonProps> = ({ type, title }) => {
+	const { send } = useWebsocket()
+
+	const lockRequest = useCallback(
+		async (type: string) => {
+			try {
+				const resp = await send<boolean>(HubKey.UserLock, {
+					type,
+				})
+				console.log(resp)
+			} catch (e) {}
+		},
+		[send],
+	)
+
+	return (
+		<Tooltip placement="right" title={title}>
+			<Box>
+				<StyledFancyButton sx={{ width: "100%" }} onClick={() => lockRequest(type)}>
+					{`Lock ${type}`}
+				</StyledFancyButton>
+			</Box>
+		</Tooltip>
+	)
+}
 
 const Section = styled(Box)({
 	"& > *:not(:last-child)": {
