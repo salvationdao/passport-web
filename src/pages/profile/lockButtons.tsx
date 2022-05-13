@@ -1,11 +1,12 @@
 import { Box, Divider, Modal, Stack, Tooltip, Typography } from "@mui/material"
-import React, { useCallback } from "react"
+import React, { useCallback, useMemo } from "react"
 import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import { StyledFancyButton } from "./profile"
 import { useSnackbar } from "../../containers/snackbar"
+import { useAuth } from "../../containers/auth"
 
 export const lockOptions: LockOptionsProps[] = [
 	{
@@ -40,10 +41,26 @@ interface LockModalProps {
 }
 
 export const LockButton: React.FC<LockBaseProps & LockButtonProps> = ({ option, setOpen, setLockOption }) => {
+	const { user } = useAuth()
+
+	console.log(user)
+	const isLocked = useMemo(() => {
+		if (option.type === "withdrawals" && user?.withdraw_lock) {
+			return true
+		}
+		if (option.type === "minting" && user?.mint_lock) {
+			return true
+		}
+		if (option.type === "account" && user?.total_lock) {
+			return true
+		}
+		return false
+	}, [option.type, user?.mint_lock, user?.total_lock, user?.withdraw_lock])
 	return (
 		<Tooltip placement="right" title={option ? option.title : ""}>
 			<Box>
 				<StyledFancyButton
+					disabled={isLocked}
 					sx={{ width: "100%" }}
 					onClick={() => {
 						setLockOption(option)

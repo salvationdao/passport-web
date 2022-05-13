@@ -28,6 +28,9 @@ export interface User {
 	twitch_id?: string
 	twitter_id?: string
 	discord_id?: string
+	withdraw_lock: boolean
+	mint_lock: boolean
+	total_lock: boolean
 }
 
 export interface UserFaction {

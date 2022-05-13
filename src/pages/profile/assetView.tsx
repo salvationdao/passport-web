@@ -1072,6 +1072,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				setErrorMinting(undefined)
 				onClose()
 			} catch (e: any) {
+				console.log(e)
 				const err = metamaskErrorHandling(e)
 				err ? setErrorMinting(err) : setErrorMinting("Issue minting, please try again or contact support.")
 			} finally {
