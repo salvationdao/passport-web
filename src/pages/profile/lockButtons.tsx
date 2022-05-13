@@ -43,7 +43,6 @@ interface LockModalProps {
 export const LockButton: React.FC<LockBaseProps & LockButtonProps> = ({ option, setOpen, setLockOption }) => {
 	const { user } = useAuth()
 
-	console.log(user)
 	const isLocked = useMemo(() => {
 		if (option.type === "withdrawals" && user?.withdraw_lock) {
 			return true
@@ -130,7 +129,7 @@ export const LockModal = ({ open, option, setOpen }: LockBaseProps & LockModalPr
 						<Typography variant="body2">
 							If your account has been compromised, locking your account can help mitigate the damage an unauthorised user can do.
 						</Typography>
-						<Typography variant="body2">In order to get your unlock your account, you will have to speak to an Admin directly.</Typography>
+						<Typography variant="body2">In order to get your unlock your account, you will have to contact support directly.</Typography>
 					</Stack>
 
 					<Stack direction="row" spacing="1rem" sx={{ alignSelf: "flex-end", mt: "1rem" }}>
