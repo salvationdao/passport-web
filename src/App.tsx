@@ -18,6 +18,7 @@ const AppInner = () => {
 	const { user, loading } = useAuth()
 	if (loading) return <Loading />
 	if (!user) {
+		console.log("rendering login page")
 		return (
 			<Switch>
 				<Route path="/nosidebar/login">

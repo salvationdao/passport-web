@@ -48,7 +48,7 @@ export const SignUpPage: React.FC = () => {
 
 					const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
 					setUser(resp.user)
-					localStorage.setItem("token", resp.token)
+					// localStorage.setItem("token", resp.token)
 
 					history.push("/onboarding?skip_username=true")
 				} catch (e) {

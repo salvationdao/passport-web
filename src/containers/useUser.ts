@@ -4,11 +4,11 @@ import { User } from "../types/types"
 import keys from "../keys"
 
 const useUser = (userId?: string) => {
-	const { user: { id } = {} } = useAuth()
-	if (!id) {
+	const { userID } = useAuth()
+	if (!userID) {
 		throw new Error("useUser should not be mounted when not logged in")
 	}
-	const URI = userId ? `/public/user/${userId}` : `/user/${id}`
+	const URI = userId ? `/public/user/${userId}` : `/user/${userID}`
 
 	return useSubscription<User>({ URI, key: keys.User })
 }

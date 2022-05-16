@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
-import { LoginRequest, PasswordLoginResponse, TokenLoginResponse, VerifyAccountResponse } from "../../types/auth"
+import { LoginRequest, VerifyAccountResponse } from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
-import { Action, QueryResponse, useMutation } from "react-fetching-library"
+import { Action, useMutation, useQuery } from "react-fetching-library"
 import useSignup from "./signup"
 
 export enum VerificationType {
@@ -15,17 +15,11 @@ export enum VerificationType {
 	ForgotPassword,
 }
 
-const logoutAction = (formValues: { token: string; session_id: string }): Action => ({
-	method: "POST",
-	endpoint: `/auth/logout`,
-	responseType: "json",
-	body: formValues,
-})
-
-const loginAction = (formValues: LoginRequest & { authType: string }): Action<PasswordLoginResponse> => ({
+const loginAction = (formValues: LoginRequest & { authType: string }): Action<User> => ({
 	method: "POST",
 	endpoint: `/auth/${formValues.authType}`,
 	responseType: "json",
+	credentials: "include",
 	body: formValues,
 })
 
@@ -37,24 +31,20 @@ export const AuthContainer = createContainer(() => {
 	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
 
 	const [user, _setUser] = useState<User>()
-	const [userId, setUserId] = useState<string>("")
 
 	const setUser = (user?: User) => {
 		console.log(user, user && user.faction)
-		setUserId(user ? user.id : "")
 		_setUser(user)
 	}
 
 	const [authType, setAuthType] = useState<string>("wallet")
 
-	const [recheckAuth, setRecheckAuth] = useState(!!localStorage.getItem("auth-token"))
+	const [recheckAuth, setRecheckAuth] = useState(false)
 	const [authorised, setAuthorised] = useState(false)
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const [showSimulation, setShowSimulation] = useState(false)
-
-	const [, _setToken] = useState<string>(localStorage.getItem("token") || "")
 
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
@@ -62,17 +52,7 @@ export const AuthContainer = createContainer(() => {
 		return urlParams.get("redirectURL") || undefined
 	}, [])
 
-	const setToken = useCallback(
-		(token: string) => {
-			localStorage.setItem("token", token)
-			_setToken(token)
-		},
-		[_setToken],
-	)
-
 	const { signUpMetamask, setSignupType, signupType } = useSignup()
-
-	// const [impersonatedUser, setImpersonatedUser] = useState<User>()
 
 	const [sessionId, setSessionID] = useState("")
 
@@ -85,7 +65,21 @@ export const AuthContainer = createContainer(() => {
 	}, [])
 
 	const { loading: loginLoading, mutate: login, error: loginError } = useMutation(loginAction)
-	const { mutate: logoutMutation } = useMutation(logoutAction)
+	const { query: logoutQuery } = useQuery(
+		{
+			method: "GET",
+			endpoint: `/auth/logout`,
+			responseType: "json",
+			credentials: "include",
+		},
+		false,
+	)
+	const { query: authCheck } = useQuery<User>({
+		method: "GET",
+		endpoint: `/auth/check`,
+		responseType: "json",
+		credentials: "include",
+	})
 
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
@@ -125,11 +119,7 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const logout = useCallback(async () => {
 		try {
-			const token = localStorage.getItem("auth-token")
-			if (!token) return
-			await logoutMutation({ token: token, session_id: sessionId })
-			alert("logout")
-			localStorage.removeItem("auth-token")
+			await logoutQuery()
 			setRecheckAuth(false)
 
 			clear()
@@ -147,7 +137,7 @@ export const AuthContainer = createContainer(() => {
 		} catch (error) {
 			console.error()
 		}
-	}, [logoutMutation, sessionId, clear, wcProvider, isLogoutPage])
+	}, [logoutQuery, clear, wcProvider, isLogoutPage])
 
 	/**
 	 * Logs a User in using their email and password.
@@ -155,7 +145,7 @@ export const AuthContainer = createContainer(() => {
 	const loginPassword = useCallback(
 		async (email: string, password: string) => {
 			try {
-				const resp: QueryResponse<PasswordLoginResponse> = await login({
+				const resp = await login({
 					redirectURL,
 					email,
 					password,
@@ -164,20 +154,18 @@ export const AuthContainer = createContainer(() => {
 					authType,
 				})
 
-				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
+				if (!resp || resp.error || !resp.payload) {
 					clear()
 					return
 				}
-				setUser(resp.payload.user)
-				setToken(resp.payload.token)
-				localStorage.setItem("auth-token", resp.payload.token)
+				setUser(resp.payload)
 				setAuthorised(true)
 				setLoading(false)
 			} catch (e) {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[login, redirectURL, sessionId, fingerprint, authType, setToken, clear],
+		[login, redirectURL, sessionId, fingerprint, authType, clear],
 	)
 
 	/**
@@ -201,14 +189,14 @@ export const AuthContainer = createContainer(() => {
 
 			setLoading(true)
 			try {
-				const resp: QueryResponse<TokenLoginResponse> = await login(args)
+				const resp = await login(args)
 
-				if (!resp || !resp.payload || !resp.payload.user) {
+				if (!resp || resp.error || !resp.payload) {
 					console.log(resp)
 					clear()
 					return
 				}
-				setUser(resp.payload.user)
+				setUser(resp.payload)
 				setAuthorised(true)
 				setLoading(false)
 			} catch (e) {
@@ -245,7 +233,7 @@ export const AuthContainer = createContainer(() => {
 					return
 				}
 
-				const resp: QueryResponse<PasswordLoginResponse> = await login({
+				const resp = await login({
 					redirectURL,
 					public_address: acc,
 					signature: signature,
@@ -254,13 +242,13 @@ export const AuthContainer = createContainer(() => {
 					authType: "wallet",
 				})
 
-				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
+				console.log(resp.payload)
+
+				if (!resp || resp.error || !resp.payload) {
 					clear()
 					return
 				}
-				setUser(resp.payload.user)
-				setToken(resp.payload.token)
-				localStorage.setItem("auth-token", resp.payload.token)
+				setUser(resp.payload)
 				setAuthorised(true)
 				setLoading(false)
 
@@ -277,7 +265,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			throw e
 		}
-	}, [connect, sign, redirectURL, sessionId, fingerprint, login, setToken, externalAuth, clear])
+	}, [connect, sign, redirectURL, sessionId, fingerprint, login, externalAuth, clear])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -288,7 +276,7 @@ export const AuthContainer = createContainer(() => {
 			if (!wcSignature) {
 				await signWalletConnect()
 			} else {
-				const resp: QueryResponse<PasswordLoginResponse> = await login({
+				const resp = await login({
 					redirectURL,
 					public_address: account as string,
 					signature: wcSignature || "",
@@ -297,13 +285,11 @@ export const AuthContainer = createContainer(() => {
 					authType,
 				})
 
-				if (!resp || !resp.payload || !resp.payload.user || !resp.payload.token) {
+				if (!resp || resp.error || !resp.payload) {
 					clear()
 					return
 				}
-				setUser(resp.payload.user)
-				setToken(resp.payload.token)
-				localStorage.setItem("auth-token", resp.payload.token)
+				setUser(resp.payload)
 				setAuthorised(true)
 				setLoading(false)
 				return resp
@@ -313,7 +299,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, authType, setToken, clear])
+	}, [wcSignature, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, authType, clear])
 
 	// Effect
 	useEffect(() => {
@@ -346,14 +332,13 @@ export const AuthContainer = createContainer(() => {
 			}
 
 			setUser(respObj.user)
-			setToken(respObj.token)
 			setVerifying(false)
 			setVerifyCompleteType(forgotPassword ? VerificationType.ForgotPassword : VerificationType.EmailVerification)
 			setAuthorised(true)
 			setLoading(false)
 			return respObj
 		},
-		[clear, setToken],
+		[clear],
 	)
 
 	/** Checks if current user has a permission */
@@ -370,13 +355,23 @@ export const AuthContainer = createContainer(() => {
 
 	// Effect: Login with saved login token when websocket is ready
 	useEffect(() => {
-		const token = localStorage.getItem("auth-token")
-		if (token && token !== "" && !user) {
-			loginToken(token)
-		} else {
-			setLoading(false)
+		try {
+			;(async () => {
+				const resp = await authCheck()
+				setLoading(false)
+				if (resp.error || !resp.payload) {
+					clear()
+					return
+				}
+				console.log(typeof resp.payload)
+				// else set up user
+				setUser(resp.payload)
+				setAuthorised(true)
+			})()
+		} catch (error) {
+			console.log(error)
 		}
-	}, [loginToken, user])
+	}, [authCheck, clear])
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
@@ -408,7 +403,6 @@ export const AuthContainer = createContainer(() => {
 		recheckAuth,
 		user: user,
 		userID: user?.id,
-		userId,
 		factionID: user?.faction_id,
 		setUser,
 		isImpersonatingUser: false,

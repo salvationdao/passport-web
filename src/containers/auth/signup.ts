@@ -35,7 +35,6 @@ const useSignup = () => {
 				if (!resp || !resp.payload || !resp.payload.token) {
 					throw new Error("incorrect response")
 				}
-				localStorage.setItem("auth-token", resp.payload.token)
 			} catch (e) {
 				throw typeof e === "string" ? e : "Issue signing up with Metamask, try again or contact support."
 			}

@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const history = useHistory()
 	const { send, state } = useCommands()
 	const { sidebarOpen } = useSidebarState()
-	const { logout, userId } = useAuth()
+	const { logout, userID } = useAuth()
 	const user = useUser()
 
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
@@ -61,7 +61,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
 
-	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
+	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
 
 	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
