@@ -1,26 +1,25 @@
-import React, { useImperativeHandle } from "react"
-import { useState, useEffect, useCallback, Dispatch, SetStateAction } from "react"
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useImperativeHandle, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { plural } from "pluralize"
-import { useWebsocket } from "../containers/socket"
 import HubKey from "../keys"
-import { Box, Button, Tooltip, FormControlLabel, Switch } from "@mui/material"
+import { Box, Button, FormControlLabel, Switch, Tooltip } from "@mui/material"
 import {
 	DataGridPro,
+	GridApiRef,
 	GridColumns,
-	GridSortDirection,
-	GridToolbarContainer,
-	GridToolbarDensitySelector,
+	GridDensity,
 	GridFilterModel,
 	GridLinkOperator,
-	GridDensity,
-	GridApiRef,
+	GridSortDirection,
 	GridToolbarColumnsButton,
+	GridToolbarContainer,
+	GridToolbarDensitySelector,
 	GridToolbarFilterButton,
 } from "@mui/x-data-grid-pro"
 import Alert from "@mui/material/Alert"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { SearchBar } from "./searchBar"
+import useCommands from "../containers/ws/useCommands"
 
 const pageSizeDefault = 20
 
@@ -92,7 +91,7 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	} = props
 
 	const history = useHistory()
-	const { send } = useWebsocket()
+	const { send } = useCommands()
 
 	const [searchArgs] = useState(new URLSearchParams(history.location.search))
 	const [pageArg] = useState(searchArgs.get("page"))

@@ -39,6 +39,13 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 				textTransform: "uppercase",
 				background: filled ? borderColor : "transparent",
 				color: filled ? theme.palette.background.default : "inherit",
+				a: {
+					color: theme.palette.primary.main,
+					textDecoration: "none",
+					"&:visited": {
+						color: theme.palette.primary.main,
+					},
+				},
 				"&:disabled": {
 					color: colors.darkerGrey,
 					border: `2px solid ${colors.darkerGrey}`,

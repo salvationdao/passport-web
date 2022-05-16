@@ -21,10 +21,8 @@ import SupsTokenLogo from "../assets/images/sups-token-logo.png"
 import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
-import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { Faction, FactionTheme, User } from "../types/types"
@@ -33,6 +31,10 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
+import useCommands from "../containers/ws/useCommands"
+import useSubscription from "../containers/ws/useSubscription"
+import keys from "../keys"
+import useUser from "../containers/useUser"
 
 const drawerWidth = 260
 
@@ -42,9 +44,11 @@ export interface SidebarLayoutProps {
 
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
-	const { send, state } = useWebsocket()
+	const { send, state } = useCommands()
 	const { sidebarOpen } = useSidebarState()
-	const { user, logout } = useAuth()
+	const { logout, userId } = useAuth()
+	const user = useUser()
+
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	// Wallet
@@ -56,7 +60,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const theme = useTheme()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
-	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
+
+	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
+
 	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
@@ -88,7 +94,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN) return
+		if (state !== WebSocket.OPEN) return
 		setError(null)
 		send<Faction[]>(HubKey.GetFactionsDetail)
 			.then((data) => setFactionsData(data))
@@ -598,16 +604,7 @@ interface FactionAvailable {
 }
 
 const FactionWarMachineRemain = () => {
-	const { state, subscribe } = useWebsocket()
-	const [factionAvailables, setFactionAvailables] = useState<FactionAvailable[]>([])
-
-	useEffect(() => {
-		if (state !== WebSocket.OPEN || !subscribe) return
-		return subscribe<FactionAvailable[]>(HubKey.FactionAvailables, (payload) => {
-			if (!payload) return
-			setFactionAvailables(payload)
-		})
-	}, [state, subscribe])
+	const factionAvailables = useSubscription<FactionAvailable[]>({ URI: "/store/availability", key: keys.FactionAvailables })
 
 	return (
 		<Stack spacing={1}>
@@ -616,34 +613,35 @@ const FactionWarMachineRemain = () => {
 			</Typography>
 
 			<Stack justifyContent="space-around" spacing={1.5}>
-				{factionAvailables.map((fa) => {
-					const { id, logo_blob_id, theme } = fa
+				{factionAvailables &&
+					factionAvailables.map((fa) => {
+						const { id, logo_blob_id, theme } = fa
 
-					return (
-						<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
-							<Box
-								sx={{
-									width: 30,
-									height: 30,
-									flexShrink: 0,
-									backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logo_blob_id})`,
-									backgroundRepeat: "no-repeat",
-									backgroundPosition: "center",
-									backgroundSize: "contain",
-									backgroundColor: theme.primary,
-									borderRadius: 0.8,
-									border: `${theme.primary} 1px solid`,
-								}}
-							/>
-							<Stack>
-								<Stack direction="column">
-									<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates: </Typography>
-									<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>Sold Out</Typography>
+						return (
+							<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
+								<Box
+									sx={{
+										width: 30,
+										height: 30,
+										flexShrink: 0,
+										backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logo_blob_id})`,
+										backgroundRepeat: "no-repeat",
+										backgroundPosition: "center",
+										backgroundSize: "contain",
+										backgroundColor: theme.primary,
+										borderRadius: 0.8,
+										border: `${theme.primary} 1px solid`,
+									}}
+								/>
+								<Stack>
+									<Stack direction="column">
+										<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates: </Typography>
+										<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>Sold Out</Typography>
+									</Stack>
 								</Stack>
 							</Stack>
-						</Stack>
-					)
-				})}
+						)
+					})}
 			</Stack>
 		</Stack>
 	)

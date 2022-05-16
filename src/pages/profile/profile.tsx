@@ -1,5 +1,19 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, Chip, ChipProps, IconButton, MenuItem, Pagination, Paper, Select, Stack, styled, SwipeableDrawer, Typography, useMediaQuery } from "@mui/material"
+import {
+	Box,
+	Chip,
+	ChipProps,
+	IconButton,
+	Paper,
+	styled,
+	SwipeableDrawer,
+	Typography,
+	Stack,
+	useMediaQuery,
+	Pagination,
+	Select,
+	MenuItem,
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../assets"
@@ -11,8 +25,6 @@ import { ProfileButton } from "../../components/profileButton"
 import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
-import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { middleTruncate } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
@@ -21,15 +33,27 @@ import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 import { AssetViewContainer } from "./assetView"
 import { LockButton, LockModal, lockOptions, LockOptionsProps } from "./lockButtons"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const ProfilePage: React.FC = () => {
+	const user = useUser()
+
+	if (!user) {
+		return <Loading />
+	}
+
+	return <ProfilePageInner loggedInUser={user} />
+}
+
+const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) => {
 	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
 	const history = useHistory()
-	const { state, send } = useWebsocket()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
+	const { send } = useCommands()
+
 	// User
-	const { user: loggedInUser, loading: authLoading } = useAuth()
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
@@ -37,16 +61,11 @@ export const ProfilePage: React.FC = () => {
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
 
 	useEffect(() => {
-		if (authLoading) {
-			setLoadingText("Loading. Please wait...")
-			return
-		}
 		let userTimeout: NodeJS.Timeout
 		;(async () => {
 			if (username) {
 				try {
-					if (state !== SocketState.OPEN) return
-					const resp = await send<User>(HubKey.UserGet, {
+					const resp = await send<User>(HubKey.User, {
 						username,
 					})
 					setUser(resp)
@@ -69,7 +88,7 @@ export const ProfilePage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [loggedInUser, state, history, send, username, authLoading])
+	}, [loggedInUser, history, send, username])
 
 	if (error) {
 		return <Box>{error}</Box>
@@ -179,32 +198,35 @@ export const ProfilePage: React.FC = () => {
 
 							{loggedInUser?.username === user.username && (
 								<>
-									<Section>
-										<Typography variant="h6" component="p">
-											Manage
-										</Typography>
-										<RouterLink component={StyledFancyButton} to={`/profile/${user.username}/edit`}>
-											Edit Profile
-										</RouterLink>
-									</Section>
-
-									<Section>
-										<Typography variant="h6" component="p">
-											Lock Account
-										</Typography>
-										<Stack spacing={".5rem"}>
-											{lockOptions.map((option) => (
-												<LockButton option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
-											))}
-										</Stack>
-									</Section>
+								<Section>
+									<Typography variant="h6" component="p">
+										Manage
+									</Typography>
+									<StyledFancyButton>
+										<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
+									</StyledFancyButton>
+								</Section>
+								<Section>
+								<Typography variant="h6" component="p">
+								Lock Account
+								</Typography>
+								<Stack spacing={".5rem"}>
+							{lockOptions.map((option) => (
+								<LockButton option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
+								))}
+								</Stack>
+								</Section>
 								</>
 							)}
 						</Box>
 						<Box minHeight="2rem" minWidth="2rem" />
 					</>
 				)}
-				{!!asset_hash ? <AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} /> : <CollectionView user={user} />}
+				{!!asset_hash ? (
+					<AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} />
+				) : (
+					<CollectionView user={user} />
+				)}
 			</Box>
 		</Box>
 	)

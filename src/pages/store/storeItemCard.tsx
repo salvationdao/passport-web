@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { SupTokenIcon } from "../../assets"
 import SoldOut from "../../assets/images/SoldOutTrimmed.png"
-import { useWebsocket } from "../../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
@@ -14,6 +13,7 @@ import { StoreItem, StoreItemResponse } from "../../types/store_item"
 import { Collection } from "../../types/types"
 import { ViewButton } from "../collections/collectionItemCard"
 import { rarityTextStyles } from "../profile/profile"
+import useCommands from "../../containers/ws/useCommands"
 
 interface StoreItemCardProps {
 	storeItemID: string
@@ -22,23 +22,18 @@ interface StoreItemCardProps {
 
 export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ collection, storeItemID }) => {
 	const history = useHistory()
-	const { subscribe } = useWebsocket()
+	const { send } = useCommands()
 	const [item, setItem] = useState<StoreItem>()
 	const [showPreview, setShowPreview] = useState(false)
 	const [priceInSups, setPriceInSups] = useState<string | null>(null)
 
 	useEffect(() => {
-		if (!subscribe) return
-		return subscribe<StoreItemResponse>(
-			HubKey.StoreItemSubscribe,
-			(payload) => {
-				if (!payload) return
-				setItem(payload.item)
-				setPriceInSups(payload.price_in_sups)
-			},
-			{ store_item_id: storeItemID },
-		)
-	}, [subscribe, storeItemID])
+		send<StoreItemResponse>(HubKey.StoreItemSubscribe, { store_item_id: storeItemID }).then((payload) => {
+			if (!payload) return
+			setItem(payload.item)
+			setPriceInSups(payload.price_in_sups)
+		})
+	}, [send, storeItemID])
 
 	if (!item || !priceInSups) {
 		return <StoreItemCardSkeleton />

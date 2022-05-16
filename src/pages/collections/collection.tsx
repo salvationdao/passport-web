@@ -1,6 +1,21 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import { Box, Collapse, Link, Paper, styled, Tab, TabProps, Tabs, tabsClasses, Typography, useMediaQuery, Pagination, Select, MenuItem } from "@mui/material"
+import {
+	Box,
+	Collapse,
+	Link,
+	MenuItem,
+	Pagination,
+	Paper,
+	Select,
+	styled,
+	Tab,
+	TabProps,
+	Tabs,
+	tabsClasses,
+	Typography,
+	useMediaQuery,
+} from "@mui/material"
 import SwipeableDrawer from "@mui/material/SwipeableDrawer"
 import React, { useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
@@ -11,9 +26,9 @@ import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
-import { useAuth } from "../../containers/auth"
 import { colors } from "../../theme"
 import { CollectionItemCard } from "./collectionItemCard"
+import useUser from "../../containers/useUser"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const [loading, setLoading] = useState(true)
@@ -30,7 +45,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const { user } = useAuth()
+	const user = useUser()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	const toggleAssetType = (assetType: string) => {

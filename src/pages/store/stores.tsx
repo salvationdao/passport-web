@@ -7,26 +7,24 @@ import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
-import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { Collection, Faction } from "../../types/types"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 // Displays all stores available to the user
 export const StoresPage = () => {
-	const { user } = useAuth()
-	const { send, state } = useWebsocket()
+	const user = useUser()
+	const { send, state } = useCommands()
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
 	const [userLoad, setUserLoad] = useState(true)
 	const [canEnter, setCanEnter] = useState(false)
-
-	//const [factionsData, setFactionsData] = useState<Faction[]>([])
 
 	useEffect(() => {
 		if (user) {
@@ -40,20 +38,8 @@ export const StoresPage = () => {
 		setUserLoad(false)
 	}, [userLoad, user])
 
-	// useEffect(() => {
-	// 	if (state !== SocketState.OPEN) return
-	// 	;(async () => {
-	// 		try {
-	// 			const resp = await send<Faction[]>(HubKey.GetFactionsDetail)
-	// 			setFactionsData(resp)
-	// 		} catch (e) {
-	// 			setFactionsData([])
-	// 		}
-	// 	})()
-	// }, [send, state])
-
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send) return
+		if (state !== WebSocket.OPEN || !send) return
 		;(async () => {
 			setLoading(true)
 			try {
@@ -169,14 +155,14 @@ interface StoreCollectionProps {
 }
 
 const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ collection, faction }) => {
-	const { send, state } = useWebsocket()
+	const { send, state } = useCommands()
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [search, setSearch] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send || !faction) return
+		if (state !== WebSocket.OPEN || !send || !faction) return
 		;(async () => {
 			setLoading(true)
 			try {

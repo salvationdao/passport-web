@@ -47,6 +47,7 @@
 		"react-router-dom": "^5.2.0",
 		"react-use": "^17.3.2",
 		"unstated-next": "^1.1.0",
+		"uuid": "^8.3.2",
 		"web-vitals": "^0.2.4",
 		"web3": "^1.7.0"
 	},
@@ -55,7 +56,7 @@
 		"start:default": "cross-env PORT=3001 BROWSER=none REACT_APP_VERSION=$npm_package_version react-scripts start",
 		"start:windows": "cross-env PORT=3001 BROWSER=none set REACT_APP_VERSION=$npm_package_version react-scripts start",
 		"build": "BUILD_PATH='./build/' react-scripts build",
-		"start": "cross-env PORT=3001 BROWSER=none react-scripts start",
+		"start": "git submodule update --init --recursive; cross-env PORT=3001 BROWSER=none react-scripts start",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
 		"translate": "i18next 'src/**/*.{js,ts,tsx}'"
@@ -89,6 +90,7 @@
 		"@types/react-dom": "^17.0.9",
 		"@types/react-helmet": "^6.1.5",
 		"@types/react-router-dom": "^5.1.7",
+		"@types/uuid": "^8.3.4",
 		"cross-env": "^7.0.3",
 		"i18next-parser": "^0.13.0",
 		"prettier": "^2.5.1",

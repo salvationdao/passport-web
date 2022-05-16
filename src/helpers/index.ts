@@ -48,15 +48,6 @@ export default function debounce<T extends Function>(cb: T, wait = 20) {
 	return callable as any as T
 }
 
-export function makeid(length: number = 12): string {
-	let result = ""
-	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-	for (let i = 0; i < length; i++) {
-		result += characters.charAt(Math.floor(Math.random() * characters.length))
-	}
-	return result
-}
-
 // Generates a string of URI encoded parameters from an object
 export const getParamsFromObject = (params: any) => {
 	return (
@@ -93,6 +84,10 @@ export const getStringFromShoutingSnakeCase = (val: string) => {
 		.split("_")
 		.map((s) => s.charAt(0).toUpperCase() + s.slice(1))
 		.join(" ")
+}
+
+export function protocol() {
+	return window.location.protocol.match(/^https/) ? "wss" : "ws"
 }
 
 export const countDecimals = (value: string) => {

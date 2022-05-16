@@ -1,6 +1,6 @@
 import { Avatar, Badge } from "@mui/material"
 import { styled } from "@mui/material/styles"
-import useSubscription from "../hooks/useSubscription"
+import useSubscription from "../containers/ws/useSubscription"
 import HubKey from "../keys"
 import { User } from "../types/types"
 
@@ -35,7 +35,10 @@ export const OnlineStatusBadge = styled(Badge)(({ theme }) => ({
 
 /** User Avatar w/ online status badge */
 export const UserAvatar = ({ user }: { user: User }) => {
-	const { payload: onlineStatus } = useSubscription<boolean>(HubKey.UserOnlineStatus, { id: user.id })
+	const onlineStatus = useSubscription<boolean>({
+		URI: `/user/${user.id}`,
+		key: HubKey.UserOnlineStatus,
+	})
 	const avatar = (
 		<Avatar
 			alt={`${user.first_name} ${user.last_name}`}

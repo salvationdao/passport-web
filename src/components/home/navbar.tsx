@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 }
 
 // const RenderFaction = (size: string) => {
-// 	const { user } = useAuth()
+// 	const user = useUser()
 // 	if (user?.faction) {
 // 		return (
 // 			<Box
