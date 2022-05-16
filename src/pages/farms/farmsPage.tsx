@@ -1,17 +1,34 @@
 import { formatUnits, parseUnits } from "@ethersproject/units"
 import AddIcon from "@mui/icons-material/Add"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import HelpCenterIcon from "@mui/icons-material/HelpCenter"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import RemoveIcon from "@mui/icons-material/Remove"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, InputBase, Paper, Stack, styled, Typography, useMediaQuery } from "@mui/material"
+import {
+	Accordion,
+	AccordionDetails,
+	AccordionSummary,
+	Box,
+	Button,
+	ClickAwayListener,
+	InputBase,
+	Paper,
+	Stack,
+	styled,
+	Tooltip,
+	Typography,
+	useMediaQuery,
+} from "@mui/material"
 import { formatDistanceToNow, fromUnixTime, isPast } from "date-fns"
 import { BigNumber, constants } from "ethers"
 import React, { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import { useInterval } from "react-use"
 import Axe from "../../assets/images/gradient/axe.png"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
+import { ModalWithClose } from "../../components/modalWithClose"
 import { ConnectWalletOverlay } from "../../components/transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import {
@@ -25,6 +42,7 @@ import {
 	WRAPPED_BNB_ADDRESS,
 } from "../../config"
 import { FarmData, useWeb3 } from "../../containers/web3"
+import { countDecimals } from "../../helpers"
 import { colors } from "../../theme"
 
 export const FarmsPage = () => {
@@ -141,17 +159,18 @@ const FarmInfo = (props: FarmInfoProps) => {
 	if (props.yieldPercentage === 0) {
 		apr = "--- %"
 	}
+
+	const showAPR = true
 	return (
 		<Stack gap=".2rem" justifyContent="center" sx={{ width: "100%" }}>
 			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
-				<LabelContainer>
-					<InfoLabel>APR:</InfoLabel> <InfoValue>{apr}</InfoValue>
-				</LabelContainer>
+				{showAPR && (
+					<LabelContainer>
+						<InfoLabel>* Dynamic APR:</InfoLabel> <InfoValue sx={{ display: "flex", alignItems: "center", gap: ".5rem" }}>{apr}</InfoValue>
+					</LabelContainer>
+				)}
 			</Stack>
-			<LabelContainer>
-				<InfoLabel>Next phase in:</InfoLabel>
-				<InfoValue>{props.loading ? "---" : props.remainingTime}</InfoValue>
-			</LabelContainer>
+
 			<LabelContainer>
 				<InfoLabel>Global reward rate:</InfoLabel>
 				<InfoValue>
@@ -191,6 +210,8 @@ const FarmCard = (props: FarmCardProps) => {
 	const [web3error, setWeb3Error] = useState<string | null>(null)
 	const [openStaking, setOpenStaking] = useState<boolean | null>(false)
 	const [isStaking, setIsStaking] = useState<boolean | null>(false)
+	const [openTutorial, setOpenTutorial] = useState<boolean | null>(false)
+	const [openInfoApr, setOpenInfoApr] = useState<boolean>(false)
 	const isMobile = useMediaQuery("(max-width:600px)")
 
 	useInterval(() => {
@@ -249,6 +270,14 @@ const FarmCard = (props: FarmCardProps) => {
 			.catch((err) => console.error(`check farm allowance (${FARM_CONTRACT_ADDRESS}) for LP token (${LP_TOKEN_ADDRESS}):`, err))
 	}, [block, provider, signer, account, farmCheckAllowance, farmInfo, pending])
 
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			if (!hasAllowance && localStorage.getItem("disable_staking_tutorial") !== "true") {
+				setOpenTutorial(true)
+			}
+		}
+	}, [hasAllowance])
+
 	let disableStakeButton = false
 	if (!stakeAmount || stakeAmount.eq(0) || stakeDisplayAmount === "") disableStakeButton = true
 	if (!hasAllowance) disableStakeButton = true
@@ -289,6 +318,7 @@ const FarmCard = (props: FarmCardProps) => {
 				setPending({ ...pending, withdraw: false })
 				setWithdrawDisplayAmount("")
 				setWithdrawAmount(BigNumber.from(0))
+				setOpenStaking(false)
 			} catch (error: any) {
 				if (error && typeof error === "string") {
 					setWithdrawError(error)
@@ -352,8 +382,13 @@ const FarmCard = (props: FarmCardProps) => {
 			setStakeDisplayAmount("")
 			setStakeAmount(BigNumber.from(0))
 		}
-		const val = parseUnits(e.target.value, 18)
-		setStakeDisplayAmount(e.target.value)
+		let limitVal = e.target.value
+		const nDecimals = countDecimals(limitVal)
+		if (nDecimals > 6) {
+			limitVal = parseFloat(e.target.value).toFixed(6)
+		}
+		const val = parseUnits(limitVal, 18)
+		setStakeDisplayAmount(limitVal)
 		setStakeAmount(val)
 	}
 	const handleChangeWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -363,302 +398,377 @@ const FarmCard = (props: FarmCardProps) => {
 			setWithdrawAmount(BigNumber.from(0))
 			return
 		}
-		const val = parseUnits(e.target.value, 18)
-		setWithdrawDisplayAmount(e.target.value)
+		let limitVal = e.target.value
+		const nDecimals = countDecimals(limitVal)
+		if (nDecimals > 6) {
+			limitVal = parseFloat(e.target.value).toFixed(6)
+		}
+		const val = parseUnits(limitVal, 18)
+		setWithdrawDisplayAmount(limitVal)
 		setWithdrawAmount(val)
 	}
 
-	if (!data) return <Loading text="Loading please wait..." />
+	if (!data) return <Loading text="Loading data..." />
 	return (
-		<Stack
-			gap="2rem"
-			sx={{
-				"@media (max-width:500px)": {
-					width: "100%",
-				},
-			}}
-		>
-			<FarmInfo
-				remainingTime={remainingTime || "---"}
-				rewardRate={data ? data.rewardRate : BigNumber.from(0)}
-				block={block}
-				loading={!data}
-				lpBalance={data ? data.lpBalance : BigNumber.from(0)}
-				stakingBalance={data ? data.stakingBalance : BigNumber.from(0)}
-				userRewardRate={data ? data.userRewardRate : BigNumber.from(0)}
-				yieldPercentage={data ? data.yieldPercentage : 0}
-				hasAllowance={hasAllowance}
-			/>
-			<Stack gap="1rem">
-				<Stack
-					sx={{
-						justifyContent: "space-between",
-						width: isMobile ? "100%" : "30rem",
-						background: colors.formBg,
-						p: "1rem 1.5rem",
-						borderRadius: "15px",
-						gap: "1rem",
+		<>
+			{openTutorial && (
+				<Tutorial
+					cb={() => {
+						if (typeof window !== "undefined") localStorage.setItem("disable_staking_tutorial", "true")
+						setOpenTutorial(false)
 					}}
-				>
-					<FormSection>
-						<FormSectionInner>
-							<Stack sx={{ height: "100%", justifyContent: "space-between" }}>
-								<FormSectionHeading>Sups Earned</FormSectionHeading>
-								<FormSectionValue>{data ? (+formatUnits(data.earned, 18)).toFixed(6) : "0.000000"}</FormSectionValue>
-							</Stack>
-							<FancyButton
-								borderColor={colors.skyBlue}
-								disabled={disableClaimButton}
-								loading={pending.claim}
-								onClick={async () => {
-									if (!data) return
-									try {
-										setPending({ ...pending, claim: true })
-										const tx = await farmGetReward(FARM_CONTRACT_ADDRESS)
-										await tx.wait()
-									} catch (error: any) {
-										if (error && typeof error === "string") {
-											setWithdrawError(error)
-										}
-										if (error && typeof error === "object") {
-											if (error.message) {
-												setWeb3Error(error.message)
-											}
-										}
-									} finally {
-										setPending({ ...pending, claim: false })
-									}
-								}}
-							>
-								Harvest
-							</FancyButton>
-						</FormSectionInner>
-					</FormSection>
-					<FormSection>
-						<FormSectionInner>
-							<Stack sx={{ height: "100%", justifyContent: "space-between" }}>
-								<FormSectionHeading>Sups-BNB LP STAKED</FormSectionHeading>
-								{hasAllowance && (
-									<FormSectionValue sx={{ color: data?.stakingBalance ? colors.neonPink : colors.darkNeonPink }}>
-										{data ? (+formatUnits(data.stakingBalance, 18)).toFixed(6) : "0.000000"}
-									</FormSectionValue>
-								)}
-							</Stack>
-							{showStakeButton && (
+				/>
+			)}
+			<Stack
+				gap="2rem"
+				sx={{
+					"@media (max-width:500px)": {
+						width: "100%",
+					},
+				}}
+			>
+				<FarmInfo
+					remainingTime={remainingTime || "---"}
+					rewardRate={data ? data.rewardRate : BigNumber.from(0)}
+					block={block}
+					loading={!data}
+					lpBalance={data ? data.lpBalance : BigNumber.from(0)}
+					stakingBalance={data ? data.stakingBalance : BigNumber.from(0)}
+					userRewardRate={data ? data.userRewardRate : BigNumber.from(0)}
+					yieldPercentage={data ? data.yieldPercentage : 0}
+					hasAllowance={hasAllowance}
+				/>
+				<Stack gap="1rem">
+					<Stack
+						sx={{
+							justifyContent: "space-between",
+							width: isMobile ? "100%" : "30rem",
+							background: colors.formBg,
+							p: "1rem 1.5rem",
+							borderRadius: "15px",
+							gap: "1rem",
+						}}
+					>
+						<FormSection>
+							<FormSectionInner>
+								<Stack sx={{ height: "100%", justifyContent: "space-between" }}>
+									<FormSectionHeading>Sups Earned</FormSectionHeading>
+									<FormSectionValue>{data ? (+formatUnits(data.earned, 18)).toFixed(6) : "0.000000"}</FormSectionValue>
+								</Stack>
 								<FancyButton
+									borderColor={colors.skyBlue}
+									disabled={disableClaimButton}
 									loading={pending.claim}
-									onClick={() => {
-										setOpenStaking(true)
-										setIsStaking(true)
+									onClick={async () => {
+										if (!data) return
+										try {
+											setPending({ ...pending, claim: true })
+											const tx = await farmGetReward(FARM_CONTRACT_ADDRESS)
+											await tx.wait()
+										} catch (error: any) {
+											if (error && typeof error === "string") {
+												setWithdrawError(error)
+											}
+											if (error && typeof error === "object") {
+												if (error.message) {
+													setWeb3Error(error.message)
+												}
+											}
+										} finally {
+											setPending({ ...pending, claim: false })
+										}
 									}}
 								>
-									Stake
+									Harvest
 								</FancyButton>
-							)}
-							{showStakeText && (
-								<Typography
-									component="span"
-									sx={{ fontFamily: "bizmobold", textTransform: "uppercase", color: colors.neonPink, fontSize: "1rem" }}
-								>
-									{isStaking ? "Staking" : "Unstaking"}...
-								</Typography>
-							)}
-
-							{showAddMinusButtons && (
-								<Box sx={{ display: "flex", gap: "1rem" }}>
+							</FormSectionInner>
+						</FormSection>
+						<FormSection>
+							<FormSectionInner>
+								<Stack sx={{ height: "100%", justifyContent: "space-between" }}>
+									<FormSectionHeading>Sups-BNB LP STAKED</FormSectionHeading>
+									{hasAllowance && (
+										<FormSectionValue sx={{ color: data?.stakingBalance ? colors.neonPink : colors.darkNeonPink }}>
+											{data ? (+formatUnits(data.stakingBalance, 18)).toFixed(6) : "0.000000"}
+										</FormSectionValue>
+									)}
+								</Stack>
+								{showStakeButton && (
 									<FancyButton
+										loading={pending.claim}
 										onClick={() => {
-											setWeb3Error(null)
-											setOpenStaking(true)
-											setIsStaking(false)
-										}}
-									>
-										<RemoveIcon fontSize="large" />
-									</FancyButton>
-									<FancyButton
-										onClick={() => {
-											setWeb3Error(null)
 											setOpenStaking(true)
 											setIsStaking(true)
 										}}
 									>
-										<AddIcon fontSize="large" />
+										Stake
 									</FancyButton>
-								</Box>
-							)}
-						</FormSectionInner>
-						{!hasAllowance && (
-							<FancyButton
-								loading={pending.approve}
-								onClick={async () => {
-									setPending({ ...pending, approve: true })
-									try {
-										const tx = await farmLPApproveMax(FARM_CONTRACT_ADDRESS)
-										await tx.wait()
-										setPending({ ...pending, approve: false })
-									} catch (error: any) {
-										console.error(error)
-										if (error && typeof error === "string") {
-											setStakeError(error)
-										}
-										if (error && typeof error === "object") {
-											if (error.message) {
-												setWeb3Error(error.message)
+								)}
+								{showStakeText && (
+									<Typography
+										component="span"
+										sx={{ fontFamily: "bizmobold", textTransform: "uppercase", color: colors.neonPink, fontSize: "1rem" }}
+									>
+										{isStaking ? "Staking" : "Unstaking"}...
+									</Typography>
+								)}
+
+								{showAddMinusButtons && (
+									<Box sx={{ display: "flex", gap: "1rem" }}>
+										<FancyButton
+											onClick={() => {
+												setWeb3Error(null)
+												setOpenStaking(true)
+												setIsStaking(false)
+											}}
+										>
+											<RemoveIcon fontSize="large" />
+										</FancyButton>
+										<FancyButton
+											onClick={() => {
+												setWeb3Error(null)
+												setOpenStaking(true)
+												setIsStaking(true)
+											}}
+										>
+											<AddIcon fontSize="large" />
+										</FancyButton>
+									</Box>
+								)}
+							</FormSectionInner>
+							{!hasAllowance && (
+								<FancyButton
+									loading={pending.approve}
+									onClick={async () => {
+										setPending({ ...pending, approve: true })
+										try {
+											const tx = await farmLPApproveMax(FARM_CONTRACT_ADDRESS)
+											await tx.wait()
+											setPending({ ...pending, approve: false })
+										} catch (error: any) {
+											console.error(error)
+											if (error && typeof error === "string") {
+												setStakeError(error)
 											}
+											if (error && typeof error === "object") {
+												if (error.message) {
+													setWeb3Error(error.message)
+												}
+											}
+
+											setPending({ ...pending, approve: false })
 										}
-
-										setPending({ ...pending, approve: false })
-									}
-								}}
-								sx={{ minWidth: "fit-content", mx: "auto", p: ".5rem 2rem", fontSize: "1.2rem" }}
-							>
-								Enable Contract
-							</FancyButton>
-						)}
-
-						{openStaking && (
-							<>
-								<StakingContainer>
-									<Stack gap=".5rem">
-										<StakingLabel>{isStaking ? "Stake" : "Unstake"}</StakingLabel>
-										<StakeInput
-											placeholder="0000"
-											autoComplete="off"
-											value={isStaking ? stakeDisplayAmount : withdrawDisplayAmount}
-											onChange={isStaking ? handleChangeStake : handleChangeWithdraw}
-										/>
-									</Stack>
-									<Stack gap=".5rem">
-										<StakingLabel sx={{ "& span": { ml: ".2rem" } }}>
-											Balance: <span>{!data ? "---" : (+formatUnits(data.lpBalance, 18)).toFixed(4)}</span>
-										</StakingLabel>
-
-										<Box sx={{ display: "flex", gap: "1rem" }}>
-											<MaxButton
-												onClick={() => {
-													if (!data) return
-													if (isStaking) {
-														setStakeAmount(data.lpBalance)
-														setStakeDisplayAmount((+formatUnits(data.lpBalance, 18)).toFixed(6))
-													} else {
-														setWithdrawAmount(data.stakingBalance)
-														setWithdrawDisplayAmount((+formatUnits(data.stakingBalance, 18)).toFixed(6))
-													}
-												}}
-											>
-												Max
-											</MaxButton>{" "}
-											<StakingLabel>SUPS-BNB-LP</StakingLabel>
-										</Box>
-									</Stack>
-								</StakingContainer>
-								<Box
-									sx={{
-										display: "flex",
-										justifyContent: "space-between",
-										gap: "2rem",
-										pt: "1rem",
 									}}
+									sx={{ minWidth: "fit-content", mx: "auto", p: ".5rem 2rem", fontSize: "1.2rem" }}
 								>
-									<FancyButton
-										disabled={isStaking ? !!pending.stake : !!pending.withdraw}
-										borderColor={colors.white}
-										sx={{ width: "calc(50% - 1rem)" }}
-										onClick={() => {
-											setWeb3Error(null)
-											setOpenStaking(false)
-											if (isStaking) {
-												setStakeDisplayAmount("")
-												setStakeAmount(BigNumber.from(0))
-											} else {
-												setWithdrawDisplayAmount("")
-												setWithdrawAmount(BigNumber.from(0))
-											}
-										}}
-									>
-										Cancel
-									</FancyButton>
-									<FancyButton
-										sx={{ width: "calc(50% - 1rem)" }}
-										disabled={isStaking ? disableStakeButton : disableWithdrawButton}
-										loading={isStaking ? !!pending.stake : !!pending.withdraw}
-										onClick={() => {
-											if (isStaking) {
-												handleSubmitStake()
-											} else {
-												handleSubmitWithdraw()
-											}
-										}}
-									>
-										{isStaking ? "Confirm" : "Withdraw"}
-									</FancyButton>
-								</Box>
-							</>
-						)}
-					</FormSection>
-					{(web3error || stakeError) && (
-						<Typography sx={{ color: colors.errorRed }}>
-							{web3error && web3error} {stakeError && stakeError}
-						</Typography>
-					)}
+									Enable Contract
+								</FancyButton>
+							)}
 
-					{withdrawError && <Typography sx={{ color: colors.errorRed }}>{withdrawError}</Typography>}
-					<Typography component="span" sx={{ fontSize: "1rem" }}>
-						Wallet: {!data ? "--- SUPS-BNB LP" : `${(+formatUnits(data.lpBalance, 18)).toFixed(6)} SUP-BNB LP`}{" "}
-					</Typography>
-				</Stack>
-				<Accordion
-					sx={{
-						color: colors.skyBlue,
-						width: "100%",
-						background: colors.formBg,
-						borderRadius: "15px !important",
-						"&.MuiPaper-root::before": {
-							display: "none",
-						},
-					}}
-				>
-					<AccordionSummary
+							{openStaking && (
+								<>
+									<StakingContainer>
+										<Stack gap=".5rem">
+											<StakingLabel>{isStaking ? "Stake" : "Unstake"}</StakingLabel>
+											<StakeInput
+												placeholder="0000"
+												autoComplete="off"
+												value={isStaking ? stakeDisplayAmount : withdrawDisplayAmount}
+												onChange={isStaking ? handleChangeStake : handleChangeWithdraw}
+											/>
+										</Stack>
+										<Stack gap=".5rem">
+											<StakingLabel sx={{ "& span": { ml: ".2rem" } }}>
+												Balance: <span>{!data ? "---" : (+formatUnits(data.lpBalance, 18)).toFixed(6)}</span>
+											</StakingLabel>
+
+											<Box sx={{ display: "flex", gap: "1rem" }}>
+												<MaxButton
+													onClick={() => {
+														if (!data) return
+														if (isStaking) {
+															setStakeAmount(data.lpBalance)
+															setStakeDisplayAmount((+formatUnits(data.lpBalance, 18)).toFixed(6))
+														} else {
+															setWithdrawAmount(data.stakingBalance)
+															setWithdrawDisplayAmount((+formatUnits(data.stakingBalance, 18)).toFixed(6))
+														}
+													}}
+												>
+													Max
+												</MaxButton>{" "}
+												<StakingLabel>SUPS-BNB-LP</StakingLabel>
+											</Box>
+										</Stack>
+									</StakingContainer>
+									<Box
+										sx={{
+											display: "flex",
+											justifyContent: "space-between",
+											gap: "2rem",
+											pt: "1rem",
+										}}
+									>
+										<FancyButton
+											disabled={isStaking ? !!pending.stake : !!pending.withdraw}
+											borderColor={colors.white}
+											sx={{ width: "calc(50% - 1rem)" }}
+											onClick={() => {
+												setWeb3Error(null)
+												setOpenStaking(false)
+												if (isStaking) {
+													setStakeDisplayAmount("")
+													setStakeAmount(BigNumber.from(0))
+												} else {
+													setWithdrawDisplayAmount("")
+													setWithdrawAmount(BigNumber.from(0))
+												}
+											}}
+										>
+											Cancel
+										</FancyButton>
+										<FancyButton
+											sx={{ width: "calc(50% - 1rem)" }}
+											disabled={isStaking ? disableStakeButton : disableWithdrawButton}
+											loading={isStaking ? !!pending.stake : !!pending.withdraw}
+											onClick={() => {
+												if (isStaking) {
+													handleSubmitStake()
+												} else {
+													handleSubmitWithdraw()
+												}
+											}}
+										>
+											{isStaking ? "Confirm" : "Withdraw"}
+										</FancyButton>
+									</Box>
+								</>
+							)}
+						</FormSection>
+						{(web3error || stakeError) && (
+							<Typography sx={{ color: colors.errorRed }}>
+								{web3error && web3error} {stakeError && stakeError}
+							</Typography>
+						)}
+
+						{withdrawError && <Typography sx={{ color: colors.errorRed }}>{withdrawError}</Typography>}
+						<Typography component="span" sx={{ fontSize: "1rem" }}>
+							Wallet: {!data ? "--- SUPS-BNB LP" : `${(+formatUnits(data.lpBalance, 18)).toFixed(6)} SUP-BNB LP`}{" "}
+						</Typography>
+					</Stack>
+					<Accordion
 						sx={{
-							fontSize: "1rem",
-							minHeight: "3.5rem",
-							"&.Mui-expanded": {
-								minHeight: "3.5rem",
-							},
-							"&>div": {
-								my: "0rem !important",
-								width: "fit-content",
-								flexGrow: "unset",
+							color: colors.skyBlue,
+							width: "100%",
+							background: colors.formBg,
+							borderRadius: "15px !important",
+							"&.MuiPaper-root::before": {
+								display: "none",
 							},
 						}}
-						expandIcon={<ExpandMoreIcon sx={{ color: colors.skyBlue }} />}
 					>
-						Details
-					</AccordionSummary>
-					<AccordionDetails sx={{ display: "flex", flexDirection: "column", position: "relative" }}>
-						<Box sx={{ background: colors.darkerGrey, height: ".5px", width: "calc(100% - 2rem)", position: "absolute", top: 0, left: "1rem" }} />
-						<Button
-							component={"a"}
-							href={`https://${BSC_SCAN_SITE}/address/${FARM_CONTRACT_ADDRESS}`}
-							target="_blank"
-							rel="noopener noreferrer"
-							endIcon={<OpenInNewIcon />}
+						<AccordionSummary
+							sx={{
+								fontSize: "1rem",
+								minHeight: "3.5rem",
+								"&.Mui-expanded": {
+									minHeight: "3.5rem",
+								},
+								"&>div": {
+									my: "0rem !important",
+									width: "fit-content",
+									flexGrow: "unset",
+								},
+							}}
+							expandIcon={<ExpandMoreIcon sx={{ color: colors.skyBlue }} />}
 						>
-							Liquidity Farm contract
-						</Button>
-						<Button
-							component={"a"}
-							href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`}
-							target="_blank"
-							rel="noopener noreferrer"
-							endIcon={<OpenInNewIcon />}
-						>
-							Get SUPS-BNB LP tokens
-						</Button>
-					</AccordionDetails>
-				</Accordion>
+							Details
+						</AccordionSummary>
+						<AccordionDetails sx={{ display: "flex", flexDirection: "column", position: "relative", fontSize: ".8rem" }}>
+							<Box
+								sx={{ background: colors.darkerGrey, height: ".5px", width: "calc(100% - 2rem)", position: "absolute", top: 0, left: "1rem" }}
+							/>
+							<Button onClick={() => setOpenTutorial(true)} endIcon={<HelpCenterIcon />} sx={{ fontSize: "1rem" }}>
+								<strong>Learn how to participate</strong>
+							</Button>
+							<Button
+								component={"a"}
+								href={`https://${BSC_SCAN_SITE}/address/${FARM_CONTRACT_ADDRESS}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								endIcon={<OpenInNewIcon />}
+							>
+								Liquidity Farm contract
+							</Button>
+							<Button
+								component={"a"}
+								href={`https://${BSC_SCAN_SITE}/address/${LP_TOKEN_ADDRESS}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								endIcon={<OpenInNewIcon />}
+							>
+								Cake-LP Token contract
+							</Button>
+							<Button
+								component={"a"}
+								href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								endIcon={<OpenInNewIcon />}
+							>
+								Get SUPS-BNB LP tokens
+							</Button>
+							<ClickAwayListener onClickAway={() => setOpenInfoApr(false)}>
+								<Tooltip
+									open={openInfoApr}
+									title={
+										<Box
+											sx={{
+												whiteSpace: "pre-line",
+												"& p": {
+													mt: 0,
+													ml: "5px",
+												},
+											}}
+										>
+											*
+											<span
+												style={{
+													display: "inline-block",
+													textDecoration: "underline",
+													marginLeft: "5px",
+													marginBottom: "5px",
+												}}
+											>
+												Dynamic APR
+											</span>
+											<p>
+												The purpose of displaying APR is simply an indicator as to the current APR rewards received at the time you
+												place liquidity.
+											</p>
+											<p>
+												APR represented is not a reflection of the APR you will receive. There is no guarantee you will ever receive the
+												APR displayed to you.
+											</p>
+											<p>
+												By placing liquidity, you acknowledge that you understand the mechanics of the provision of liquidity in a
+												decentralised exchange.
+											</p>
+											<p>
+												You acknowledge and understand the more people that provide liquidity within the pool the lower APR you will
+												receive.
+											</p>
+										</Box>
+									}
+								>
+									<Button onClick={() => setOpenInfoApr(!openInfoApr)}>* Dynamic APR - Info</Button>
+								</Tooltip>
+							</ClickAwayListener>
+						</AccordionDetails>
+					</Accordion>
+				</Stack>
 			</Stack>
-		</Stack>
+		</>
 	)
 }
 
@@ -731,3 +841,138 @@ const StakeInput = styled(InputBase)({
 	textTransform: "uppercase",
 	height: "1.2rem",
 })
+
+interface ITutorialProps {
+	cb: () => void
+}
+
+const Tutorial: React.FC<ITutorialProps> = ({ cb }) => {
+	const [height, setHeight] = useState<string>("100vh")
+	const mobileScreen = useMediaQuery("(max-width:1000px)")
+
+	useEffect(() => {
+		if (mobileScreen) {
+			setHeight(`${window.innerHeight}px`)
+			const handleResize = () => {
+				// We execute the same script as before
+				const vh = window.innerHeight
+				setHeight(`${vh}px`)
+			}
+			window.addEventListener("resize", handleResize)
+			return () => {
+				window.removeEventListener("resize", handleResize)
+			}
+		}
+	}, [mobileScreen])
+	return (
+		<ModalWithClose cb={cb}>
+			<Box
+				sx={{
+					width: "90vw",
+					maxWidth: "70rem",
+					background: colors.darkerNavyBackground,
+					height: `calc(${height} - 10rem)`,
+					overflowY: "scroll",
+					p: "2em",
+					"@media (min-height:1200px)": {
+						overflow: "hidden",
+					},
+					"@media (max-width:600px)": {
+						p: "1em",
+					},
+				}}
+			>
+				<Stack gap="1rem">
+					<Box
+						sx={{
+							alignSelf: "flex-end",
+							display: "flex",
+							gap: "2rem",
+							textTransform: "uppercase",
+							"& > a": {
+								color: colors.neonPink,
+							},
+						}}
+					>
+						<Typography component="a" href="https://supremacy.game//news/supremacy-yield-farming---frequently-asked-questions" target="_blank">
+							FAQ
+						</Typography>
+						<Typography component="a" href="https://supremacy.game/news/supremacy-yield-farming-program" target="_blank">
+							More Info
+						</Typography>
+					</Box>
+					<Typography
+						variant="h2"
+						sx={{
+							mb: ".5rem",
+							"@media (max-width:600px)": {
+								fontSize: "6vw",
+							},
+						}}
+					>
+						How to participate
+					</Typography>
+				</Stack>
+				<Stack
+					sx={{
+						width: "100%",
+						"& ol": {
+							fontSize: "1.4rem",
+							fontFamily: "Share Tech",
+							"& li:not(last-of-type)": {
+								mb: "1em",
+								"@media (max-width:600px)": {
+									fontSize: "1.2rem",
+								},
+								"& a": {
+									color: colors.neonPink,
+								},
+							},
+						},
+					}}
+				>
+					<ol>
+						<li>
+							Acquire <Link to="/buy">SUPS</Link>&nbsp; and BNB Tokens (WBNB on the BEP-20 network).
+						</li>
+						<li>
+							<a href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer">
+								Add liquidity
+							</a>{" "}
+							to the SUPS/BNB pool.
+						</li>
+						<li>Receive your Cake-LP tokens representing your share of the liquidity pool.</li>
+						<li>
+							Visit the{" "}
+							<a href="https://supremacy.game/staking" target="_blank" rel="noreferrer">
+								supremacy.game
+							</a>{" "}
+							website or game platform{" "}
+							<a href="https://passport.xsyn.io/farms" target="_blank" rel="noreferrer">
+								passport.xsyn.io
+							</a>
+							&nbsp;for the LP Staking Farm.
+						</li>
+						<li>Stake the Cake-LP tokens into the yield farming contract.</li>
+						<li>Collect more SUPS rewards the longer the Cake-LP tokens are staked in the contract.</li>
+						<li>Enjoy up to 6 months of LP Staking rewards for your support.</li>
+					</ol>
+					<iframe
+						width="100%"
+						height="100%"
+						src="https://www.youtube.com/embed/b4Tyl8OIRkA"
+						title="Release Trailer"
+						frameBorder={0}
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture;"
+						allowFullScreen
+						style={{
+							padding: "0 1rem",
+							minHeight: "18rem",
+							maxWidth: "35rem",
+						}}
+					/>
+				</Stack>
+			</Box>
+		</ModalWithClose>
+	)
+}

@@ -1,6 +1,6 @@
 import { Alert, Box, Snackbar, useMediaQuery } from "@mui/material"
 import { useEffect, useState } from "react"
-import { Redirect, Route, Switch } from "react-router-dom"
+import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom"
 import { BlockConfirmationSnackList } from "./components/blockConfirmationSnackList"
 import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { Loading } from "./components/loading"
@@ -123,136 +123,138 @@ export const Routes = () => {
 				height: "100%",
 			}}
 		>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "right",
-				}}
-				open={!!message}
-				autoHideDuration={6000}
-				onClose={(_, reason) => {
-					if (reason === "clickaway") return
-					resetSnackbar()
-				}}
-				{...snackbarProps}
-			>
-				<Alert severity={alertSeverity || "info"}>{message}</Alert>
-			</Snackbar>
-			{user ? (
-				<Switch>
-					<Route path="/nosidebar/login">
-						<LoginPage />
-					</Route>
-					<Route path="/nosidebar/logout">
-						<LogoutPage />
-					</Route>
-					<Route path="/nosidebar/:username/:collection_slug">
-						<CollectionPage />
-					</Route>
-					<Sidebar onClose={() => setSidebarOpen(false)}>
-						<Route exact path="/">
-							<Home />
-						</Route>
-						<Route exact path="/login">
+			<BrowserRouter>
+				<Snackbar
+					anchorOrigin={{
+						vertical: "bottom",
+						horizontal: "right",
+					}}
+					open={!!message}
+					autoHideDuration={6000}
+					onClose={(_, reason) => {
+						if (reason === "clickaway") return
+						resetSnackbar()
+					}}
+					{...snackbarProps}
+				>
+					<Alert severity={alertSeverity || "info"}>{message}</Alert>
+				</Snackbar>
+				{user ? (
+					<Switch>
+						<Redirect from="/farms" to="/staking" exact />
+						<Route path="/nosidebar/login">
 							<LoginPage />
 						</Route>
-						<Route path="/signup">
-							<SignUpPage />
+						<Route path="/nosidebar/logout">
+							<LogoutPage />
 						</Route>
-						<Route path="/onboarding">
-							<PassportReady />
+						<Route path="/nosidebar/:username/:collection_slug">
+							<CollectionPage />
 						</Route>
-
-						<Route path="/privacy-policy">
-							<Home />
-						</Route>
-						<Route path="/terms-and-conditions">
-							<Home />
-						</Route>
-
-						<Route path="/transactions">
-							<TransactionsPage />
-						</Route>
-						<Route path="/farms">
-							<FarmsPage />
-						</Route>
-						<Route path="/withdraw">
-							<WithdrawPage />
-						</Route>
-						<Route path="/deposit">
-							<DepositPage />
-						</Route>
-						<Route path="/mystery">
-							<LootBoxPage />
-						</Route>
-
-						{/* Supremacy */}
-						<Switch>
-							<Route path="/battle_arena">
-								<BattleArenaPage />
+						<Sidebar onClose={() => setSidebarOpen(false)}>
+							<Route exact path="/">
+								<LoginPage />
 							</Route>
-						</Switch>
+							<Route exact path="/login">
+								<LoginPage />
+							</Route>
+							<Route path="/signup">
+								<SignUpPage />
+							</Route>
+							<Route path="/onboarding">
+								<PassportReady />
+							</Route>
 
-						<Route path="/buy">
-							<BuyPage />
-						</Route>
-						<Route path="/nosidebar/buy">
-							<IFrameBuyPage />
-						</Route>
+							<Route path="/privacy-policy">
+								<Home />
+							</Route>
+							<Route path="/terms-and-conditions">
+								<Home />
+							</Route>
+							<Route path="/transactions">
+								<TransactionsPage />
+							</Route>
 
-						{/* User-authenticated routes */}
-						{/* profile */}
-						<Switch>
-							<Route path="/profile/:username/asset/:asset_hash">
-								<ProfilePage />
+							<Route path="/staking">
+								<FarmsPage />
 							</Route>
-							<Route path="/profile/:username/edit">
-								<ProfileEditPage />
+							<Route path="/withdraw">
+								<WithdrawPage />
 							</Route>
-							<Route path="/profile/:username">
-								<ProfilePage />
+							<Route path="/deposit">
+								<DepositPage />
 							</Route>
-							<Route path="/profile">
-								<ProfilePage />
+							<Route path="/mystery">
+								<LootBoxPage />
 							</Route>
-						</Switch>
 
-						{/* stores */}
-						<Switch>
-							<Route path="/stores/:collection_slug/:store_item_id">
-								<StoreItemPage />
-							</Route>
-							<Route path="/stores/:collection_slug">
-								<StorePage />
-							</Route>
-							<Route path="/stores">
-								<StoresPage />
-							</Route>
-						</Switch>
+							{/* Supremacy */}
+							<Switch>
+								<Route path="/battle_arena">
+									<BattleArenaPage />
+								</Route>
+							</Switch>
 
-						{/* Supremacy */}
-						<Switch>
-							<Route path="/battle_arena">
-								<BattleArenaPage />
+							<Route path="/buy">
+								<BuyPage />
 							</Route>
-						</Switch>
-
-						{/* collections */}
-						<Switch>
-							<Route path={"/collections/:username"}>
-								<CollectionPage />
+							<Route path="/nosidebar/buy">
+								<IFrameBuyPage />
 							</Route>
-						</Switch>
 
-						<Route path="/asset/:asset_hash">
-							<AssetRedirectPage />
-						</Route>
-					</Sidebar>
-				</Switch>
-			) : (
-				<LoginPage />
-			)}
+							{/* User-authenticated routes */}
+							{/* profile */}
+							<Switch>
+								<Route path="/profile/:username/asset/:asset_hash">
+									<ProfilePage />
+								</Route>
+								<Route path="/profile/:username/edit">
+									<ProfileEditPage />
+								</Route>
+								<Route path="/profile/:username">
+									<ProfilePage />
+								</Route>
+								<Route path="/profile">
+									<ProfilePage />
+								</Route>
+							</Switch>
 
+							{/* stores */}
+							<Switch>
+								<Route path="/stores/:collection_slug/:store_item_id">
+									<StoreItemPage />
+								</Route>
+								<Route path="/stores/:collection_slug">
+									<StorePage />
+								</Route>
+								<Route path="/stores">
+									<StoresPage />
+								</Route>
+							</Switch>
+
+							{/* Supremacy */}
+							<Switch>
+								<Route path="/battle_arena">
+									<BattleArenaPage />
+								</Route>
+							</Switch>
+
+							{/* collections */}
+							<Switch>
+								<Route path={"/collections/:username"}>
+									<CollectionPage />
+								</Route>
+							</Switch>
+
+							<Route path="/asset/:asset_hash">
+								<AssetRedirectPage />
+							</Route>
+						</Sidebar>
+					</Switch>
+				) : (
+					<LoginPage />
+				)}
+			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
 			{user && account && <CorrectWalletConnected />}

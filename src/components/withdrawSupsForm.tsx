@@ -43,6 +43,11 @@ interface GetSignatureResponse {
 	expiry: number
 }
 
+interface ErrorResponse {
+	error_code?: number
+	message?: string
+}
+
 interface CheckEarlyResponse {
 	max_withdraw: string
 	unlimited: boolean
@@ -201,10 +206,14 @@ export const WithdrawSupsForm = ({
 			const resp = await fetch(
 				`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`,
 			)
-			if (resp.status === 500) {
-				throw await resp.clone().json()
+			const respJson: GetSignatureResponse & ErrorResponse = await resp.json()
+			if (!resp.ok) {
+				if (resp.status === 500) {
+					throw await resp.clone().json()
+				}
+				throw respJson.message
 			}
-			const respJson: GetSignatureResponse = await resp.json()
+
 			const tx = await withdrawContract.withdrawSUPS(withdrawAmount.toString(), respJson.messageSignature, respJson.expiry)
 			setCurrentTransferHash(tx.hash)
 			setCurrentTransferState("confirm")
