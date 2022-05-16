@@ -44,17 +44,10 @@ const ContentBox = styled(Box)({
 	background: "rgba(0, 0, 0, 0.7)",
 })
 
-const TabContent = styled(Box)({
-	display: "flex",
-	flexDirection: "column",
-	textAlign: "center",
-	flex: 1,
-})
-
 const wallpapers = ["/img/rm.png", "/img/bc.png", "/img/zai.png"]
 
 const SupremacyLogin = () => {
-	const [wp, _] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
+	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
 
 	return (
 		<LoginBox wp={wp}>

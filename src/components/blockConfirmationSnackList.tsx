@@ -1,7 +1,6 @@
 import { Box, Snackbar } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
 import { BlockConfirmationSnackbar } from "./blockConfirmationAlert"
-import useUser from "../containers/useUser"
 
 export interface ChainConfirmations {
 	tx: string
@@ -14,9 +13,7 @@ export interface ChainConfirmations {
 }
 
 export const BlockConfirmationSnackList = () => {
-	const user = useUser()
-
-	const [txConfirms, setTxConfirms] = useState<ChainConfirmations[]>([])
+	const [txConfirms] = useState<ChainConfirmations[]>([])
 	const [filterArr, setFilterArr] = useState<string[]>([])
 	const [results, setResults] = useState<ChainConfirmations[]>([])
 

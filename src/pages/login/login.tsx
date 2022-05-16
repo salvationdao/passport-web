@@ -1,5 +1,3 @@
-import * as React from "react"
-import { Box } from "@mui/material"
 import SupremacyLogin from "./supremacy"
 // hard coding Supremacy logo
 

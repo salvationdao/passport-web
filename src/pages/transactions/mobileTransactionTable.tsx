@@ -53,7 +53,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				setError(e.message)
 			}
 		}
-	}, [state, user, transactionID])
+	}, [state, user, transactionID, send])
 
 	if (error)
 		return (

@@ -41,6 +41,7 @@ const useSignup = () => {
 			}
 			return undefined
 		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[signup, account, metaMaskState, fingerprint],
 	)
 

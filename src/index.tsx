@@ -8,7 +8,7 @@ import { Themes } from "./containers"
 import { LicenseInfo } from "@mui/x-data-grid-pro"
 import App from "./App"
 
-import { createClient, Client, Action, ClientContextProvider } from "react-fetching-library"
+import { createClient, Action, ClientContextProvider } from "react-fetching-library"
 import { FingerprintProvider } from "./containers/fingerprint"
 import { AuthProvider } from "./containers/auth"
 import { Web3Provider } from "./containers/web3"

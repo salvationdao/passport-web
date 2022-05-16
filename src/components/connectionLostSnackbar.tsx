@@ -2,7 +2,6 @@ import { Link, Snackbar, SnackbarOrigin, Typography } from "@mui/material"
 import Alert, { AlertColor } from "@mui/material/Alert"
 import { useEffect, useRef, useState } from "react"
 import useCommands from "../containers/ws/useCommands"
-import { useInterval } from "react-use"
 
 export const MAX_COUNTDOWN_SECONDS = 5
 export const MAX_RECONNECT_ATTEMPTS = 3

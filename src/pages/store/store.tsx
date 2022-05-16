@@ -83,7 +83,7 @@ export const StorePage: React.FC = () => {
 		}).then((collection) => {
 			setCollection(collection)
 		})
-	}, [collection_slug, state])
+	}, [collection_slug, send, state])
 
 	useEffect(() => {
 		if (user) {

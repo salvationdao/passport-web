@@ -54,7 +54,7 @@ export const AuthContainer = createContainer(() => {
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const [showSimulation, setShowSimulation] = useState(false)
 
-	const [token, _setToken] = useState<string>(localStorage.getItem("token") || "")
+	const [, _setToken] = useState<string>(localStorage.getItem("token") || "")
 
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
@@ -78,13 +78,13 @@ export const AuthContainer = createContainer(() => {
 
 	const isLogoutPage = window.location.pathname.startsWith("/nosidebar/logout")
 
-	const clear = () => {
+	const clear = useCallback(() => {
 		console.info("clearing local storage")
 		console.trace()
 		setUser(undefined)
-	}
+	}, [])
 
-	const { loading: loginLoading, payload: loginPayload, mutate: login, error: loginError } = useMutation(loginAction)
+	const { loading: loginLoading, mutate: login, error: loginError } = useMutation(loginAction)
 	const { mutate: logoutMutation } = useMutation(logoutAction)
 
 	const externalAuth = useMemo(
@@ -147,7 +147,7 @@ export const AuthContainer = createContainer(() => {
 		} catch (error) {
 			console.error()
 		}
-	}, [loginAction, isLogoutPage, sessionId, wcProvider])
+	}, [logoutMutation, sessionId, clear, wcProvider, isLogoutPage])
 
 	/**
 	 * Logs a User in using their email and password.
@@ -177,7 +177,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[login, sessionId, fingerprint],
+		[login, redirectURL, sessionId, fingerprint, authType, setToken, clear],
 	)
 
 	/**
@@ -219,7 +219,7 @@ export const AuthContainer = createContainer(() => {
 				setLoading(false)
 			}
 		},
-		[login, sessionId, fingerprint],
+		[redirectURL, sessionId, fingerprint, externalAuth, login, clear],
 	)
 
 	/**
@@ -277,7 +277,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			throw e
 		}
-	}, [login, sign, sessionId, connect, fingerprint])
+	}, [connect, sign, redirectURL, sessionId, fingerprint, login, setToken, externalAuth, clear])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -313,7 +313,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [login, account, sessionId, signWalletConnect, wcSignature, fingerprint])
+	}, [wcSignature, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, authType, setToken, clear])
 
 	// Effect
 	useEffect(() => {
@@ -327,31 +327,34 @@ export const AuthContainer = createContainer(() => {
 	/**
 	 * Verifies a User and takes them to the next page.
 	 */
-	const verify = useCallback(async (token: string, forgotPassword?: boolean) => {
-		clear()
+	const verify = useCallback(
+		async (token: string, forgotPassword?: boolean) => {
+			clear()
 
-		setVerifying(true)
-		const resp = await fetch(
-			`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/verify?token=${token}${forgotPassword ? "&forgot=true" : ""}`,
-		)
-		const respObj: VerifyAccountResponse = await resp.json()
-		if (resp.status !== 200) {
-			// TODO: get the actual error
-			throw new Error()
-		}
-		if (!respObj || !respObj.user) {
+			setVerifying(true)
+			const resp = await fetch(
+				`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/verify?token=${token}${forgotPassword ? "&forgot=true" : ""}`,
+			)
+			const respObj: VerifyAccountResponse = await resp.json()
+			if (resp.status !== 200) {
+				// TODO: get the actual error
+				throw new Error()
+			}
+			if (!respObj || !respObj.user) {
+				setVerifying(false)
+				return resp
+			}
+
+			setUser(respObj.user)
+			setToken(respObj.token)
 			setVerifying(false)
-			return resp
-		}
-
-		setUser(respObj.user)
-		setToken(respObj.token)
-		setVerifying(false)
-		setVerifyCompleteType(forgotPassword ? VerificationType.ForgotPassword : VerificationType.EmailVerification)
-		setAuthorised(true)
-		setLoading(false)
-		return respObj
-	}, [])
+			setVerifyCompleteType(forgotPassword ? VerificationType.ForgotPassword : VerificationType.EmailVerification)
+			setAuthorised(true)
+			setLoading(false)
+			return respObj
+		},
+		[clear, setToken],
+	)
 
 	/** Checks if current user has a permission */
 	const hasPermission = (perm: Perm) => {
@@ -373,7 +376,7 @@ export const AuthContainer = createContainer(() => {
 		} else {
 			setLoading(false)
 		}
-	}, [loginToken])
+	}, [loginToken, user])
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {

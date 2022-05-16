@@ -9,29 +9,6 @@ import { FancyButton } from "./fancyButton"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import useCommands from "../../containers/ws/useCommands"
 
-interface StatProps {
-	title: string
-	content: string | number
-	prefixImageUrl?: string
-}
-
-const Stat: React.VoidFunctionComponent<StatProps> = ({ title, content, prefixImageUrl }) => {
-	return (
-		<Box sx={{ width: 180 }}>
-			<Typography variant="body2" sx={{ color: colors.supremacy.grey }}>
-				{title}
-			</Typography>
-
-			<Stack direction="row" alignItems="center" spacing={0.5}>
-				{prefixImageUrl && <Box component="img" src={prefixImageUrl} alt={title} sx={{ height: 14 }} />}
-				<Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
-					{content}
-				</Typography>
-			</Stack>
-		</Box>
-	)
-}
-
 interface EnlistFactionRequest {
 	faction_id: string
 }
@@ -42,7 +19,7 @@ interface PopoverContentProps {
 }
 
 const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ factionData, onClose }) => {
-	const [page, setPage] = useState(0)
+	const [page] = useState(0)
 	const { send, state } = useCommands()
 	const { displayMessage } = useSnackbar()
 

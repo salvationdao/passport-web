@@ -33,7 +33,7 @@ export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({
 			setItem(payload.item)
 			setPriceInSups(payload.price_in_sups)
 		})
-	}, [storeItemID])
+	}, [send, storeItemID])
 
 	if (!item || !priceInSups) {
 		return <StoreItemCardSkeleton />

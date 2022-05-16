@@ -71,7 +71,7 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 		}).then((collection) => {
 			setCollection(collection)
 		})
-	}, [collectionSlug])
+	}, [collectionSlug, send])
 
 	useEffect(() => {
 		setLoading(true)
@@ -90,7 +90,7 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 		} finally {
 			setLoading(false)
 		}
-	}, [assetHash])
+	}, [assetHash, send])
 
 	// set attributes
 	useEffect(() => {

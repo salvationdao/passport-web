@@ -60,7 +60,7 @@ export const StoreItemPage = () => {
 		}).then((collection) => {
 			setCollection(collection)
 		})
-	}, [collection_slug, state])
+	}, [collection_slug, send, state])
 
 	useEffect(() => {
 		if (!videoDiv || !videoDiv.current) return
@@ -84,7 +84,7 @@ export const StoreItemPage = () => {
 		} finally {
 			setLoading(false)
 		}
-	}, [id, state, user])
+	}, [id, send, state, user])
 
 	useEffect(() => {
 		if (!storeItem) return
