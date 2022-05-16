@@ -48,7 +48,7 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			}
 			setItem(payload.purchased_item)
 		})
-	}, [assetHash])
+	}, [assetHash, send])
 
 	if (noAsset) return <></>
 
