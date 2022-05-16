@@ -9,6 +9,16 @@ https://passport.xsyndev.io {
     }
 }
 
+https://play.supremacygame.io {
+	log {
+		output discard
+	}
+	reverse_proxy * localhost:3002
+	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
+        ca ./certs/__supremacygame_io.ca-bundle
+    }
+}
+
 https://api.xsyndev.io {
 	log {
 		output discard
@@ -19,23 +29,11 @@ https://api.xsyndev.io {
     }
 }
 
-
 https://api.supremacygame.io {
 	log {
 		output discard
 	}
 	reverse_proxy * localhost:8084
-	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
-        ca ./certs/__supremacygame_io.ca-bundle
-    }
-}
-
-
-https://play.supremacygame.io {
-	log {
-		output discard
-	}
-	reverse_proxy * localhost:3002
 	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
         ca ./certs/__supremacygame_io.ca-bundle
     }
