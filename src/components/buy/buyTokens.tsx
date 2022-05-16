@@ -16,7 +16,6 @@ import { ConnectWallet } from "../connectWallet"
 import { FancyButton } from "../fancyButton"
 import { Loading } from "../loading"
 import { TokenSelect } from "./tokenSelect"
-import useWS from "../../containers/ws/useWS"
 import useSubscription from "../../containers/ws/useSubscription"
 
 type conversionType = "supsToTokens" | "tokensToSups"
@@ -26,7 +25,6 @@ const MINIMUM_SPEND = "5"
 
 export const BuyTokens: React.FC = () => {
 	const { user, userId } = useAuth()
-	const { state, subscribe } = useWS({ URI: `/user/${userId}/sups` })
 	const {
 		changeChain,
 		currentChainId,
@@ -69,13 +67,16 @@ export const BuyTokens: React.FC = () => {
 		}
 	}, [exchangeRates])
 
-	useEffect(() => {
-		if (state !== WebSocket.OPEN) return
-		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
+	useSubscription<string>(
+		{
+			URI: `/user/${userId}/sups`,
+			key: HubKey.SupTotalRemaining,
+		},
+		(amount) => {
 			const maxAmount = parseUnits("500000", 18)
 			setAmountRemaining(BigNumber.from(amount).lt(maxAmount) ? BigNumber.from(amount) : maxAmount)
-		})
-	}, [subscribe, state])
+		},
+	)
 
 	useEffect(() => {
 		if (currentToken.name === "usdc") {
@@ -238,9 +239,12 @@ export const BuyTokens: React.FC = () => {
 		}
 	}, [currentChainId, acceptedChainExceptions, setCurrentToken, tokenOptions, currentToken.name, currentToken.chainId])
 
-	useEffect(() => {
-		if (state !== WebSocket.OPEN) return
-		return subscribe<{ bnb_to_usd: string; eth_to_usd: string; sup_to_usd: string; enable_sale: boolean }>(HubKey.SupExchangeRates, (rates) => {
+	useSubscription<{ bnb_to_usd: string; eth_to_usd: string; sup_to_usd: string; enable_sale: boolean }>(
+		{
+			URI: `/user/${userId}/sups`,
+			key: HubKey.SupExchangeRates,
+		},
+		(rates) => {
 			if (!rates) {
 				window.location.replace("https://supremacy.game/launch")
 				return
@@ -257,8 +261,8 @@ export const BuyTokens: React.FC = () => {
 					return
 				}
 			setExchangeRates(r)
-		})
-	}, [state, subscribe])
+		},
+	)
 
 	useEffect(() => {
 		if (enableSale === false) {
@@ -301,7 +305,6 @@ export const BuyTokens: React.FC = () => {
 		setLoading(true)
 		setTransferState("waiting")
 		try {
-			if (state !== WebSocket.OPEN) return
 			let tx
 			if (currentToken.isNative) {
 				tx = await sendNativeTransfer(tokenAmt)
