@@ -12,11 +12,11 @@ import { Transition, TransitionState } from "../../components/transition"
 import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
-import { useWebsocket } from "../../containers/socket"
 import { fetching } from "../../fetching"
 import { formatBytes } from "../../helpers"
 import HubKey from "../../keys"
 import { User } from "../../types/types"
+import useCommands from "../../containers/ws/useCommands"
 
 interface PasswordRequirementProps extends BoxProps {
 	fulfilled: boolean
@@ -61,7 +61,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	// Image uploads
 	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
 	const [loading, setLoading] = useState(false)
-	const { send } = useWebsocket()
+	const { send } = useCommands()
 	const { setSidebarOpen } = useSidebarState()
 	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
 	const [file, setFile] = useState<File>()

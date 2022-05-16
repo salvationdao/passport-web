@@ -11,6 +11,7 @@ import {
 	DialogContent,
 	DialogTitle,
 	Divider,
+	FormControlLabel,
 	IconButton,
 	Link,
 	Paper,
@@ -18,7 +19,6 @@ import {
 	Switch,
 	Typography,
 	useMediaQuery,
-	FormControlLabel,
 } from "@mui/material"
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
@@ -34,7 +34,6 @@ import { Loading } from "../../components/loading"
 import { SwitchNetworkButton } from "../../components/switchNetwortButton"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
 import { useSnackbar } from "../../containers/snackbar"
-import { useWebsocket } from "../../containers/socket"
 import { MetaMaskState, useWeb3 } from "../../containers/web3"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { metamaskErrorHandling } from "../../helpers/web3"
@@ -45,6 +44,7 @@ import { OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemRes
 import { Attribute, Collection, User } from "../../types/types"
 import { NumberAttribute } from "./numberAttribute"
 import { rarityTextStyles } from "./profile"
+import useCommands from "../../containers/ws/useCommands"
 
 interface AssetViewContainerProps {
 	user: User
@@ -53,7 +53,7 @@ interface AssetViewContainerProps {
 }
 
 export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainerProps) => {
-	const { state, subscribe } = useWebsocket()
+	const { send } = useCommands()
 	const [collectionSlug, setCollectionSlug] = useState<string | null>(null)
 	const [collection, setCollection] = useState<Collection | null>(null)
 	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem | null>(null)
@@ -62,40 +62,35 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 	const [numberAttributes, setNumberAttributes] = useState<Attribute[]>([])
 	const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
 	const [itemHost, setItemHost] = useState<string>()
-	// const [itemType, setItemType] = useState<string>()
 	const [itemModel, setItemModel] = useState<string>()
 
 	useEffect(() => {
 		if (!collectionSlug) return
-		subscribe<Collection>(
-			HubKey.CollectionUpdated,
-			(payload) => {
-				setCollection(payload)
-			},
-			{ slug: collectionSlug },
-		)
-	}, [collectionSlug, subscribe])
+		send<Collection>(HubKey.CollectionUpdated, {
+			slug: collectionSlug,
+		}).then((collection) => {
+			setCollection(collection)
+		})
+	}, [collectionSlug, send])
 
 	useEffect(() => {
 		setLoading(true)
 		try {
-			return subscribe<PurchasedItemResponse>(
-				HubKey.AssetUpdated,
-				async (payload) => {
-					if (!payload) return
-					setPurchasedItem(payload.purchased_item)
-					setOwnerUsername(payload.owner_username)
-					setItemHost(payload.host_url)
-					setCollectionSlug(payload.collection_slug)
-				},
-				{ asset_hash: assetHash },
-			)
+			send<PurchasedItemResponse>(HubKey.AssetUpdated, {
+				asset_hash: assetHash,
+			}).then((payload) => {
+				if (!payload) return
+				setPurchasedItem(payload.purchased_item)
+				setOwnerUsername(payload.owner_username)
+				setItemHost(payload.host_url)
+				setCollectionSlug(payload.collection_slug)
+			})
 		} catch (e) {
 			setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
 		} finally {
 			setLoading(false)
 		}
-	}, [state, assetHash, subscribe])
+	}, [assetHash, send])
 
 	// set attributes
 	useEffect(() => {
@@ -583,7 +578,13 @@ export const AssetView = ({
 									}}
 								>
 									{showOpenseaURL && (
-										<Button component={"a"} href={openseaURL} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNewIcon />}>
+										<Button
+											component={"a"}
+											href={openseaURL}
+											target="_blank"
+											rel="noopener noreferrer"
+											endIcon={<OpenInNewIcon />}
+										>
 											View on OpenSea
 										</Button>
 									)}
@@ -653,7 +654,7 @@ const StyledDisabledButton = styled(({ navigate, ...props }: ButtonProps & { nav
 
 const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: PurchasedItem; userID: string }) => {
 	const { open, onClose, asset, userID } = props
-	const { send } = useWebsocket()
+	const { send } = useCommands()
 	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
 	const [loading, setLoading] = useState(false)
@@ -830,7 +831,17 @@ const lock_endpoint = (account: string, collection_slug: string, token_id: numbe
 	return `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/owner_address/${account}/collection_slug/${collection_slug}/token_id/${token_id}`
 }
 
-const LockedModal = ({ remainingTime, open, unlocked_at, setClose }: { open: boolean; unlocked_at: Date; setClose: () => void; remainingTime: string }) => {
+const LockedModal = ({
+	remainingTime,
+	open,
+	unlocked_at,
+	setClose,
+}: {
+	open: boolean
+	unlocked_at: Date
+	setClose: () => void
+	remainingTime: string
+}) => {
 	return (
 		<Dialog
 			open={open}
@@ -1048,7 +1059,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				if (!provider) return
 				setLoadingMint(true)
 				// get nonce from mint contract
-				// send nonce, amount and user wallet addr to server
+				// sen nonce, amount and user wallet addr to server
 				// server validates they have enough sups
 				// server generates a sig and returns it
 				// submit that sig to mint contract mintSups func
@@ -1056,7 +1067,10 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 
 				// A Human-Readable ABI; for interacting with the contract,
 				// we must include any fragment we wish to use
-				const abi = ["function nonces(address) view returns (uint256)", "function signedMint(uint256 tokenID, bytes signature, uint256 expiry)"]
+				const abi = [
+					"function nonces(address) view returns (uint256)",
+					"function signedMint(uint256 tokenID, bytes signature, uint256 expiry)",
+				]
 				const signer = provider.getSigner()
 				const mintContract = new ethers.Contract(mintingContract, abi, signer)
 				const nonce = await mintContract.nonces(account)

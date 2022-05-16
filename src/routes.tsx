@@ -11,12 +11,11 @@ import { useAuth } from "./containers/auth"
 import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
-import { SocketState, useWebsocket } from "./containers/socket"
 import { useWeb3 } from "./containers/web3"
 import HubKey from "./keys"
 import { AssetRedirectPage } from "./pages/assetRedirect"
 import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
-import { LoginPage } from "./pages/auth/login"
+import LoginPage from "./pages/login/login"
 import { LogoutPage } from "./pages/auth/logout"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
@@ -35,10 +34,11 @@ import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
+import useCommands from "./containers/ws/useCommands"
 
 export const Routes = () => {
 	const { account } = useWeb3()
-	const { state, send } = useWebsocket()
+	const { send } = useCommands()
 	const { setSidebarOpen } = useSidebarState()
 	const { fingerprint } = useFingerprint()
 	const { setSessionID, user, loading: authLoading } = useAuth()
@@ -51,13 +51,13 @@ export const Routes = () => {
 
 	// Fingerprinting
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send || !fingerprint) return
+		if (!fingerprint) return
 		;(async () => {
 			await send(HubKey.UserFingerprint, {
 				fingerprint,
 			})
 		})()
-	}, [state, send, fingerprint])
+	}, [send, fingerprint])
 
 	useEffect(() => {
 		if (mobileScreen || window.location.pathname.includes("nosidebar")) {
@@ -98,19 +98,17 @@ export const Routes = () => {
 		} catch (error) {
 			setOkCheck(false)
 		}
-	}, [state])
+	}, [])
 
 	if (okCheck === false) {
 		return (
 			<>
-				<BrowserRouter>
-					<Route path="/">
-						<Maintenance />
-						<ConnectionLostSnackbar app="public" />
-						<BlockConfirmationSnackList />
-					</Route>
-					<Redirect to="/" />
-				</BrowserRouter>
+				<Route path="/">
+					<Maintenance />
+					<ConnectionLostSnackbar app="public" />
+					<BlockConfirmationSnackList />
+				</Route>
+				<Redirect to="/" />
 			</>
 		)
 	}

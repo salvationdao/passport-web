@@ -4,7 +4,10 @@ import {
 	Box,
 	Collapse,
 	Link,
+	MenuItem,
+	Pagination,
 	Paper,
+	Select,
 	styled,
 	SwipeableDrawer,
 	Tab,
@@ -13,9 +16,6 @@ import {
 	tabsClasses,
 	Typography,
 	useMediaQuery,
-	Pagination,
-	Select,
-	MenuItem,
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
@@ -26,8 +26,6 @@ import { Navbar } from "../../components/home/navbar"
 import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
-import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { useQuery } from "../../hooks/useSend"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
@@ -35,12 +33,14 @@ import { Collection } from "../../types/types"
 import { FilterChip, SortChip } from "../profile/profile"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const StorePage: React.FC = () => {
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
-	const { subscribe, state } = useWebsocket()
-	const { user } = useAuth()
+	const { state, send } = useCommands()
+	const user = useUser()
 
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [collection, setCollection] = useState<Collection>()
@@ -77,18 +77,13 @@ export const StorePage: React.FC = () => {
 	}
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection_slug) return
-		return subscribe<Collection>(
-			HubKey.CollectionUpdated,
-			(payload) => {
-				if (!payload) return
-				setCollection(payload)
-			},
-			{
-				slug: collection_slug,
-			},
-		)
-	}, [collection_slug, subscribe, state])
+		if (state !== WebSocket.OPEN || !collection_slug) return
+		send<Collection>(HubKey.CollectionUpdated, {
+			slug: collection_slug,
+		}).then((collection) => {
+			setCollection(collection)
+		})
+	}, [collection_slug, send, state])
 
 	useEffect(() => {
 		if (user) {
@@ -102,7 +97,6 @@ export const StorePage: React.FC = () => {
 	}, [userLoad, user])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !collection) return
 		const filtersItems: any[] = []
 
 		if (collection && collection.id) {
@@ -267,7 +261,12 @@ export const StorePage: React.FC = () => {
 						gap: ".5rem",
 					}}
 				>
-					<FilterChip active={rarities.has("Colossal")} label="Colossal" color={colors.rarity.COLOSSAL} onClick={() => toggleRarity("Colossal")} />
+					<FilterChip
+						active={rarities.has("Colossal")}
+						label="Colossal"
+						color={colors.rarity.COLOSSAL}
+						onClick={() => toggleRarity("Colossal")}
+					/>
 					<FilterChip
 						active={rarities.has("Legendary")}
 						label="Legendary"
@@ -287,9 +286,19 @@ export const StorePage: React.FC = () => {
 						onClick={() => toggleRarity("Ultra Rare")}
 					/>
 					<FilterChip active={rarities.has("Exotic")} label="Exotic" color={colors.rarity.EXOTIC} onClick={() => toggleRarity("Exotic")} />
-					<FilterChip active={rarities.has("Guardian")} label="Guardian" color={colors.rarity.GUARDIAN} onClick={() => toggleRarity("Guardian")} />
+					<FilterChip
+						active={rarities.has("Guardian")}
+						label="Guardian"
+						color={colors.rarity.GUARDIAN}
+						onClick={() => toggleRarity("Guardian")}
+					/>
 					<FilterChip active={rarities.has("Mythic")} label="Mythic" color={colors.rarity.MYTHIC} onClick={() => toggleRarity("Mythic")} />
-					<FilterChip active={rarities.has("Deus ex")} label="Deus ex" color={colors.rarity.DEUS_EX} onClick={() => toggleRarity("Deus ex")} />
+					<FilterChip
+						active={rarities.has("Deus ex")}
+						label="Deus ex"
+						color={colors.rarity.DEUS_EX}
+						onClick={() => toggleRarity("Deus ex")}
+					/>
 					<FilterChip active={rarities.has("Titan")} label="Titan" color={colors.rarity.TITAN} onClick={() => toggleRarity("Titan")} />
 				</Box>
 			</Box>
@@ -526,7 +535,11 @@ export const StorePage: React.FC = () => {
 									}}
 								>
 									<Typography variant="subtitle2" color={colors.darkGrey}>
-										{loading ? "Loading store items..." : error ? "An error occurred while loading store items." : "No results found."}
+										{loading
+											? "Loading store items..."
+											: error
+											? "An error occurred while loading store items."
+											: "No results found."}
 									</Typography>
 								</Paper>
 							)}

@@ -1,13 +1,13 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import { Box, Button, Skeleton, styled, Typography, TypographyProps } from "@mui/material"
 import { useEffect, useState } from "react"
-import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
 import { TransactionEntryProps, TransactionTableProps } from "./desktopTransactionTable"
+import useCommands from "../../containers/ws/useCommands"
+import useUser from "../../containers/useUser"
 
 export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps) => {
 	return (
@@ -33,22 +33,19 @@ export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps
 }
 
 const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
-	const { user } = useAuth()
-	const { state, subscribe } = useWebsocket()
+	const user = useUser()
+	const { state, send } = useCommands()
 	const [entry, setEntry] = useState<Transaction>()
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !subscribe || !user) return
+		if (state !== WebSocket.OPEN || !user) return
 
 		try {
-			return subscribe<Transaction>(
-				HubKey.TransactionSubscribe,
-				(payload) => {
-					setEntry(payload)
-				},
-				{ transaction_id: transactionID },
-			)
+			send<Transaction>(HubKey.TransactionSubscribe, { transaction_id: transactionID }).then((payload) => {
+				if (!payload) return
+				setEntry(payload)
+			})
 		} catch (e) {
 			if (typeof e === "string") {
 				setError(e)
@@ -56,7 +53,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				setError(e.message)
 			}
 		}
-	}, [subscribe, state, user, transactionID])
+	}, [state, user, transactionID, send])
 
 	if (error)
 		return (

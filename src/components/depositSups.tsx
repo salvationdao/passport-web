@@ -8,15 +8,15 @@ import Arrow from "../assets/images/arrow.png"
 import SupsToken from "../assets/images/sup-token.svg"
 import { SUPS_CONTRACT_ADDRESS } from "../config"
 import { useAuth } from "../containers/auth"
-import { SocketState, useWebsocket } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import { AddressDisplay, metamaskErrorHandling } from "../helpers/web3"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { transferStateType } from "../types/types"
 import { FancyButton } from "./fancyButton"
+import useCommands from "../containers/ws/useCommands"
+import useSubscription from "../containers/ws/useSubscription"
 
 //TODO: after transfer on blockchain, give user ON WORLD game tokens
 
@@ -40,9 +40,9 @@ export const DepositSups = ({
 	setError,
 }: DepositSupsProps) => {
 	const { metaMaskState, supBalance, provider, sendTransferToPurchaseAddress, account } = useWeb3()
-	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
-	const { user } = useAuth()
-	const { state, send } = useWebsocket()
+	const { user, userId } = useAuth()
+	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
+	const { state, send } = useCommands()
 
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsTotal, setSupsTotal] = useState<BigNumber>()
@@ -82,7 +82,7 @@ export const DepositSups = ({
 
 		try {
 			setCurrentTransferState("waiting")
-			if (state !== SocketState.OPEN) return
+			if (state !== WebSocket.OPEN) return
 			const tx = await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, bigNumDepositAmt)
 			setCurrentTransferHash(tx.hash)
 			setCurrentTransferState("confirm")
@@ -146,7 +146,10 @@ export const DepositSups = ({
 							)}
 						</Box>
 						<Box sx={{ display: "flex" }}>
-							<Typography variant="h6" sx={{ color: colors.lightNavyBlue2, fontWeight: 800, marginRight: ".5rem", alignSelf: "center" }}>
+							<Typography
+								variant="h6"
+								sx={{ color: colors.lightNavyBlue2, fontWeight: 800, marginRight: ".5rem", alignSelf: "center" }}
+							>
 								Amount:
 							</Typography>
 							<TextField
@@ -262,8 +265,14 @@ export const DepositSups = ({
 					</Box>
 				</Box>
 				<FancyButton
-					loading={state !== SocketState.OPEN || !send}
-					disabled={!depositAmount || !supBalance || depositAmount.gt(supBalance) || currentTransferState !== "none" || immediateError !== undefined}
+					loading={state !== WebSocket.OPEN || !send}
+					disabled={
+						!depositAmount ||
+						!supBalance ||
+						depositAmount.gt(supBalance) ||
+						currentTransferState !== "none" ||
+						immediateError !== undefined
+					}
 					borderColor={colors.skyBlue}
 					sx={{ marginTop: "1.5rem", width: "50%" }}
 					onClick={() => {

@@ -3,13 +3,13 @@ import { Box, BoxProps, Skeleton, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
-import { useWebsocket } from "../../containers/socket"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
+import useCommands from "../../containers/ws/useCommands"
 
 export interface CollectionItemCardProps {
 	assetHash: string
@@ -18,7 +18,7 @@ export interface CollectionItemCardProps {
 
 export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ assetHash, username }) => {
 	const history = useHistory()
-	const { subscribe } = useWebsocket()
+	const { send } = useCommands()
 	const [item, setItem] = useState<PurchasedItem>()
 	//const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
 	const [showPreview, setShowPreview] = useState(false)
@@ -38,20 +38,17 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 	}, [history, assetHash])
 
 	useEffect(() => {
-		if (!subscribe || assetHash === "") return
-		return subscribe<PurchasedItemResponse>(
-			HubKey.AssetUpdated,
-			(payload) => {
-				if (!payload || !payload.purchased_item) {
-					setNoAsset(true)
-					return
-				}
-				setItem(payload.purchased_item)
-				//setOwnerUsername(payload.owner_username)
-			},
-			{ asset_hash: assetHash },
-		)
-	}, [subscribe, assetHash])
+		if (!assetHash || assetHash === "") return
+		send<PurchasedItemResponse>(HubKey.AssetUpdated, {
+			asset_hash: assetHash,
+		}).then((payload) => {
+			if (!payload || !payload.purchased_item) {
+				setNoAsset(true)
+				return
+			}
+			setItem(payload.purchased_item)
+		})
+	}, [assetHash, send])
 
 	if (noAsset) return <></>
 
