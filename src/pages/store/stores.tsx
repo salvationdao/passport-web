@@ -13,13 +13,13 @@ import { colors } from "../../theme"
 import { Collection, Faction } from "../../types/types"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
-import { useCommands } from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
 // Displays all stores available to the user
 export const StoresPage = () => {
 	const { user } = useAuth()
-	const { state, send } = useCommands({ URI: "/public/commander" })
+	const { state, send } = usePassportCommandsUser("/commander")
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(false)
@@ -155,7 +155,7 @@ interface StoreCollectionProps {
 }
 
 const StoreCollection: React.VoidFunctionComponent<StoreCollectionProps> = ({ collection, faction }) => {
-	const { state, send } = useCommands({ URI: "/public/commander" })
+	const { state, send } = usePassportCommandsUser("/commander")
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [search, setSearch] = useState("")
 	const [loading, setLoading] = useState(false)

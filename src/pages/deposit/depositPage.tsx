@@ -17,7 +17,7 @@ import { colors } from "../../theme"
 import { DepositTransaction, transferStateType } from "../../types/types"
 import { DesktopDepositTransactionTable } from "./desktopDepositTransactionTable"
 import { MobileDepositTransactionTable } from "./mobileDepositTransactionTable"
-import { useCommands } from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
 interface CanEnterResponse {
@@ -40,7 +40,7 @@ export const DepositPage = () => {
 		}
 	}, [])
 	const { user } = useAuth()
-	const { state, send } = useCommands({ URI: "/public/commander" })
+	const { state, send } = usePassportCommandsUser("/commander")
 	const { account, changeChain, currentChainId } = useWeb3()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 

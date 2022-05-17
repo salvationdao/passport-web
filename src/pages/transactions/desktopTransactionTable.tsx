@@ -5,7 +5,7 @@ import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
-import { useCommands } from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
 export interface TransactionTableProps {
@@ -89,7 +89,7 @@ export interface TransactionEntryProps {
 
 const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 	const { user } = useAuth()
-	const { state, send } = useCommands({ URI: "/public/commander" })
+	const { state, send } = usePassportCommandsUser("/commander")
 	const [entry, setEntry] = useState<Transaction>()
 	const [error, setError] = useState<string>()
 

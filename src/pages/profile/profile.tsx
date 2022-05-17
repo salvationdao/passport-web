@@ -31,7 +31,7 @@ import { Rarity } from "../../types/enums"
 import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 import { AssetViewContainer } from "./assetView"
-import { useCommands } from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
 export const ProfilePage: React.FC = () => {
@@ -48,7 +48,7 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 	const history = useHistory()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
-	const { send } = useCommands({ URI: "/public/commander" })
+	const { send } = usePassportCommandsUser("/commander")
 
 	// User
 	const [user, setUser] = useState<User>()

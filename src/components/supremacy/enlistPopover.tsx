@@ -7,7 +7,7 @@ import { Faction } from "../../types/types"
 import { ClipThing } from "./clipThing"
 import { FancyButton } from "./fancyButton"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
-import { useCommands } from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 interface EnlistFactionRequest {
 	faction_id: string
@@ -20,7 +20,7 @@ interface PopoverContentProps {
 
 const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ factionData, onClose }) => {
 	const [page] = useState(0)
-	const { state, send } = useCommands({ URI: "/public/commander" })
+	const { state, send } = usePassportCommandsUser("/commander")
 	const { displayMessage } = useSnackbar()
 
 	// Media queries

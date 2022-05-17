@@ -31,7 +31,7 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import { useCommands } from "../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../hooks/usePassport"
 import { useSubscription } from "../containers/ws/useSubscription"
 import keys from "../keys"
 
@@ -43,7 +43,7 @@ export interface SidebarLayoutProps {
 
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
-	const { state, send } = useCommands({ URI: "/public/commander" })
+	const { state, send } = usePassportCommandsUser("/commander")
 	const { sidebarOpen } = useSidebarState()
 	const { logout, userID } = useAuth()
 	const { user } = useAuth()

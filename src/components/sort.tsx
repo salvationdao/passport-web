@@ -10,7 +10,7 @@ import HubKey from "../keys"
 import { FilterChip, SortChip } from "../pages/profile/profile"
 import { colors } from "../theme"
 import { Collection } from "../types/types"
-import { useCommands } from "../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../hooks/usePassport"
 import { useAuth } from "../containers/auth"
 
 interface SortProps {
@@ -47,7 +47,7 @@ export const Sort = ({
 	const [collections, setCollections] = useState<Collection[]>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
-	const { state, send } = useCommands({ URI: "/public/commander" })
+	const { state, send } = usePassportCommandsUser("/commander")
 	const { displayMessage } = useSnackbar()
 	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")

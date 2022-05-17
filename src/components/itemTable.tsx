@@ -19,7 +19,7 @@ import {
 import Alert from "@mui/material/Alert"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { SearchBar } from "./searchBar"
-import { useCommands } from "../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../hooks/usePassport"
 
 const pageSizeDefault = 20
 
@@ -91,7 +91,7 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	} = props
 
 	const history = useHistory()
-	const { send } = useCommands({ URI: "/public/commander" })
+	const { send } = usePassportCommandsUser("/commander")
 
 	const [searchArgs] = useState(new URLSearchParams(history.location.search))
 	const [pageArg] = useState(searchArgs.get("page"))

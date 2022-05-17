@@ -1,7 +1,7 @@
 import { Link, Snackbar, SnackbarOrigin, Typography } from "@mui/material"
 import Alert, { AlertColor } from "@mui/material/Alert"
 import { useEffect, useRef, useState } from "react"
-import { useCommands } from "../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../hooks/usePassport"
 
 export const MAX_COUNTDOWN_SECONDS = 5
 export const MAX_RECONNECT_ATTEMPTS = 3
@@ -39,7 +39,7 @@ const Dots: React.FC = ({ children }) => {
  * Displays a snack bar if server disconnects and have it reconnect automatically within X seconds.
  */
 export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
-	const { state } = useCommands({ URI: "/public/commander" })
+	const { state } = usePassportCommandsUser("/commander")
 	const [init, setInit] = useState(true)
 	const [lostConnection, setLostConnection] = useState(false)
 

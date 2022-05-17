@@ -14,7 +14,7 @@ import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { RegisterResponse } from "../../types/auth"
 import { PasswordRequirement } from "./onboarding"
-import { useCommands } from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 interface SignUpInput {
 	username: string
@@ -26,7 +26,7 @@ interface SignUpInput {
 
 export const SignUpPage: React.FC = () => {
 	const history = useHistory()
-	const { send } = useCommands({ URI: "/public/commander" })
+	const { send } = usePassportCommandsUser("/commander")
 	const { setUser, user } = useAuth()
 	const { setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()

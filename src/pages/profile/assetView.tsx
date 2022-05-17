@@ -44,7 +44,7 @@ import { OnChainStatus, PurchasedItem, PurchasedItemAttributes, PurchasedItemRes
 import { Attribute, Collection, User } from "../../types/types"
 import { NumberAttribute } from "./numberAttribute"
 import { rarityTextStyles } from "./profile"
-import { useCommands } from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 interface AssetViewContainerProps {
 	user: User
@@ -53,7 +53,7 @@ interface AssetViewContainerProps {
 }
 
 export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainerProps) => {
-	const { send } = useCommands({ URI: "/public/commander" })
+	const { send } = usePassportCommandsUser("/commander")
 	const [collectionSlug, setCollectionSlug] = useState<string | null>(null)
 	const [collection, setCollection] = useState<Collection | null>(null)
 	const [purchasedItem, setPurchasedItem] = useState<PurchasedItem | null>(null)
@@ -654,7 +654,7 @@ const StyledDisabledButton = styled(({ navigate, ...props }: ButtonProps & { nav
 
 const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: PurchasedItem; userID: string }) => {
 	const { open, onClose, asset, userID } = props
-	const { send } = useCommands({ URI: "/public/commander" })
+	const { send } = usePassportCommandsUser("/commander")
 	const { displayMessage } = useSnackbar()
 	const { control, handleSubmit, setValue } = useForm<{ name: string }>()
 	const [loading, setLoading] = useState(false)

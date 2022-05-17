@@ -27,7 +27,7 @@ import { colors, fonts } from "../../theme"
 import { SortChip } from "../profile/profile"
 import { DesktopTransactionTable } from "./desktopTransactionTable"
 import { MobileTransactionTable } from "./mobileTransactionTable"
-import { useCommands } from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
 type GroupType = "All" | "Ungrouped" | string
@@ -35,7 +35,7 @@ type GroupType = "All" | "Ungrouped" | string
 export const TransactionsPage = () => {
 	const history = useHistory()
 	const { user } = useAuth()
-	const { state, send } = useCommands({ URI: "/public/commander" })
+	const { state, send } = usePassportCommandsUser("/commander")
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
 
