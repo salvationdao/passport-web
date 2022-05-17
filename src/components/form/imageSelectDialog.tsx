@@ -1,4 +1,17 @@
-import { Box, Alert, CircularProgress, Pagination, Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography, Card, Tooltip } from "@mui/material"
+import {
+	Box,
+	Alert,
+	CircularProgress,
+	Pagination,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	Button,
+	Typography,
+	Card,
+	Tooltip,
+} from "@mui/material"
 import { useState, useEffect } from "react"
 import { SearchBar } from "../searchBar"
 import { useQuery } from "../../hooks/useSend"
@@ -11,7 +24,6 @@ interface ImageSelectDialogProps {
 
 export const ImageSelectDialog = (props: ImageSelectDialogProps) => {
 	const { onClose, onSelect } = props
-	const token = localStorage.getItem("token")
 	const [search, setSearch] = useState("")
 	const [page, setPage] = useState(0)
 	const [pageSize] = useState(40)
@@ -67,7 +79,7 @@ export const ImageSelectDialog = (props: ImageSelectDialogProps) => {
 											backgroundSize: "cover",
 											backgroundPositionX: "center",
 											cursor: "pointer",
-											backgroundImage: `url(/api/files/${image.id}?token=${encodeURIComponent(token || "")})`,
+											backgroundImage: `url(/api/files/${image.id}`,
 										}}
 									/>
 								</Card>

@@ -34,13 +34,13 @@ import { FilterChip, SortChip } from "../profile/profile"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 import useCommands from "../../containers/ws/useCommands"
-import useUser from "../../containers/useUser"
+import { useAuth } from "../../containers/auth"
 
 export const StorePage: React.FC = () => {
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const history = useHistory()
 	const { state, send } = useCommands()
-	const user = useUser()
+	const { user } = useAuth()
 
 	const [storeItemIDs, setStoreItemIDs] = useState<string[]>([])
 	const [collection, setCollection] = useState<Collection>()

@@ -28,7 +28,7 @@ import { Sort } from "../../components/sort"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { colors } from "../../theme"
 import { CollectionItemCard } from "./collectionItemCard"
-import useUser from "../../containers/useUser"
+import { useAuth } from "../../containers/auth"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const [loading, setLoading] = useState(true)
@@ -45,7 +45,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const user = useUser()
+	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	const toggleAssetType = (assetType: string) => {

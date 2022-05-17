@@ -3,14 +3,13 @@ import useSubscription from "./ws/useSubscription"
 import { User } from "../types/types"
 import keys from "../keys"
 
-const useUser = (userId?: string) => {
-	const { user: { id } = {} } = useAuth()
-	if (!id) {
+const useUser = (userId: string) => {
+	const { userID } = useAuth()
+	if (!userID) {
 		throw new Error("useUser should not be mounted when not logged in")
 	}
-	const URI = userId ? `/public/user/${userId}` : `/user/${id}`
 
-	return useSubscription<User>({ URI, key: keys.User })
+	return useSubscription<User>({ URI: `/public/user/${userId}`, key: keys.User })
 }
 
 export default useUser

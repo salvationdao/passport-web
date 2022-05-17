@@ -14,11 +14,11 @@ import { Collection, Faction } from "../../types/types"
 import { LootBoxCard } from "./lootBoxCard"
 import { StoreItemCard } from "./storeItemCard"
 import useCommands from "../../containers/ws/useCommands"
-import useUser from "../../containers/useUser"
+import { useAuth } from "../../containers/auth"
 
 // Displays all stores available to the user
 export const StoresPage = () => {
-	const user = useUser()
+	const { user } = useAuth()
 	const { send, state } = useCommands()
 	const { displayMessage } = useSnackbar()
 	const [collections, setCollections] = useState<Collection[]>([])

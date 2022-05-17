@@ -1,7 +1,7 @@
 import { CssBaseline } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
 import { Themes } from "./containers"
-import { useAuth } from "./containers/auth"
+import { useAuth, UserUpdater } from "./containers/auth"
 import { SidebarStateProvider } from "./containers/sidebar"
 import "./fonts.css"
 import { loadIcons } from "./helpers/loadicons"
@@ -15,7 +15,7 @@ import LoginPage from "./pages/login/login"
 loadIcons()
 
 const AppInner = () => {
-	const { user, loading } = useAuth()
+	const { user, userID, loading } = useAuth()
 	if (loading) return <Loading />
 	if (!user) {
 		return (
@@ -34,6 +34,7 @@ const AppInner = () => {
 	}
 	return (
 		<WSProvider defaultHost={API_ENDPOINT_HOSTNAME} commanderURI={`/user/${user.id}/commander`}>
+			{!!userID && <UserUpdater />}
 			<SidebarStateProvider>
 				<Routes />
 			</SidebarStateProvider>

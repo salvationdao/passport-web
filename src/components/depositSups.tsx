@@ -40,8 +40,8 @@ export const DepositSups = ({
 	setError,
 }: DepositSupsProps) => {
 	const { metaMaskState, supBalance, provider, sendTransferToPurchaseAddress, account } = useWeb3()
-	const { user, userId } = useAuth()
-	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
+	const { user, userID } = useAuth()
+	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
 	const { state, send } = useCommands()
 
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))

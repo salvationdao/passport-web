@@ -24,7 +24,7 @@ const BIG_NUMBER_FIX = 10 ** 6
 const MINIMUM_SPEND = "5"
 
 export const BuyTokens: React.FC = () => {
-	const { user, userId } = useAuth()
+	const { user, userID } = useAuth()
 	const {
 		changeChain,
 		currentChainId,
@@ -51,7 +51,7 @@ export const BuyTokens: React.FC = () => {
 	const [minAmount, setMinAmount] = useState<BigNumber>()
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
-	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
+	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
 	const acceptedChainExceptions = currentChainId?.toString() === BINANCE_CHAIN_ID || currentChainId?.toString() === ETHEREUM_CHAIN_ID
 	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
 	const [tokenDecimals, setTokenDecimals] = useState(18)
@@ -69,7 +69,7 @@ export const BuyTokens: React.FC = () => {
 
 	useSubscription<string>(
 		{
-			URI: `/user/${userId}/sups`,
+			URI: `/user/${userID}/sups`,
 			key: HubKey.SupTotalRemaining,
 		},
 		(amount) => {
@@ -241,7 +241,7 @@ export const BuyTokens: React.FC = () => {
 
 	useSubscription<{ bnb_to_usd: string; eth_to_usd: string; sup_to_usd: string; enable_sale: boolean }>(
 		{
-			URI: `/user/${userId}/sups`,
+			URI: `/user/${userID}/sups`,
 			key: HubKey.SupExchangeRates,
 		},
 		(rates) => {
