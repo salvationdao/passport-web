@@ -9,6 +9,8 @@ import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 import { Action, useMutation, useQuery } from "react-fetching-library"
 import useSignup from "./signup"
+import useSubscription from "../ws/useSubscription"
+import keys from "../../keys"
 
 export enum VerificationType {
 	EmailVerification,
@@ -29,7 +31,6 @@ const loginAction = (formValues: LoginRequest & { authType: string }): Action<Us
 export const AuthContainer = createContainer(() => {
 	const { fingerprint } = useFingerprint()
 	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
-
 	const [user, _setUser] = useState<User>()
 
 	const setUser = (user?: User) => {
@@ -127,9 +128,11 @@ export const AuthContainer = createContainer(() => {
 			// Wallet connect
 			if (wcProvider) wcProvider.disconnect()
 
+			setLoading(true)
+
 			if (isLogoutPage) {
 				window.close()
-			} else if (!isLogoutPage) {
+			} else {
 				window.location.reload()
 			}
 
@@ -363,7 +366,6 @@ export const AuthContainer = createContainer(() => {
 					clear()
 					return
 				}
-				console.log(typeof resp.payload)
 				// else set up user
 				setUser(resp.payload)
 				setAuthorised(true)
@@ -421,3 +423,22 @@ export const AuthContainer = createContainer(() => {
 
 export const AuthProvider = AuthContainer.Provider
 export const useAuth = AuthContainer.useContainer
+
+export const UserUpdater = () => {
+	const { userID, setUser } = useAuth()
+
+	// Subscribe on the user
+	useSubscription<User>(
+		{
+			URI: `/user/${userID}`,
+			key: keys.User,
+			ready: !!userID,
+		},
+		(payload) => {
+			if (!payload) return
+			setUser(payload)
+		},
+	)
+
+	return null
+}

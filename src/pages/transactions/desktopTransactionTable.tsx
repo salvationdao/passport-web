@@ -6,7 +6,7 @@ import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
 import useCommands from "../../containers/ws/useCommands"
-import useUser from "../../containers/useUser"
+import { useAuth } from "../../containers/auth"
 
 export interface TransactionTableProps {
 	transactionIDs: string[]
@@ -88,7 +88,7 @@ export interface TransactionEntryProps {
 }
 
 const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
-	const user = useUser()
+	const { user } = useAuth()
 	const { state, send } = useCommands()
 	const [entry, setEntry] = useState<Transaction>()
 	const [error, setError] = useState<string>()

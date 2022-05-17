@@ -34,7 +34,6 @@ import { WithdrawSupsModal } from "./withdrawSupsModal"
 import useCommands from "../containers/ws/useCommands"
 import useSubscription from "../containers/ws/useSubscription"
 import keys from "../keys"
-import useUser from "../containers/useUser"
 
 const drawerWidth = 260
 
@@ -47,7 +46,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const { send, state } = useCommands()
 	const { sidebarOpen } = useSidebarState()
 	const { logout, userID } = useAuth()
-	const user = useUser()
+	const { user } = useAuth()
 
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 

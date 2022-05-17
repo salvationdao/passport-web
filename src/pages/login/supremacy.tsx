@@ -4,6 +4,8 @@ import { Box, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import { XSYNLogo } from "../../assets"
 import LoginForm from "./form"
+import { useAuth } from "../../containers/auth"
+import { Redirect } from "react-router-dom"
 
 interface LoginBoxProps {
 	wp: string
@@ -48,7 +50,10 @@ const wallpapers = ["/img/rm.png", "/img/bc.png", "/img/zai.png"]
 
 const SupremacyLogin = () => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
-
+	const { userID } = useAuth()
+	if (userID) {
+		return <Redirect to={"/profile"} />
+	}
 	return (
 		<LoginBox wp={wp}>
 			<Box sx={{ padding: "50px 50px 20px 50px", flex: 1, display: "flex" }}>

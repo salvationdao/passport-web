@@ -99,7 +99,6 @@ export const Routes = () => {
 			setOkCheck(false)
 		}
 	}, [])
-
 	if (okCheck === false) {
 		return (
 			<>
@@ -116,7 +115,6 @@ export const Routes = () => {
 	if (!user && authLoading) {
 		return <Loading text={loadingText} />
 	}
-
 	return (
 		<Box
 			sx={{

@@ -32,11 +32,10 @@ import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 import { AssetViewContainer } from "./assetView"
 import useCommands from "../../containers/ws/useCommands"
-import useUser from "../../containers/useUser"
+import { useAuth } from "../../containers/auth"
 
 export const ProfilePage: React.FC = () => {
-	const user = useUser()
-
+	const { user } = useAuth()
 	if (!user) {
 		return <Loading />
 	}
