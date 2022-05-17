@@ -26,13 +26,13 @@ import { colors, fonts } from "../../theme"
 import { Faction, Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
-import useCommands from "../../containers/ws/useCommands"
+import { useCommands } from "../../containers/ws/useCommands"
 import { useAuth } from "../../containers/auth"
 
 export const LootBoxPage = () => {
 	const [loading, setLoading] = useState(false)
 	const [asset, setAsset] = useState<PurchasedItem | null>(null)
-	const { state, send } = useCommands()
+	const { state, send } = useCommands({ URI: "/public/commander" })
 	const { user } = useAuth()
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")

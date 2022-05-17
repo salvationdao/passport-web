@@ -31,8 +31,8 @@ import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
 import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import useCommands from "../containers/ws/useCommands"
-import useSubscription from "../containers/ws/useSubscription"
+import { useCommands } from "../containers/ws/useCommands"
+import { useSubscription } from "../containers/ws/useSubscription"
 import keys from "../keys"
 
 const drawerWidth = 260
@@ -43,7 +43,7 @@ export interface SidebarLayoutProps {
 
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
-	const { send, state } = useCommands()
+	const { state, send } = useCommands({ URI: "/public/commander" })
 	const { sidebarOpen } = useSidebarState()
 	const { logout, userID } = useAuth()
 	const { user } = useAuth()

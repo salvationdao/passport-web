@@ -16,7 +16,7 @@ import { fetching } from "../../fetching"
 import { formatBytes } from "../../helpers"
 import HubKey from "../../keys"
 import { User } from "../../types/types"
-import useCommands from "../../containers/ws/useCommands"
+import { useCommands } from "../../containers/ws/useCommands"
 
 interface PasswordRequirementProps extends BoxProps {
 	fulfilled: boolean
@@ -61,7 +61,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 	// Image uploads
 	const uploadCircleRef = useRef<HTMLDivElement | null>(null)
 	const [loading, setLoading] = useState(false)
-	const { send } = useCommands()
+	const { send } = useCommands({ URI: "/public/commander" })
 	const { setSidebarOpen } = useSidebarState()
 	const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
 	const [file, setFile] = useState<File>()

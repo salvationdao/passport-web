@@ -2,10 +2,10 @@ import { Alert, Box, Button, Paper, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
-import useCommands from "../../containers/ws/useCommands"
+import { useCommands } from "../../containers/ws/useCommands"
 
 export const TwoFactorAuthenticationRecoveryCode = () => {
-	const { send } = useCommands()
+	const { send } = useCommands({ URI: "/public/commander" })
 	const [recoveryCode, setRecoveryCode] = useState<string[]>([])
 	const [clickDownload, setClickDownload] = useState(false)
 	const [error, setError] = useState<string>()

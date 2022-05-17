@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
 import HubKey from "../keys"
-import useCommands from "../containers/ws/useCommands"
+import { useCommands } from "../containers/ws/useCommands"
 
 export const useQuery = <P = any, R = any>(hubKey: HubKey, initFetch?: boolean, request?: R) => {
-	const { send } = useCommands()
+	const { send } = useCommands({ URI: "/public/commander" })
 	const [loading, setLoading] = useState<boolean>(false)
 	const [payload, setPayload] = useState<P | undefined>(undefined)
 	const [error, setError] = useState<string | undefined>(undefined)

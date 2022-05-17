@@ -9,7 +9,7 @@ import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
 import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
-import useCommands from "../../containers/ws/useCommands"
+import { useCommands } from "../../containers/ws/useCommands"
 
 export interface CollectionItemCardProps {
 	assetHash: string
@@ -18,7 +18,7 @@ export interface CollectionItemCardProps {
 
 export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ assetHash, username }) => {
 	const history = useHistory()
-	const { send } = useCommands()
+	const { send } = useCommands({ URI: "/public/commander" })
 	const [item, setItem] = useState<PurchasedItem>()
 	//const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
 	const [showPreview, setShowPreview] = useState(false)

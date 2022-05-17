@@ -3,10 +3,10 @@ import { red } from "@mui/material/colors"
 import { useState } from "react"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
-import useCommands from "../../containers/ws/useCommands"
+import { useCommands } from "../../containers/ws/useCommands"
 
 export const TwoFactorAuthenticationVerification = () => {
-	const { send } = useCommands()
+	const { send } = useCommands({ URI: "/public/commander" })
 	const [code, setCode] = useState("")
 	const [errMessage, setErrMessage] = useState("")
 

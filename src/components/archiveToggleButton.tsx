@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { Perm } from "../types/enums"
 import { AuthContainer } from "../containers"
 import HubKey from "../keys"
-import useCommands from "../containers/ws/useCommands"
+import { useCommands } from "../containers/ws/useCommands"
 
 interface Props {
 	/** The name of the object being archived/unarchived; used for dialog text */
@@ -29,7 +29,7 @@ export const ArchiveToggleButton = (props: Props) => {
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string>()
 
-	const { send } = useCommands()
+	const { send } = useCommands({ URI: "/public/commander" })
 	const toggleArchive = useCallback(async () => {
 		setLoading(true)
 		try {

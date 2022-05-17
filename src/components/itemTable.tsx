@@ -19,7 +19,7 @@ import {
 import Alert from "@mui/material/Alert"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { SearchBar } from "./searchBar"
-import useCommands from "../containers/ws/useCommands"
+import { useCommands } from "../containers/ws/useCommands"
 
 const pageSizeDefault = 20
 
@@ -91,7 +91,7 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 	} = props
 
 	const history = useHistory()
-	const { send } = useCommands()
+	const { send } = useCommands({ URI: "/public/commander" })
 
 	const [searchArgs] = useState(new URLSearchParams(history.location.search))
 	const [pageArg] = useState(searchArgs.get("page"))
@@ -129,7 +129,17 @@ export const ItemTable = React.forwardRef<ItemTableAPIRef, ItemTableProps>((prop
 					return
 				}
 				if (updateSearchParams) {
-					const search = getSearchArgs(querySearch, sortBy, sortDir, props.sortBy || "", props.sortDir, pageSize, page, filterArchived, filter)
+					const search = getSearchArgs(
+						querySearch,
+						sortBy,
+						sortDir,
+						props.sortBy || "",
+						props.sortDir,
+						pageSize,
+						page,
+						filterArchived,
+						filter,
+					)
 					if (history.location.search !== "?" + search) history.replace({ search, hash: history.location.hash })
 				}
 				setPayload(response)
@@ -318,7 +328,12 @@ const ItemTableToolbar = (props: ItemTableToolbarProps) => {
 				{!hideArchiveButton && (
 					<FormControlLabel
 						control={
-							<Switch checked={archived} onChange={() => props.onFilterArchiveChange(!archived)} name={"archivedSwitch"} color={"primary"} />
+							<Switch
+								checked={archived}
+								onChange={() => props.onFilterArchiveChange(!archived)}
+								name={"archivedSwitch"}
+								color={"primary"}
+							/>
 						}
 						label={archivedLabel || "Archived"}
 					/>
