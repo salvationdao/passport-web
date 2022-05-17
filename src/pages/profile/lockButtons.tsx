@@ -1,12 +1,12 @@
 import { Box, Divider, Modal, Stack, Tooltip, Typography } from "@mui/material"
 import React, { useCallback, useMemo } from "react"
-import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import { StyledFancyButton } from "./profile"
 import { useSnackbar } from "../../containers/snackbar"
-import { useAuth } from "../../containers/auth"
+import useUser from "../../containers/useUser"
+import useCommands from "../../containers/ws/useCommands"
 
 export const lockOptions: LockOptionsProps[] = [
 	{
@@ -41,7 +41,7 @@ interface LockModalProps {
 }
 
 export const LockButton: React.FC<LockBaseProps & LockButtonProps> = ({ option, setOpen, setLockOption }) => {
-	const { user } = useAuth()
+	const user = useUser()
 
 	const isLocked = useMemo(() => {
 		if (option.type === "withdrawals" && user?.withdraw_lock) {
@@ -74,7 +74,7 @@ export const LockButton: React.FC<LockBaseProps & LockButtonProps> = ({ option, 
 }
 
 export const LockModal = ({ open, option, setOpen }: LockBaseProps & LockModalProps) => {
-	const { send } = useWebsocket()
+	const { send } = useCommands()
 	const { displayMessage } = useSnackbar()
 
 	const lockRequest = useCallback(
