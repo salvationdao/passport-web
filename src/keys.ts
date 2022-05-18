@@ -16,7 +16,7 @@ enum HubKey {
 
 	UserOnlineStatus = "USER:ONLINE_STATUS",
 
-	UserSupsSubscribe = "USER:SUPS",
+	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
 	UserFingerprint = "USER:FINGERPRINT",
 
 	ImageList = "IMAGE:LIST",
