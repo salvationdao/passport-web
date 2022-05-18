@@ -29,13 +29,13 @@ import { StoreItem, StoreItemAttibutes, StoreItemResponse } from "../../types/st
 import { Attribute, Collection } from "../../types/types"
 import { NumberAttribute } from "../profile/numberAttribute"
 import { rarityTextStyles } from "../profile/profile"
-import useCommands from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
 export const StoreItemPage = () => {
 	const { store_item_id: id, collection_slug } = useParams<{ store_item_id: string; collection_slug: string }>()
 	const history = useHistory()
-	const { send, state } = useCommands()
+	const { state, send } = usePassportCommandsUser("/commander")
 	const { user } = useAuth()
 
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
@@ -658,7 +658,7 @@ export const StoreItemPage = () => {
 
 const PurchaseStoreItemModal = (props: { open: boolean; onClose: () => void; storeItem: StoreItem; collection_slug: string }) => {
 	const { open, onClose, storeItem, collection_slug } = props
-	const { send, state } = useCommands()
+	const { state, send } = usePassportCommandsUser("/commander")
 	const [loading, setLoading] = useState(false)
 	const [purchasedOpen, setPurchasedOpen] = useState(false)
 	const [errorOpen, setErrorOpen] = useState(false)

@@ -1,7 +1,7 @@
 import { Link, Snackbar, SnackbarOrigin, Typography } from "@mui/material"
 import Alert, { AlertColor } from "@mui/material/Alert"
 import { useEffect, useRef, useState } from "react"
-import useCommands from "../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../hooks/usePassport"
 
 export const MAX_COUNTDOWN_SECONDS = 5
 export const MAX_RECONNECT_ATTEMPTS = 3
@@ -39,7 +39,7 @@ const Dots: React.FC = ({ children }) => {
  * Displays a snack bar if server disconnects and have it reconnect automatically within X seconds.
  */
 export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
-	const { state, retryTime } = useCommands()
+	const { state } = usePassportCommandsUser("/commander")
 	const [init, setInit] = useState(true)
 	const [lostConnection, setLostConnection] = useState(false)
 
@@ -54,7 +54,7 @@ export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
 			setConnecting(true)
 			setInit(true)
 		}
-	}, [state, init, lostConnection, retryTime])
+	}, [state, init, lostConnection])
 
 	const [connecting, setConnecting] = useState<boolean>(false)
 
@@ -81,7 +81,6 @@ export const ConnectionLostSnackbar = (props: { app: "admin" | "public" }) => {
 	return (
 		<Snackbar anchorOrigin={anchorOrigin} open={lostConnection && [WebSocket.CLOSED, WebSocket.CONNECTING].includes(state)}>
 			<Alert severity={snackbarSeverity}>
-				{state === WebSocket.CLOSED && `Lost connection to server, reconnecting in ${retryTime} seconds.`}
 				{state === WebSocket.CLOSED && (
 					<Typography variant={"body2"}>
 						{"Failed to connect to the server, "}

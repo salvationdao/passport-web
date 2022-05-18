@@ -8,8 +8,8 @@ import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { ConnectWallet } from "./connectWallet"
 import { FancyButton } from "./fancyButton"
-import useSubscription from "../containers/ws/useSubscription"
 import { useAuth } from "../containers/auth"
+import { useSubscription } from "../containers/ws"
 
 interface WithdrawModalProps {
 	open: boolean

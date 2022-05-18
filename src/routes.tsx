@@ -34,11 +34,11 @@ import { StoreItemPage } from "./pages/store/storeItem"
 import { StoresPage } from "./pages/store/stores"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
-import useCommands from "./containers/ws/useCommands"
+import { usePassportCommandsUser } from "./hooks/usePassport"
 
 export const Routes = () => {
 	const { account } = useWeb3()
-	const { send } = useCommands()
+	const { send } = usePassportCommandsUser("/commander")
 	const { setSidebarOpen } = useSidebarState()
 	const { fingerprint } = useFingerprint()
 	const { setSessionID, user, loading: authLoading } = useAuth()

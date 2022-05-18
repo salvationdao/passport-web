@@ -6,7 +6,7 @@ import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
 import { TransactionEntryProps, TransactionTableProps } from "./desktopTransactionTable"
-import useCommands from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
 export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps) => {
@@ -34,7 +34,7 @@ export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps
 
 const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 	const { user } = useAuth()
-	const { state, send } = useCommands()
+	const { state, send } = usePassportCommandsUser("/commander")
 	const [entry, setEntry] = useState<Transaction>()
 	const [error, setError] = useState<string>()
 
