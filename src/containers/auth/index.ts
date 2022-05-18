@@ -360,14 +360,15 @@ export const AuthContainer = createContainer(() => {
 		try {
 			;(async () => {
 				const resp = await authCheck()
-				setLoading(false)
 				if (resp.error || !resp.payload) {
 					clear()
+					setLoading(false)
 					return
 				}
 				// else set up user
 				setUser(resp.payload)
 				setAuthorised(true)
+				setLoading(false)
 			})()
 		} catch (error) {
 			console.log(error)
