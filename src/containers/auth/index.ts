@@ -56,7 +56,7 @@ export const AuthContainer = createContainer(() => {
 
 	const [sessionId, setSessionID] = useState("")
 
-	const isLogoutPage = window.location.pathname.startsWith("/nosidebar/logout")
+	const isLogoutPage = window.location.pathname.startsWith("/external/logout")
 
 	const clear = useCallback(() => {
 		console.info("clearing local storage")
@@ -211,6 +211,21 @@ export const AuthContainer = createContainer(() => {
 		},
 		[redirectURL, sessionId, fingerprint, externalAuth, login, clear],
 	)
+
+	/**
+	 * External login User with passport cookie
+	 *
+	 */
+	const loginCookieExternal = useCallback(() => {
+		const args = {
+			redirectURL,
+			authType: "cookie",
+		}
+		if (redirectURL) {
+			externalAuth({ ...args, fingerprint: undefined })
+			return
+		}
+	}, [externalAuth, redirectURL])
 
 	/**
 	 * Logs a User in using a Metamask public address
@@ -418,6 +433,7 @@ export const AuthContainer = createContainer(() => {
 		setShowSimulation,
 		authType,
 		setAuthType,
+		loginCookieExternal,
 	}
 })
 
