@@ -5,8 +5,8 @@ import { colors } from "../../theme"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import { StyledFancyButton } from "./profile"
 import { useSnackbar } from "../../containers/snackbar"
-import useUser from "../../containers/useUser"
-import useCommands from "../../containers/ws/useCommands"
+import { useAuth } from "../../containers/auth"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 export const lockOptions: LockOptionsProps[] = [
 	{
@@ -41,7 +41,7 @@ interface LockModalProps {
 }
 
 export const LockButton: React.FC<LockBaseProps & LockButtonProps> = ({ option, setOpen, setLockOption }) => {
-	const user = useUser()
+	const { user } = useAuth()
 
 	const isLocked = useMemo(() => {
 		if (option.type === "withdrawals" && user?.withdraw_lock) {
@@ -74,7 +74,7 @@ export const LockButton: React.FC<LockBaseProps & LockButtonProps> = ({ option, 
 }
 
 export const LockModal = ({ open, option, setOpen }: LockBaseProps & LockModalProps) => {
-	const { send } = useCommands()
+	const { send } = usePassportCommandsUser("/commander")
 	const { displayMessage } = useSnackbar()
 
 	const lockRequest = useCallback(

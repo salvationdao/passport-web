@@ -197,24 +197,24 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 
 							{loggedInUser?.username === user.username && (
 								<>
-								<Section>
-									<Typography variant="h6" component="p">
-										Manage
-									</Typography>
-									<StyledFancyButton>
-										<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
-									</StyledFancyButton>
-								</Section>
-								<Section>
-								<Typography variant="h6" component="p">
-								Lock Account
-								</Typography>
-								<Stack spacing={".5rem"}>
-							{lockOptions.map((option) => (
-								<LockButton option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
-								))}
-								</Stack>
-								</Section>
+									<Section>
+										<Typography variant="h6" component="p">
+											Manage
+										</Typography>
+										<StyledFancyButton>
+											<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
+										</StyledFancyButton>
+									</Section>
+									<Section>
+										<Typography variant="h6" component="p">
+											Lock Account
+										</Typography>
+										<Stack spacing={".5rem"}>
+											{lockOptions.map((option) => (
+												<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
+											))}
+										</Stack>
+									</Section>
 								</>
 							)}
 						</Box>
@@ -231,7 +231,9 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 	)
 }
 
-export const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)({})
+export const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)(
+	{},
+)
 
 const Section = styled(Box)({
 	"& > *:not(:last-child)": {
