@@ -34,7 +34,6 @@ export const AuthContainer = createContainer(() => {
 	const [user, _setUser] = useState<User>()
 
 	const setUser = (user?: User) => {
-		console.log(user, user && user.faction)
 		_setUser(user)
 	}
 
