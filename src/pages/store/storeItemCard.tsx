@@ -13,7 +13,7 @@ import { StoreItem, StoreItemResponse } from "../../types/store_item"
 import { Collection } from "../../types/types"
 import { ViewButton } from "../collections/collectionItemCard"
 import { rarityTextStyles } from "../profile/profile"
-import useCommands from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 interface StoreItemCardProps {
 	storeItemID: string
@@ -22,7 +22,7 @@ interface StoreItemCardProps {
 
 export const StoreItemCard: React.VoidFunctionComponent<StoreItemCardProps> = ({ collection, storeItemID }) => {
 	const history = useHistory()
-	const { send } = useCommands()
+	const { send } = usePassportCommandsUser("/commander")
 	const [item, setItem] = useState<StoreItem>()
 	const [showPreview, setShowPreview] = useState(false)
 	const [priceInSups, setPriceInSups] = useState<string | null>(null)

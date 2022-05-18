@@ -8,7 +8,7 @@ import { useSnackbar } from "../../containers/snackbar"
 import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { ViewButton } from "../collections/collectionItemCard"
-import useCommands from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
 export const LootBoxCard: React.VoidFunctionComponent = () => {
@@ -17,7 +17,7 @@ export const LootBoxCard: React.VoidFunctionComponent = () => {
 	const { displayMessage } = useSnackbar()
 	const { user } = useAuth()
 	const history = useHistory()
-	const { send, state } = useCommands()
+	const { state, send } = usePassportCommandsUser("/commander")
 
 	useEffect(() => {
 		if (user && user.faction) {
