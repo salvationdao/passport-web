@@ -16,7 +16,6 @@ import HubKey from "./keys"
 import { AssetRedirectPage } from "./pages/assetRedirect"
 import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
 import LoginPage from "./pages/login/login"
-import { LogoutPage } from "./pages/auth/logout"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
 import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
@@ -60,7 +59,7 @@ export const Routes = () => {
 	}, [send, fingerprint])
 
 	useEffect(() => {
-		if (mobileScreen || window.location.pathname.includes("nosidebar")) {
+		if (mobileScreen || window.location.pathname.includes("external")) {
 			setSidebarOpen(false)
 		} else {
 			if (authLoading) {
@@ -140,13 +139,10 @@ export const Routes = () => {
 				{user ? (
 					<Switch>
 						<Redirect from="/farms" to="/staking" exact />
-						<Route path="/nosidebar/login">
+						<Route path="/external/login">
 							<LoginPage />
 						</Route>
-						<Route path="/nosidebar/logout">
-							<LogoutPage />
-						</Route>
-						<Route path="/nosidebar/:username/:collection_slug">
+						<Route path="/external/:username/:collection_slug">
 							<CollectionPage />
 						</Route>
 						<Sidebar onClose={() => setSidebarOpen(false)}>
@@ -196,7 +192,7 @@ export const Routes = () => {
 							<Route path="/buy">
 								<BuyPage />
 							</Route>
-							<Route path="/nosidebar/buy">
+							<Route path="/external/buy">
 								<IFrameBuyPage />
 							</Route>
 

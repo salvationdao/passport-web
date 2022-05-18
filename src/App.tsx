@@ -22,7 +22,7 @@ const AppInner = () => {
 	if (!user) {
 		return (
 			<Switch>
-				<Route path="/nosidebar/login">
+				<Route path="/external/login">
 					<LoginPage />
 				</Route>
 				<Route path="/login">

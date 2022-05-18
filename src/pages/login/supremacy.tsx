@@ -6,6 +6,7 @@ import { XSYNLogo } from "../../assets"
 import LoginForm from "./form"
 import { useAuth } from "../../containers/auth"
 import { Redirect } from "react-router-dom"
+import { Loading } from "../../components/loading"
 
 interface LoginBoxProps {
 	wp: string
@@ -50,9 +51,15 @@ const wallpapers = ["/img/rm.png", "/img/bc.png", "/img/zai.png"]
 
 const SupremacyLogin = () => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
-	const { userID } = useAuth()
+	const { userID, loginCookieExternal } = useAuth()
+	const isFromExternal = window.location.pathname === "/external/login"
 	if (userID) {
-		return <Redirect to={"/profile"} />
+		// if it is not from external, redirect user to profile page
+		if (!isFromExternal) return <Redirect to={"/profile"} />
+
+		// else sign user
+		loginCookieExternal()
+		return <Loading />
 	}
 	return (
 		<LoginBox wp={wp}>

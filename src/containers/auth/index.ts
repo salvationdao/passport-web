@@ -56,7 +56,7 @@ export const AuthContainer = createContainer(() => {
 
 	const [sessionId, setSessionID] = useState("")
 
-	const isLogoutPage = window.location.pathname.startsWith("/nosidebar/logout")
+	const isLogoutPage = window.location.pathname.startsWith("/external/logout")
 
 	const clear = useCallback(() => {
 		console.info("clearing local storage")
@@ -213,6 +213,21 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
+	 * External login User with passport cookie
+	 *
+	 */
+	const loginCookieExternal = useCallback(() => {
+		const args = {
+			redirectURL,
+			authType: "cookie",
+		}
+		if (redirectURL) {
+			externalAuth({ ...args, fingerprint: undefined })
+			return
+		}
+	}, [externalAuth, redirectURL])
+
+	/**
 	 * Logs a User in using a Metamask public address
 	 *
 	 * @param token Metamask public address
@@ -360,14 +375,15 @@ export const AuthContainer = createContainer(() => {
 		try {
 			;(async () => {
 				const resp = await authCheck()
-				setLoading(false)
 				if (resp.error || !resp.payload) {
 					clear()
+					setLoading(false)
 					return
 				}
 				// else set up user
 				setUser(resp.payload)
 				setAuthorised(true)
+				setLoading(false)
 			})()
 		} catch (error) {
 			console.log(error)
@@ -417,6 +433,7 @@ export const AuthContainer = createContainer(() => {
 		setShowSimulation,
 		authType,
 		setAuthType,
+		loginCookieExternal,
 	}
 })
 
