@@ -11,7 +11,7 @@ import { FilterChip, SortChip } from "../pages/profile/profile"
 import { colors } from "../theme"
 import { Collection } from "../types/types"
 import useCommands from "../containers/ws/useCommands"
-import useUser from "../containers/useUser"
+import { useAuth } from "../containers/auth"
 
 interface SortProps {
 	assetType?: string
@@ -49,7 +49,7 @@ export const Sort = ({
 	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
 	const { send, state } = useCommands()
 	const { displayMessage } = useSnackbar()
-	const user = useUser()
+	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const { username } = useParams<{ username: string }>()
 

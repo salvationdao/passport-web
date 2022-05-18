@@ -18,7 +18,7 @@ import { DepositTransaction, transferStateType } from "../../types/types"
 import { DesktopDepositTransactionTable } from "./desktopDepositTransactionTable"
 import { MobileDepositTransactionTable } from "./mobileDepositTransactionTable"
 import useCommands from "../../containers/ws/useCommands"
-import useUser from "../../containers/useUser"
+import { useAuth } from "../../containers/auth"
 
 interface CanEnterResponse {
 	can_withdraw: boolean
@@ -39,7 +39,7 @@ export const DepositPage = () => {
 			console.error(e)
 		}
 	}, [])
-	const user = useUser()
+	const { user } = useAuth()
 	const { state, send } = useCommands()
 	const { account, changeChain, currentChainId } = useWeb3()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")

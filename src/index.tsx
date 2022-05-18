@@ -18,10 +18,6 @@ import { BrowserRouter } from "react-router-dom"
 const prefixURL = (prefix: string) => () => async (action: Action) => {
 	return {
 		...action,
-		headers: {
-			"X-AUTH-TOKEN": localStorage.getItem("auth-token") || "",
-			...action.headers,
-		},
 		endpoint: `${prefix}${action.endpoint}`,
 	}
 }

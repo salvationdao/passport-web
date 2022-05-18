@@ -7,7 +7,7 @@ import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
 import { TransactionEntryProps, TransactionTableProps } from "./desktopTransactionTable"
 import useCommands from "../../containers/ws/useCommands"
-import useUser from "../../containers/useUser"
+import { useAuth } from "../../containers/auth"
 
 export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps) => {
 	return (
@@ -33,7 +33,7 @@ export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps
 }
 
 const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
-	const user = useUser()
+	const { user } = useAuth()
 	const { state, send } = useCommands()
 	const [entry, setEntry] = useState<Transaction>()
 	const [error, setError] = useState<string>()

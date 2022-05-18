@@ -31,7 +31,6 @@ const PopoverContent: React.VoidFunctionComponent<PopoverContentProps> = ({ fact
 		if (state !== WebSocket.OPEN) return
 		try {
 			await send<any, EnlistFactionRequest>(HubKey.FactionEnlist, { faction_id: factionData.id })
-			console.log("did the thing")
 			onClose()
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")

@@ -9,13 +9,13 @@ import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { ViewButton } from "../collections/collectionItemCard"
 import useCommands from "../../containers/ws/useCommands"
-import useUser from "../../containers/useUser"
+import { useAuth } from "../../containers/auth"
 
 export const LootBoxCard: React.VoidFunctionComponent = () => {
 	const [imgURL, setImg] = useState("")
 	const [mcAmount, setMCAmount] = useState(-1)
 	const { displayMessage } = useSnackbar()
-	const user = useUser()
+	const { user } = useAuth()
 	const history = useHistory()
 	const { send, state } = useCommands()
 

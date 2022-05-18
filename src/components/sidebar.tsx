@@ -34,7 +34,6 @@ import { WithdrawSupsModal } from "./withdrawSupsModal"
 import useCommands from "../containers/ws/useCommands"
 import useSubscription from "../containers/ws/useSubscription"
 import keys from "../keys"
-import useUser from "../containers/useUser"
 
 const drawerWidth = 260
 
@@ -46,8 +45,8 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const history = useHistory()
 	const { send, state } = useCommands()
 	const { sidebarOpen } = useSidebarState()
-	const { logout, userId } = useAuth()
-	const user = useUser()
+	const { logout, userID } = useAuth()
+	const { user } = useAuth()
 
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -61,7 +60,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
 
-	const userSups = useSubscription<string>({ URI: `/user/${userId}/sups`, key: HubKey.UserSupsSubscribe })
+	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
 
 	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
