@@ -3,10 +3,10 @@ import { red } from "@mui/material/colors"
 import { useState } from "react"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
-import useCommands from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 export const TwoFactorAuthenticationVerification = () => {
-	const { send } = useCommands()
+	const { send } = usePassportCommandsUser("/commander")
 	const [code, setCode] = useState("")
 	const [errMessage, setErrMessage] = useState("")
 

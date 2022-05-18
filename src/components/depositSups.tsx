@@ -15,8 +15,8 @@ import HubKey from "../keys"
 import { colors } from "../theme"
 import { transferStateType } from "../types/types"
 import { FancyButton } from "./fancyButton"
-import useCommands from "../containers/ws/useCommands"
-import useSubscription from "../containers/ws/useSubscription"
+import { usePassportCommandsUser } from "../hooks/usePassport"
+import { useSubscription } from "../containers/ws/useSubscription"
 
 //TODO: after transfer on blockchain, give user ON WORLD game tokens
 
@@ -42,7 +42,7 @@ export const DepositSups = ({
 	const { metaMaskState, supBalance, provider, sendTransferToPurchaseAddress, account } = useWeb3()
 	const { user, userID } = useAuth()
 	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
-	const { state, send } = useCommands()
+	const { state, send } = usePassportCommandsUser("/commander")
 
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsTotal, setSupsTotal] = useState<BigNumber>()

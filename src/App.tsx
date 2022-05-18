@@ -6,13 +6,15 @@ import { SidebarStateProvider } from "./containers/sidebar"
 import "./fonts.css"
 import { loadIcons } from "./helpers/loadicons"
 import { Routes } from "./routes"
-import { WSProvider } from "./containers/ws/context"
 import { Loading } from "./components/loading"
 import { API_ENDPOINT_HOSTNAME } from "./config"
 import { Redirect, Route, Switch } from "react-router-dom"
 import LoginPage from "./pages/login/login"
+import { ws } from "./containers/ws"
 
 loadIcons()
+
+ws.Initialise({ defaultHost: API_ENDPOINT_HOSTNAME })
 
 const AppInner = () => {
 	const { user, userID, loading } = useAuth()
@@ -33,12 +35,12 @@ const AppInner = () => {
 		)
 	}
 	return (
-		<WSProvider defaultHost={API_ENDPOINT_HOSTNAME} commanderURI={`/user/${user.id}/commander`}>
+		<>
 			{!!userID && <UserUpdater />}
 			<SidebarStateProvider>
 				<Routes />
 			</SidebarStateProvider>
-		</WSProvider>
+		</>
 	)
 }
 

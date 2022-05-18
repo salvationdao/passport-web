@@ -9,7 +9,7 @@ import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 import { Action, useMutation, useQuery } from "react-fetching-library"
 import useSignup from "./signup"
-import useSubscription from "../ws/useSubscription"
+import { useSubscription } from "../ws/useSubscription"
 import keys from "../../keys"
 
 export enum VerificationType {

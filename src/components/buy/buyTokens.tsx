@@ -16,7 +16,7 @@ import { ConnectWallet } from "../connectWallet"
 import { FancyButton } from "../fancyButton"
 import { Loading } from "../loading"
 import { TokenSelect } from "./tokenSelect"
-import useSubscription from "../../containers/ws/useSubscription"
+import { useSubscription } from "../../containers/ws/useSubscription"
 
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"

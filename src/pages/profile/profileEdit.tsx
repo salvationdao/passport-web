@@ -14,7 +14,7 @@ import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
-import useCommands from "../../containers/ws/useCommands"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -213,7 +213,7 @@ interface ProfileEditProps {
 const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
 	const { user } = useAuth()
-	const { send } = useCommands()
+	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 
 	// Setup form
