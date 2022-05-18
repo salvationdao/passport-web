@@ -13,7 +13,7 @@ https://play.supremacygame.io {
 	log {
 		output discard
 	}
-	reverse_proxy * localhost:3002
+	reverse_proxy * https://play.supremacygame.io:3002
 	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
         ca ./certs/__supremacygame_io.ca-bundle
     }
