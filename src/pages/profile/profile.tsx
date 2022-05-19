@@ -8,6 +8,7 @@ import {
 	styled,
 	SwipeableDrawer,
 	Typography,
+	Stack,
 	useMediaQuery,
 	Pagination,
 	Select,
@@ -32,6 +33,7 @@ import { User } from "../../types/types"
 import { CollectionItemCard } from "../collections/collectionItemCard"
 import { AssetViewContainer } from "./assetView"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
+import { LockButton, LockModal, lockOptions, LockOptionsProps } from "./lockButtons"
 import { useAuth } from "../../containers/auth"
 
 export const ProfilePage: React.FC = () => {
@@ -54,6 +56,8 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
+	const [lockOption, setLockOption] = useState<LockOptionsProps>()
+	const [lockOpen, setLockOpen] = useState<boolean>(false)
 
 	useEffect(() => {
 		let userTimeout: NodeJS.Timeout
@@ -122,6 +126,7 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 			>
 				{isWiderThan1000px && (
 					<>
+						{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
 						<Box
 							sx={{
 								display: "flex",
@@ -191,14 +196,26 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 							)}
 
 							{loggedInUser?.username === user.username && (
-								<Section>
-									<Typography variant="h6" component="p">
-										Manage
-									</Typography>
-									<StyledFancyButton>
-										<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
-									</StyledFancyButton>
-								</Section>
+								<>
+									<Section>
+										<Typography variant="h6" component="p">
+											Manage
+										</Typography>
+										<StyledFancyButton>
+											<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
+										</StyledFancyButton>
+									</Section>
+									<Section>
+										<Typography variant="h6" component="p">
+											Lock Account
+										</Typography>
+										<Stack spacing={".5rem"}>
+											{lockOptions.map((option) => (
+												<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
+											))}
+										</Stack>
+									</Section>
+								</>
 							)}
 						</Box>
 						<Box minHeight="2rem" minWidth="2rem" />
@@ -214,7 +231,9 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 	)
 }
 
-const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)({})
+export const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => <FancyButton {...props} size="small" />)(
+	{},
+)
 
 const Section = styled(Box)({
 	"& > *:not(:last-child)": {

@@ -18,6 +18,7 @@ enum HubKey {
 
 	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
 	UserFingerprint = "USER:FINGERPRINT",
+	UserLock = "USER:LOCK",
 
 	ImageList = "IMAGE:LIST",
 
