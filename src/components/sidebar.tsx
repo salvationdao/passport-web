@@ -292,7 +292,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					{user?.faction ? "Your Syndicate" : "Choose Your Syndicate"}
 				</Typography>
 				<RenderEnlist factionsData={factionsData} user={user} />
-				<FactionWarMachineRemain />
 
 				{error ? (
 					<Typography color={colors.errorRed} sx={{ mt: ".5rem" }}>
@@ -591,57 +590,4 @@ const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?:
 		)
 	}
 	return <EnlistButtonGroup factionsData={factionsData} />
-}
-
-interface FactionAvailable {
-	id: string
-	label: string
-	logo_blob_id: string
-	theme: FactionTheme
-	mega_amount: number
-	lootbox_amount: number
-}
-
-const FactionWarMachineRemain = () => {
-	const factionAvailables = useSubscription<FactionAvailable[]>({ URI: "/store/availability", key: keys.FactionAvailables })
-
-	return (
-		<Stack spacing={1}>
-			<Typography sx={{ py: 1.2, px: 1, textAlign: "center", color: colors.supremacy.neonBlue, backgroundColor: "#00000099" }} variant="h6">
-				WAR MACHINES REMAINING
-			</Typography>
-
-			<Stack justifyContent="space-around" spacing={1.5}>
-				{factionAvailables &&
-					factionAvailables.map((fa) => {
-						const { id, logo_blob_id, theme } = fa
-
-						return (
-							<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
-								<Box
-									sx={{
-										width: 30,
-										height: 30,
-										flexShrink: 0,
-										backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logo_blob_id})`,
-										backgroundRepeat: "no-repeat",
-										backgroundPosition: "center",
-										backgroundSize: "contain",
-										backgroundColor: theme.primary,
-										borderRadius: 0.8,
-										border: `${theme.primary} 1px solid`,
-									}}
-								/>
-								<Stack>
-									<Stack direction="column">
-										<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates: </Typography>
-										<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>Sold Out</Typography>
-									</Stack>
-								</Stack>
-							</Stack>
-						)
-					})}
-			</Stack>
-		</Stack>
-	)
 }
