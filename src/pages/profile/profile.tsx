@@ -371,7 +371,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						Filters / Sort
 					</FancyButton>
 				</Box>
-				{assetHashes.length > 0 ? (
+				{assetHashes && assetHashes.length > 0 ? (
 					<Box
 						sx={{
 							display: "grid",

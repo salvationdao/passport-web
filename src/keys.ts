@@ -1,5 +1,4 @@
 enum HubKey {
-	Welcome = "WELCOME",
 	AuthRegister = "AUTH:REGISTER",
 	AuthSendVerifyEmail = "AUTH:SEND_VERIFY_EMAIL",
 	AuthGenerateTFA = "AUTH:GENERATE:TFA",
@@ -28,11 +27,6 @@ enum HubKey {
 	AssetList = "ASSET:LIST",
 	AssetUpdated = "ASSET:SUBSCRIBE",
 	AssetUpdateName = "ASSET:UPDATE:NAME",
-	StoreItemSubscribe = "STORE:ITEM",
-	StoreList = "STORE:LIST",
-	StorePurchase = "STORE:PURCHASE",
-	StoreLootBox = "STORE:LOOTBOX",
-	StoreLootBoxAmount = "STORE:LOOTBOX:AMOUNT",
 
 	TransactionGroups = "TRANSACTION:GROUPS",
 	TransactionList = "TRANSACTION:LIST",

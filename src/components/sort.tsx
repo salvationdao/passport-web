@@ -53,7 +53,7 @@ export const Sort = ({
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const { username } = useParams<{ username: string }>()
 
-	const { loading, error, payload, query } = useQuery<{ asset_hashes: string[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error, payload, query } = useQuery<{ assets: string[]; total: number }>(HubKey.AssetList, false)
 
 	const toggleRarity = (rarity: string) => {
 		setRarities((prev) => {
@@ -225,7 +225,7 @@ export const Sort = ({
 	useEffect(() => {
 		if (!payload || loading || error) return
 		if (setTotal) setTotal(payload.total)
-		setAssetHashes(payload.asset_hashes)
+		setAssetHashes(payload.assets)
 	}, [payload, loading, error, setAssetHashes, setTotal])
 
 	useEffect(() => {
