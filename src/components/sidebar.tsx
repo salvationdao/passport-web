@@ -25,13 +25,10 @@ import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { Faction, User } from "../types/types"
 import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
-import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import { usePassportCommandsUser } from "../hooks/usePassport"
 import { useSubscription } from "../containers/ws/useSubscription"
 
 const drawerWidth = 320
@@ -42,7 +39,6 @@ export interface SidebarLayoutProps {
 
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
-	const { state, send } = usePassportCommandsUser("/commander")
 	const { sidebarOpen } = useSidebarState()
 	const { logout, userID } = useAuth()
 	const { user } = useAuth()
@@ -53,7 +49,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const userPublicAddress = user?.public_address
 
 	// Supremacy
-	const [factionsData, setFactionsData] = useState<Faction[]>([])
 	const { supBalance, account, metaMaskState } = useWeb3()
 	const theme = useTheme()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
@@ -65,7 +60,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [pendingRefund, setPendingRefunds] = useState<BigNumber>(BigNumber.from(0))
-	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
 		if (userSups) {
@@ -90,17 +84,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 		if (supBalance) setWalletSups(supBalance.toString())
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
-
-	useEffect(() => {
-		if (state !== WebSocket.OPEN) return
-		setError(null)
-		send<Faction[]>(HubKey.GetFactionsDetail)
-			.then((data) => setFactionsData(data))
-			.catch((e) => {
-				setFactionsData([])
-				typeof e === "string" ? setError(e) : setError("Issue getting faction details, try again or contact support.")
-			})
-	}, [send, state])
 
 	useEffect(() => {
 		;(async () => {
@@ -287,18 +270,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					},
 				}}
 			>
-				<Divider />
-				<Typography variant="body1" sx={{ textTransform: "uppercase", textAlign: "center", fontWeight: "600" }}>
-					{user?.faction ? "Your Syndicate" : "Choose Your Syndicate"}
-				</Typography>
-				<RenderEnlist factionsData={factionsData} user={user} />
-
-				{error ? (
-					<Typography color={colors.errorRed} sx={{ mt: ".5rem" }}>
-						<b>Error:</b> {error}
-					</Typography>
-				) : null}
-
 				<Divider />
 				<Button
 					sx={{
@@ -531,63 +502,4 @@ const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClic
 			{children}
 		</Button>
 	)
-}
-
-interface EnlistButtonGroupProps {
-	factionsData: Faction[]
-}
-
-const EnlistButtonGroup: React.VoidFunctionComponent<EnlistButtonGroupProps> = ({ factionsData }) => {
-	if (!factionsData) return <Box>Loading...</Box>
-
-	return (
-		<Box
-			sx={{
-				display: "flex",
-				"& > *:not(:last-child)": {
-					marginRight: ".2rem",
-				},
-			}}
-		>
-			{factionsData.map((f) => (
-				<EnlistButton key={f.id} faction={f} />
-			))}
-		</Box>
-	)
-}
-
-const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?: User }) => {
-	if (!factionsData) return <Box>Loading...</Box>
-	if (user?.faction) {
-		return (
-			<>
-				<Typography
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						color: user.faction.theme.primary,
-						fontWeight: "fontWeightBold",
-					}}
-				>
-					<Box
-						component="img"
-						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id}`}
-						alt={`${user.faction.label} Faction Logo`}
-						sx={{
-							height: "2rem",
-							width: "2rem",
-							marginRight: ".5rem",
-							flexShrink: 0,
-							objectFit: "contain",
-							backgroundColor: user.faction.theme.primary,
-							borderRadius: 0.8,
-							border: `${user.faction.theme.primary} 1px solid`,
-						}}
-					/>
-					<span>{user.faction.label}</span>
-				</Typography>
-			</>
-		)
-	}
-	return <EnlistButtonGroup factionsData={factionsData} />
 }

@@ -31,15 +31,11 @@ enum HubKey {
 	TransactionGroups = "TRANSACTION:GROUPS",
 	TransactionList = "TRANSACTION:LIST",
 	TransactionSubscribe = "TRANSACTION:SUBSCRIBE",
-	GetFactionsDetail = "FACTION:ALL",
-	FactionEnlist = "FACTION:ENLIST",
 
 	SupTotalRemaining = "SUPS:TREASURY",
 	SupExchangeRates = "SUPS:EXCHANGE",
 	SupsDeposit = "SUPS:DEPOSIT",
 	SupsDepositList = "SUPS:DEPOSIT:LIST",
-
-	FactionAvailables = "AVAILABLE:ITEM:AMOUNT",
 }
 
 export default HubKey

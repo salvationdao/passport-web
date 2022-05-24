@@ -22,13 +22,11 @@ import { useHistory, useParams } from "react-router-dom"
 import { SupremacyLogoImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
-import { PleaseEnlist } from "../../components/pleaseEnlist"
 import { SearchBar } from "../../components/searchBar"
 import { Sort } from "../../components/sort"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { colors } from "../../theme"
 import { CollectionItemCard } from "./collectionItemCard"
-import { useAuth } from "../../containers/auth"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const [loading, setLoading] = useState(true)
@@ -45,15 +43,10 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 
 	const { username } = useParams<{ username: string }>()
 	const history = useHistory()
-	const { user } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
 	const toggleAssetType = (assetType: string) => {
 		setAssetType(assetType)
-	}
-
-	if (user && !user.faction) {
-		return <PleaseEnlist />
 	}
 
 	return (
