@@ -27,11 +27,12 @@ import { Sort } from "../../components/sort"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { colors } from "../../theme"
 import { CollectionItemCard } from "./collectionItemCard"
+import { UserAsset } from "../../types/purchased_item"
 
 export const CollectionPage: React.VoidFunctionComponent = () => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string>()
-	const [assetHashes, setAssetHashes] = useState<string[]>([])
+	const [userAssets, setUserAssets] = useState<UserAsset[]>([])
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
 
 	// search and filter
@@ -73,7 +74,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 						search={search}
 						page={currentPage - 1}
 						pageSize={pageSize}
-						setAssetHashes={setAssetHashes}
+						setUserAssets={setUserAssets}
 						setTotal={setTotal}
 						setLoading={setLoading}
 						setError={setError}
@@ -250,7 +251,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 												search={search}
 												page={currentPage - 1}
 												pageSize={pageSize}
-												setAssetHashes={setAssetHashes}
+												setUserAssets={setUserAssets}
 												setTotal={setTotal}
 												setLoading={setLoading}
 												setError={setError}
@@ -268,7 +269,7 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 									minWidth: 0,
 								}}
 							>
-								{assetHashes && assetHashes.length > 0 ? (
+								{userAssets && userAssets.length > 0 ? (
 									<Paper
 										sx={{
 											flex: 1,
@@ -280,8 +281,8 @@ export const CollectionPage: React.VoidFunctionComponent = () => {
 											padding: "2rem",
 										}}
 									>
-										{assetHashes.map((a, index) => {
-											return <CollectionItemCard key={`${a}-${index}`} assetHash={a} username={username} />
+										{userAssets.map((a, index) => {
+											return <CollectionItemCard key={`${a.id}-${index}`} userAsset={a} username={username} />
 										})}
 									</Paper>
 								) : (

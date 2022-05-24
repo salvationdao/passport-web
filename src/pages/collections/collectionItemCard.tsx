@@ -1,77 +1,32 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, BoxProps, Skeleton, Typography } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import { Box, BoxProps, Stack, Typography } from "@mui/material"
 import { useHistory } from "react-router-dom"
-import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { getStringFromShoutingSnakeCase } from "../../helpers"
-import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
-import { PurchasedItem, PurchasedItemResponse } from "../../types/purchased_item"
+import { UserAsset } from "../../types/purchased_item"
 import { rarityTextStyles } from "../profile/profile"
-import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 export interface CollectionItemCardProps {
-	assetHash: string
+	userAsset: UserAsset
 	username: string
 }
 
-export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ assetHash, username }) => {
+export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ userAsset, username }) => {
 	const history = useHistory()
-	const { send } = usePassportCommandsUser("/commander")
-	const [item, setItem] = useState<PurchasedItem>()
-	//const [ownerUsername, setOwnerUsername] = useState<string | null>(null)
-	const [showPreview, setShowPreview] = useState(false)
-	const [noAsset, setNoAsset] = useState<boolean>(false) //used if asset doesn't exist in our metadata (shouldn't happen, fixes local dev stuff)
 
-	useEffect(() => {
-		;(async () => {
-			try {
-				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/asset/${assetHash}`)
-				if (!resp.ok || resp.status !== 200) {
-					setNoAsset(true)
-				}
-			} catch (e) {
-				setNoAsset(true)
-			}
-		})()
-	}, [history, assetHash])
-
-	useEffect(() => {
-		if (!assetHash || assetHash === "") return
-		send<PurchasedItemResponse>(HubKey.AssetUpdated, {
-			asset_hash: assetHash,
-		}).then((payload) => {
-			if (!payload || !payload.purchased_item) {
-				setNoAsset(true)
-				return
-			}
-			setItem(payload.purchased_item)
-		})
-	}, [assetHash, send])
-
-	if (noAsset) return <></>
-
-	if (!item) {
-		return <CollectionItemCardSkeleton />
-	}
+	const { tier, name, hash, image_url, card_animation_url } = userAsset
+	const rarityStyles = rarityTextStyles[tier as Rarity]
 
 	return (
-		<Box
-			component="button"
-			onClick={() => history.push(`/profile/${username}/asset/${item?.hash}`)}
-			onMouseOver={() => setShowPreview(true)}
-			onMouseLeave={() => setShowPreview(false)}
-			onFocus={() => setShowPreview(true)}
-			onBlur={() => setShowPreview(false)}
+		<Stack
+			justifyContent="space-between"
+			onClick={() => history.push(`/profile/${username}/asset/${hash}`)}
 			sx={{
 				position: "relative",
-				display: "flex",
-				flexDirection: "column",
-				justifyContent: "space-between",
-				padding: "1rem",
-				paddingBottom: "2rem",
-				paddingRight: "2rem",
+				p: "1rem",
+				pb: "2rem",
+				pr: "2rem",
 				textAlign: "center",
 				font: "inherit",
 				color: "inherit",
@@ -79,7 +34,17 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 				outline: "none",
 				backgroundColor: "transparent",
 				cursor: "pointer",
-				"&:hover .ViewButton, &:focus .ViewButton": {
+				":hover": {
+					"& .asset-image": {
+						visibility: card_animation_url ? "hidden" : "visible",
+						opacity: card_animation_url ? 0 : 1,
+					},
+					"& .asset-animation": {
+						visibility: card_animation_url ? "visible" : "hidden",
+						opacity: card_animation_url ? 1 : 0,
+					},
+				},
+				"&:hover .view-button, &:focus .ViewButton": {
 					borderRadius: "50%",
 					backgroundColor: colors.purple,
 					transform: "scale(1.6)",
@@ -93,33 +58,30 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 				variant="h5"
 				component="p"
 				sx={{
-					marginBottom: ".5",
+					mb: ".5",
 					textTransform: "uppercase",
 				}}
 			>
-				{item.data.mech.name}
+				{name}
 			</Typography>
 
-			{/* image */}
-			<Box
-				sx={{
-					position: "relative",
-				}}
-			>
+			<Box sx={{ position: "relative" }}>
 				<Box
+					className="asset-image"
 					component="img"
-					src={item.data.mech.image_url}
-					alt="Mech image"
+					src={image_url}
+					alt="Asset image"
 					sx={{
 						width: "100%",
-						marginBottom: ".3rem",
-						visibility: item.data.mech.card_animation_url ? (showPreview ? "hidden" : "visible") : "visible",
-						opacity: item.data.mech.card_animation_url ? (showPreview ? 0 : 1) : "visible",
+						mb: ".3rem",
+						visibility: "visible",
+						opacity: 1,
 						transition: "all .2s ease-in",
 					}}
 				/>
-				{item.data.mech.card_animation_url && (
+				{card_animation_url && (
 					<Box
+						className="asset-animation"
 						component="video"
 						sx={{
 							position: "absolute",
@@ -127,8 +89,8 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 							left: "50%",
 							width: "120%",
 							transform: "translate(-50%, -50%)",
-							visibility: showPreview ? "visible" : "hidden",
-							opacity: showPreview ? 1 : 0,
+							visibility: "hidden",
+							opacity: 0,
 							transition: "all .2s ease-in",
 						}}
 						muted
@@ -136,30 +98,33 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 						loop
 						tabIndex={-1}
 					>
-						<source src={item.data.mech.card_animation_url} type="video/webm"></source>
+						<source src={card_animation_url} type="video/webm"></source>
 					</Box>
 				)}
 			</Box>
-			<Typography
-				variant="body1"
-				sx={{
-					textTransform: "uppercase",
-				}}
-			>
-				{"War Machine"}
-			</Typography>
-			<Typography
-				variant="h4"
-				sx={{
-					fontFamily: fonts.bizmoblack,
-					fontStyle: "italic",
-					letterSpacing: "2px",
-					textTransform: "uppercase",
-					...rarityTextStyles[item.tier as Rarity],
-				}}
-			>
-				{getStringFromShoutingSnakeCase(item.tier)}
-			</Typography>
+			<Box>
+				<Typography
+					variant="body1"
+					sx={{
+						textTransform: "uppercase",
+					}}
+				>
+					{"War Machine"}
+				</Typography>
+				<Typography
+					variant="h4"
+					sx={{
+						fontFamily: fonts.bizmoblack,
+						fontStyle: "italic",
+						letterSpacing: "2px",
+						textTransform: "uppercase",
+						...rarityStyles,
+					}}
+				>
+					{getStringFromShoutingSnakeCase(tier)}
+				</Typography>
+			</Box>
+
 			<ViewButton
 				sx={{
 					position: "absolute",
@@ -169,14 +134,14 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			>
 				<SearchIcon />
 			</ViewButton>
-		</Box>
+		</Stack>
 	)
 }
 
 export const ViewButton = (props: BoxProps) => (
 	<Box
 		{...props}
-		className="ViewButton"
+		className="view-button"
 		sx={{
 			display: "inline-flex",
 			alignItems: "center",
@@ -197,68 +162,3 @@ export const ViewButton = (props: BoxProps) => (
 		}}
 	/>
 )
-
-const CollectionItemCardSkeleton: React.VoidFunctionComponent = () => {
-	return (
-		<Box
-			sx={{
-				position: "relative",
-				display: "flex",
-				flexDirection: "column",
-				justifyContent: "space-between",
-				padding: "1rem",
-				border: `1px solid ${colors.white}`,
-			}}
-		>
-			<Skeleton
-				variant="text"
-				width="100%"
-				height="1.125rem"
-				sx={{
-					marginBottom: "1rem",
-				}}
-			/>
-
-			<Box
-				sx={{
-					width: "100%",
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					marginBottom: ".5rem",
-				}}
-			>
-				{/* image */}
-				<Skeleton
-					variant="rectangular"
-					height={220}
-					sx={{
-						width: "100%",
-					}}
-				/>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "space-between",
-						alignItems: "center",
-						width: "100%",
-						backgroundColor: "black",
-						padding: "10px",
-					}}
-				>
-					<Skeleton variant="text" width={110} height="1rem" />
-				</Box>
-			</Box>
-			<Skeleton
-				variant="text"
-				width={130}
-				height="0.75rem"
-				sx={{
-					alignSelf: "end",
-					marginBottom: ".5rem",
-				}}
-			/>
-			<Skeleton variant="rectangular" height={45} width="100%" />
-		</Box>
-	)
-}

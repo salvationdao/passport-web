@@ -25,8 +25,6 @@ enum HubKey {
 	CollectionUpdated = "COLLECTION:SUBSCRIBE",
 
 	AssetList = "ASSET:LIST",
-	AssetUpdated = "ASSET:SUBSCRIBE",
-	AssetUpdateName = "ASSET:UPDATE:NAME",
 
 	TransactionGroups = "TRANSACTION:GROUPS",
 	TransactionList = "TRANSACTION:LIST",

@@ -36,6 +36,7 @@ import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { LockButton, LockModal, lockOptions, LockOptionsProps } from "./lockButtons"
 import { useAuth } from "../../containers/auth"
 import { BATTLE_ARENA_LINK } from "../../config"
+import { UserAsset } from "../../types/purchased_item"
 
 export const ProfilePage: React.FC = () => {
 	const { user } = useAuth()
@@ -255,7 +256,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 	const [pageSize, setPageSize] = useState(20)
 	const [total, setTotal] = useState(0)
 	const [search, setSearch] = useState("")
-	const [assetHashes, setAssetHashes] = useState<string[]>([])
+	const [userAssets, setUserAssets] = useState<UserAsset[]>([])
 	// Filter/Sort
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
 	const [assetType] = useState<string>()
@@ -285,7 +286,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 					pageSize={pageSize}
 					assetType={assetType}
 					search={search}
-					setAssetHashes={setAssetHashes}
+					setUserAssets={setUserAssets}
 					setTotal={setTotal}
 					setLoading={setLoading}
 					setError={setError}
@@ -371,7 +372,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						Filters / Sort
 					</FancyButton>
 				</Box>
-				{assetHashes && assetHashes.length > 0 ? (
+				{userAssets && userAssets.length > 0 ? (
 					<Box
 						sx={{
 							display: "grid",
@@ -379,8 +380,8 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							gap: "1rem",
 						}}
 					>
-						{assetHashes.map((a) => {
-							return <CollectionItemCard key={a} assetHash={a} username={user.username} />
+						{userAssets.map((a) => {
+							return <CollectionItemCard key={a.id} userAsset={a} username={user.username} />
 						})}
 					</Box>
 				) : (

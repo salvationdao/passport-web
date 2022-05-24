@@ -12,6 +12,7 @@ import { colors } from "../theme"
 import { Collection } from "../types/types"
 import { usePassportCommandsUser } from "../hooks/usePassport"
 import { useAuth } from "../containers/auth"
+import { UserAsset } from "../types/purchased_item"
 
 interface SortProps {
 	assetType?: string
@@ -21,7 +22,7 @@ interface SortProps {
 	pillSizeSmall?: boolean
 	showOffWorldFilter?: boolean
 	showCollectionFilter?: boolean
-	setAssetHashes: React.Dispatch<React.SetStateAction<string[]>>
+	setUserAssets: React.Dispatch<React.SetStateAction<UserAsset[]>>
 	setTotal?: React.Dispatch<React.SetStateAction<number>>
 	setLoading?: React.Dispatch<React.SetStateAction<boolean>>
 	setError?: React.Dispatch<React.SetStateAction<string | undefined>>
@@ -35,7 +36,7 @@ export const Sort = ({
 	pillSizeSmall = false,
 	showOffWorldFilter = true,
 	showCollectionFilter = true,
-	setAssetHashes,
+	setUserAssets,
 	setTotal,
 	setLoading,
 	setError,
@@ -53,7 +54,7 @@ export const Sort = ({
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const { username } = useParams<{ username: string }>()
 
-	const { loading, error, payload, query } = useQuery<{ assets: string[]; total: number }>(HubKey.AssetList, false)
+	const { loading, error, payload, query } = useQuery<{ assets: UserAsset[]; total: number }>(HubKey.AssetList, false)
 
 	const toggleRarity = (rarity: string) => {
 		setRarities((prev) => {
@@ -225,8 +226,8 @@ export const Sort = ({
 	useEffect(() => {
 		if (!payload || loading || error) return
 		if (setTotal) setTotal(payload.total)
-		setAssetHashes(payload.assets)
-	}, [payload, loading, error, setAssetHashes, setTotal])
+		setUserAssets(payload.assets)
+	}, [payload, loading, error, setUserAssets, setTotal])
 
 	useEffect(() => {
 		if (!setLoading) return
