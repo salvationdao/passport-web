@@ -201,7 +201,7 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 										<Typography variant="h6" component="p">
 											Manage
 										</Typography>
-										<StyledFancyButton>
+										<StyledFancyButton sx={{ width: "100%" }}>
 											<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
 										</StyledFancyButton>
 									</Section>
@@ -454,6 +454,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 const WarMachineImage = styled("img")({
 	width: "100%",
 	height: "100%",
+	opacity: 0.5,
 })
 
 interface SortChipProps extends Omit<ChipProps, "color" | "onDelete"> {

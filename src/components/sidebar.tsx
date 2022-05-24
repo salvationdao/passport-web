@@ -34,7 +34,7 @@ import { WithdrawSupsModal } from "./withdrawSupsModal"
 import { usePassportCommandsUser } from "../hooks/usePassport"
 import { useSubscription } from "../containers/ws/useSubscription"
 
-const drawerWidth = 260
+const drawerWidth = 320
 
 export interface SidebarLayoutProps {
 	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
@@ -122,6 +122,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			truncatedUsername = `${user.username.substring(0, maxLength)}...`
 		}
 	}
+
 	const content = user ? (
 		<Box
 			sx={{
