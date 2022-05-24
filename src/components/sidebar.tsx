@@ -11,7 +11,7 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import SavingsIcon from "@mui/icons-material/Savings"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Box, Button, Divider, Drawer, Stack, SxProps, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
+import { Box, Button, Divider, Drawer, SxProps, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
@@ -25,7 +25,7 @@ import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { Faction, FactionTheme, User } from "../types/types"
+import { Faction, User } from "../types/types"
 import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
@@ -33,7 +33,6 @@ import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 import { usePassportCommandsUser } from "../hooks/usePassport"
 import { useSubscription } from "../containers/ws/useSubscription"
-import keys from "../keys"
 
 const drawerWidth = 260
 
@@ -319,7 +318,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to={`/collections/${user?.username}`} startIcon={<AppsIcon />}>
 					My Inventory
 				</NavButton>
-				<NavButton to="/stores/supremacy-genesis" startIcon={<StorefrontIcon />}>
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
 			</Box>
@@ -406,7 +405,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				>
 					Quick Links
 				</Typography>
-				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
 					Stores
 				</NavButton>
 			</Box>

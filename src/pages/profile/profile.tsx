@@ -417,7 +417,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 								<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
 									Your Inventory Is Empty
 								</Typography>
-								<StyledFancyButton sx={{ padding: "0.5rem 2rem" }} onClick={() => history.push("/stores")}>
+								<StyledFancyButton sx={{ padding: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
 									Go To Store
 								</StyledFancyButton>
 							</Box>
