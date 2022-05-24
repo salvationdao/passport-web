@@ -23,7 +23,7 @@ export const InputField = (props: InputFieldProps & TextFieldProps) => {
 				<TextField
 					{...textFieldProps}
 					type={type}
-					value={field.value}
+					value={field.value || ""}
 					onChange={field.onChange}
 					inputRef={field.ref}
 					error={!!fieldState.error}
