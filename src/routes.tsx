@@ -25,7 +25,6 @@ import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/profile/profile"
 import { ProfileEditPage } from "./pages/profile/profileEdit"
-import { StorePage } from "./pages/store/store"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 import { usePassportCommandsUser } from "./hooks/usePassport"
@@ -189,11 +188,6 @@ export const Routes = () => {
 						</Route>
 						<Route path="/asset/:asset_hash">
 							<AssetRedirectPage />
-						</Route>
-
-						{/* store */}
-						<Route path="/store">
-							<StorePage />
 						</Route>
 					</Sidebar>
 				</Switch>

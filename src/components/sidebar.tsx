@@ -308,7 +308,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					}}
 					onClick={() => {
 						if (!xsynSups.eq(0)) {
-							window.open(BATTLE_ARENA_LINK, "_blank")?.focus()
+							window.open(`${BATTLE_ARENA_LINK}/marketplace`, "_blank")?.focus()
 						}
 					}}
 					startIcon={<PlayArrowIcon />}
@@ -319,7 +319,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to={`/collections/${user?.username}`} startIcon={<AppsIcon />}>
 					My Inventory
 				</NavButton>
-				<NavButton to="/store" startIcon={<StorefrontIcon />}>
+				<NavButton onClick={() => window.open(`${BATTLE_ARENA_LINK}/marketplace`, "_blank")?.focus()} startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
 			</Box>
@@ -406,7 +406,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				>
 					Quick Links
 				</Typography>
-				<NavButton to="/store" startIcon={<StorefrontIcon />}>
+				<NavButton onClick={() => window.open(BATTLE_ARENA_LINK, "_blank")?.focus()} startIcon={<StorefrontIcon />}>
 					Stores
 				</NavButton>
 			</Box>
@@ -498,7 +498,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 }
 
 interface NavButtonProps {
-	to: string
+	to?: string
 	active?: boolean
 	sx?: SxProps<Theme>
 	startIcon?: React.ReactNode
@@ -517,7 +517,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClic
 				...sx,
 			}}
 			component={RouterLink}
-			to={to}
+			to={to || ""}
 			startIcon={startIcon}
 			onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
 				if (mobileScreen) {
