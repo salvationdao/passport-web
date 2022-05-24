@@ -1,31 +1,13 @@
-import { Box, Typography } from "@mui/material"
+import { Box, Stack, Typography } from "@mui/material"
 import { SupremacyLogoImagePath } from "../../assets"
 import { Navbar } from "../../components/home/navbar"
 import { colors } from "../../theme"
 
 export const StorePage: React.FC = () => {
 	return (
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				overflowX: "hidden",
-			}}
-		>
-			<Navbar
-				sx={{
-					marginBottom: "2rem",
-				}}
-			/>
-			<Box
-				sx={{
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					marginBottom: "2rem",
-					padding: "0 2rem",
-				}}
-			>
+		<Stack spacing="2rem" sx={{ height: "100%", overflowX: "hidden" }}>
+			<Navbar />
+			<Stack alignItems="center" sx={{ mb: "2rem", p: "0 2rem" }}>
 				<Box
 					component="img"
 					src={SupremacyLogoImagePath}
@@ -33,7 +15,7 @@ export const StorePage: React.FC = () => {
 					sx={{
 						width: "100%",
 						maxWidth: "300px",
-						padding: ".5rem",
+						p: ".5rem",
 					}}
 				/>
 				<Typography
@@ -46,7 +28,13 @@ export const StorePage: React.FC = () => {
 				>
 					Store
 				</Typography>
-			</Box>
-		</Box>
+			</Stack>
+
+			<Stack alignItems="center" justifyContent="center" sx={{ flex: 1 }}>
+				<Stack sx={{ backgroundColor: "red" }}>
+					<Typography>aaaaa</Typography>
+				</Stack>
+			</Stack>
+		</Stack>
 	)
 }
