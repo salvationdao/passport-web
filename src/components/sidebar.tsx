@@ -279,7 +279,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					}}
 					onClick={() => {
 						if (!xsynSups.eq(0)) {
-							window.open(`${BATTLE_ARENA_LINK}/marketplace`, "_blank")?.focus()
+							window.open(`${BATTLE_ARENA_LINK}`, "_blank")?.focus()
 						}
 					}}
 					startIcon={<PlayArrowIcon />}
@@ -290,7 +290,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to={`/collections/${user?.username}`} startIcon={<AppsIcon />}>
 					My Inventory
 				</NavButton>
-				<NavButton onClick={() => window.open(`${BATTLE_ARENA_LINK}/marketplace`, "_blank")?.focus()} startIcon={<StorefrontIcon />}>
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
 			</Box>
@@ -377,8 +377,8 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				>
 					Quick Links
 				</Typography>
-				<NavButton onClick={() => window.open(BATTLE_ARENA_LINK, "_blank")?.focus()} startIcon={<StorefrontIcon />}>
-					Stores
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
+					Store
 				</NavButton>
 			</Box>
 		</Box>

@@ -8,6 +8,7 @@ import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
 import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
+import { StorePage } from "./pages/store/store"
 import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
@@ -192,6 +193,9 @@ export const Routes = () => {
 						</Route>
 						<Route path={"/collections/:username"}>
 							<CollectionPage />
+						</Route>
+						<Route path="/store">
+							<StorePage />
 						</Route>
 					</Sidebar>
 				</Switch>

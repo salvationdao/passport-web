@@ -73,24 +73,24 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 		})
 	}, [collectionSlug, send])
 
-	useEffect(() => {
-		setLoading(true)
-		try {
-			send<PurchasedItemResponse>(HubKey.AssetUpdated, {
-				asset_hash: assetHash,
-			}).then((payload) => {
-				if (!payload) return
-				setPurchasedItem(payload.purchased_item)
-				setOwnerUsername(payload.owner_username)
-				setItemHost(payload.host_url)
-				setCollectionSlug(payload.collection_slug)
-			})
-		} catch (e) {
-			setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
-		} finally {
-			setLoading(false)
-		}
-	}, [assetHash, send])
+	// useEffect(() => {
+	// 	setLoading(true)
+	// 	try {
+	// 		send<PurchasedItemResponse>(HubKey.AssetUpdated, {
+	// 			asset_hash: assetHash,
+	// 		}).then((payload) => {
+	// 			if (!payload) return
+	// 			setPurchasedItem(payload.purchased_item)
+	// 			setOwnerUsername(payload.owner_username)
+	// 			setItemHost(payload.host_url)
+	// 			setCollectionSlug(payload.collection_slug)
+	// 		})
+	// 	} catch (e) {
+	// 		setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
+	// 	} finally {
+	// 		setLoading(false)
+	// 	}
+	// }, [assetHash, send])
 
 	// set attributes
 	useEffect(() => {
@@ -662,11 +662,11 @@ const UpdateNameModal = (props: { open: boolean; onClose: () => void; asset: Pur
 	const onSubmit = handleSubmit(async ({ name }) => {
 		setLoading(true)
 		try {
-			await send<PurchasedItem>(HubKey.AssetUpdateName, {
-				asset_hash: asset.hash,
-				user_id: userID,
-				name,
-			})
+			// await send<PurchasedItem>(HubKey.AssetUpdateName, {
+			// 	asset_hash: asset.hash,
+			// 	user_id: userID,
+			// 	name,
+			// })
 
 			displayMessage("Asset successfully updated", "success")
 			onClose()

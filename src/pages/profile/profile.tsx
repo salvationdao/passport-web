@@ -35,7 +35,6 @@ import { AssetViewContainer } from "./assetView"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { LockButton, LockModal, lockOptions, LockOptionsProps } from "./lockButtons"
 import { useAuth } from "../../containers/auth"
-import { BATTLE_ARENA_LINK } from "../../config"
 import { UserAsset } from "../../types/purchased_item"
 
 export const ProfilePage: React.FC = () => {
@@ -250,6 +249,7 @@ interface CollectionViewProps {
 const CollectionView = ({ user }: CollectionViewProps) => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string>()
+	const history = useHistory()
 
 	// Collection data
 	const [currentPage, setCurrentPage] = useState(1)
@@ -418,10 +418,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 								<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
 									Your Inventory Is Empty
 								</Typography>
-								<StyledFancyButton
-									sx={{ padding: "0.5rem 2rem" }}
-									onClick={() => window.open(`${BATTLE_ARENA_LINK}/marketplace`, "_blank")?.focus()}
-								>
+								<StyledFancyButton sx={{ padding: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
 									Go To Store
 								</StyledFancyButton>
 							</Box>
