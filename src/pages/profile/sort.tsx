@@ -3,58 +3,46 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Typography, useMediaQuery } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { useSnackbar } from "../containers/snackbar"
-import { getStringFromShoutingSnakeCase } from "../helpers"
-import { useQuery } from "../hooks/useSend"
-import HubKey from "../keys"
-import { FilterChip, SortChip } from "../pages/profile/profile"
-import { colors } from "../theme"
-import { Collection } from "../types/types"
-import { usePassportCommandsUser } from "../hooks/usePassport"
-import { useAuth } from "../containers/auth"
-import { UserAsset } from "../types/purchased_item"
+import { getStringFromShoutingSnakeCase } from "../../helpers"
+import HubKey from "../../keys"
+import { FilterChip, SortChip } from "./profile"
+import { colors } from "../../theme"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
+import { useAuth } from "../../containers/auth"
+import { UserAsset } from "../../types/purchased_item"
 
 interface SortProps {
-	assetType?: string
 	page?: number
 	pageSize?: number
 	search: string
 	pillSizeSmall?: boolean
 	showOffWorldFilter?: boolean
-	showCollectionFilter?: boolean
 	setUserAssets: React.Dispatch<React.SetStateAction<UserAsset[]>>
-	setTotal?: React.Dispatch<React.SetStateAction<number>>
-	setLoading?: React.Dispatch<React.SetStateAction<boolean>>
-	setError?: React.Dispatch<React.SetStateAction<string | undefined>>
+	setTotal: React.Dispatch<React.SetStateAction<number>>
+	setLoading: React.Dispatch<React.SetStateAction<boolean>>
+	setError: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
 export const Sort = ({
-	assetType,
 	search,
 	page,
 	pageSize,
 	pillSizeSmall = false,
 	showOffWorldFilter = true,
-	showCollectionFilter = true,
 	setUserAssets,
 	setTotal,
 	setLoading,
 	setError,
 }: SortProps) => {
 	const [showOffWorldOnly, setShowOffWorldOnly] = useState<boolean>()
-	const [aquisitionDir, setAquisitionDir] = useState<boolean>()
+	const [acquisitionDir, setAcquisitionDir] = useState<boolean>()
 	const [alphabetical, setAlphabetical] = useState<boolean>()
-	const [collection, setCollection] = useState<Collection>()
-	const [collections, setCollections] = useState<Collection[]>()
 	const [rarities, setRarities] = useState<Set<string>>(new Set())
-	const [sort, setSort] = useState<{ sortBy: string; sortDir: string }>()
-	const { state, send } = usePassportCommandsUser("/commander")
-	const { displayMessage } = useSnackbar()
-	const { user } = useAuth()
+	const [sort, setSort] = useState<{ column: string; direction: string }>({ column: "name", direction: "asc" })
+	const { send } = usePassportCommandsUser("/commander")
+	const { user, userID } = useAuth()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const { username } = useParams<{ username: string }>()
-
-	const { loading, error, payload, query } = useQuery<{ assets: UserAsset[]; total: number }>(HubKey.AssetList, false)
 
 	const toggleRarity = (rarity: string) => {
 		setRarities((prev) => {
@@ -65,15 +53,6 @@ export const Sort = ({
 				return temp
 			}
 			return temp.add(rarity)
-		})
-	}
-
-	const toggleCollection = (collection: Collection) => {
-		setCollection((prev) => {
-			if (prev?.id === collection.id) {
-				return undefined
-			}
-			return collection
 		})
 	}
 
@@ -91,9 +70,9 @@ export const Sort = ({
 		})
 	}
 
-	const toggleAquisitionSort = () => {
+	const toggleAcquisitionSort = () => {
 		setAlphabetical(undefined)
-		setAquisitionDir((prev) => {
+		setAcquisitionDir((prev) => {
 			if (prev === undefined) {
 				return true
 			}
@@ -107,7 +86,7 @@ export const Sort = ({
 	}
 
 	const toggleAlphabeticalSort = () => {
-		setAquisitionDir(undefined)
+		setAcquisitionDir(undefined)
 		setAlphabetical((prev) => {
 			if (prev === undefined) {
 				return true
@@ -122,64 +101,34 @@ export const Sort = ({
 	}
 
 	useEffect(() => {
-		if (state !== WebSocket.OPEN || !send) return
-		;(async () => {
-			try {
-				const resp = await send<{ records: Collection[]; total: number }>(HubKey.CollectionList)
-				setCollections(resp.records)
-			} catch (e) {
-				displayMessage(typeof e === "string" ? e : "An error occurred while loading collection data.", "error")
-			}
-		})()
-	}, [send, state, user, displayMessage])
-
-	useEffect(() => {
 		const newSort = {
-			sortBy: "",
-			sortDir: "",
+			column: "",
+			direction: "",
 		}
 
 		if (alphabetical !== undefined) {
-			newSort.sortBy = "name"
+			newSort.column = "name"
 
 			if (alphabetical) {
-				newSort.sortDir = "asc"
+				newSort.direction = "asc"
 			} else {
-				newSort.sortDir = "desc"
+				newSort.direction = "desc"
 			}
-		} else if (aquisitionDir !== undefined) {
-			newSort.sortBy = "created_at"
+		} else if (acquisitionDir !== undefined) {
+			newSort.column = "created_at"
 
-			if (aquisitionDir) {
-				newSort.sortDir = "desc"
+			if (acquisitionDir) {
+				newSort.direction = "desc"
 			} else {
-				newSort.sortDir = "asc"
+				newSort.direction = "asc"
 			}
 		}
 
 		setSort(newSort)
-	}, [alphabetical, aquisitionDir])
+	}, [alphabetical, acquisitionDir])
 
 	useEffect(() => {
-		if (state !== WebSocket.OPEN) return
-
-		const filtersItems: any[] = [
-			// filter by user id
-			{
-				columnField: "username",
-				operatorValue: "=",
-				value: username || user?.username,
-			},
-		]
-
-		if (collection && collection.id) {
-			filtersItems.push({
-				// filter by collection id
-				columnField: "collection_id",
-				operatorValue: "=",
-				value: collection.id,
-			})
-		}
+		const filtersItems: any[] = []
 
 		if (showOffWorldOnly !== undefined) {
 			filtersItems.push({
@@ -191,13 +140,6 @@ export const Sort = ({
 		}
 
 		const attributeFilterItems: any[] = []
-		if (assetType && assetType !== "All") {
-			attributeFilterItems.push({
-				trait: "asset_type",
-				value: assetType,
-				operatorValue: "contains",
-			})
-		}
 		rarities.forEach((v) =>
 			attributeFilterItems.push({
 				// NOTE: "rarity" trait is now "tier" on the backend
@@ -207,37 +149,36 @@ export const Sort = ({
 			}),
 		)
 
-		query({
-			search,
-			page,
-			page_size: pageSize,
-			attribute_filter: {
-				linkOperator: assetType && assetType !== "All" ? "and" : "or",
-				items: attributeFilterItems,
-			},
-			filter: {
-				linkOperator: "and",
-				items: filtersItems,
-			},
-			...sort,
-		})
-	}, [user, query, collection, state, assetType, rarities, search, username, sort, showOffWorldOnly, page, pageSize])
+		setLoading(true)
+		;(async () => {
+			try {
+				const resp = await send<{ assets: UserAsset[]; total: number }>(HubKey.AssetList, {
+					user_id: userID,
+					search,
+					page,
+					page_size: pageSize,
+					attribute_filter: {
+						linkOperator: "or",
+						items: attributeFilterItems,
+					},
+					filter: {
+						linkOperator: "and",
+						items: filtersItems,
+					},
+					sort,
+				})
 
-	useEffect(() => {
-		if (!payload || loading || error) return
-		if (setTotal) setTotal(payload.total)
-		setUserAssets(payload.assets)
-	}, [payload, loading, error, setUserAssets, setTotal])
-
-	useEffect(() => {
-		if (!setLoading) return
-		setLoading(loading)
-	}, [loading, setLoading])
-
-	useEffect(() => {
-		if (!setError) return
-		setError(error)
-	}, [error, setError])
+				if (!resp) return
+				setUserAssets(resp.assets)
+				setTotal(resp.total)
+			} catch (e) {
+				console.error(e)
+				setError(typeof e === "string" ? e : "Something went wrong, please try again.")
+			} finally {
+				setLoading(false)
+			}
+		})()
+	}, [user, rarities, search, username, sort, showOffWorldOnly, page, pageSize, userID, setLoading, send, setUserAssets, setTotal, setError])
 
 	const renderRarities = () => {
 		const rarityArray: string[] = []
@@ -315,15 +256,15 @@ export const Sort = ({
 							}}
 						>
 							<SortChip
-								icon={aquisitionDir ? <ExpandLessIcon /> : aquisitionDir === false ? <ExpandMoreIcon /> : undefined}
-								active={sort?.sortBy === "created_at"}
-								label={aquisitionDir !== false ? "Newest First" : "Oldest First"}
+								icon={acquisitionDir ? <ExpandLessIcon /> : acquisitionDir === false ? <ExpandMoreIcon /> : undefined}
+								active={sort?.column === "created_at"}
+								label={acquisitionDir !== false ? "Newest First" : "Oldest First"}
 								variant="outlined"
-								onClick={toggleAquisitionSort}
+								onClick={toggleAcquisitionSort}
 							/>
 							<SortChip
 								icon={alphabetical ? <ExpandLessIcon /> : alphabetical === false ? <ExpandMoreIcon /> : undefined}
-								active={sort?.sortBy === "name"}
+								active={sort?.column === "name"}
 								label={alphabetical !== false ? "Alphabetical" : "Reverse Alphabetical"}
 								variant="outlined"
 								onClick={toggleAlphabeticalSort}
@@ -347,36 +288,6 @@ export const Sort = ({
 							}}
 						>
 							{renderRarities()}
-						</Box>
-					</Box>
-					<Box>
-						<Typography
-							variant="subtitle1"
-							sx={{
-								margin: ".5rem 0",
-							}}
-						>
-							Collection
-						</Typography>
-						<Box
-							sx={{
-								display: "flex",
-								flexDirection: isWiderThan1000px && !pillSizeSmall ? "column" : "row",
-								flexWrap: isWiderThan1000px ? "initial" : "wrap",
-								gap: ".5rem",
-							}}
-						>
-							{collections?.map((c, index) => {
-								return (
-									<FilterChip
-										key={`${c.id}-${index}`}
-										active={c.id === collection?.id}
-										label={c.name}
-										variant="outlined"
-										onClick={() => toggleCollection(c)}
-									/>
-								)
-							})}
 						</Box>
 					</Box>
 				</>

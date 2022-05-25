@@ -1,6 +1,5 @@
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import AgricultureIcon from "@mui/icons-material/Agriculture"
-import AppsIcon from "@mui/icons-material/Apps"
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
@@ -271,24 +270,8 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				}}
 			>
 				<Divider />
-				<Button
-					sx={{
-						justifyContent: "start",
-						color: !xsynSups.eq(0) ? "" : colors.supremacy.grey,
-						cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" },
-					}}
-					onClick={() => {
-						if (!xsynSups.eq(0)) {
-							window.open(`${BATTLE_ARENA_LINK}`, "_blank")?.focus()
-						}
-					}}
-					startIcon={<PlayArrowIcon />}
-				>
-					{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
-				</Button>
-				<Divider />
-				<NavButton to={`/collections/${user?.username}`} startIcon={<AppsIcon />}>
-					My Inventory
+				<NavButton to="/profile" startIcon={<FaceIcon />}>
+					Profile
 				</NavButton>
 				<NavButton to="/store" startIcon={<StorefrontIcon />}>
 					Purchase Assets
@@ -329,9 +312,22 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				</Box>
 			)}
 			<Box flex="1" />
-			<NavButton sx={{ alignSelf: "start", width: "100%" }} to="/profile" startIcon={<FaceIcon />}>
-				Profile
-			</NavButton>
+			<Divider />
+			<Button
+				sx={{
+					justifyContent: "start",
+					color: !xsynSups.eq(0) ? "" : colors.supremacy.grey,
+					cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" },
+				}}
+				onClick={() => {
+					if (!xsynSups.eq(0)) {
+						window.open(`${BATTLE_ARENA_LINK}`, "_blank")?.focus()
+					}
+				}}
+				startIcon={<PlayArrowIcon />}
+			>
+				{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
+			</Button>
 			<Button
 				startIcon={<LogoutIcon />}
 				onClick={() => logout()}

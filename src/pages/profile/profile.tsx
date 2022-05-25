@@ -23,35 +23,33 @@ import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { ProfileButton } from "../../components/profileButton"
 import { SearchBar } from "../../components/searchBar"
-import { Sort } from "../../components/sort"
+import { Sort } from "./sort"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { middleTruncate } from "../../helpers"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
 import { User } from "../../types/types"
-import { CollectionItemCard } from "../collections/collectionItemCard"
+import { AssetItemCard } from "./assetItemCard"
 import { AssetViewContainer } from "./assetView"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { LockButton, LockModal, lockOptions, LockOptionsProps } from "./lockButtons"
 import { useAuth } from "../../containers/auth"
 import { UserAsset } from "../../types/purchased_item"
+import { usePagination } from "../../hooks/usePagination"
+import { useDebounce } from "../../hooks/useDebounce"
 
 export const ProfilePage: React.FC = () => {
 	const { user } = useAuth()
-	if (!user) {
-		return <Loading />
-	}
-
+	if (!user) return <Loading />
 	return <ProfilePageInner loggedInUser={user} />
 }
 
-const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) => {
+const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
+	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
-
-	const { send } = usePassportCommandsUser("/commander")
 
 	// User
 	const [user, setUser] = useState<User>()
@@ -61,7 +59,6 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
 
 	useEffect(() => {
-		let userTimeout: NodeJS.Timeout
 		;(async () => {
 			if (username) {
 				try {
@@ -77,26 +74,19 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 					setUser(loggedInUser)
 				} else {
 					setLoadingText("You need to be logged in to view this page. Redirecting to login page...")
-					userTimeout = setTimeout(() => {
+					const userTimeout = setTimeout(() => {
 						history.push("/login")
 					}, 2000)
+
+					return () => clearTimeout(userTimeout)
 				}
 			}
 		})()
-
-		return () => {
-			if (!userTimeout) return
-			clearTimeout(userTimeout)
-		}
 	}, [loggedInUser, history, send, username])
 
-	if (error) {
-		return <Box>{error}</Box>
-	}
+	if (error) return <Box>{error}</Box>
 
-	if (!user) {
-		return <Loading text={loadingText} />
-	}
+	if (!user) return <Loading text={loadingText} />
 
 	return (
 		<Box
@@ -151,9 +141,7 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 								}}
 							/>
 							<Section>
-								<Typography variant="h3" component="p">
-									{user.username}
-								</Typography>
+								<Typography variant="h3">{user.username}</Typography>
 								{loggedInUser?.username === user.username && (user.first_name || user.last_name) && (
 									<Typography variant="subtitle2">
 										{user.first_name} {user.last_name}
@@ -199,17 +187,13 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 							{loggedInUser?.username === user.username && (
 								<>
 									<Section>
-										<Typography variant="h6" component="p">
-											Manage
-										</Typography>
+										<Typography variant="h6">Manage</Typography>
 										<StyledFancyButton sx={{ width: "100%" }}>
 											<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
 										</StyledFancyButton>
 									</Section>
 									<Section>
-										<Typography variant="h6" component="p">
-											Lock Account
-										</Typography>
+										<Typography variant="h6">Lock Account</Typography>
 										<Stack spacing={".5rem"}>
 											{lockOptions.map((option) => (
 												<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
@@ -222,6 +206,7 @@ const ProfilePageInner: React.FC<{ loggedInUser: User }> = ({ loggedInUser }) =>
 						<Box minHeight="2rem" minWidth="2rem" />
 					</>
 				)}
+
 				{!!asset_hash ? (
 					<AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} />
 				) : (
@@ -242,24 +227,17 @@ const Section = styled(Box)({
 	},
 })
 
-interface CollectionViewProps {
-	user: User
-}
-
-const CollectionView = ({ user }: CollectionViewProps) => {
+const CollectionView = ({ user }: { user: User }) => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string>()
 	const history = useHistory()
 
 	// Collection data
-	const [currentPage, setCurrentPage] = useState(1)
-	const [pageSize, setPageSize] = useState(20)
-	const [total, setTotal] = useState(0)
-	const [search, setSearch] = useState("")
+	const [search, setSearch] = useDebounce("", 300)
+	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({ pageSize: 20, page: 1 })
 	const [userAssets, setUserAssets] = useState<UserAsset[]>([])
 	// Filter/Sort
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
-	const [assetType] = useState<string>()
 
 	return (
 		<>
@@ -282,16 +260,16 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 				<Sort
 					pillSizeSmall={true}
 					showOffWorldFilter={false}
-					page={currentPage - 1}
+					page={page}
 					pageSize={pageSize}
-					assetType={assetType}
 					search={search}
 					setUserAssets={setUserAssets}
-					setTotal={setTotal}
+					setTotal={setTotalItems}
 					setLoading={setLoading}
 					setError={setError}
 				/>
 			</SwipeableDrawer>
+
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -337,33 +315,27 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 							Owned Assets
 						</Typography>
 					</Box>
-					<Box flex={1} minHeight="1rem" />
+
 					<SearchBar
-						label="Search collection"
-						placeholder="Search collection"
+						label="Search"
+						placeholder="Keywords..."
 						value={search}
 						size="small"
-						onChange={(value: string) => {
-							setSearch(value)
-						}}
+						onChange={(value: string) => setSearch(value)}
 						sx={{
-							flexGrow: 1,
+							ml: "auto",
+							width: "500px",
 							minWidth: "200px",
 							maxWidth: "800px",
 						}}
 					/>
 				</Box>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "end",
-						marginBottom: "1rem",
-					}}
-				>
+				<Stack direction="row" alignItems="center" sx={{ mb: "1rem" }}>
 					<FancyButton
 						onClick={() => setOpenFilterDrawer(true)}
 						size="small"
 						sx={{
+							ml: "auto",
 							"@media (max-width: 630px)": {
 								width: "100%",
 							},
@@ -371,7 +343,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 					>
 						Filters / Sort
 					</FancyButton>
-				</Box>
+				</Stack>
 				{userAssets && userAssets.length > 0 ? (
 					<Box
 						sx={{
@@ -381,7 +353,7 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						}}
 					>
 						{userAssets.map((a) => {
-							return <CollectionItemCard key={a.id} userAsset={a} username={user.username} />
+							return <AssetItemCard key={a.id} userAsset={a} username={user.username} />
 						})}
 					</Box>
 				) : (
@@ -425,28 +397,36 @@ const CollectionView = ({ user }: CollectionViewProps) => {
 						)}
 					</Box>
 				)}
-				<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
-					<Select
-						value={pageSize}
-						onChange={(e) => {
-							setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
-							setCurrentPage(1)
-						}}
-						input={<PageSizeSelectionInput />}
-					>
-						<MenuItem value={5}>Showing 5 results per page</MenuItem>
-						<MenuItem value={10}>Showing 10 results per page</MenuItem>
-						<MenuItem value={20}>Showing 20 results per page</MenuItem>
-						<MenuItem value={50}>Showing 50 results per page</MenuItem>
-						<MenuItem value={100}>Showing 100 results per page</MenuItem>
-					</Select>
+				<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: "auto", pt: "1.5rem" }}>
+					<Stack>
+						<Typography sx={{ ml: ".2rem" }}>
+							Showing {userAssets ? userAssets.length : 0} of {totalItems}
+						</Typography>
+						<Select
+							value={pageSize}
+							onChange={(e) => {
+								setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
+								changePage(1)
+							}}
+							input={<PageSizeSelectionInput />}
+						>
+							<MenuItem value={5}>Display 5 results per page</MenuItem>
+							<MenuItem value={10}>Display 10 results per page</MenuItem>
+							<MenuItem value={20}>Display 20 results per page</MenuItem>
+							<MenuItem value={50}>Display 50 results per page</MenuItem>
+							<MenuItem value={100}>Display 100 results per page</MenuItem>
+						</Select>
+					</Stack>
+
 					<Pagination
-						page={currentPage}
-						count={Math.ceil(total / pageSize)}
+						page={page}
+						count={totalPages}
 						color="primary"
-						onChange={(_, newPageNumber) => setCurrentPage(newPageNumber)}
+						showFirstButton
+						showLastButton
+						onChange={(_, newPageNumber) => changePage(newPageNumber)}
 					/>
-				</Box>
+				</Stack>
 			</Paper>
 		</>
 	)

@@ -5,14 +5,14 @@ import { getStringFromShoutingSnakeCase } from "../../helpers"
 import { colors, fonts } from "../../theme"
 import { Rarity } from "../../types/enums"
 import { UserAsset } from "../../types/purchased_item"
-import { rarityTextStyles } from "../profile/profile"
+import { rarityTextStyles } from "./profile"
 
-export interface CollectionItemCardProps {
+export interface AssetItemCardProps {
 	userAsset: UserAsset
 	username: string
 }
 
-export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardProps> = ({ userAsset, username }) => {
+export const AssetItemCard: React.VoidFunctionComponent<AssetItemCardProps> = ({ userAsset, username }) => {
 	const history = useHistory()
 
 	const { tier, name, hash, image_url, card_animation_url } = userAsset
@@ -20,19 +20,19 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 
 	return (
 		<Stack
+			spacing=".3rem"
 			justifyContent="space-between"
 			onClick={() => history.push(`/profile/${username}/asset/${hash}`)}
 			sx={{
 				position: "relative",
-				p: "1rem",
-				pb: "2rem",
-				pr: "2rem",
-				textAlign: "center",
+				px: "1.5rem",
+				py: "1.3rem",
 				font: "inherit",
 				color: "inherit",
-				border: "none",
 				outline: "none",
-				backgroundColor: "transparent",
+				backgroundColor: `${colors.darkerNavyBlue}60`,
+				border: "#00000060 1px solid",
+				boxShadow: 3,
 				cursor: "pointer",
 				":hover": {
 					"& .asset-image": {
@@ -55,17 +55,22 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 			}}
 		>
 			<Typography
-				variant="h5"
-				component="p"
+				variant="h6"
 				sx={{
 					mb: ".5",
 					textTransform: "uppercase",
+					display: "-webkit-box",
+					overflow: "hidden",
+					overflowWrap: "anywhere",
+					textOverflow: "ellipsis",
+					WebkitLineClamp: 2,
+					WebkitBoxOrient: "vertical",
 				}}
 			>
 				{name}
 			</Typography>
 
-			<Box sx={{ position: "relative" }}>
+			<Box sx={{ position: "relative", height: "15rem" }}>
 				<Box
 					className="asset-image"
 					component="img"
@@ -73,9 +78,12 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 					alt="Asset image"
 					sx={{
 						width: "100%",
+						height: "100%",
 						mb: ".3rem",
 						visibility: "visible",
 						opacity: 1,
+						objectFit: "contain",
+						objectPosition: "center",
 						transition: "all .2s ease-in",
 					}}
 				/>
@@ -102,15 +110,9 @@ export const CollectionItemCard: React.VoidFunctionComponent<CollectionItemCardP
 					</Box>
 				)}
 			</Box>
+
 			<Box>
-				<Typography
-					variant="body1"
-					sx={{
-						textTransform: "uppercase",
-					}}
-				>
-					{"War Machine"}
-				</Typography>
+				<Typography sx={{ textTransform: "uppercase" }}>{"War Machine"}</Typography>
 				<Typography
 					variant="h4"
 					sx={{

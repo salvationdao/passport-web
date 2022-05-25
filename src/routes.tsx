@@ -29,7 +29,6 @@ import { ProfileEditPage } from "./pages/profile/profileEdit"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 import { usePassportCommandsUser } from "./hooks/usePassport"
-import { CollectionPage } from "./pages/collections/collection"
 
 export const Routes = () => {
 	const { account } = useWeb3()
@@ -190,9 +189,6 @@ export const Routes = () => {
 						</Route>
 						<Route path="/asset/:asset_hash">
 							<AssetRedirectPage />
-						</Route>
-						<Route path={"/collections/:username"}>
-							<CollectionPage />
 						</Route>
 						<Route path="/store">
 							<StorePage />

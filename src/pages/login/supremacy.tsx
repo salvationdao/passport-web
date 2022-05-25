@@ -75,7 +75,7 @@ const SupremacyLogin = () => {
 				</ContentBox>
 			</Box>
 			<Box>
-				<Typography component="p">Powered by</Typography>
+				<Typography>Powered by</Typography>
 				<Box
 					component={XSYNLogo}
 					sx={{

@@ -202,7 +202,6 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 					<FadeTransition show={step === Step.UploadStep && !loading} occupySpace>
 						<Typography
 							variant="h1"
-							component="p"
 							sx={{
 								lineHeight: 1,
 								fontSize: "3rem",
@@ -300,7 +299,6 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 						>
 							<Typography
 								variant="h1"
-								component="p"
 								sx={{
 									lineHeight: 1,
 									fontSize: "3rem",

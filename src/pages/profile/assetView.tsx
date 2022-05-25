@@ -401,7 +401,6 @@ export const AssetView = ({
 						>
 							<Typography
 								variant="h4"
-								component="p"
 								sx={{
 									textTransform: "uppercase",
 								}}
@@ -410,7 +409,6 @@ export const AssetView = ({
 							</Typography>
 							<Typography
 								variant="body1"
-								component="p"
 								sx={{
 									textTransform: "uppercase",
 								}}
@@ -419,7 +417,6 @@ export const AssetView = ({
 							</Typography>
 							<Typography
 								variant="h4"
-								component="p"
 								sx={{
 									fontFamily: fonts.bizmoblack,
 									fontStyle: "italic",
