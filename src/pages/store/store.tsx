@@ -1,7 +1,8 @@
-import { Box, Stack, Typography } from "@mui/material"
+import { Box, Link, Stack, styled, Typography } from "@mui/material"
 import { SupremacyLogoImagePath } from "../../assets"
-import { FancyButton } from "../../components/fancyButton"
+import { FancyButton, FancyButtonProps } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
+import OpenseaLogo from "../../assets/images/opensea_logomark_white.svg"
 import { BATTLE_ARENA_LINK } from "../../config"
 import { colors, fonts } from "../../theme"
 
@@ -20,16 +21,6 @@ export const StorePage: React.FC = () => {
 						p: ".5rem",
 					}}
 				/>
-				<Typography
-					variant="h1"
-					sx={{
-						textTransform: "uppercase",
-						fontSize: "1.6rem",
-						color: colors.neonPink,
-					}}
-				>
-					Store
-				</Typography>
 			</Stack>
 
 			<Stack sx={{ flex: 1, position: "relative" }}>
@@ -52,11 +43,31 @@ export const StorePage: React.FC = () => {
 					<Typography variant="h6" sx={{ textAlign: "center" }}>
 						Go to Supremacy Marketplace to purchase assets
 					</Typography>
-					<FancyButton borderColor={colors.neonPink} onClick={() => window.open(`${BATTLE_ARENA_LINK}/marketplace`, "_blank")?.focus()}>
+					<FancyButton
+						borderColor={colors.neonPink}
+						sx={{ py: ".7rem" }}
+						onClick={() => window.open(`${BATTLE_ARENA_LINK}/marketplace`, "_blank")?.focus()}
+					>
 						<Typography sx={{ color: colors.neonPink, fontFamily: fonts.bizmoextra_bold }}>SUPREMACY MARKETPLACE</Typography>
 					</FancyButton>
+					<Link
+						underline="none"
+						color={colors.white}
+						component={StyledFancyButton}
+						sx={{ display: "flex", alignItems: "center", gap: "0.5rem", p: "0.5rem 1rem", pt: ".8rem" }}
+						href={"https://opensea.io/collection/supremacy-genesis"}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<Typography sx={{ fontFamily: fonts.bizmoextra_bold }}>GO TO BLACK MARKET</Typography>
+						<img src={OpenseaLogo} style={{ height: "1.7rem", paddingBottom: ".3rem" }} alt="Open Sea logo" />
+					</Link>
 				</Stack>
 			</Stack>
 		</Stack>
 	)
 }
+
+const StyledFancyButton = styled(({ navigate, ...props }: FancyButtonProps & { navigate?: any }) => (
+	<FancyButton {...props} fancy borderColor={colors.skyBlue} />
+))({})
