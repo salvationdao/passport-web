@@ -175,18 +175,21 @@ export const Routes = () => {
 
 						{/* User-authenticated routes */}
 						{/* profile */}
-						<Route path="/profile/:username/asset/:asset_hash">
-							<ProfilePage />
-						</Route>
-						<Route path="/profile/:username/edit">
-							<ProfileEditPage />
-						</Route>
-						<Route path="/profile/:username">
-							<ProfilePage />
-						</Route>
-						<Route path="/profile">
-							<ProfilePage />
-						</Route>
+						<Switch>
+							<Route path="/profile/:username/asset/:asset_hash">
+								<ProfilePage />
+							</Route>
+							<Route path="/profile/:username/edit">
+								<ProfileEditPage />
+							</Route>
+							<Route path="/profile/:username">
+								<ProfilePage />
+							</Route>
+							<Route path="/profile">
+								<ProfilePage />
+							</Route>
+						</Switch>
+
 						<Route path="/asset/:asset_hash">
 							<AssetRedirectPage />
 						</Route>

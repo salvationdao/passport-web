@@ -121,12 +121,12 @@ export interface Collection {
 	id: string
 	name: string
 	slug: string
-	image: string
+	// image: string
 	mint_contract: string
 	stake_contract: string
 	created_at: Date
 	updated_at: Date
-	frozen_at?: Date
+	// frozen_at?: Date
 	deleted_at?: Date
 }
 
