@@ -271,7 +271,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				<Divider />
 				<NavButton to="/profile" startIcon={<FaceIcon />}>
-					Profile
+					View Profile
 				</NavButton>
 				<NavButton to="/store" startIcon={<StorefrontIcon />}>
 					Purchase Assets
