@@ -15,6 +15,7 @@ import {
 	IconButton,
 	Link,
 	Paper,
+	Stack,
 	styled,
 	Switch,
 	Typography,
@@ -46,7 +47,6 @@ export interface UserAssetResponse {
 	user_asset: UserAsset
 	owner: User // only `faction_id` and `username` is populated
 	collection: Collection
-	host_url: string
 }
 
 interface AssetViewContainerProps {
@@ -63,7 +63,6 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 	const [userAsset, setUserAsset] = useState<UserAsset>()
 	const [owner, setOwner] = useState<User>()
 	const [collection, setCollection] = useState<Collection>()
-	const [hostURL, setHostURL] = useState("")
 
 	useEffect(() => {
 		;(async () => {
@@ -77,7 +76,6 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 				setUserAsset(resp.user_asset)
 				setOwner(resp.owner)
 				setCollection(resp.collection)
-				setHostURL(resp.host_url)
 			} catch (e) {
 				console.error(e)
 				setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
@@ -169,7 +167,6 @@ export const AssetView = ({
 
 	const history = useHistory()
 	const [openLocked, setOpenLocked] = useState(isFuture(userAsset.unlocked_at))
-	const [global, setGlobal] = useState<boolean>(true)
 	const { provider } = useWeb3()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
@@ -431,22 +428,44 @@ export const AssetView = ({
 								flexBasis: "400px",
 							}}
 						>
-							<Box sx={{ display: "flex", justifyContent: "space-between" }}>
-								<Typography
-									variant="subtitle1"
-									color={colors.neonPink}
-									sx={{
-										textTransform: "uppercase",
-										marginBottom: ".5rem",
-									}}
-								>
-									Properties
-								</Typography>
-								<FormControlLabel
-									control={<Switch checked={global} onChange={(e) => setGlobal(e.target.checked)} />}
-									label={`Global Compare`}
-								/>
-							</Box>
+							<Stack flexWrap="wrap" spacing=".7rem">
+								<Stack>
+									<Typography variant="subtitle1" color={colors.neonPink} sx={{ textTransform: "uppercase" }}>
+										Properties
+									</Typography>
+
+									<Stack flexWrap="wrap" direction="row">
+										{userAsset.attributes.map((attr) => {
+											if (typeof attr.value === "string") {
+												return (
+													<Stack>
+														<Typography variant="subtitle1" color={colors.neonPink} sx={{ textTransform: "uppercase" }}>
+															{attr.trait_type}
+														</Typography>
+														<Typography variant="subtitle2">{attr.value}</Typography>
+													</Stack>
+												)
+											}
+											return null
+										})}
+									</Stack>
+								</Stack>
+
+								<Stack>
+									<Typography variant="subtitle1" color={colors.neonPink} sx={{ textTransform: "uppercase" }}>
+										Stats
+									</Typography>
+
+									<Stack flexWrap="wrap" direction="row">
+										{userAsset.attributes.map((attr) => {
+											if (!attr.display_type && typeof attr.value === "number") {
+												return null
+											}
+											return null
+										})}
+									</Stack>
+								</Stack>
+							</Stack>
 
 							{/* <Box
 								sx={{
@@ -455,18 +474,20 @@ export const AssetView = ({
 									gap: "1rem",
 								}}
 							>
-								{numberAttributes &&
-									numberAttributes.map((attr, i) => {
-										return (
-											<NumberAttribute
-												key={`${attr.label}-${attr.value}-${i}`}
-												type={"chassis"} // TODO: remove hardcoding
-												model={itemModel}
-												attribute={attr}
-												global={global}
-											/>
-										)
-									})}
+								{userAsset.attributes.map((attr) => {
+									if (attr.display_type === "boost_number" && typeof attr.value === "number") {
+										return null
+									}
+									return null
+								})}
+
+								{userAsset.attributes.map((attr) => {
+									if (attr.display_type === "boost_percentage" && typeof attr.value === "number") {
+										return null
+									}
+									return null
+								})}
+
 							</Box> */}
 						</Box>
 						<Box

@@ -110,7 +110,7 @@ export interface UserAsset {
 	tier: string
 	hash: string
 	owner_id: string
-	attributes: Attribute2
+	attributes: Attribute2[]
 	name: string
 	image_url?: string
 	external_url?: string
