@@ -63,26 +63,28 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 	const [owner, setOwner] = useState<User>()
 	const [collection, setCollection] = useState<Collection>()
 
-	useEffect(() => {
-		;(async () => {
-			try {
-				setLoading(true)
-				const resp = await send<UserAssetResponse>(HubKey.AssetSubscribe, {
-					asset_hash: assetHash,
-				})
+	const loadAsset = useCallback(async()=>{
+		try {
+			setLoading(true)
+			const resp = await send<UserAssetResponse>(HubKey.AssetGet, {
+				asset_hash: assetHash,
+			})
 
-				if (!resp) return
-				setUserAsset(resp.user_asset)
-				setOwner(resp.owner)
-				setCollection(resp.collection)
-			} catch (e) {
-				console.error(e)
-				setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
-			} finally {
-				setLoading(false)
-			}
-		})()
-	}, [assetHash, send])
+			if (!resp) return
+			setUserAsset(resp.user_asset)
+			setOwner(resp.owner)
+			setCollection(resp.collection)
+		} catch (e) {
+			console.error(e)
+			setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
+		} finally {
+			setLoading(false)
+		}
+	},[assetHash, send])
+
+	useEffect(() => {
+		loadAsset()
+	}, [loadAsset])
 
 	if (loading || !userAsset || !owner || !collection) {
 		return (
@@ -120,6 +122,7 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 			collection={collection}
 			error={error}
 			edit={edit}
+			loadAsset={loadAsset}
 		/>
 	)
 }
@@ -140,6 +143,7 @@ interface AssetViewProps {
 	showOpenseaURL: boolean
 	onWorld: boolean
 	edit: boolean
+	loadAsset: () => Promise<void>
 }
 
 export const AssetView = ({
@@ -158,6 +162,7 @@ export const AssetView = ({
 	openseaURL,
 	showOpenseaURL,
 	edit,
+	loadAsset,
 }: AssetViewProps) => {
 	const { send } = usePassportCommandsUser("/commander")
 	const [remainingTime, setRemainingTime] = useState<string | null>(null)
@@ -172,6 +177,7 @@ export const AssetView = ({
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
 	const [stakeModelOpen, setStakeModelOpen] = useState<boolean>(false)
 	const [unstakeModelOpen, setUnstakeModelOpen] = useState<boolean>(false)
+	const [transferModelOpen, setTransferModelOpen] = useState<boolean>(false)
 	const [enlarge, setEnlarge] = useState<boolean>(false)
 	const videoDiv = useRef<HTMLVideoElement | undefined>()
 
@@ -185,47 +191,16 @@ export const AssetView = ({
 	}, [enlarge])
 
 
-	const transferToSupremacy = useCallback(async () => {
-		try {
-			const resp = await send<UserAssetResponse>(HubKey.AssetTransferToSupremacy, {
-				asset_hash: userAsset.hash,
-			})
-		//	resp
-
-		} catch (e) {
-			console.error(e)
-			// setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
-		} finally {
-			// setLoading(false)
-		}
-	},[userAsset.hash])
-
-	const transferFromSupremacy = useCallback(async () => {
-		try {
-			const resp = await send<UserAssetResponse>(HubKey.AssetTransferFromSupremacy, {
-				asset_hash: userAsset.hash,
-			})
-			//	resp
-
-		} catch (e) {
-			console.error(e)
-			// setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
-		} finally {
-			// setLoading(false)
-		}
-	},[userAsset.hash])
-
-
 	const Buttons = useMemo(() => {
 		if(userAsset.locked_to_service_name) {
-			return (<FancyButton size="small" onClick={() => transferFromSupremacy()}>
+			return (<FancyButton size="small" onClick={() => setTransferModelOpen(true)}>
 							Transition To XSYN From {userAsset.locked_to_service_name}
 					</FancyButton>)
 		}
 
 		return (
 			<>
-				<FancyButton disabled={locked} size="small" onClick={() => transferToSupremacy()}>
+				<FancyButton disabled={locked} size="small" onClick={() => setTransferModelOpen(true)}>
 					Transition To Supremacy From XSYN
 				</FancyButton>
 				{showStake && (
@@ -245,7 +220,7 @@ export const AssetView = ({
 				)}
 			</>
 		)
-	},[userAsset, transferFromSupremacy, transferToSupremacy])
+	},[userAsset])
 
 	if (error) {
 		return (
@@ -571,28 +546,6 @@ export const AssetView = ({
 								</Stack>
 							</Stack>
 
-							{/* <Box
-								sx={{
-									display: "grid",
-									gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
-									gap: "1rem",
-								}}
-							>
-								{userAsset.attributes.map((attr) => {
-									if (attr.display_type === "boost_number" && typeof attr.value === "number") {
-										return null
-									}
-									return null
-								})}
-
-								{userAsset.attributes.map((attr) => {
-									if (attr.display_type === "boost_percentage" && typeof attr.value === "number") {
-										return null
-									}
-									return null
-								})}
-
-							</Box> */}
 						</Box>
 						<Box
 							sx={{
@@ -707,6 +660,7 @@ export const AssetView = ({
 				{provider && userAsset && (
 					<UnstakeModel collection={collection} open={unstakeModelOpen} asset={userAsset} onClose={() => setUnstakeModelOpen(false)} />
 				)}
+				<ServiceTransferModel open={transferModelOpen} onClose={()=>setTransferModelOpen(false)} onSuccess={loadAsset} userAsset={userAsset}/>
 			</Paper>
 		</>
 	)
@@ -1158,6 +1112,115 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 					<SwitchNetworkButton open={open} changeChain={changeChain} currentChainId={currentChainId} setError={setErrorMinting} />
 				)}
 				{errorMinting && <Typography sx={{ marginTop: "1rem", color: colors.supremacy.red }}>{errorMinting}</Typography>}
+			</DialogActions>
+		</Dialog>
+	)
+}
+interface ServiceTransferModelProps {
+	open: boolean
+	onClose: () => void
+	onSuccess: () => void
+	userAsset: UserAsset
+}
+
+
+
+export const ServiceTransferModel = ({ open, onClose, onSuccess, userAsset }: ServiceTransferModelProps) => {
+	const { send } = usePassportCommandsUser("/commander")
+	const [loading, setLoading] = useState<boolean>(false)
+	const [error, setError] = useState<string>()
+
+	const transferToSupremacy = useCallback(async () => {
+		try {
+			setError(undefined)
+			setLoading(true)
+			await send<UserAssetResponse>(HubKey.AssetTransferToSupremacy, {
+				asset_hash: userAsset.hash,
+			})
+
+			onSuccess()
+		} catch (e) {
+			console.error(e)
+			setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
+		} finally {
+			setLoading(false)
+		}
+	},[userAsset.hash])
+
+	const transferFromSupremacy = useCallback(async () => {
+		try {
+			setError(undefined)
+			setLoading(true)
+			await send<UserAssetResponse>(HubKey.AssetTransferFromSupremacy, {
+				asset_hash: userAsset.hash,
+			})
+
+			onSuccess()
+		} catch (e) {
+			console.error(e)
+			setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
+		} finally {
+			setLoading(false)
+		}
+	},[userAsset.hash])
+
+
+
+	return (
+		<Dialog
+			open={open}
+			onClose={() => {
+				setError(undefined)
+				onClose()
+			}}
+			maxWidth="sm"
+			fullWidth
+		>
+			<DialogTitle
+				sx={(theme) => ({
+					fontSize: theme.typography.h3,
+				})}
+				color={"primary"}
+			>
+				Transition Asset To {(userAsset.locked_to_service_name && userAsset.locked_to_service_name !== "")? userAsset.locked_to_service_name : "XSYN"}
+				<IconButton
+					onClick={() => {
+						setError(undefined)
+						onClose()
+					}}
+					sx={{
+						position: "absolute",
+						top: "1rem",
+						right: "1rem",
+					}}
+				>
+					<CloseIcon />
+				</IconButton>
+			</DialogTitle>
+	Transfer asset mate
+
+			<DialogActions
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "stretch",
+					padding: "16px 24px",
+				}}
+			>
+					<FancyButton
+						loading={loading}
+						onClick={async () => {
+							if (userAsset.locked_to_service_name) {
+								await transferFromSupremacy()
+								return
+							}
+							await transferToSupremacy()
+						}}
+					>
+						Confirm and start transfer
+					</FancyButton>
+
+				{error && <Typography sx={{ marginTop: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
 			</DialogActions>
 		</Dialog>
 	)
