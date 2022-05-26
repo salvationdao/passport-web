@@ -1,4 +1,6 @@
 import BigNumber from "bignumber.js"
+import { colors } from "../theme"
+import { Rarity } from "../types/enums"
 import { Attribute } from "../types/types"
 
 const fmt = {
@@ -40,4 +42,43 @@ export const usdFormatter = (centCost: number): string => {
 	})
 
 	return formatter.format(centCost / 100)
+}
+
+export const rarityTextStyles: { [key in Rarity]: any } = {
+	MEGA: {
+		color: colors.rarity.MEGA,
+	},
+	COLOSSAL: {
+		color: colors.rarity.COLOSSAL,
+	},
+	RARE: {
+		color: colors.rarity.RARE,
+	},
+	LEGENDARY: {
+		color: colors.rarity.LEGENDARY,
+	},
+	ELITE_LEGENDARY: {
+		color: colors.rarity.ELITE_LEGENDARY,
+	},
+	ULTRA_RARE: {
+		color: colors.rarity.ULTRA_RARE,
+	},
+	EXOTIC: {
+		color: colors.rarity.EXOTIC,
+	},
+	GUARDIAN: {
+		color: colors.rarity.GUARDIAN,
+	},
+	MYTHIC: {
+		color: colors.rarity.MYTHIC,
+		textShadow: `0 0 2px ${colors.rarity.MYTHIC}`,
+	},
+	DEUS_EX: {
+		color: colors.rarity.DEUS_EX,
+		textShadow: `0 0 2px ${colors.rarity.DEUS_EX}`,
+	},
+	TITAN: {
+		color: colors.rarity.TITAN,
+		textShadow: `0 0 2px ${colors.rarity.TITAN}`,
+	},
 }

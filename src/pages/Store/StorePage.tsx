@@ -6,7 +6,7 @@ import OpenseaLogo from "../../assets/images/opensea_logomark_white.svg"
 import { BATTLE_ARENA_LINK } from "../../config"
 import { colors, fonts } from "../../theme"
 
-export const StorePage: React.FC = () => {
+export const StorePage = () => {
 	return (
 		<Stack spacing="2rem" sx={{ height: "100%", overflowX: "hidden" }}>
 			<Navbar />
