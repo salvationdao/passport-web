@@ -24,8 +24,8 @@ export const Attributes = ({ userAsset }: { userAsset: UserAsset }) => {
 									<Stack
 										sx={{
 											m: ".3rem",
-											px: "1rem",
-											py: "1rem",
+											px: "1.2rem",
+											py: ".6rem",
 											borderRadius: 2,
 											border: "#00000030 1px solid",
 											backgroundColor: `${colors.darkerNavyBlue}60`,
