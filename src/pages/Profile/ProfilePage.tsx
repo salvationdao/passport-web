@@ -1,5 +1,5 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, IconButton, Stack, Typography, useMediaQuery } from "@mui/material"
+import { Box, IconButton, Paper, Stack, Tabs, Typography, useMediaQuery, Tab } from "@mui/material"
 import { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
@@ -7,6 +7,7 @@ import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { ProfileButton } from "../../components/profileButton"
 import { useAuth } from "../../containers/auth"
+import { useSnackbar } from "../../containers/snackbar"
 import { middleTruncate } from "../../helpers"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
@@ -15,8 +16,6 @@ import { User } from "../../types/types"
 import { Assets721 } from "./Assets/721/Assets721"
 import { LockButton, lockOptions, LockOptionsProps } from "./Locking/LockButton"
 import { LockModal } from "./Locking/LockModal"
-import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
-import { useSnackbar } from "../../containers/snackbar"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -37,6 +36,9 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [error, setError] = useState<string>()
 	const [lockOption, setLockOption] = useState<LockOptionsProps>()
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
+
+	// Tabs
+	const [tabValue, setTabValue] = useState(0)
 
 	useEffect(() => {
 		;(async () => {
@@ -173,11 +175,24 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 					</>
 				)}
 
-				{!!asset_hash ? (
-					<SingleAsset721View assetHash={asset_hash} edit={loggedInUser?.id === user.id} />
-				) : (
-					<Assets721 user={user} loggedInUser={loggedInUser} />
-				)}
+				<Paper sx={{ flex: 1, borderRadius: 1.5 }}>
+					{!asset_hash && (
+						<Tabs
+							value={tabValue}
+							sx={{ ".MuiTab-root": { px: "2rem", py: "1.2rem" }, borderBottom: 1, borderColor: "divider" }}
+							onChange={(_event, newValue) => {
+								setTabValue(newValue)
+							}}
+						>
+							<Tab label="ASSETS 721" value={0} />
+							<Tab label="ASSETS 1155" value={1} />
+						</Tabs>
+					)}
+
+					{tabValue === 0 && <Assets721 user={user} loggedInUser={loggedInUser} />}
+
+					{tabValue === 1 && <>IVAN</>}
+				</Paper>
 			</Stack>
 		</Stack>
 	)

@@ -1,6 +1,6 @@
-import { Box, MenuItem, Pagination, Paper, Select, Stack, Typography } from "@mui/material"
+import { Box, MenuItem, Pagination, Select, Stack, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
-import { useHistory } from "react-router-dom"
+import { useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../../../assets"
 import { FancyButton } from "../../../../components/fancyButton"
 import { PageSizeSelectionInput } from "../../../../components/pageSizeSelectionInput"
@@ -15,6 +15,7 @@ import { User } from "../../../../types/types"
 import WarMachine from "../../../../assets/images/WarMachine.png"
 import { SortDrawer } from "./SortDrawer"
 import { Asset721ItemCard } from "./Asset721ItemCard"
+import { SingleAsset721View } from "./SingleAssetView/SingleAsset721View"
 
 export interface FilterSortOptions {
 	sort: { column: string; direction: string }
@@ -28,6 +29,7 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string>()
 	const { send } = usePassportCommandsUser("/commander")
+	const { asset_hash } = useParams<{ username: string; asset_hash: string }>()
 	const history = useHistory()
 
 	// Collection data
@@ -63,7 +65,7 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 		;(async () => {
 			try {
 				setLoading(true)
-				const resp = await send<{ assets: UserAsset[]; total: number }>(HubKey.AssetList, {
+				const resp = await send<{ assets: UserAsset[]; total: number }>(HubKey.AssetList721, {
 					user_id: user.id,
 					search,
 					page,
@@ -91,17 +93,13 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 		})()
 	}, [user, search, page, pageSize, setLoading, send, setUserAssets, setTotalItems, setError, filterSortOptions])
 
+	if (!!asset_hash) return <SingleAsset721View assetHash={asset_hash} edit={loggedInUser?.id === user.id} />
+
 	return (
 		<>
-			<Paper
-				sx={{
-					flexGrow: 1,
-					display: "flex",
-					flexDirection: "column",
-					p: "2rem",
-				}}
-			>
+			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
 				<Stack
+					direction="row"
 					sx={{
 						flexWrap: "wrap",
 						alignItems: "center",
@@ -112,19 +110,14 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 						},
 					}}
 				>
-					<Box
-						sx={{
-							display: "flex",
-							alignItems: "center",
-						}}
-					>
+					<Stack direction="row" alignItems="center">
 						<Box
 							component="img"
 							src={GradientHeartIconImagePath}
 							alt="Heart icon"
 							sx={{
 								mr: ".5rem",
-								height: "4rem",
+								height: "3.6rem",
 							}}
 						/>
 						<Typography
@@ -136,7 +129,7 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 						>
 							Owned Assets
 						</Typography>
-					</Box>
+					</Stack>
 
 					<SearchBar
 						label="Search"
@@ -258,7 +251,7 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 						onChange={(_, newPageNumber) => changePage(newPageNumber)}
 					/>
 				</Stack>
-			</Paper>
+			</Stack>
 
 			<SortDrawer
 				showOffWorldFilter={false}

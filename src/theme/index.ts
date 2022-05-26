@@ -46,7 +46,7 @@ export const colors = {
 	lightNavyBlue2: "#6E7198",
 	navyBlue: "#402F98",
 	darkNavyBlue: "#0a061f",
-	darkerNavyBlue: "#030208",
+	darkerNavyBlue: "#05030D",
 	darkNavyBackground2: "rgba(16, 16, 25, 0.2)",
 	darkNavyBackground: "rgba(16, 16, 25, 0.7)",
 	darkerNavyBackground: "rgb(5, 12, 18,0.8)",

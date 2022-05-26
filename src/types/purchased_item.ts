@@ -11,7 +11,7 @@ export interface UserAsset {
 	tier: string
 	hash: string
 	owner_id: string
-	attributes: Attribute2[]
+	attributes: Attribute721[]
 	name: string
 	image_url?: string
 	external_url?: string
@@ -33,9 +33,30 @@ export interface UserAsset {
 	created_at: Date
 }
 
-interface Attribute2 {
+export interface User1155Asset {
+	id: string
+	owner_id: string
+	collection_id: string
+	external_token_id: number
+	count: number
+	label: string
+	description: string
+	image_url: string
+	animation_url: string
+	keycard_group: string
+	attributes: Attribute1155[]
+	service_id: string
+	created_at: Date
+}
+
+interface Attribute721 {
 	display_type?: "boost_number" | "boost_percentage" | "date" | "number"
 	trait_type: string
 	asset_hash?: string
 	value: string | number
+}
+
+interface Attribute1155 {
+	trait_type: string
+	syndicate: string
 }

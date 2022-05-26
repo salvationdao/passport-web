@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
-import { Box, Button, ButtonProps, Dialog, Divider, Link, Paper, Stack, styled, Typography, useMediaQuery } from "@mui/material"
+import { Box, Button, ButtonProps, Dialog, Divider, Link, Stack, styled, Typography, useMediaQuery } from "@mui/material"
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -53,7 +53,7 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 		;(async () => {
 			try {
 				setLoading(true)
-				const resp = await send<UserAssetResponse>(HubKey.AssetGet, {
+				const resp = await send<UserAssetResponse>(HubKey.AssetGet721, {
 					asset_hash: assetHash,
 				})
 
@@ -76,9 +76,9 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 
 	if (loading || !userAsset || !owner || !collection) {
 		return (
-			<Paper sx={{ flexGrow: 1 }}>
+			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
 				<Loading text={"Loading asset information..."} />
-			</Paper>
+			</Stack>
 		)
 	}
 
@@ -206,29 +206,15 @@ export const AssetView = ({
 
 	if (error) {
 		return (
-			<Paper
-				sx={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					flexGrow: 1,
-				}}
-			>
+			<Stack alignItems="center" justifyContent="center" sx={{ flexGrow: 1, p: "2rem" }}>
 				{error}
-			</Paper>
+			</Stack>
 		)
 	}
 
 	return (
 		<>
-			<Paper
-				sx={{
-					flexGrow: 1,
-					display: "flex",
-					flexDirection: "column",
-					padding: "2rem",
-				}}
-			>
+			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
 				<Link
 					variant="h5"
 					underline="hover"
@@ -490,7 +476,7 @@ export const AssetView = ({
 						</Box>
 					</Dialog>
 				)}
-			</Paper>
+			</Stack>
 
 			{remainingTime && (
 				<LockedModal
