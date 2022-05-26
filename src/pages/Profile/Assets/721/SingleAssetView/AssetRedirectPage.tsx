@@ -1,10 +1,11 @@
 import { useEffect } from "react"
 import { useHistory, useParams } from "react-router-dom"
-import { Loading } from "../components/loading"
-import { API_ENDPOINT_HOSTNAME } from "../config"
-import { useSnackbar } from "../containers/snackbar"
-import { UserAsset } from "../types/purchased_item"
+import { Loading } from "../../../../../components/loading"
+import { API_ENDPOINT_HOSTNAME } from "../../../../../config"
+import { useSnackbar } from "../../../../../containers/snackbar"
+import { UserAsset } from "../../../../../types/purchased_item"
 
+// When user goes directly to a page with asset hash, it'll redirect to proper link
 export const AssetRedirectPage = () => {
 	const { asset_hash } = useParams<{ asset_hash: string }>()
 	const history = useHistory()

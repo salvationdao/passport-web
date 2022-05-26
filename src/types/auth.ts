@@ -228,6 +228,7 @@ export type LoginRequest =
 	| TwitterLoginRequest
 	| DiscordLoginRequest
 	| SocialLoginRequest
+
 export type SignUpRequest =
 	| WalletSignUpRequest
 	| GoogleSignUpRequest
@@ -238,4 +239,5 @@ export type SignUpRequest =
 	| SocialSignupRequest
 
 export type LoginFunc = (action: LoginRequest) => Promise<QueryResponse<PasswordLoginResponse>>
+
 export type SignupFunc = (action: SignUpRequest) => Promise<QueryResponse<RegisterResponse>>
