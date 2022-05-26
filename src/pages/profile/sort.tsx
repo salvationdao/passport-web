@@ -152,7 +152,7 @@ export const Sort = ({
 		setLoading(true)
 		;(async () => {
 			try {
-				const resp = await send<{ assets: UserAsset[]; total: number }>(HubKey.AssetList, {
+				const resp = await send<{ assets: UserAsset[]; total: number }>(HubKey.AssetList721, {
 					user_id: userID,
 					search,
 					page,

@@ -67,7 +67,7 @@ export const AssetViewContainer = ({ user, assetHash, edit }: AssetViewContainer
 		;(async () => {
 			try {
 				setLoading(true)
-				const resp = await send<UserAssetResponse>(HubKey.AssetSubscribe, {
+				const resp = await send<UserAssetResponse>(HubKey.AssetSubscribe721, {
 					asset_hash: assetHash,
 				})
 

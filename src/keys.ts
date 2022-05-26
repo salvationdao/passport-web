@@ -21,8 +21,10 @@ enum HubKey {
 
 	ImageList = "IMAGE:LIST",
 
-	AssetList = "ASSET:LIST",
-	AssetSubscribe = "ASSET:GET",
+	AssetList721 = "ASSET:LIST:721",
+	AssetSubscribe721 = "ASSET:GET:721",
+	AssetList1155 = "ASSET:LIST:1155",
+	AssetSubscribe1155 = "ASSET:GET:1155",
 	CollectionSubscribe = "COLLECTION:SUBSCRIBE",
 
 	TransactionGroups = "TRANSACTION:GROUPS",

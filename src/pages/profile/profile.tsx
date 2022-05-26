@@ -13,6 +13,7 @@ import {
 	Pagination,
 	Select,
 	MenuItem,
+	Tab,
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory, useParams } from "react-router-dom"
@@ -35,9 +36,10 @@ import { AssetViewContainer } from "./assetView"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { LockButton, LockModal, lockOptions, LockOptionsProps } from "./lockButtons"
 import { useAuth } from "../../containers/auth"
-import { UserAsset } from "../../types/purchased_item"
+import { User1155Asset, UserAsset } from "../../types/purchased_item"
 import { usePagination } from "../../hooks/usePagination"
 import { useDebounce } from "../../hooks/useDebounce"
+import { TabContext, TabList, TabPanel } from "@mui/lab"
 
 export const ProfilePage: React.FC = () => {
 	const { user } = useAuth()
@@ -208,9 +210,13 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 				)}
 
 				{!!asset_hash ? (
-					<AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} />
+					<>
+						<AssetViewContainer user={user} assetHash={asset_hash} edit={loggedInUser?.id === user.id} />
+					</>
 				) : (
-					<CollectionView user={user} />
+					<>
+						<CollectionView user={user} />
+					</>
 				)}
 			</Box>
 		</Box>
@@ -236,40 +242,13 @@ const CollectionView = ({ user }: { user: User }) => {
 	const [search, setSearch] = useDebounce("", 300)
 	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({ pageSize: 20, page: 1 })
 	const [userAssets, setUserAssets] = useState<UserAsset[]>([])
+	const [user1155Assets, set1155UserAssets] = useState<User1155Asset[]>([])
+	const [value, setValue] = useState<number>(1)
 	// Filter/Sort
 	const [openFilterDrawer, setOpenFilterDrawer] = useState(false)
 
 	return (
 		<>
-			<SwipeableDrawer
-				open={openFilterDrawer}
-				onClose={() => setOpenFilterDrawer(false)}
-				onOpen={() => setOpenFilterDrawer(true)}
-				anchor="bottom"
-				swipeAreaWidth={56}
-				ModalProps={{ keepMounted: true }}
-				PaperProps={{
-					sx: {
-						padding: "2rem",
-						"& > *:not(:last-child)": {
-							marginBottom: "1rem",
-						},
-					},
-				}}
-			>
-				<Sort
-					pillSizeSmall={true}
-					showOffWorldFilter={false}
-					page={page}
-					pageSize={pageSize}
-					search={search}
-					setUserAssets={setUserAssets}
-					setTotal={setTotalItems}
-					setLoading={setLoading}
-					setError={setError}
-				/>
-			</SwipeableDrawer>
-
 			<Paper
 				sx={{
 					flexGrow: 1,
@@ -315,7 +294,6 @@ const CollectionView = ({ user }: { user: User }) => {
 							Owned Assets
 						</Typography>
 					</Box>
-
 					<SearchBar
 						label="Search"
 						placeholder="Keywords..."
@@ -330,103 +308,152 @@ const CollectionView = ({ user }: { user: User }) => {
 						}}
 					/>
 				</Box>
-				<Stack direction="row" alignItems="center" sx={{ mb: "1rem" }}>
-					<FancyButton
-						onClick={() => setOpenFilterDrawer(true)}
-						size="small"
-						sx={{
-							ml: "auto",
-							"@media (max-width: 630px)": {
-								width: "100%",
-							},
-						}}
-					>
-						Filters / Sort
-					</FancyButton>
-				</Stack>
-				{userAssets && userAssets.length > 0 ? (
-					<Box
-						sx={{
-							display: "grid",
-							gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-							gap: "1rem",
-						}}
-					>
-						{userAssets.map((a) => {
-							return <AssetItemCard key={a.id} userAsset={a} username={user.username} />
-						})}
+
+				<TabContext value={value.toString()}>
+					<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+						<TabList
+							onChange={(event, newValue) => {
+								setValue(newValue)
+							}}
+							aria-label="lab API tabs example"
+						>
+							<Tab label="Asset 721" value="1" />
+							<Tab label="Asset 1155" value="2" />
+						</TabList>
 					</Box>
-				) : (
-					<Box
-						sx={{
-							flex: 1,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							flexDirection: "column",
-						}}
-					>
-						{loading ? (
-							<Typography variant="subtitle2" color={colors.darkGrey}>
-								Loading assets...
-							</Typography>
-						) : error ? (
-							<Typography variant="subtitle2" color={colors.darkGrey}>
-								An error occurred while loading assets.
-							</Typography>
-						) : (
-							<Box
-								component={"div"}
+					<TabPanel value="1">
+						<Stack direction="row" alignItems="center" sx={{ mb: "1rem" }}>
+							<FancyButton
+								onClick={() => setOpenFilterDrawer(true)}
+								size="small"
 								sx={{
-									display: "flex",
-									flexDirection: "column",
-									alignItems: "center",
-									justifyContent: "center",
-									gap: "1em",
-									overflow: "wrap",
+									ml: "auto",
+									"@media (max-width: 630px)": {
+										width: "100%",
+									},
 								}}
 							>
-								<WarMachineImage src={WarMachine} alt="supremacy war machines" />
-								<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
-									Your Inventory Is Empty
-								</Typography>
-								<StyledFancyButton sx={{ padding: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
-									Go To Store
-								</StyledFancyButton>
+								Filters / Sort
+							</FancyButton>
+						</Stack>
+						<SwipeableDrawer
+							open={openFilterDrawer}
+							onClose={() => setOpenFilterDrawer(false)}
+							onOpen={() => setOpenFilterDrawer(true)}
+							anchor="bottom"
+							swipeAreaWidth={56}
+							ModalProps={{ keepMounted: true }}
+							PaperProps={{
+								sx: {
+									padding: "2rem",
+									"& > *:not(:last-child)": {
+										marginBottom: "1rem",
+									},
+								},
+							}}
+						>
+							<Sort
+								pillSizeSmall={true}
+								showOffWorldFilter={false}
+								page={page}
+								pageSize={pageSize}
+								search={search}
+								setUserAssets={setUserAssets}
+								setTotal={setTotalItems}
+								setLoading={setLoading}
+								setError={setError}
+							/>
+						</SwipeableDrawer>
+						{userAssets && userAssets.length > 0 && (
+							<Box
+								sx={{
+									display: "grid",
+									gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+									gap: "1rem",
+								}}
+							>
+								{userAssets.map((a) => {
+									return <AssetItemCard key={a.id} userAsset={a} username={user.username} />
+								})}
 							</Box>
 						)}
-					</Box>
-				)}
-				<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: "auto", pt: "1.5rem" }}>
-					<Stack>
-						<Typography sx={{ ml: ".2rem" }}>
-							Showing {userAssets ? userAssets.length : 0} of {totalItems}
-						</Typography>
-						<Select
-							value={pageSize}
-							onChange={(e) => {
-								setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
-								changePage(1)
-							}}
-							input={<PageSizeSelectionInput />}
-						>
-							<MenuItem value={5}>Display 5 results per page</MenuItem>
-							<MenuItem value={10}>Display 10 results per page</MenuItem>
-							<MenuItem value={20}>Display 20 results per page</MenuItem>
-							<MenuItem value={50}>Display 50 results per page</MenuItem>
-							<MenuItem value={100}>Display 100 results per page</MenuItem>
-						</Select>
-					</Stack>
 
-					<Pagination
-						page={page}
-						count={totalPages}
-						color="primary"
-						showFirstButton
-						showLastButton
-						onChange={(_, newPageNumber) => changePage(newPageNumber)}
-					/>
-				</Stack>
+						{(!userAssets || userAssets.length < 0) && (
+							<Box
+								sx={{
+									flex: 1,
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									flexDirection: "column",
+								}}
+							>
+								{loading && (
+									<Typography variant="subtitle2" color={colors.darkGrey}>
+										Loading assets...
+									</Typography>
+								)}
+								{error && (
+									<Typography variant="subtitle2" color={colors.darkGrey}>
+										An error occurred while loading assets.
+									</Typography>
+								)}
+								{!loading && !error && (
+									<Box
+										component={"div"}
+										sx={{
+											display: "flex",
+											flexDirection: "column",
+											alignItems: "center",
+											justifyContent: "center",
+											gap: "1em",
+											overflow: "wrap",
+										}}
+									>
+										<WarMachineImage src={WarMachine} alt="supremacy war machines" />
+										<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
+											Your Inventory Is Empty
+										</Typography>
+										<StyledFancyButton sx={{ padding: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
+											Go To Store
+										</StyledFancyButton>
+									</Box>
+								)}
+							</Box>
+						)}
+						<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: "auto", pt: "1.5rem" }}>
+							<Stack>
+								<Typography sx={{ ml: ".2rem" }}>
+									Showing {userAssets ? userAssets.length : 0} of {totalItems}
+								</Typography>
+								<Select
+									value={pageSize}
+									onChange={(e) => {
+										setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
+										changePage(1)
+									}}
+									input={<PageSizeSelectionInput />}
+								>
+									<MenuItem value={5}>Display 5 results per page</MenuItem>
+									<MenuItem value={10}>Display 10 results per page</MenuItem>
+									<MenuItem value={20}>Display 20 results per page</MenuItem>
+									<MenuItem value={50}>Display 50 results per page</MenuItem>
+									<MenuItem value={100}>Display 100 results per page</MenuItem>
+								</Select>
+							</Stack>
+
+							<Pagination
+								page={page}
+								count={totalPages}
+								color="primary"
+								showFirstButton
+								showLastButton
+								onChange={(_, newPageNumber) => changePage(newPageNumber)}
+							/>
+						</Stack>
+					</TabPanel>
+					<TabPanel value="2">Item Two</TabPanel>
+				</TabContext>
 			</Paper>
 		</>
 	)
@@ -442,6 +469,7 @@ interface SortChipProps extends Omit<ChipProps, "color" | "onDelete"> {
 	color?: string
 	active: boolean
 }
+
 export const SortChip = ({ color = colors.white, active, ...props }: SortChipProps) => (
 	<Chip
 		sx={{
@@ -465,6 +493,7 @@ interface FilterChipProps extends Omit<ChipProps, "color" | "onDelete"> {
 	color?: string
 	active: boolean
 }
+
 export const FilterChip = ({ color = colors.white, active, ...props }: FilterChipProps) => (
 	<Chip
 		sx={{

@@ -32,9 +32,30 @@ export interface UserAsset {
 	created_at: Date
 }
 
+export interface User1155Asset {
+	id: string
+	owner_id: string
+	collection_id: string
+	external_token_id: number
+	count: number
+	label: string
+	description: string
+	image_url: string
+	animation_url: string
+	keycard_group: string
+	attributes: Attribute1155[]
+	service_id: string
+	created_at: Date
+}
+
 interface Attribute2 {
 	display_type?: "boost_number" | "boost_percentage" | "date" | "number"
 	trait_type: string
 	asset_hash?: string
 	value: string | number
+}
+
+interface Attribute1155 {
+	trait_type: string
+	syndicate: string
 }
