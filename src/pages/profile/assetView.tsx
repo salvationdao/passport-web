@@ -409,7 +409,7 @@ export const AssetView = ({
 									Current location:
 								</Typography>
 								<Typography variant="subtitle1" color={onWorld ? colors.skyBlue : colors.lightGrey}>
-									{userAsset.locked_to_service_name ? userAsset.locked_to_service_name :  onWorld ? "On-world" : "Off-world"}
+									{userAsset.locked_to_service_name ? userAsset.locked_to_service_name :  onWorld ? "XSYN On-world" : "Off-world"}
 								</Typography>
 							</Box>
 							<Divider
@@ -1182,7 +1182,7 @@ export const ServiceTransferModel = ({ open, onClose, onSuccess, userAsset }: Se
 				})}
 				color={"primary"}
 			>
-				Transition Asset To {(userAsset.locked_to_service_name && userAsset.locked_to_service_name !== "")? userAsset.locked_to_service_name : "XSYN"}
+				Transition Asset To {userAsset.locked_to_service_name? "XSYN": "Supremacy" }
 				<IconButton
 					onClick={() => {
 						setError(undefined)
@@ -1197,16 +1197,44 @@ export const ServiceTransferModel = ({ open, onClose, onSuccess, userAsset }: Se
 					<CloseIcon />
 				</IconButton>
 			</DialogTitle>
-	Transfer asset mate
+			<DialogContent
+				sx={{
+					paddingY: 0,
+				}}
+			>
+				<Typography marginBottom=".5rem" variant={"h5"} color={"error"}>
+					WARNING:
+				</Typography>
+				<Typography marginBottom=".5rem">
+					After transitioning, your asset it will be locked to that service. To use it within another service you will be required to transition it to that service.
+				</Typography>
+				<Typography marginTop={"1rem"} marginBottom=".5rem" variant={"h6"}>
+					Gas: 0.5 XSYN
+				</Typography>
+			</DialogContent>
 
 			<DialogActions
 				sx={{
 					display: "flex",
 					flexDirection: "column",
-					alignItems: "stretch",
+					alignItems: "end",
+					gap:"1rem",
 					padding: "16px 24px",
 				}}
 			>
+				<FancyButton
+					disabled={true}
+					loading={loading}
+					onClick={async () => {
+						if (userAsset.locked_to_service_name) {
+							await transferFromSupremacy()
+							return
+						}
+						await transferToSupremacy()
+					}}
+				>
+					Confirm transfer and pay gas in XSYN: 0.5
+				</FancyButton>
 					<FancyButton
 						loading={loading}
 						onClick={async () => {
@@ -1217,7 +1245,7 @@ export const ServiceTransferModel = ({ open, onClose, onSuccess, userAsset }: Se
 							await transferToSupremacy()
 						}}
 					>
-						Confirm and start transfer
+						Confirm transfer and pay gas in SUPS: 5
 					</FancyButton>
 
 				{error && <Typography sx={{ marginTop: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
