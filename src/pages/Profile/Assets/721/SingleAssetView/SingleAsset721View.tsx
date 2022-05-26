@@ -3,7 +3,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import { Box, Button, ButtonProps, Dialog, Divider, Link, Paper, Stack, styled, Typography, useMediaQuery } from "@mui/material"
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { useInterval } from "react-use"
 import { FancyButton } from "../../../../../components/fancyButton"
@@ -22,6 +22,7 @@ import { StakeModal } from "./Modals/StakeModal"
 import { UnstakeModal } from "./Modals/UnstakeModal"
 import { LockedModal } from "./Modals/LockedModal"
 import { MintModal } from "./Modals/MintModal"
+import { TransferModal } from "./Modals/TransferModal"
 import { Attributes } from "./Attributes"
 
 export const lock_endpoint = (account: string, collection_slug: string, token_id: number) => {
@@ -48,11 +49,11 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 	const [owner, setOwner] = useState<User>()
 	const [collection, setCollection] = useState<Collection>()
 
-	useEffect(() => {
+	const loadAsset = useCallback(() => {
 		;(async () => {
 			try {
 				setLoading(true)
-				const resp = await send<UserAssetResponse>(HubKey.AssetSubscribe, {
+				const resp = await send<UserAssetResponse>(HubKey.AssetGet, {
 					asset_hash: assetHash,
 				})
 
@@ -68,6 +69,10 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 			}
 		})()
 	}, [assetHash, send])
+
+	useEffect(() => {
+		loadAsset()
+	}, [loadAsset])
 
 	if (loading || !userAsset || !owner || !collection) {
 		return (
@@ -102,6 +107,7 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 			collection={collection}
 			error={error}
 			edit={edit}
+			loadAsset={loadAsset}
 		/>
 	)
 }
@@ -119,6 +125,7 @@ interface AssetViewProps {
 	showOpenseaURL: boolean
 	onWorld: boolean
 	edit: boolean
+	loadAsset: () => void
 }
 
 export const AssetView = ({
@@ -134,6 +141,7 @@ export const AssetView = ({
 	openseaURL,
 	showOpenseaURL,
 	edit,
+	loadAsset,
 }: AssetViewProps) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	useInterval(() => {
@@ -147,6 +155,7 @@ export const AssetView = ({
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
 	const [stakeModalOpen, setStakeModalOpen] = useState<boolean>(false)
 	const [unstakeModalOpen, setUnstakeModalOpen] = useState<boolean>(false)
+	const [transferModalOpen, setTransferModalOpen] = useState<boolean>(false)
 	const [enlarge, setEnlarge] = useState<boolean>(false)
 	const videoDiv = useRef<HTMLVideoElement | undefined>()
 
@@ -158,6 +167,42 @@ export const AssetView = ({
 			videoDiv.current.play()
 		}
 	}, [enlarge])
+
+	const Buttons = useMemo(() => {
+		if (userAsset.locked_to_service_name) {
+			return (
+				<FancyButton size="small" onClick={() => setTransferModalOpen(true)}>
+					Transition from {userAsset.locked_to_service_name} to XSYN
+				</FancyButton>
+			)
+		}
+
+		return (
+			<>
+				<FancyButton disabled={locked} size="small" onClick={() => setTransferModalOpen(true)}>
+					Transition from XSYN to Supremacy
+				</FancyButton>
+
+				{showStake && (
+					<FancyButton disabled={locked} size="small" onClick={() => setStakeModalOpen(true)}>
+						Transition On-world {locked && "(Locked)"}
+					</FancyButton>
+				)}
+
+				{showUnstake && (
+					<FancyButton disabled={locked} size="small" onClick={() => setUnstakeModalOpen(true)}>
+						Transition Off-world {locked && "(Locked)"}
+					</FancyButton>
+				)}
+
+				{showMint && (
+					<FancyButton disabled={locked} size="small" onClick={() => setMintWindowOpen(true)}>
+						Transition Off-world {locked && "(Locked)"}
+					</FancyButton>
+				)}
+			</>
+		)
+	}, [locked, showMint, showStake, showUnstake, userAsset.locked_to_service_name])
 
 	if (error) {
 		return (
@@ -171,28 +216,6 @@ export const AssetView = ({
 			>
 				{error}
 			</Paper>
-		)
-	}
-
-	const Buttons = () => {
-		return (
-			<>
-				{showStake && (
-					<FancyButton disabled={locked} size="small" onClick={() => setStakeModalOpen(true)}>
-						Transition On-world {locked && "(Locked)"}
-					</FancyButton>
-				)}
-				{showUnstake && (
-					<FancyButton disabled={locked} size="small" onClick={() => setUnstakeModalOpen(true)}>
-						Transition Off-world {locked && "(Locked)"}
-					</FancyButton>
-				)}
-				{showMint && (
-					<FancyButton disabled={locked} size="small" onClick={() => setMintWindowOpen(true)}>
-						Transition Off-world {locked && "(Locked)"}
-					</FancyButton>
-				)}
-			</>
 		)
 	}
 
@@ -225,15 +248,8 @@ export const AssetView = ({
 				</Link>
 
 				{!isWiderThan1000px && (
-					<Stack
-						direction="row"
-						sx={{
-							flexWrap: "wrap",
-							gap: ".5rem",
-							mb: "1rem",
-						}}
-					>
-						{edit && Buttons()}
+					<Stack spacing=".5rem" alignItems="flex-start" sx={{ mb: "1rem" }}>
+						{edit && Buttons}
 					</Stack>
 				)}
 				<Stack spacing="1rem">
@@ -342,15 +358,15 @@ export const AssetView = ({
 									Current location:
 								</Typography>
 								<Typography variant="subtitle1" color={onWorld ? colors.skyBlue : colors.lightGrey}>
-									{onWorld ? "On-world" : "Off-world"}
+									{userAsset.locked_to_service_name ? userAsset.locked_to_service_name : onWorld ? "XSYN On-world" : "Off-world"}
 								</Typography>
 							</Box>
 
 							<Divider sx={{ mt: ".6rem", mb: "1rem" }} />
 
 							{isWiderThan1000px && (
-								<Stack direction="row" spacing=".5rem" sx={{ flexWrap: "wrap" }}>
-									{edit && Buttons()}
+								<Stack spacing=".5rem" alignItems="flex-start">
+									{edit && Buttons}
 								</Stack>
 							)}
 						</Box>
@@ -503,6 +519,8 @@ export const AssetView = ({
 			{provider && userAsset && (
 				<UnstakeModal collection={collection} open={unstakeModalOpen} asset={userAsset} onClose={() => setUnstakeModalOpen(false)} />
 			)}
+
+			<TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} onSuccess={loadAsset} userAsset={userAsset} />
 		</>
 	)
 }
