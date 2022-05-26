@@ -16,6 +16,7 @@ import { Assets721 } from "./Assets/721/Assets721"
 import { LockButton, lockOptions, LockOptionsProps } from "./Locking/LockButton"
 import { LockModal } from "./Locking/LockModal"
 import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
+import { useSnackbar } from "../../containers/snackbar"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -24,6 +25,7 @@ export const ProfilePage = () => {
 }
 
 const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
+	const { displayMessage } = useSnackbar()
 	const { send } = usePassportCommandsUser("/commander")
 	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
 	const history = useHistory()
@@ -129,7 +131,10 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 											{middleTruncate(user.public_address)}
 										</Typography>
 										<IconButton
-											onClick={() => navigator.clipboard.writeText(user.public_address!)}
+											onClick={() => {
+												navigator.clipboard.writeText(user.public_address!)
+												displayMessage("Wallet address copied.")
+											}}
 											sx={{
 												m: "-.5rem",
 											}}
