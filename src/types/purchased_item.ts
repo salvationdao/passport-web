@@ -26,6 +26,7 @@ export interface UserAsset {
 	minted_at?: Date
 	on_chain_status: string
 	xsyn_locked?: boolean
+	locked_to_service_name?: string
 	deleted_at?: Date
 	data_refreshed_at: Date
 	updated_at: Date

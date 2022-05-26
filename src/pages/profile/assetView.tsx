@@ -22,7 +22,7 @@ import {
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
 import { ethers } from "ethers"
-import { useCallback, useEffect, useRef, useState } from "react"
+import {useCallback, useEffect, useMemo, useRef, useState} from "react"
 import { useHistory } from "react-router-dom"
 import { useInterval } from "react-use"
 import { ConnectWallet } from "../../components/connectWallet"
@@ -159,6 +159,7 @@ export const AssetView = ({
 	showOpenseaURL,
 	edit,
 }: AssetViewProps) => {
+	const { send } = usePassportCommandsUser("/commander")
 	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	useInterval(() => {
 		setRemainingTime(formatDistanceToNow(userAsset.unlocked_at))
@@ -183,27 +184,53 @@ export const AssetView = ({
 		}
 	}, [enlarge])
 
-	if (error) {
-		return (
-			<Paper
-				sx={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					flexGrow: 1,
-				}}
-			>
-				{error}
-			</Paper>
-		)
-	}
 
-	const Buttons = () => {
+	const transferToSupremacy = useCallback(async () => {
+		try {
+			const resp = await send<UserAssetResponse>(HubKey.AssetTransferToSupremacy, {
+				asset_hash: userAsset.hash,
+			})
+		//	resp
+
+		} catch (e) {
+			console.error(e)
+			// setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
+		} finally {
+			// setLoading(false)
+		}
+	},[userAsset.hash])
+
+	const transferFromSupremacy = useCallback(async () => {
+		try {
+			const resp = await send<UserAssetResponse>(HubKey.AssetTransferFromSupremacy, {
+				asset_hash: userAsset.hash,
+			})
+			//	resp
+
+		} catch (e) {
+			console.error(e)
+			// setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
+		} finally {
+			// setLoading(false)
+		}
+	},[userAsset.hash])
+
+
+	const Buttons = useMemo(() => {
+		if(userAsset.locked_to_service_name) {
+			return (<FancyButton size="small" onClick={() => transferFromSupremacy()}>
+							Transition To XSYN From {userAsset.locked_to_service_name}
+					</FancyButton>)
+		}
+
 		return (
 			<>
+				<FancyButton disabled={locked} size="small" onClick={() => transferToSupremacy()}>
+					Transition To Supremacy From XSYN
+				</FancyButton>
 				{showStake && (
 					<FancyButton disabled={locked} size="small" onClick={() => setStakeModelOpen(true)}>
-						Transition On-world {locked && "(Locked)"}
+						Transition On-wo rld {locked && "(Locked)"}
 					</FancyButton>
 				)}
 				{showUnstake && (
@@ -217,6 +244,21 @@ export const AssetView = ({
 					</FancyButton>
 				)}
 			</>
+		)
+	},[userAsset, transferFromSupremacy, transferToSupremacy])
+
+	if (error) {
+		return (
+			<Paper
+				sx={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					flexGrow: 1,
+				}}
+			>
+				{error}
+			</Paper>
 		)
 	}
 
@@ -275,7 +317,8 @@ export const AssetView = ({
 							marginBottom: "1rem",
 						}}
 					>
-						{edit && Buttons()}
+						{Buttons}
+						{/*{edit && Buttons}*/}
 					</Box>
 				)}
 				<Box
@@ -391,7 +434,7 @@ export const AssetView = ({
 									Current location:
 								</Typography>
 								<Typography variant="subtitle1" color={onWorld ? colors.skyBlue : colors.lightGrey}>
-									{onWorld ? "On-world" : "Off-world"}
+									{userAsset.locked_to_service_name ? userAsset.locked_to_service_name :  onWorld ? "On-world" : "Off-world"}
 								</Typography>
 							</Box>
 							<Divider
@@ -408,7 +451,8 @@ export const AssetView = ({
 										gap: ".5rem",
 									}}
 								>
-									{edit && Buttons()}
+									{Buttons}
+									{/*{edit && Buttons()}*/}
 								</Box>
 							)}
 						</Box>
