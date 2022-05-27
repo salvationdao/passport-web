@@ -128,3 +128,29 @@ export interface tokenSelect {
 }
 
 export type transferStateType = "waiting" | "error" | "confirm" | "none" | "unavailable"
+
+export interface Collections1155 {
+	collections: Collection1155[]
+}
+
+export interface Collection1155 {
+	name: string
+	description: string
+	slug: string
+	mint_contract: string | undefined
+	logo_url: string | undefined
+	background_url: string | undefined
+	balances: AvantUserBalance | undefined
+}
+
+export interface AvantUserBalance {
+	owner_address: string
+	balances: AvantBalances[]
+}
+
+export interface AvantBalances {
+	token_id: number
+	value: string
+	value_int: string
+	value_decimals: string
+}

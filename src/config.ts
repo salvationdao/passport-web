@@ -50,3 +50,5 @@ export const PANCAKE_POOL_ADDRESS = process.env.REACT_APP_PANCAKE_POOL_ADDRESS |
 export const LP_TOKEN_ADDRESS = process.env.REACT_APP_LP_TOKEN_ADDRESS || "0xd96e4e2e0b1b41cad0627431a8cda64aaa5acd01"
 export const WRAPPED_BNB_ADDRESS = process.env.REACT_APP_WRAPPED_BNB_ADDRESS || "0xae13d989dac2f0debff460ac112a837c89baa7cd"
 export const PANCAKE_SWAP_ADDRESS = process.env.REACT_APP_PANCAKE_SWAP_ADDRESS || "pancake.kiemtienonline360.com/#"
+
+export const AVANT_API_ENDPOINT = process.env.REACT_APP_AVANT_API_ENDPOINT || "v3-staging.supremacy-api.avantdata.com:3001"

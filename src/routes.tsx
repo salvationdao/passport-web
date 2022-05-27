@@ -29,6 +29,8 @@ import { ProfileEditPage } from "./pages/Profile/Edit/ProfileEditPage"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 import { usePassportCommandsUser } from "./hooks/usePassport"
+import { DepositAssetsPage } from "./pages/DepositAssets/DepositAssetsPage"
+import { ContractAssetPage } from "./pages/DepositAssets/ContractAssetPage"
 
 export const Routes = () => {
 	const { account } = useWeb3()
@@ -172,6 +174,15 @@ export const Routes = () => {
 						<Route path="/external/buy">
 							<IFrameBuyPage />
 						</Route>
+
+						<Switch>
+							<Route path="/deposit-assets/:collection_slug">
+								<ContractAssetPage />
+							</Route>
+							<Route path="/deposit-assets">
+								<DepositAssetsPage />
+							</Route>
+						</Switch>
 
 						{/* User-authenticated routes */}
 						{/* profile */}
