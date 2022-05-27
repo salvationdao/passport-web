@@ -11,7 +11,7 @@ export interface UserAsset {
 	tier: string
 	hash: string
 	owner_id: string
-	attributes: Attribute2[]
+	attributes: Attribute721[]
 	name: string
 	image_url?: string
 	external_url?: string
@@ -26,6 +26,7 @@ export interface UserAsset {
 	minted_at?: Date
 	on_chain_status: string
 	xsyn_locked?: boolean
+	locked_to_service_name?: string
 	deleted_at?: Date
 	data_refreshed_at: Date
 	updated_at: Date
@@ -48,7 +49,7 @@ export interface User1155Asset {
 	created_at: Date
 }
 
-interface Attribute2 {
+interface Attribute721 {
 	display_type?: "boost_number" | "boost_percentage" | "date" | "number"
 	trait_type: string
 	asset_hash?: string

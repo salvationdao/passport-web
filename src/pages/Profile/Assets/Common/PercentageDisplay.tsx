@@ -1,6 +1,6 @@
 import { keyframes } from "@emotion/react"
 import { Box, Skeleton, Stack, styled, SxProps, Typography } from "@mui/material"
-import { colors, fonts } from "../../theme"
+import { colors, fonts } from "../../../../theme"
 
 interface PercentageDisplayProps {
 	displayValue: string

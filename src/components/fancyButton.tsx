@@ -58,7 +58,6 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 					},
 				},
 				"&:hover": {
-					color: "inherit",
 					boxShadow: `inset 0px 0px 10px ${mainColor},0px 0px 10px ${mainColor}`,
 					"& .Button-Border1": {
 						opacity: 0.4,

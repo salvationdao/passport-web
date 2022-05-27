@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js"
-import { Attribute } from "../types/types"
+import { colors } from "../theme"
+import { Rarity } from "../types/enums"
 
 const fmt = {
 	prefix: "",
@@ -13,15 +14,6 @@ const fmt = {
 }
 
 BigNumber.config({ FORMAT: fmt })
-
-export const getItemAttributeValue = (attributes: Attribute[], traitToGet: string): string => {
-	// get asset type from attributes array
-	const arr = attributes.filter((a) => a.label === traitToGet)
-	if (arr[0]) {
-		return arr[0].value as string
-	}
-	return "Unknown"
-}
 
 export const supFormatter = (num: string): string => {
 	const supTokens = new BigNumber(num)
@@ -40,4 +32,43 @@ export const usdFormatter = (centCost: number): string => {
 	})
 
 	return formatter.format(centCost / 100)
+}
+
+export const rarityTextStyles: { [key in Rarity]: any } = {
+	MEGA: {
+		color: colors.rarity.MEGA,
+	},
+	COLOSSAL: {
+		color: colors.rarity.COLOSSAL,
+	},
+	RARE: {
+		color: colors.rarity.RARE,
+	},
+	LEGENDARY: {
+		color: colors.rarity.LEGENDARY,
+	},
+	ELITE_LEGENDARY: {
+		color: colors.rarity.ELITE_LEGENDARY,
+	},
+	ULTRA_RARE: {
+		color: colors.rarity.ULTRA_RARE,
+	},
+	EXOTIC: {
+		color: colors.rarity.EXOTIC,
+	},
+	GUARDIAN: {
+		color: colors.rarity.GUARDIAN,
+	},
+	MYTHIC: {
+		color: colors.rarity.MYTHIC,
+		textShadow: `0 0 2px ${colors.rarity.MYTHIC}`,
+	},
+	DEUS_EX: {
+		color: colors.rarity.DEUS_EX,
+		textShadow: `0 0 2px ${colors.rarity.DEUS_EX}`,
+	},
+	TITAN: {
+		color: colors.rarity.TITAN,
+		textShadow: `0 0 2px ${colors.rarity.TITAN}`,
+	},
 }

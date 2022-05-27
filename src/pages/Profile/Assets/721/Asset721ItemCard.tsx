@@ -1,18 +1,19 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, BoxProps, Stack, Typography } from "@mui/material"
+import { Box, Stack, Typography } from "@mui/material"
 import { useHistory } from "react-router-dom"
-import { getStringFromShoutingSnakeCase } from "../../helpers"
-import { colors, fonts } from "../../theme"
-import { Rarity } from "../../types/enums"
-import { UserAsset } from "../../types/purchased_item"
-import { rarityTextStyles } from "./profile"
+import { getStringFromShoutingSnakeCase } from "../../../../helpers"
+import { rarityTextStyles } from "../../../../helpers/items"
+import { colors, fonts } from "../../../../theme"
+import { Rarity } from "../../../../types/enums"
+import { UserAsset } from "../../../../types/purchased_item"
+import { ViewButton } from "../Common/ViewButton"
 
-export interface AssetItemCardProps {
+export interface Asset721ItemCardProps {
 	userAsset: UserAsset
 	username: string
 }
 
-export const AssetItemCard: React.VoidFunctionComponent<AssetItemCardProps> = ({ userAsset, username }) => {
+export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps> = ({ userAsset, username }) => {
 	const history = useHistory()
 
 	const { tier, name, hash, image_url, card_animation_url } = userAsset
@@ -139,28 +140,3 @@ export const AssetItemCard: React.VoidFunctionComponent<AssetItemCardProps> = ({
 		</Stack>
 	)
 }
-
-export const ViewButton = (props: BoxProps) => (
-	<Box
-		{...props}
-		className="view-button"
-		sx={{
-			display: "inline-flex",
-			alignItems: "center",
-			justifyContent: "center",
-			height: "2.6rem",
-			width: "2.6rem",
-			backgroundColor: "transparent",
-			border: `1px solid ${colors.purple}`,
-			color: "inherit",
-			font: "inherit",
-			transform: "rotate(45deg)",
-			transition: "transform .2s ease-out, border-radius .2s ease-out, background-color .2s ease-out",
-			"& > *": {
-				transition: "transform .2s ease-out",
-				transform: "rotate(-45deg)",
-			},
-			...props.sx,
-		}}
-	/>
-)
