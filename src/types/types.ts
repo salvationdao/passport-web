@@ -1,4 +1,4 @@
-import { ObjectType, Perm } from "./enums"
+import { Perm } from "./enums"
 
 export interface User {
 	id: string
@@ -33,19 +33,6 @@ export interface User {
 	total_lock: boolean
 }
 
-export interface UserFaction {
-	recruit_id: string
-	sups_earned: number
-	rank: string
-	spectated_count: number
-
-	// Faction specific
-	faction_id: string
-	theme: FactionTheme
-	logo_url: string
-	background_url: string
-}
-
 export interface FactionTheme {
 	primary: string
 	secondary: string
@@ -59,31 +46,6 @@ export interface Faction {
 	background_url: string
 	theme: FactionTheme
 	description: string
-}
-
-export interface DetailedFaction {
-	description: string
-	velocity?: number
-	share_percent: number
-	recruit_number: number
-	win_count: number
-	loss_count: number
-	kill_count: number
-	death_count: number
-	mvp: User
-}
-
-export interface UserActivity {
-	id: string
-	user: User
-	action: string
-	object_id: string
-	object_slug: string
-	object_name: string
-	object_type: ObjectType
-	created_at: Date
-	old_data?: Object
-	new_data?: Object
 }
 
 export interface Role {
@@ -106,37 +68,17 @@ export interface Organisation {
 	deleted_at: Date | null
 }
 
-export interface Product {
-	id: string
-	slug: string
-	name: string
-	description: string
-	image_id: string
-	created_at: Date
-	updated_at: Date
-	deleted_at: Date | null
-}
-
 export interface Collection {
 	id: string
 	name: string
 	slug: string
-	image: string
+	// image: string
 	mint_contract: string
 	stake_contract: string
 	created_at: Date
 	updated_at: Date
-	frozen_at?: Date
+	// frozen_at?: Date
 	deleted_at?: Date
-}
-
-export interface Attribute {
-	label: string
-	value: string | number
-	identifier?: string // indicates column name in the chassis table in gameserver db
-	display_type?: string
-	asset_hash?: string
-	host_url?: string
 }
 
 export interface DepositTransaction {
@@ -165,17 +107,6 @@ export interface Transaction {
 	from: User
 }
 
-export interface QueuedWarMachine {
-	position: number
-	war_machine_metadata: WarMachineMetadata
-}
-
-export interface WarMachineMetadata {
-	asset_hash: string
-	is_insured: boolean
-	contract_reward: string
-}
-
 export interface ExchangeRates {
 	eth_to_usd: number
 	bnb_to_usd: number
@@ -194,12 +125,6 @@ export interface tokenSelect {
 	contractAddr: string
 	scanSite: string
 	gasFee: number
-}
-
-export interface metamaskError {
-	code: number
-	message: string
-	stack?: unknown
 }
 
 export type transferStateType = "waiting" | "error" | "confirm" | "none" | "unavailable"

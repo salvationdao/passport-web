@@ -6,7 +6,7 @@ type ButtonSize = "small" | "medium" | "large"
 
 export interface FancyButtonProps extends LoadingButtonProps {
 	fancy?: boolean
-	borderColor?: string
+	borderColor?: string | undefined
 	filled?: boolean
 	size?: ButtonSize
 }
@@ -58,7 +58,6 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 					},
 				},
 				"&:hover": {
-					color: "inherit",
 					boxShadow: `inset 0px 0px 10px ${mainColor},0px 0px 10px ${mainColor}`,
 					"& .Button-Border1": {
 						opacity: 0.4,

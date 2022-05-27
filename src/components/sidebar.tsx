@@ -1,6 +1,5 @@
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import AgricultureIcon from "@mui/icons-material/Agriculture"
-import AppsIcon from "@mui/icons-material/Apps"
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
@@ -11,7 +10,7 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import SavingsIcon from "@mui/icons-material/Savings"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import { Box, Button, Divider, Drawer, Stack, SxProps, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
+import { Box, Button, Divider, Drawer, SxProps, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import React, { useEffect, useState } from "react"
 import { Link as RouterLink, useHistory } from "react-router-dom"
@@ -25,17 +24,13 @@ import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { Faction, FactionTheme, User } from "../types/types"
 import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
-import { EnlistButton } from "./supremacy/enlistButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import { usePassportCommandsUser } from "../hooks/usePassport"
 import { useSubscription } from "../containers/ws/useSubscription"
-import keys from "../keys"
 
-const drawerWidth = 260
+const drawerWidth = 320
 
 export interface SidebarLayoutProps {
 	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
@@ -43,7 +38,6 @@ export interface SidebarLayoutProps {
 
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
-	const { state, send } = usePassportCommandsUser("/commander")
 	const { sidebarOpen } = useSidebarState()
 	const { logout, userID } = useAuth()
 	const { user } = useAuth()
@@ -54,7 +48,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const userPublicAddress = user?.public_address
 
 	// Supremacy
-	const [factionsData, setFactionsData] = useState<Faction[]>([])
 	const { supBalance, account, metaMaskState } = useWeb3()
 	const theme = useTheme()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
@@ -66,7 +59,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [pendingRefund, setPendingRefunds] = useState<BigNumber>(BigNumber.from(0))
-	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
 		if (userSups) {
@@ -93,17 +85,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
-		if (state !== WebSocket.OPEN) return
-		setError(null)
-		send<Faction[]>(HubKey.GetFactionsDetail)
-			.then((data) => setFactionsData(data))
-			.catch((e) => {
-				setFactionsData([])
-				typeof e === "string" ? setError(e) : setError("Issue getting faction details, try again or contact support.")
-			})
-	}, [send, state])
-
-	useEffect(() => {
 		;(async () => {
 			try {
 				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/holding/${user?.public_address}`)
@@ -123,6 +104,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			truncatedUsername = `${user.username.substring(0, maxLength)}...`
 		}
 	}
+
 	const content = user ? (
 		<Box
 			sx={{
@@ -288,39 +270,10 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				}}
 			>
 				<Divider />
-				<Typography variant="body1" sx={{ textTransform: "uppercase", textAlign: "center", fontWeight: "600" }}>
-					{user?.faction ? "Your Syndicate" : "Choose Your Syndicate"}
-				</Typography>
-				<RenderEnlist factionsData={factionsData} user={user} />
-				<FactionWarMachineRemain />
-
-				{error ? (
-					<Typography color={colors.errorRed} sx={{ mt: ".5rem" }}>
-						<b>Error:</b> {error}
-					</Typography>
-				) : null}
-
-				<Divider />
-				<Button
-					sx={{
-						justifyContent: "start",
-						color: !xsynSups.eq(0) ? "" : colors.supremacy.grey,
-						cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" },
-					}}
-					onClick={() => {
-						if (!xsynSups.eq(0)) {
-							window.open(BATTLE_ARENA_LINK, "_blank")?.focus()
-						}
-					}}
-					startIcon={<PlayArrowIcon />}
-				>
-					{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
-				</Button>
-				<Divider />
-				<NavButton to={`/collections/${user?.username}`} startIcon={<AppsIcon />}>
-					My Inventory
+				<NavButton to="/profile" startIcon={<FaceIcon />}>
+					View Profile
 				</NavButton>
-				<NavButton to="/stores/supremacy-genesis" startIcon={<StorefrontIcon />}>
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
 					Purchase Assets
 				</NavButton>
 			</Box>
@@ -359,9 +312,22 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				</Box>
 			)}
 			<Box flex="1" />
-			<NavButton sx={{ alignSelf: "start", width: "100%" }} to="/profile" startIcon={<FaceIcon />}>
-				Profile
-			</NavButton>
+			<Divider />
+			<Button
+				sx={{
+					justifyContent: "start",
+					color: !xsynSups.eq(0) ? "" : colors.supremacy.grey,
+					cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" },
+				}}
+				onClick={() => {
+					if (!xsynSups.eq(0)) {
+						window.open(`${BATTLE_ARENA_LINK}`, "_blank")?.focus()
+					}
+				}}
+				startIcon={<PlayArrowIcon />}
+			>
+				{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
+			</Button>
 			<Button
 				startIcon={<LogoutIcon />}
 				onClick={() => logout()}
@@ -407,8 +373,8 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				>
 					Quick Links
 				</Typography>
-				<NavButton to="/stores" startIcon={<StorefrontIcon />}>
-					Stores
+				<NavButton to="/store" startIcon={<StorefrontIcon />}>
+					Store
 				</NavButton>
 			</Box>
 		</Box>
@@ -499,7 +465,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 }
 
 interface NavButtonProps {
-	to: string
+	to?: string
 	active?: boolean
 	sx?: SxProps<Theme>
 	startIcon?: React.ReactNode
@@ -518,7 +484,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClic
 				...sx,
 			}}
 			component={RouterLink}
-			to={to}
+			to={to || ""}
 			startIcon={startIcon}
 			onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
 				if (mobileScreen) {
@@ -531,117 +497,5 @@ const NavButton: React.FC<NavButtonProps> = ({ to, active, sx, startIcon, onClic
 		>
 			{children}
 		</Button>
-	)
-}
-
-interface EnlistButtonGroupProps {
-	factionsData: Faction[]
-}
-
-const EnlistButtonGroup: React.VoidFunctionComponent<EnlistButtonGroupProps> = ({ factionsData }) => {
-	if (!factionsData) return <Box>Loading...</Box>
-
-	return (
-		<Box
-			sx={{
-				display: "flex",
-				"& > *:not(:last-child)": {
-					marginRight: ".2rem",
-				},
-			}}
-		>
-			{factionsData.map((f) => (
-				<EnlistButton key={f.id} faction={f} />
-			))}
-		</Box>
-	)
-}
-
-const RenderEnlist = ({ factionsData, user }: { factionsData?: Faction[]; user?: User }) => {
-	if (!factionsData) return <Box>Loading...</Box>
-	if (user?.faction) {
-		return (
-			<>
-				<Typography
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						color: user.faction.theme.primary,
-						fontWeight: "fontWeightBold",
-					}}
-				>
-					<Box
-						component="img"
-						src={`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id}`}
-						alt={`${user.faction.label} Faction Logo`}
-						sx={{
-							height: "2rem",
-							width: "2rem",
-							marginRight: ".5rem",
-							flexShrink: 0,
-							objectFit: "contain",
-							backgroundColor: user.faction.theme.primary,
-							borderRadius: 0.8,
-							border: `${user.faction.theme.primary} 1px solid`,
-						}}
-					/>
-					<span>{user.faction.label}</span>
-				</Typography>
-			</>
-		)
-	}
-	return <EnlistButtonGroup factionsData={factionsData} />
-}
-
-interface FactionAvailable {
-	id: string
-	label: string
-	logo_blob_id: string
-	theme: FactionTheme
-	mega_amount: number
-	lootbox_amount: number
-}
-
-const FactionWarMachineRemain = () => {
-	const factionAvailables = useSubscription<FactionAvailable[]>({ URI: "/store/availability", key: keys.FactionAvailables })
-
-	return (
-		<Stack spacing={1}>
-			<Typography sx={{ py: 1.2, px: 1, textAlign: "center", color: colors.supremacy.neonBlue, backgroundColor: "#00000099" }} variant="h6">
-				WAR MACHINES REMAINING
-			</Typography>
-
-			<Stack justifyContent="space-around" spacing={1.5}>
-				{factionAvailables &&
-					factionAvailables.map((fa) => {
-						const { id, logo_blob_id, theme } = fa
-
-						return (
-							<Stack key={id} spacing={1} direction="row" alignItems="center" sx={{ px: 1 }}>
-								<Box
-									sx={{
-										width: 30,
-										height: 30,
-										flexShrink: 0,
-										backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${logo_blob_id})`,
-										backgroundRepeat: "no-repeat",
-										backgroundPosition: "center",
-										backgroundSize: "contain",
-										backgroundColor: theme.primary,
-										borderRadius: 0.8,
-										border: `${theme.primary} 1px solid`,
-									}}
-								/>
-								<Stack>
-									<Stack direction="column">
-										<Typography sx={{ fontWeight: "fontWeightBold" }}>Mystery Crates: </Typography>
-										<Typography sx={{ color: theme.primary, fontWeight: "fontWeightLight" }}>Sold Out</Typography>
-									</Stack>
-								</Stack>
-							</Stack>
-						)
-					})}
-			</Stack>
-		</Stack>
 	)
 }

@@ -1,5 +1,4 @@
 enum HubKey {
-	Welcome = "WELCOME",
 	AuthRegister = "AUTH:REGISTER",
 	AuthSendVerifyEmail = "AUTH:SEND_VERIFY_EMAIL",
 	AuthGenerateTFA = "AUTH:GENERATE:TFA",
@@ -22,30 +21,24 @@ enum HubKey {
 
 	ImageList = "IMAGE:LIST",
 
-	CollectionList = "COLLECTION:LIST",
-	CollectionUpdated = "COLLECTION:SUBSCRIBE",
+	AssetList721 = "ASSET:LIST:721",
+	AssetGet721 = "ASSET:GET:721",
+	AssetList1155 = "ASSET:LIST:1155",
+	AssetGet1155 = "ASSET:GET:1155",
 
-	AssetList = "ASSET:LIST",
-	AssetUpdated = "ASSET:SUBSCRIBE",
-	AssetUpdateName = "ASSET:UPDATE:NAME",
-	StoreItemSubscribe = "STORE:ITEM",
-	StoreList = "STORE:LIST",
-	StorePurchase = "STORE:PURCHASE",
-	StoreLootBox = "STORE:LOOTBOX",
-	StoreLootBoxAmount = "STORE:LOOTBOX:AMOUNT",
+	AssetTransferToSupremacy = "ASSET:TRANSFER:TO:SUPREMACY",
+	AssetTransferFromSupremacy = "ASSET:TRANSFER:FROM:SUPREMACY",
+
+	CollectionSubscribe = "COLLECTION:SUBSCRIBE",
 
 	TransactionGroups = "TRANSACTION:GROUPS",
 	TransactionList = "TRANSACTION:LIST",
 	TransactionSubscribe = "TRANSACTION:SUBSCRIBE",
-	GetFactionsDetail = "FACTION:ALL",
-	FactionEnlist = "FACTION:ENLIST",
 
 	SupTotalRemaining = "SUPS:TREASURY",
 	SupExchangeRates = "SUPS:EXCHANGE",
 	SupsDeposit = "SUPS:DEPOSIT",
 	SupsDepositList = "SUPS:DEPOSIT:LIST",
-
-	FactionAvailables = "AVAILABLE:ITEM:AMOUNT",
 }
 
 export default HubKey

@@ -2,7 +2,7 @@ import { styled, InputBase } from "@mui/material"
 import { colors } from "../theme"
 
 export const PageSizeSelectionInput = styled(InputBase)(({ theme }) => ({
-	padding: 2,
+	p: 2,
 	borderRadius: ".5rem",
 	transition: theme.transitions.create(["background-color"]),
 	"&:hover": {
@@ -12,7 +12,7 @@ export const PageSizeSelectionInput = styled(InputBase)(({ theme }) => ({
 		display: "flex",
 		alignItems: "end",
 		borderRadius: ".5rem",
-		padding: 0,
+		p: 0,
 		fontSize: ".9em",
 		color: colors.darkGrey,
 		"&:focus": {
