@@ -76,7 +76,7 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 
 	if (loading || !userAsset || !owner || !collection) {
 		return (
-			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
+			<Stack sx={{ flexGrow: 1, p: "2rem", height: "100%" }}>
 				<Loading text={"Loading asset information..."} />
 			</Stack>
 		)
@@ -243,7 +243,7 @@ export const AssetView = ({
 						sx={{
 							display: "flex",
 							flexWrap: "wrap",
-							gap: "1rem",
+							gap: "1.6rem",
 						}}
 					>
 						<Box
