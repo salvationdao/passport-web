@@ -110,7 +110,7 @@ export const TransferModal = ({open, onClose, onSuccess, userAsset}: ServiceTran
             <DialogActions
                 sx={{padding: "1rem", display: 'flex', justifyContent: 'space-evenly', flexDirection: 'column', gap:'1rem'}}>
                 <Box sx={{
-                    display: 'flex', justifyContent: 'space-evenly', flexDirection: 'row', width: '100%'
+                    display: 'flex', justifyContent: 'end', flexDirection: 'row', width: '100%', gap:'1rem',
                 }}>
                     <Tooltip title={"XSYN currently unavailable"}>
                         <FancyButton
@@ -144,8 +144,10 @@ export const TransferModal = ({open, onClose, onSuccess, userAsset}: ServiceTran
                         Pay with SUPS
                     </FancyButton>
                 </Box>
+                <Tooltip title={!feeType && "Select a payment method"}>
                     <FancyButton
-                        disabled={!feeType}
+                        fullWidth
+                        borderColor={!!feeType ? undefined : "#6b6b6b"}
                         loading={loading}
                         sx={{
                             span: {
@@ -153,6 +155,7 @@ export const TransferModal = ({open, onClose, onSuccess, userAsset}: ServiceTran
                             },
                         }}
                         onClick={async () => {
+                            if(!feeType) return
                             if (userAsset.locked_to_service_name) {
                                 await transferFromSupremacy()
                                 return
@@ -162,6 +165,7 @@ export const TransferModal = ({open, onClose, onSuccess, userAsset}: ServiceTran
                     >
                         Confirm transfer {feeType === "SUPS" ? <>&nbsp;<span>5</span>&nbsp; sups gas</> :  <></>}
                     </FancyButton>
+                </Tooltip>
 
                     {error && <Typography sx={{mt: "1rem", color: colors.supremacy.red}}>{error}</Typography>}
             </DialogActions>
