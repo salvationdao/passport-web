@@ -8,37 +8,31 @@ import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
 import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
+import { StorePage } from "./pages/Store/StorePage"
 import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
-import { SocketState, useWebsocket } from "./containers/socket"
 import { useWeb3 } from "./containers/web3"
 import HubKey from "./keys"
-import { AssetRedirectPage } from "./pages/assetRedirect"
+import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/AssetRedirectPage"
 import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
-import { LoginPage } from "./pages/auth/login"
-import { LogoutPage } from "./pages/auth/logout"
+import LoginPage from "./pages/login/login"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
-import { BattleArenaPage } from "./pages/battle_arena/battle_arena"
 import { BuyPage } from "./pages/buy"
-import { CollectionPage } from "./pages/collections/collection"
 import { DepositPage } from "./pages/deposit/depositPage"
 import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
-import { ProfilePage } from "./pages/profile/profile"
-import { ProfileEditPage } from "./pages/profile/profileEdit"
-import { LootBoxPage } from "./pages/store/lootBox"
-import { StorePage } from "./pages/store/store"
-import { StoreItemPage } from "./pages/store/storeItem"
-import { StoresPage } from "./pages/store/stores"
+import { ProfilePage } from "./pages/Profile/ProfilePage"
+import { ProfileEditPage } from "./pages/Profile/Edit/ProfileEditPage"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
+import { usePassportCommandsUser } from "./hooks/usePassport"
 
 export const Routes = () => {
 	const { account } = useWeb3()
-	const { state, send } = useWebsocket()
+	const { send } = usePassportCommandsUser("/commander")
 	const { setSidebarOpen } = useSidebarState()
 	const { fingerprint } = useFingerprint()
 	const { setSessionID, user, loading: authLoading } = useAuth()
@@ -51,16 +45,16 @@ export const Routes = () => {
 
 	// Fingerprinting
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send || !fingerprint) return
+		if (!fingerprint) return
 		;(async () => {
 			await send(HubKey.UserFingerprint, {
 				fingerprint,
 			})
 		})()
-	}, [state, send, fingerprint])
+	}, [send, fingerprint])
 
 	useEffect(() => {
-		if (mobileScreen || window.location.pathname.includes("nosidebar")) {
+		if (mobileScreen || window.location.pathname.includes("external")) {
 			setSidebarOpen(false)
 		} else {
 			if (authLoading) {
@@ -98,33 +92,25 @@ export const Routes = () => {
 		} catch (error) {
 			setOkCheck(false)
 		}
-	}, [state])
+	}, [])
 
 	if (okCheck === false) {
 		return (
 			<>
-				<BrowserRouter>
-					<Route path="/">
-						<Maintenance />
-						<ConnectionLostSnackbar app="public" />
-						<BlockConfirmationSnackList />
-					</Route>
-					<Redirect to="/" />
-				</BrowserRouter>
+				<Route path="/">
+					<Maintenance />
+					<ConnectionLostSnackbar app="public" />
+					<BlockConfirmationSnackList />
+				</Route>
+				<Redirect to="/" />
 			</>
 		)
 	}
 
-	if (!user && authLoading) {
-		return <Loading text={loadingText} />
-	}
+	if (!user && authLoading) return <Loading text={loadingText} />
 
 	return (
-		<Box
-			sx={{
-				height: "100%",
-			}}
-		>
+		<Box sx={{ height: "100%" }}>
 			<BrowserRouter>
 				<Snackbar
 					anchorOrigin={{
@@ -141,121 +127,77 @@ export const Routes = () => {
 				>
 					<Alert severity={alertSeverity || "info"}>{message}</Alert>
 				</Snackbar>
-				{user ? (
-					<Switch>
-						<Redirect from="/farms" to="/staking" exact />
-						<Route path="/nosidebar/login">
+
+				<Switch>
+					<Redirect from="/farms" to="/staking" exact />
+					<Route path="/external/login">
+						<LoginPage />
+					</Route>
+					<Sidebar onClose={() => setSidebarOpen(false)}>
+						<Route exact path="/">
 							<LoginPage />
 						</Route>
-						<Route path="/nosidebar/logout">
-							<LogoutPage />
+						<Route exact path="/login">
+							<LoginPage />
 						</Route>
-						<Route path="/nosidebar/:username/:collection_slug">
-							<CollectionPage />
+						<Route path="/signup">
+							<SignUpPage />
 						</Route>
-						<Sidebar onClose={() => setSidebarOpen(false)}>
-							<Route exact path="/">
-								<LoginPage />
-							</Route>
-							<Route exact path="/login">
-								<LoginPage />
-							</Route>
-							<Route path="/signup">
-								<SignUpPage />
-							</Route>
-							<Route path="/onboarding">
-								<PassportReady />
-							</Route>
+						<Route path="/onboarding">
+							<PassportReady />
+						</Route>
 
-							<Route path="/privacy-policy">
-								<Home />
-							</Route>
-							<Route path="/terms-and-conditions">
-								<Home />
-							</Route>
-							<Route path="/transactions">
-								<TransactionsPage />
-							</Route>
+						<Route path="/privacy-policy">
+							<Home />
+						</Route>
+						<Route path="/terms-and-conditions">
+							<Home />
+						</Route>
+						<Route path="/transactions">
+							<TransactionsPage />
+						</Route>
 
-							<Route path="/staking">
-								<FarmsPage />
-							</Route>
-							<Route path="/withdraw">
-								<WithdrawPage />
-							</Route>
-							<Route path="/deposit">
-								<DepositPage />
-							</Route>
-							<Route path="/mystery">
-								<LootBoxPage />
-							</Route>
+						<Route path="/staking">
+							<FarmsPage />
+						</Route>
+						<Route path="/withdraw">
+							<WithdrawPage />
+						</Route>
+						<Route path="/deposit">
+							<DepositPage />
+						</Route>
+						<Route path="/buy">
+							<BuyPage />
+						</Route>
+						<Route path="/external/buy">
+							<IFrameBuyPage />
+						</Route>
 
-							{/* Supremacy */}
-							<Switch>
-								<Route path="/battle_arena">
-									<BattleArenaPage />
-								</Route>
-							</Switch>
-
-							<Route path="/buy">
-								<BuyPage />
+						{/* User-authenticated routes */}
+						{/* profile */}
+						<Switch>
+							<Route path="/profile/:username/asset/:asset_hash">
+								<ProfilePage />
 							</Route>
-							<Route path="/nosidebar/buy">
-								<IFrameBuyPage />
+							<Route path="/profile/:username/edit">
+								<ProfileEditPage />
 							</Route>
-
-							{/* User-authenticated routes */}
-							{/* profile */}
-							<Switch>
-								<Route path="/profile/:username/asset/:asset_hash">
-									<ProfilePage />
-								</Route>
-								<Route path="/profile/:username/edit">
-									<ProfileEditPage />
-								</Route>
-								<Route path="/profile/:username">
-									<ProfilePage />
-								</Route>
-								<Route path="/profile">
-									<ProfilePage />
-								</Route>
-							</Switch>
-
-							{/* stores */}
-							<Switch>
-								<Route path="/stores/:collection_slug/:store_item_id">
-									<StoreItemPage />
-								</Route>
-								<Route path="/stores/:collection_slug">
-									<StorePage />
-								</Route>
-								<Route path="/stores">
-									<StoresPage />
-								</Route>
-							</Switch>
-
-							{/* Supremacy */}
-							<Switch>
-								<Route path="/battle_arena">
-									<BattleArenaPage />
-								</Route>
-							</Switch>
-
-							{/* collections */}
-							<Switch>
-								<Route path={"/collections/:username"}>
-									<CollectionPage />
-								</Route>
-							</Switch>
-
-							<Route path="/asset/:asset_hash">
-								<AssetRedirectPage />
+							<Route path="/profile/:username">
+								<ProfilePage />
 							</Route>
-						</Sidebar>
-					</Switch>
-				) : (
-					<LoginPage />
-				)}
+							<Route path="/profile">
+								<ProfilePage />
+							</Route>
+						</Switch>
+
+						<Route path="/asset/:asset_hash">
+							<AssetRedirectPage />
+						</Route>
+						<Route path="/store">
+							<StorePage />
+						</Route>
+					</Sidebar>
+				</Switch>
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />

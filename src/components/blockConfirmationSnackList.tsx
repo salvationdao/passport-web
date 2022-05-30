@@ -1,8 +1,5 @@
 import { Box, Snackbar } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
-import { useAuth } from "../containers/auth"
-import { SocketState, useWebsocket } from "../containers/socket"
-import HubKey from "../keys"
 import { BlockConfirmationSnackbar } from "./blockConfirmationAlert"
 
 export interface ChainConfirmations {
@@ -16,38 +13,9 @@ export interface ChainConfirmations {
 }
 
 export const BlockConfirmationSnackList = () => {
-	const { state, subscribe } = useWebsocket()
-	const { user } = useAuth()
-
-	const [txConfirms, setTxConfirms] = useState<ChainConfirmations[]>([])
+	const [txConfirms] = useState<ChainConfirmations[]>([])
 	const [filterArr, setFilterArr] = useState<string[]>([])
 	const [results, setResults] = useState<ChainConfirmations[]>([])
-
-	useEffect(() => {
-		if (state !== SocketState.OPEN || !user) return
-		//subscribe to handler
-		return subscribe<ChainConfirmations>(
-			HubKey.BlockConfirmation,
-			(chainConf) => {
-				if (!chainConf) return
-				setTxConfirms((prev) => {
-					//creating new array from previous one to return.
-					//if confirmation does not exist, add it onto the end of the array, if it does replace the index with the most up to date version
-					const newArr = [...prev]
-
-					const ind = newArr.findIndex((conf) => conf.tx === chainConf.tx)
-					if (ind < 0) {
-						return [...newArr, chainConf]
-					}
-
-					newArr.splice(ind, 1, chainConf)
-
-					return newArr
-				})
-			},
-			{ id: user.id, getInitialData: false },
-		)
-	}, [user, state, subscribe])
 
 	//put the transaction id in a seperate array that will be filtered out in the above useEffect
 	const handleFilter = useCallback(
@@ -79,8 +47,8 @@ export const BlockConfirmationSnackList = () => {
 	return (
 		<Snackbar
 			anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-			open={user && [WebSocket.OPEN].includes(state)}
-			sx={user && [WebSocket.OPEN].includes(state) && results.length > 0 ? { display: "block" } : { display: "none" }}
+			open={true}
+			sx={results.length > 0 ? { display: "block" } : { display: "none" }}
 		>
 			<Box sx={{ display: "flex", flexDirection: "column" }}>
 				{results.map((x) => {

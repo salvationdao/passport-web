@@ -1,43 +1,49 @@
-# passport web
-http://localhost:5003 {
+https://passport.xsyndev.io {
 	log {
 		output discard
 	}
 	reverse_proxy * localhost:3001
-	reverse_proxy /api/* localhost:8086
+	tls ./certs/__xsyndev_io.crt ./certs/_.xsyndev.io.key {
+		ca ./certs/__xsyndev_io.ca-bundle
+	}
 }
 
-# twitch extension
-http://localhost:8081 {
+https://play.supremacygame.io {
 	log {
 		output discard
 	}
-	reverse_proxy * localhost:8082
-	reverse_proxy /api/* localhost:8084
+	reverse_proxy * https://play.supremacygame.io:3002
+	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
+		ca ./certs/__supremacygame_io.ca-bundle
+	}
 }
 
-# game bar
-http://localhost:5004 {
-  log {
-    output discard
-  }
-  reverse_proxy * localhost:3000
-  reverse_proxy /api/* localhost:8086
+https://api.xsyndev.io {
+	log {
+		output discard
+	}
+	reverse_proxy * api.xsyndev.io:8086
+	tls ./certs/__xsyndev_io.crt ./certs/_.xsyndev.io.key {
+		ca ./certs/__xsyndev_io.ca-bundle
+	}
 }
 
-# stream site
-http://localhost:5005 {
-  log {
-    output discard
-  }
-  reverse_proxy * localhost:3002
-  reverse_proxy /api/* localhost:8084
+https://passport.supremacygame.io {
+	log {
+		output discard
+	}
+	reverse_proxy * passport.supremacygame.io:8086
+	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
+		ca ./certs/__supremacygame_io.ca-bundle
+	}
 }
 
-#dev.supremacygame.io {
-#    reverse_proxy * localhost:3002
-#    tls ./certs/dev.supremacygame.io.crt ./certs/server.key {
-#        ca ./certs/dev.supremacygame.io-ca.crt
-#        ca_root ./certs/dev.supremacygame.io-root.crt
-#    }
-#}
+https://api.supremacygame.io {
+	log {
+		output discard
+	}
+	reverse_proxy * api.supremacygame.io:8084
+	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
+		ca ./certs/__supremacygame_io.ca-bundle
+	}
+}

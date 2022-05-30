@@ -42,29 +42,6 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 	)
 }
 
-// const RenderFaction = (size: string) => {
-// 	const { user } = useAuth()
-// 	if (user?.faction) {
-// 		return (
-// 			<Box
-// 				sx={{
-// 					height: size,
-// 					width: size,
-// 					marginRight: ".5rem",
-// 					flexShrink: 0,
-// 					backgroundImage: `url(${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${user.faction.logo_blob_id})`,
-// 					backgroundRepeat: "no-repeat",
-// 					backgroundPosition: "center",
-// 					backgroundSize: "contain",
-// 					backgroundColor: user.faction.theme.primary,
-// 					borderRadius: "50%",
-// 					border: `${user.faction.theme.primary} 1px solid`,
-// 				}}
-// 			/>
-// 		)
-// 	}
-// }
-
 interface MenuButtonProps {
 	sx?: SxProps<Theme>
 }

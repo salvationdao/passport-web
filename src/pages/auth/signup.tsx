@@ -10,11 +10,11 @@ import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
-import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { RegisterResponse } from "../../types/auth"
 import { PasswordRequirement } from "./onboarding"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 interface SignUpInput {
 	username: string
@@ -26,7 +26,7 @@ interface SignUpInput {
 
 export const SignUpPage: React.FC = () => {
 	const history = useHistory()
-	const { send } = useWebsocket()
+	const { send } = usePassportCommandsUser("/commander")
 	const { setUser, user } = useAuth()
 	const { setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
@@ -48,7 +48,7 @@ export const SignUpPage: React.FC = () => {
 
 					const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
 					setUser(resp.user)
-					localStorage.setItem("token", resp.token)
+					// localStorage.setItem("token", resp.token)
 
 					history.push("/onboarding?skip_username=true")
 				} catch (e) {

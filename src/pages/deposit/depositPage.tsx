@@ -2,7 +2,7 @@ import RefreshIcon from "@mui/icons-material/Refresh"
 import { Box, CircularProgress, IconButton, Paper, Typography, useMediaQuery } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
-import React, { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Coin from "../../assets/images/gradient/coin.png"
 import { DepositSups } from "../../components/depositSups"
 import { Navbar } from "../../components/home/navbar"
@@ -10,8 +10,6 @@ import { ConnectWalletOverlay } from "../../components/transferStatesOverlay/con
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
-import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
 import HubKey from "../../keys"
@@ -19,6 +17,8 @@ import { colors } from "../../theme"
 import { DepositTransaction, transferStateType } from "../../types/types"
 import { DesktopDepositTransactionTable } from "./desktopDepositTransactionTable"
 import { MobileDepositTransactionTable } from "./mobileDepositTransactionTable"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
+import { useAuth } from "../../containers/auth"
 
 interface CanEnterResponse {
 	can_withdraw: boolean
@@ -40,7 +40,7 @@ export const DepositPage = () => {
 		}
 	}, [])
 	const { user } = useAuth()
-	const { state, send } = useWebsocket()
+	const { state, send } = usePassportCommandsUser("/commander")
 	const { account, changeChain, currentChainId } = useWeb3()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -77,7 +77,7 @@ export const DepositPage = () => {
 	}, [send])
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !send || !user) return
+		if (state !== WebSocket.OPEN || !send || !user) return
 		fetchDepositTransactions()
 	}, [user, state, send, fetchDepositTransactions])
 

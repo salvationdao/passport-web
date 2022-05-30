@@ -6,11 +6,11 @@ import { Navbar } from "../../components/home/navbar"
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
 import { WithdrawSups } from "../../components/withdrawSups"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
-import { useAuth } from "../../containers/auth"
-import { useWebsocket } from "../../containers/socket"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
 import { transferStateType } from "../../types/types"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
+import { useAuth } from "../../containers/auth"
 
 interface CanEnterResponse {
 	can_withdraw: boolean
@@ -19,7 +19,7 @@ interface CanEnterResponse {
 export const WithdrawPage = () => {
 	const { account } = useWeb3()
 	const { user } = useAuth()
-	const { send, state } = useWebsocket()
+	const { state, send } = usePassportCommandsUser("/commander")
 
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 

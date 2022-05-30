@@ -26,12 +26,11 @@ const Input = styled("input")({
 
 export const ImageUpload = (props: ImageUploadProps) => {
 	const { file, onChange, label, avatarPreview, maxFileSize, showImageSelectButton, sx } = props
-	const token = localStorage.getItem("token")
 	const [errorMessage, setErrorMessage] = useState<string>()
 
 	const [showImageSelectDialog, setShowImageSelectDialog] = useState(false)
 	const onSelectImage = (id: string, fileName: string) => {
-		fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${id}?token=${encodeURIComponent(token || "")}`)
+		fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/files/${id}`)
 			.then((r) => r.blob())
 			.then((b) => {
 				onChange(new File([b], fileName, { type: b.type }))
@@ -105,7 +104,12 @@ export const ImageUpload = (props: ImageUploadProps) => {
 					))}
 				<Box display="flex">
 					<label htmlFor="contained-button-file">
-						<Input accept="image/*" id="contained-button-file" type="file" onChange={(e) => !!e.target.files && onDrop([e.target.files[0]])} />
+						<Input
+							accept="image/*"
+							id="contained-button-file"
+							type="file"
+							onChange={(e) => !!e.target.files && onDrop([e.target.files[0]])}
+						/>
 						<Button
 							variant="contained"
 							component="span"
