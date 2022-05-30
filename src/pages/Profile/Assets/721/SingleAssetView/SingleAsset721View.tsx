@@ -169,7 +169,7 @@ export const AssetView = ({
 	}, [enlarge])
 
 	const Buttons = useMemo(() => {
-		if (userAsset.locked_to_service_name) {
+		if (userAsset.locked_to_service_name && !showStake) {
 			return (
 				<FancyButton size="small" onClick={() => setTransferModalOpen(true)}>
 					Transition from {userAsset.locked_to_service_name} to XSYN
@@ -179,9 +179,10 @@ export const AssetView = ({
 
 		return (
 			<>
+				{!showStake && (
 				<FancyButton disabled={locked} size="small" onClick={() => setTransferModalOpen(true)}>
 					Transition from XSYN to Supremacy
-				</FancyButton>
+				</FancyButton>)}
 
 				{showStake && (
 					<FancyButton disabled={locked} size="small" onClick={() => setStakeModalOpen(true)}>
