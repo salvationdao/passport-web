@@ -9,7 +9,7 @@ import { Navbar } from "../../components/home/navbar"
 import { ConnectWalletOverlay } from "../../components/transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
-import { API_ENDPOINT_HOSTNAME } from "../../config"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID } from "../../config"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
 import HubKey from "../../keys"
@@ -120,7 +120,7 @@ export const DepositPage = () => {
 							height: "12rem",
 						}}
 					/>
-					<SwitchNetworkOverlay currentChainId={currentChainId} changeChain={changeChain} />
+					<SwitchNetworkOverlay currentChainId={currentChainId} changeChain={changeChain} newChainID={BINANCE_CHAIN_ID} />
 					<ConnectWalletOverlay walletIsConnected={!!account} />
 					<TransactionResultOverlay
 						currentTransferState={currentTransferState}

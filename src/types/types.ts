@@ -1,4 +1,5 @@
 import { Perm } from "./enums"
+import { User1155Asset } from "./purchased_item"
 
 export interface User {
 	id: string
@@ -153,4 +154,12 @@ export interface AvantBalances {
 	value: string
 	value_int: string
 	value_decimals: string
+}
+
+export interface Asset1155Json {
+	name: string
+	description: string
+	image: string
+	animation_url: string | undefined
+	attributes: User1155Asset[]
 }

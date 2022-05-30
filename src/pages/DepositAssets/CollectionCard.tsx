@@ -12,66 +12,66 @@ interface CollectionCardProps {
 export const CollectionCard = ({ collection }: CollectionCardProps) => {
 	const history = useHistory()
 	return (
-		<Box
-			sx={{
-				maxWidth: "30em",
-				backgroundColor: `${colors.darkerNavyBlue}90`,
-				borderRadius: "5px",
-				boxShadow: 1,
-				marginBottom: "1rem",
-				width: "100%",
-				minHeight: "125px",
-				overflow: "hidden",
-				transition: "all .2s",
-				cursor: "pointer",
-				":hover": {
-					boxShadow: 10,
-					transform: "translateY(-5px)",
-				},
-			}}
-			onClick={() => {
-				history.push(`/deposit-assets/${collection.slug}`)
-			}}
-		>
-			<Stack
+		<Box sx={{ p: "1rem" }}>
+			<Box
 				sx={{
-					height: "100%",
+					maxWidth: "35rem",
+					backgroundColor: `${colors.darkerNavyBlue}90`,
+					borderRadius: "5px",
+					boxShadow: 1,
+					mb: "1rem",
+					overflow: "hidden",
+					transition: "all .2s",
+					cursor: "pointer",
+					":hover": {
+						boxShadow: 10,
+						transform: "translateY(-5px)",
+					},
+				}}
+				onClick={() => {
+					history.push(`/deposit-assets/${collection.slug}`)
 				}}
 			>
-				<Box
+				<Stack
 					sx={{
-						position: "relative",
-						background: `url(${collection.background_url})`,
-						height: "10rem",
-						backgroundPosition: "center",
-						backgroundSize: "cover",
+						height: "100%",
 					}}
 				>
 					<Box
-						component={"img"}
-						src={collection.logo_url}
-						alt={`${collection.slug}-logo`}
-						sx={{ position: "absolute", bottom: "0.4rem", right: "0.6rem", height: "2.3rem" }}
-					/>
-				</Box>
-				<Box sx={{ px: "2rem", py: "1.6rem" }}>
-					<Typography variant={"h3"} sx={{ mb: "1rem" }}>
-						{collection.name}
-					</Typography>
-					<Typography
 						sx={{
-							display: "-webkit-box",
-							overflow: "hidden",
-							overflowWrap: "anywhere",
-							textOverflow: "ellipsis",
-							WebkitLineClamp: 3,
-							WebkitBoxOrient: "vertical",
+							position: "relative",
+							background: `url(${collection.background_url})`,
+							height: "10rem",
+							backgroundPosition: "center",
+							backgroundSize: "cover",
 						}}
 					>
-						{collection.description}
-					</Typography>
-				</Box>
-			</Stack>
+						<Box
+							component={"img"}
+							src={collection.logo_url}
+							alt={`${collection.slug}-logo`}
+							sx={{ position: "absolute", bottom: "0.4rem", right: "0.6rem", height: "2.3rem" }}
+						/>
+					</Box>
+					<Box sx={{ px: "2rem", py: "1.6rem" }}>
+						<Typography variant={"h3"} sx={{ mb: "1rem" }}>
+							{collection.name}
+						</Typography>
+						<Typography
+							sx={{
+								display: "-webkit-box",
+								overflow: "hidden",
+								overflowWrap: "anywhere",
+								textOverflow: "ellipsis",
+								WebkitLineClamp: 3,
+								WebkitBoxOrient: "vertical",
+							}}
+						>
+							{collection.description}
+						</Typography>
+					</Box>
+				</Stack>
+			</Box>
 		</Box>
 	)
 }

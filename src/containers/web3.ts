@@ -14,8 +14,8 @@ import {
 	BINANCE_CHAIN_ID,
 	BSC_SCAN_SITE,
 	BUSD_CONTRACT_ADDRESS,
-	ETHEREUM_CHAIN_ID,
 	ETH_SCAN_SITE,
+	ETHEREUM_CHAIN_ID,
 	LP_TOKEN_ADDRESS,
 	PURCHASE_ADDRESS,
 	SIGN_MESSAGE,
@@ -698,7 +698,13 @@ export const Web3Container = createContainer(() => {
 	}
 
 	const farmInfo = useCallback<
-		(farmContractAddr: string, pancakePoolAddr: string, lpTokenAddr: string, supsContractAddr: string, wbnbContractAddr: string) => Promise<FarmData | null>
+		(
+			farmContractAddr: string,
+			pancakePoolAddr: string,
+			lpTokenAddr: string,
+			supsContractAddr: string,
+			wbnbContractAddr: string,
+		) => Promise<FarmData | null>
 	>(
 		async (farmContractAddr: string, pancakePoolAddr: string, lpTokenAddr: string, supsContractAddr: string, wbnbContractAddr: string) => {
 			if (!provider || !account) return null
@@ -907,7 +913,25 @@ export const Web3Container = createContainer(() => {
 		},
 		[account, provider, signer],
 	)
+
+	const getURI1177 = useCallback(
+		async (contractAddr: string, tokenID: number) => {
+			if (!provider) throw new Error("provider not ready")
+			const erc1155ABI = new Interface(["function uri(uint256) view returns (string memory)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, provider)
+			return await contract.uri(tokenID)
+		},
+		[provider],
+	)
+
+	const convertURIWithID = (uri: string, tokenID: number): string => {
+		const hexTokenID = tokenID.toString(16).padStart(64, "0")
+		return uri.replace("{id}", hexTokenID)
+	}
+
 	return {
+		convertURIWithID,
+		getURI1177,
 		farmGetReward,
 		farmLPApproveMax,
 		farmCheckAllowance,
