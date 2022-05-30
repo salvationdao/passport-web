@@ -89,7 +89,7 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 	const locked = isFuture(userAsset.unlocked_at)
 	const showMint = userAsset.on_chain_status === OnChainStatus.MINTABLE
 	const showStake = userAsset.on_chain_status === OnChainStatus.STAKABLE
-	const showUnstake = userAsset.on_chain_status === OnChainStatus.UNSTAKABLE
+	const showUnstake = userAsset.on_chain_status === OnChainStatus.UNSTAKABLE || userAsset.on_chain_status === OnChainStatus.UNSTAKABLE_OLD
 	const showOpenseaURL = userAsset.on_chain_status !== OnChainStatus.MINTABLE
 	const onWorld = userAsset.on_chain_status !== OnChainStatus.STAKABLE
 
