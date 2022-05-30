@@ -141,7 +141,7 @@ export interface Collection1155 {
 	mint_contract: string | undefined
 	logo_url: string | undefined
 	background_url: string | undefined
-	balances: AvantUserBalance | undefined
+	token_ids: number[]
 }
 
 export interface AvantUserBalance {

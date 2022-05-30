@@ -1,43 +1,25 @@
-import { Alert, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
-import { MetaMaskState, useWeb3 } from "../../containers/web3"
-import { BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS } from "../../config"
-import { FancyButton } from "../../components/fancyButton"
+import { Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
+import { BigNumber } from "ethers"
 
 interface DespositAssetModalProps {
 	open: boolean
+	maxAmount: BigNumber
 }
 
-export const DespositAssetModal = () => {
-	const { metaMaskState, currentChainId } = useWeb3()
-
+export const DespositAssetModal = ({ open, maxAmount }: DespositAssetModalProps) => {
 	return (
-		<Dialog open={open} onClose={onClose} maxWidth={"xl"} key={currentChainId}>
+		<Dialog open={open} maxWidth={"xl"}>
 			<DialogTitle
 				sx={(theme) => ({
 					fontSize: theme.typography.h3,
 				})}
 				color={"primary"}
 			>
-				Deposit SUPS
+				Deposit Asset
 			</DialogTitle>
 			<DialogContent sx={{ paddingTop: "1.5rem !important", minWidth: "400px" }}></DialogContent>
 
-			{metaMaskState === MetaMaskState.Active && currentChainId?.toString() === BINANCE_CHAIN_ID && (
-				<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}>
-					{!loadingDeposit && (
-						<FancyButton
-							disabled={!!errorAmount}
-							onClick={async () => {
-								if (depositAmount) await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, depositAmount)
-							}}
-						>
-							Deposit
-						</FancyButton>
-					)}
-					{loadingDeposit && <CircularProgress color={"primary"} />}
-					{(errorWalletBalance || errorDepositing) && <Alert severity={"error"}>{errorWalletBalance || errorDepositing}</Alert>}
-				</DialogActions>
-			)}
+			<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}></DialogActions>
 		</Dialog>
 	)
 }

@@ -924,12 +924,41 @@ export const Web3Container = createContainer(() => {
 		[provider],
 	)
 
+	const safeTransferForm1177 = useCallback(
+		async (contractAddr: string, tokenID: number) => {
+			if (!provider) throw new Error("provider not ready")
+			const erc1155ABI = new Interface(["function uri(uint256) view returns (string memory)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, provider)
+			return await contract.uri(tokenID)
+		},
+		[provider],
+	)
+
 	const convertURIWithID = (uri: string, tokenID: number): string => {
 		const hexTokenID = tokenID.toString(16).padStart(64, "0")
 		return uri.replace("{id}", hexTokenID)
 	}
 
+	const batchBalanceOf = useCallback(
+		async (tokenIDs: number[], contractAddr: string): Promise<BigNumber[]> => {
+			if (!account) throw new Error("account not connected")
+			if (!provider) throw new Error("provider not ready")
+			const address: string[] = []
+			for (let i = 0; i < tokenIDs.length; i++) {
+				address.push(account)
+			}
+			const erc1155ABI = new Interface([
+				"function balanceOfBatch(address[] memory accounts, uint256[] memory ids) view returns (uint256[] memory)",
+			])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, provider)
+			return await contract.balanceOfBatch(address, tokenIDs)
+		},
+		[account, provider],
+	)
+
 	return {
+		safeTransferForm1177,
+		batchBalanceOf,
 		convertURIWithID,
 		getURI1177,
 		farmGetReward,
