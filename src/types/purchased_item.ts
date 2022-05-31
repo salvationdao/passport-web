@@ -37,7 +37,9 @@ export interface User1155Asset {
 	id: string
 	owner_id: string
 	collection_id: string
+	collection_slug: string
 	external_token_id: number
+	mint_contract: string | undefined
 	count: number
 	label: string
 	description: string

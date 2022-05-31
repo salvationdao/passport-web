@@ -142,6 +142,7 @@ export interface Collection1155 {
 	logo_url: string | undefined
 	background_url: string | undefined
 	token_ids: number[]
+	transfer_address: string | undefined
 }
 
 export interface AvantUserBalance {

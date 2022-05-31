@@ -61,6 +61,7 @@ export const DepositAssetsPage = () => {
 					)}
 					{collectionsLoading && <Loading />}
 					{collections &&
+						collections.collections.length > 0 &&
 						collections.collections.map((collection, index) => {
 							return <CollectionCard collection={collection} key={index} />
 						})}

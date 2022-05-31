@@ -16,6 +16,7 @@ import { User } from "../../types/types"
 import { Assets721 } from "./Assets/721/Assets721"
 import { LockButton, lockOptions, LockOptionsProps } from "./Locking/LockButton"
 import { LockModal } from "./Locking/LockModal"
+import { Assets1155 } from "./Assets/1155/Assets1155"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -191,7 +192,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 
 					{tabValue === 0 && <Assets721 user={user} loggedInUser={loggedInUser} />}
 
-					{tabValue === 1 && <>IVAN</>}
+					{tabValue === 1 && <Assets1155 user={user} loggedInUser={loggedInUser} />}
 				</Paper>
 			</Stack>
 		</Stack>

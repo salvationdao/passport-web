@@ -924,14 +924,36 @@ export const Web3Container = createContainer(() => {
 		[provider],
 	)
 
-	const safeTransferForm1177 = useCallback(
-		async (contractAddr: string, tokenID: number) => {
-			if (!provider) throw new Error("provider not ready")
-			const erc1155ABI = new Interface(["function uri(uint256) view returns (string memory)"])
-			const contract = new ethers.Contract(contractAddr, erc1155ABI, provider)
-			return await contract.uri(tokenID)
+	const safeTransferFrom1177 = useCallback(
+		async (contractAddr: string, tokenID: number, amount: number, toAddress: string) => {
+			if (!account) throw new Error("account not connected")
+			const erc1155ABI = new Interface(["function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, signer)
+			return await contract.safeTransferFrom(account, toAddress, tokenID, amount, "0x")
 		},
-		[provider],
+		[account, signer],
+	)
+
+	const get1155Nonce = useCallback(
+		async (contractAddr: string): Promise<number> => {
+			if (!account) throw new Error("account not connected")
+			if (!provider) throw new Error("provider not ready")
+			const erc1155ABI = new Interface(["function nonces(address) public view returns (uint256)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, provider)
+			return await contract.nonces(account)
+		},
+		[account, provider],
+	)
+
+	const signedMint1155 = useCallback(
+		async (contractAddr: string, signature: string, tokenID: number) => {
+			if (!signer) throw new Error("signer not ready")
+			const erc1155ABI = new Interface(["function signedMint(uint256 tokenID, bytes signature)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, signer)
+			console.log(contract)
+			return await contract.signedMint(tokenID, signature)
+		},
+		[signer],
 	)
 
 	const convertURIWithID = (uri: string, tokenID: number): string => {
@@ -957,7 +979,9 @@ export const Web3Container = createContainer(() => {
 	)
 
 	return {
-		safeTransferForm1177,
+		signedMint1155,
+		get1155Nonce,
+		safeTransferFrom1177,
 		batchBalanceOf,
 		convertURIWithID,
 		getURI1177,

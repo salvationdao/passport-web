@@ -75,6 +75,8 @@ export const ContractAssetPage = () => {
 		})()
 	}, [batchBalanceOf, collection])
 
+	console.log(collection)
+
 	return (
 		<Stack spacing="2rem" sx={{ height: "100%", overflowX: "hidden" }}>
 			<Navbar />
@@ -96,10 +98,16 @@ export const ContractAssetPage = () => {
 					)}
 					{collectionsLoading && <Loading />}
 					{loadError !== "" && <Typography sx={{ marginTop: "1rem", color: colors.supremacy.red }}>{loadError}</Typography>}
-					{collection && loadError === "" && !collectionsLoading && uri && (
+					{collection && loadError === "" && !collectionsLoading && uri && collection.mint_contract && collection.transfer_address && (
 						<Box>
 							<Typography variant="h1">{collection.name}</Typography>
-							<ContractAssetPagetInner token_ids={collection.token_ids} uri={uri} balance={balance} />
+							<ContractAssetPagetInner
+								tokenIDs={collection.token_ids}
+								uri={uri}
+								balance={balance}
+								mintAddress={collection.mint_contract}
+								transferAddress={collection.transfer_address}
+							/>
 						</Box>
 					)}
 				</Stack>
@@ -110,16 +118,27 @@ export const ContractAssetPage = () => {
 
 interface ContractAssetPageInnerProp {
 	uri: string
-	token_ids: number[]
+	tokenIDs: number[]
 	balance: BigNumber[] | undefined
+	mintAddress: string
+	transferAddress: string
 }
 
-const ContractAssetPagetInner = ({ token_ids, uri, balance }: ContractAssetPageInnerProp) => {
+const ContractAssetPagetInner = ({ tokenIDs, uri, balance, mintAddress, transferAddress }: ContractAssetPageInnerProp) => {
 	return (
 		<Stack direction="row" alignItems="flex-start" sx={{ flexWrap: "wrap", height: "fit-content" }}>
-			{token_ids.length > 0 &&
-				token_ids.map((token_id, i) => {
-					return <DepositAssetCard uri={uri} balance={balance} key={token_id} token_id={token_id} />
+			{tokenIDs.length > 0 &&
+				tokenIDs.map((tokenID, i) => {
+					return (
+						<DepositAssetCard
+							uri={uri}
+							balance={balance}
+							key={tokenID}
+							tokenID={tokenID}
+							mintContract={mintAddress}
+							transferAddress={transferAddress}
+						/>
+					)
 				})}
 		</Stack>
 	)
