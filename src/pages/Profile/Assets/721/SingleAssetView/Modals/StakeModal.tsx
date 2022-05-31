@@ -32,6 +32,7 @@ export const StakeModal = ({ open, onClose, asset, collection }: StakeModelProps
 		if (!provider) return // Check already approved
 		;(async () => {
 			try {
+				setError(undefined)
 				const abi = ["function getApproved(uint256) view returns (address)"]
 
 				const nftContract = new ethers.Contract(collection.mint_contract, abi, provider)
@@ -50,6 +51,7 @@ export const StakeModal = ({ open, onClose, asset, collection }: StakeModelProps
 	const approve = useCallback(async () => {
 		if (!provider) return
 		try {
+			setError(undefined)
 			setApprovalLoading(true)
 			const abi = ["function approve(address, uint256)"]
 			const signer = provider.getSigner()
