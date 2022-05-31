@@ -26,8 +26,8 @@ export const SwitchNetworkButton = ({ open, currentChainId, changeChain, setErro
 			borderColor={colors.darkGrey}
 			onClick={async () => {
 				try {
-					await changeChainToETH()
 					setError(undefined)
+					await changeChainToETH()
 				} catch (e) {
 					setError("Error switching network")
 				}

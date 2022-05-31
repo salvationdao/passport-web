@@ -31,6 +31,7 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 			setUnstakingLoading(true)
 			const abi = ["function unstake(address,uint256)"]
 			const signer = provider.getSigner()
+			// TODO: Update to handle old and new stake contracts
 			const nftstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
 			const tx = await nftstakeContract.unstake(collection.mint_contract, asset.token_id)
 			await fetch(lock_endpoint(account, collection.slug, asset.token_id), { method: "POST" })
