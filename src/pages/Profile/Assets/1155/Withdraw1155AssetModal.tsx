@@ -4,28 +4,28 @@ import { useWeb3 } from "../../../../containers/web3"
 import { API_ENDPOINT_HOSTNAME } from "../../../../config"
 import { colors } from "../../../../theme"
 import { FancyButton } from "../../../../components/fancyButton"
-import { User1155Asset } from "../../../../types/purchased_item"
+import { User1155AssetView } from "../../../../types/purchased_item"
 
 interface WithdrawAssetModalProps {
 	open: boolean
 	tokenID: string
-	asset: User1155Asset
+	asset: User1155AssetView
+	mintContract: string
 }
 
-export const Withdraw1155AssetModal = ({ open, asset, tokenID }: WithdrawAssetModalProps) => {
+export const Withdraw1155AssetModal = ({ open, asset, tokenID, mintContract }: WithdrawAssetModalProps) => {
 	const [loading, setLoading] = useState<boolean>(false)
 	const { signedMint1155, get1155Nonce, account } = useWeb3()
 
 	const startWithdraw = useCallback(async () => {
-		if (!asset.mint_contract) return
 		try {
 			setLoading(true)
-			const nonce = await get1155Nonce(asset.mint_contract)
+			const nonce = await get1155Nonce(mintContract)
 			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/1155/${account}/${tokenID}/${nonce.toString()}/1`)
 			console.log(resp)
 			const signature = (await resp.clone().json()) as string
 			console.log(signature)
-			await signedMint1155(asset.mint_contract, signature, parseInt(tokenID))
+			await signedMint1155(mintContract, signature, parseInt(tokenID))
 
 			if (!resp) return
 		} catch (e) {

@@ -27,7 +27,8 @@ export const ProfilePage = () => {
 const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const { displayMessage } = useSnackbar()
 	const { send } = usePassportCommandsUser("/commander")
-	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
+	const { username, asset_hash, collection_slug, token_id } =
+		useParams<{ username: string; asset_hash: string; collection_slug: string; token_id: string; locked: string }>()
 	const history = useHistory()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -39,7 +40,9 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
 
 	// Tabs
-	const [tabValue, setTabValue] = useState(0)
+	const [tabValue, setTabValue] = useState(asset_hash ? 0 : collection_slug ? 1 : 0)
+
+	console.log({ username, asset_hash, collection_slug, token_id })
 
 	useEffect(() => {
 		;(async () => {
@@ -177,7 +180,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 				)}
 
 				<Paper sx={{ flex: 1, borderRadius: 1.5 }}>
-					{!asset_hash && (
+					{!asset_hash && !collection_slug && !token_id && (
 						<Tabs
 							value={tabValue}
 							sx={{ ".MuiTab-root": { px: "2rem", py: "1.2rem" }, borderBottom: 1, borderColor: "divider" }}

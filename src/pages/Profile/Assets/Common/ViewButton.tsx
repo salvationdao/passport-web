@@ -11,7 +11,7 @@ export const ViewButton = (props: BoxProps) => (
 			justifyContent: "center",
 			height: "2.6rem",
 			width: "2.6rem",
-			backgroundColor: "transparent",
+			backgroundColor: "#00000099",
 			border: `3px solid ${colors.purple}`,
 			color: "inherit",
 			font: "inherit",
