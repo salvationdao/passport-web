@@ -76,7 +76,7 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 
 	if (loading || !userAsset || !owner || !collection) {
 		return (
-			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
+			<Stack sx={{ flexGrow: 1, p: "2rem", height: "100%" }}>
 				<Loading text={"Loading asset information..."} />
 			</Stack>
 		)
@@ -89,7 +89,7 @@ export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps)
 	const locked = isFuture(userAsset.unlocked_at)
 	const showMint = userAsset.on_chain_status === OnChainStatus.MINTABLE
 	const showStake = userAsset.on_chain_status === OnChainStatus.STAKABLE
-	const showUnstake = userAsset.on_chain_status === OnChainStatus.UNSTAKABLE
+	const showUnstake = userAsset.on_chain_status === OnChainStatus.UNSTAKABLE || userAsset.on_chain_status === OnChainStatus.UNSTAKABLE_OLD
 	const showOpenseaURL = userAsset.on_chain_status !== OnChainStatus.MINTABLE
 	const onWorld = userAsset.on_chain_status !== OnChainStatus.STAKABLE
 
@@ -169,7 +169,7 @@ export const AssetView = ({
 	}, [enlarge])
 
 	const Buttons = useMemo(() => {
-		if (userAsset.locked_to_service_name) {
+		if (userAsset.locked_to_service_name && !showStake) {
 			return (
 				<FancyButton size="small" onClick={() => setTransferModalOpen(true)}>
 					Transition from {userAsset.locked_to_service_name} to XSYN
@@ -179,9 +179,10 @@ export const AssetView = ({
 
 		return (
 			<>
+				{!showStake && (
 				<FancyButton disabled={locked} size="small" onClick={() => setTransferModalOpen(true)}>
 					Transition from XSYN to Supremacy
-				</FancyButton>
+				</FancyButton>)}
 
 				{showStake && (
 					<FancyButton disabled={locked} size="small" onClick={() => setStakeModalOpen(true)}>
@@ -243,7 +244,7 @@ export const AssetView = ({
 						sx={{
 							display: "flex",
 							flexWrap: "wrap",
-							gap: "1rem",
+							gap: "1.6rem",
 						}}
 					>
 						<Box

@@ -6,7 +6,7 @@ type ButtonSize = "small" | "medium" | "large"
 
 export interface FancyButtonProps extends LoadingButtonProps {
 	fancy?: boolean
-	borderColor?: string
+	borderColor?: string | undefined
 	filled?: boolean
 	size?: ButtonSize
 }

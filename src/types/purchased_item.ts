@@ -2,6 +2,7 @@ export enum OnChainStatus {
 	MINTABLE = "MINTABLE",
 	STAKABLE = "STAKABLE",
 	UNSTAKABLE = "UNSTAKABLE",
+	UNSTAKABLE_OLD = "UNSTAKABLE_OLD",
 }
 
 export interface UserAsset {

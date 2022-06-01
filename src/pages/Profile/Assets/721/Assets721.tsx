@@ -173,53 +173,61 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 						})}
 					</Box>
 				) : (
-					<Box
+					<Stack
+						alignItems="center"
+						justifyContent="center"
 						sx={{
 							flex: 1,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							flexDirection: "column",
+							minHeight: "30rem",
 						}}
 					>
-						{loading ? (
+						{loading && (
 							<Typography variant="subtitle2" color={colors.darkGrey}>
 								Loading assets...
 							</Typography>
-						) : error ? (
+						)}
+
+						{!loading && error && (
 							<Typography variant="subtitle2" color={colors.darkGrey}>
 								An error occurred while loading assets.
 							</Typography>
-						) : (
-							<Box
-								component={"div"}
+						)}
+
+						{!loading && !error && (
+							<Stack
+								alignItems="center"
+								justifyContent="center"
 								sx={{
-									display: "flex",
-									flexDirection: "column",
-									alignItems: "center",
-									justifyContent: "center",
-									gap: "1em",
+									position: "relative",
+									flex: 1,
+									width: "100%",
+									height: "100%",
 									overflow: "wrap",
 								}}
 							>
-								<img
-									src={WarMachine}
-									alt="supremacy war machines"
-									style={{
+								<Box
+									sx={{
+										position: "absolute",
 										width: "100%",
 										height: "100%",
-										opacity: 0.5,
+										background: `center url(${WarMachine})`,
+										backgroundSize: "contain",
+										backgroundRepeat: "no-repeat",
+										opacity: 0.2,
+										zIndex: 1,
 									}}
 								/>
-								<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
-									Your Inventory Is Empty
-								</Typography>
-								<FancyButton size="small" sx={{ p: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
-									Go To Store
-								</FancyButton>
-							</Box>
+								<Stack alignItems="center" sx={{ zIndex: 2 }}>
+									<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
+										Your Inventory Is Empty
+									</Typography>
+									<FancyButton size="small" sx={{ p: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
+										Go To Store
+									</FancyButton>
+								</Stack>
+							</Stack>
 						)}
-					</Box>
+					</Stack>
 				)}
 				<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: "auto", pt: "1.5rem" }}>
 					<Stack>
