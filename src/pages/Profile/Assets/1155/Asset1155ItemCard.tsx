@@ -4,7 +4,7 @@ import { User1155Asset } from "../../../../types/purchased_item"
 import { ViewButton } from "../Common/ViewButton"
 import LockRoundedIcon from "@mui/icons-material/LockRounded"
 import SearchIcon from "@mui/icons-material/Search"
-import React, { useState } from "react"
+import React from "react"
 import { useHistory } from "react-router-dom"
 
 export interface Asset721ItemCardProps {

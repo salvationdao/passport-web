@@ -4,7 +4,6 @@ import { useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../../../assets"
 import { FancyButton } from "../../../../components/fancyButton"
 import { PageSizeSelectionInput } from "../../../../components/pageSizeSelectionInput"
-import { useDebounce } from "../../../../hooks/useDebounce"
 import { usePagination } from "../../../../hooks/usePagination"
 import { usePassportCommandsUser } from "../../../../hooks/usePassport"
 import HubKey from "../../../../keys"
@@ -18,8 +17,6 @@ import { SingleAsset1155View } from "./SingleAssetView/SingleAsset1155View"
 export interface FilterSortOptions {
 	sort: { column: string; direction: string }
 }
-
-const initialFilterSort: FilterSortOptions = { sort: { column: "name", direction: "asc" } }
 
 export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: User }) => {
 	const [loading, setLoading] = useState(true)
