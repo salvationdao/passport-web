@@ -1,24 +1,11 @@
 import CloseIcon from "@mui/icons-material/Close"
-import {
-	Box,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogTitle,
-	IconButton,
-	InputAdornment,
-	Stack,
-	TextField,
-	Tooltip,
-	Typography,
-} from "@mui/material"
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, Stack, TextField, Tooltip, Typography } from "@mui/material"
 import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { usePassportCommandsUser } from "../../../../../../hooks/usePassport"
 import HubKey from "../../../../../../keys"
 import { colors } from "../../../../../../theme"
-import { User1155AssetView, UserAsset } from "../../../../../../types/purchased_item"
-import { useSnackbar } from "../../../../../../containers/snackbar"
+import { User1155AssetView } from "../../../../../../types/purchased_item"
 
 interface ServiceTransfer1155ModelProps {
 	open: boolean

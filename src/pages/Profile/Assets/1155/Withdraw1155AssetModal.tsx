@@ -33,7 +33,7 @@ export const Withdraw1155AssetModal = ({ open, asset, tokenID, mintContract, onC
 		} finally {
 			setLoading(false)
 		}
-	}, [account, get1155Nonce, asset, signedMint1155, tokenID])
+	}, [get1155Nonce, mintContract, account, tokenID, signedMint1155])
 
 	return (
 		<Dialog open={open} maxWidth={"xl"} onClose={onClose}>

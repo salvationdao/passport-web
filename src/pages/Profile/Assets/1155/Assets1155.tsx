@@ -4,7 +4,6 @@ import { useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../../../assets"
 import { FancyButton } from "../../../../components/fancyButton"
 import { PageSizeSelectionInput } from "../../../../components/pageSizeSelectionInput"
-import { SearchBar } from "../../../../components/searchBar"
 import { useDebounce } from "../../../../hooks/useDebounce"
 import { usePagination } from "../../../../hooks/usePagination"
 import { usePassportCommandsUser } from "../../../../hooks/usePassport"
@@ -28,8 +27,8 @@ export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: U
 	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 
-	// Collection data
-	const [search, setSearch] = useDebounce("", 300)
+	// // Collection data
+	// const [search, setSearch] = useDebounce("", 300)
 	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({ pageSize: 20, page: 1 })
 	const [userAssets, setUserAssets] = useState<User1155Asset[]>([])
 	const { collection_slug, token_id, locked } = useParams<{ collection_slug: string; token_id: string; locked: string }>()
@@ -43,7 +42,6 @@ export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: U
 				setLoading(true)
 				const resp = await send<{ assets: User1155Asset[]; total: number }>(HubKey.AssetList1155, {
 					user_id: user.id,
-					search,
 					page,
 					page_size: pageSize,
 				})
@@ -58,7 +56,7 @@ export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: U
 				setLoading(false)
 			}
 		})()
-	}, [user, search, page, pageSize, setLoading, send, setUserAssets, setTotalItems, setError])
+	}, [user, page, pageSize, setLoading, send, setUserAssets, setTotalItems, setError])
 
 	if (!!collection_slug && !!token_id && !!locked) {
 		const lock = locked === "true"

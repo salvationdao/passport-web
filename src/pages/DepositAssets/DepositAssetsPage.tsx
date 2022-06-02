@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
-import { Box, Stack, Typography } from "@mui/material"
+import { Box, Stack } from "@mui/material"
 import { Navbar } from "../../components/home/navbar"
 import { colors } from "../../theme"
 import { Collections1155 } from "../../types/types"

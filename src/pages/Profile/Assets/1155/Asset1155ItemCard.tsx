@@ -5,7 +5,6 @@ import { ViewButton } from "../Common/ViewButton"
 import LockRoundedIcon from "@mui/icons-material/LockRounded"
 import SearchIcon from "@mui/icons-material/Search"
 import React, { useState } from "react"
-import { Withdraw1155AssetModal } from "./Withdraw1155AssetModal"
 import { useHistory } from "react-router-dom"
 
 export interface Asset721ItemCardProps {
@@ -14,8 +13,7 @@ export interface Asset721ItemCardProps {
 }
 
 export const Asset1155ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps> = ({ userAsset, username }) => {
-	const { animation_url, image_url, external_token_id, label, description, service_id, collection_slug, count } = userAsset
-	const [open, setOpen] = useState<boolean>(false)
+	const { animation_url, image_url, external_token_id, label, service_id, collection_slug, count } = userAsset
 	const history = useHistory()
 
 	return (
@@ -126,9 +124,6 @@ export const Asset1155ItemCard: React.VoidFunctionComponent<Asset721ItemCardProp
 						position: "absolute",
 						right: "1rem",
 						bottom: "1rem",
-					}}
-					onClick={() => {
-						setOpen(true)
 					}}
 				>
 					<SearchIcon />
