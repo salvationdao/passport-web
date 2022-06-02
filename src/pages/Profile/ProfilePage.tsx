@@ -42,8 +42,6 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	// Tabs
 	const [tabValue, setTabValue] = useState(asset_hash ? 0 : collection_slug ? 1 : 0)
 
-	console.log({ username, asset_hash, collection_slug, token_id })
-
 	useEffect(() => {
 		;(async () => {
 			if (username) {
@@ -188,8 +186,8 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 								setTabValue(newValue)
 							}}
 						>
-							<Tab label="ASSETS 721" value={0} />
-							<Tab label="ASSETS 1155" value={1} />
+							<Tab label="GAME ASSETS" value={0} />
+							<Tab label="ACHIEVEMENTS" value={1} />
 						</Tabs>
 					)}
 

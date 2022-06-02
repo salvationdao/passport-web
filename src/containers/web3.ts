@@ -586,7 +586,7 @@ export const Web3Container = createContainer(() => {
 				const message = `Name:${name}Email:${email}Phone:${phone}Agrees:${agree}`
 				const hashMessage = hexlify(ethers.utils.toUtf8Bytes(message))
 				const signedMessage = await connector.signPersonalMessage([ethers.utils.toUtf8Bytes(message), acc]).catch((e) => {
-					console.log(e)
+					console.error(e)
 				})
 				const resp = await fetch(
 					`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/early/sign?signature=${signedMessage}&message=${message}&address=${acc}&agree=${agree}&hex=${hashMessage}`,

@@ -14,14 +14,16 @@ interface DepositAssetCardProps {
 	balance: BigNumber[] | undefined
 	mintContract: string
 	transferAddress: string
+	showOwned: boolean
 }
 
-export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transferAddress }: DepositAssetCardProps) => {
+export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transferAddress, showOwned }: DepositAssetCardProps) => {
 	const { convertURIWithID } = useWeb3()
 	const [asset1155Json, setAsset1155Json] = useState<Asset1155Json>()
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [canDeposit, setCanDeposit] = useState<boolean>(false)
 	const [open, setOpen] = useState<boolean>(false)
+	const [canShow, setCanShow] = useState<boolean>(false)
 
 	useEffect(() => {
 		;(async () => {
@@ -42,6 +44,19 @@ export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transfer
 		}
 	}, [balance, tokenID])
 
+	useEffect(() => {
+		if (!balance) return
+		if (showOwned) {
+			if (balance[tokenID].gt(BigNumber.from(0))) {
+				setCanShow(true)
+				return
+			}
+			setCanShow(false)
+		} else {
+			setCanShow(true)
+		}
+	}, [balance, showOwned, tokenID])
+
 	return (
 		<DepositAssetCardInner
 			assetData={asset1155Json}
@@ -53,6 +68,7 @@ export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transfer
 			mintContract={mintContract}
 			tokenID={tokenID}
 			transferAddress={transferAddress}
+			canShow={canShow}
 		/>
 	)
 }
@@ -67,6 +83,7 @@ interface DepositAssetCardInnerProps {
 	mintContract: string
 	tokenID: number
 	transferAddress: string
+	canShow: boolean
 }
 
 const DepositAssetCardInner = ({
@@ -79,11 +96,13 @@ const DepositAssetCardInner = ({
 	mintContract,
 	tokenID,
 	transferAddress,
+	canShow,
 }: DepositAssetCardInnerProps) => {
 	return (
 		<>
 			<Box
 				sx={{
+					display: canShow ? undefined : "none",
 					alignSelf: "stretch",
 					p: "1rem",
 					width: "20%",
@@ -159,6 +178,7 @@ const DepositAssetCardInner = ({
 					maxAmount={balance}
 					tokenID={tokenID}
 					transferAddress={transferAddress}
+					setOpen={setOpen}
 				/>
 			)}
 		</>

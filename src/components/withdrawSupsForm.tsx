@@ -117,7 +117,7 @@ export const WithdrawSupsForm = ({
 				}
 			})()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}, [user?.public_address])
 

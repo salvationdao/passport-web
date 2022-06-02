@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
-import { Box, Stack, Typography } from "@mui/material"
+import { Box, FormControlLabel, FormGroup, Stack, Switch, Typography } from "@mui/material"
 import { Navbar } from "../../components/home/navbar"
 import { colors } from "../../theme"
 import { Collection1155 } from "../../types/types"
@@ -20,6 +20,7 @@ export const ContractAssetPage = () => {
 	const [balance, setBalance] = useState<BigNumber[]>()
 	const { collection_slug } = useParams<{ collection_slug: string }>()
 	const { account, getURI1177, currentChainId, changeChain, batchBalanceOf } = useWeb3()
+	const [showOwned, setShowOwned] = useState<boolean>(true)
 
 	useEffect(() => {
 		if (!collection_slug || !account || !isCorrectChain) return
@@ -34,15 +35,16 @@ export const ContractAssetPage = () => {
 				const uri = await getURI1177(collections.mint_contract, 0)
 				if (!uri) {
 					setLoadError("Failed to get uri from contract")
-					setCollectionsLoading(false)
+
 					return
 				}
 				setURI(uri)
 				setCollections(collections)
-				setCollectionsLoading(false)
 			} catch (e) {
 				setLoadError("Error getting collection details")
-				console.log(e)
+				console.error(e)
+			} finally {
+				setCollectionsLoading(false)
 			}
 		})()
 	}, [collection_slug, account, isCorrectChain, getURI1177])
@@ -70,12 +72,10 @@ export const ContractAssetPage = () => {
 					}
 				}
 			} catch (e) {
-				console.log(e)
+				console.error(e)
 			}
 		})()
 	}, [batchBalanceOf, collection])
-
-	console.log(collection)
 
 	return (
 		<Stack spacing="2rem" sx={{ height: "100%", overflowX: "hidden" }}>
@@ -101,12 +101,23 @@ export const ContractAssetPage = () => {
 					{collection && loadError === "" && !collectionsLoading && uri && collection.mint_contract && collection.transfer_address && (
 						<Box>
 							<Typography variant="h1">{collection.name}</Typography>
+							<FormGroup>
+								<FormControlLabel
+									control={<Switch defaultChecked value={showOwned} />}
+									label="Only show owned assets"
+									onChange={(e, checked) => {
+										setShowOwned(checked)
+										console.log(checked)
+									}}
+								/>
+							</FormGroup>
 							<ContractAssetPagetInner
 								tokenIDs={collection.token_ids}
 								uri={uri}
 								balance={balance}
 								mintAddress={collection.mint_contract}
 								transferAddress={collection.transfer_address}
+								showOwned={showOwned}
 							/>
 						</Box>
 					)}
@@ -122,9 +133,10 @@ interface ContractAssetPageInnerProp {
 	balance: BigNumber[] | undefined
 	mintAddress: string
 	transferAddress: string
+	showOwned: boolean
 }
 
-const ContractAssetPagetInner = ({ tokenIDs, uri, balance, mintAddress, transferAddress }: ContractAssetPageInnerProp) => {
+const ContractAssetPagetInner = ({ tokenIDs, uri, balance, mintAddress, transferAddress, showOwned }: ContractAssetPageInnerProp) => {
 	return (
 		<Stack direction="row" alignItems="flex-start" sx={{ flexWrap: "wrap", height: "fit-content" }}>
 			{tokenIDs.length > 0 &&
@@ -137,6 +149,7 @@ const ContractAssetPagetInner = ({ tokenIDs, uri, balance, mintAddress, transfer
 							tokenID={tokenID}
 							mintContract={mintAddress}
 							transferAddress={transferAddress}
+							showOwned={showOwned}
 						/>
 					)
 				})}

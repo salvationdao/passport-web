@@ -1,11 +1,24 @@
 import CloseIcon from "@mui/icons-material/Close"
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, Typography } from "@mui/material"
+import {
+	Box,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	IconButton,
+	InputAdornment,
+	Stack,
+	TextField,
+	Tooltip,
+	Typography,
+} from "@mui/material"
 import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { usePassportCommandsUser } from "../../../../../../hooks/usePassport"
 import HubKey from "../../../../../../keys"
 import { colors } from "../../../../../../theme"
 import { User1155AssetView, UserAsset } from "../../../../../../types/purchased_item"
+import { useSnackbar } from "../../../../../../containers/snackbar"
 
 interface ServiceTransfer1155ModelProps {
 	open: boolean
@@ -19,6 +32,7 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 	const { send } = usePassportCommandsUser("/commander")
 	const [loading, setLoading] = useState<boolean>(false)
 	const [error, setError] = useState<string>()
+	const [formError, setFormError] = useState<string>()
 	const [feeType, setFeeType] = useState<"XSYN" | "SUPS" | undefined>()
 	const [amount, setAmount] = useState<number>(1)
 
@@ -38,7 +52,6 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 				amount: amount,
 				collection_slug: collectionSlug,
 			})
-
 			onSuccess()
 		} catch (e) {
 			console.error(e)
@@ -75,7 +88,7 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 				})}
 				color={"primary"}
 			>
-				Transition Asset To {userAsset.service_name_locked_in ? userAsset.service_name_locked_in : "XSYN"}
+				Transition Asset To {userAsset.service_name_locked_in ? "XSYN" : "Supremacy"}
 				<IconButton
 					onClick={close}
 					sx={{
@@ -98,82 +111,117 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 				</Typography>
 			</DialogContent>
 
-			<DialogActions sx={{ padding: "1rem", display: "flex", justifyContent: "space-evenly", flexDirection: "column", gap: "1rem" }}>
-				<Box
+			<DialogActions>
+				<Stack
 					sx={{
 						display: "flex",
-						justifyContent: "end",
-						flexDirection: "row",
-						width: "100%",
+						flexDirection: "column",
 						gap: "1rem",
+						flex: 1,
 					}}
 				>
-					<Tooltip title={"XSYN currently unavailable"}>
+					<Stack direction="row" alignItems="center" justifyContent="space-between" spacing="1rem" sx={{ px: "1rem" }}>
+						<Stack>
+							<Typography>Product:</Typography>
+							<Typography variant="subtitle1">{userAsset.label}</Typography>
+						</Stack>
+						<Stack>
+							<Typography>Amount:</Typography>
+							<TextField
+								id="outlined-basic"
+								variant="outlined"
+								required
+								focused
+								error={!!formError}
+								helperText={formError}
+								type="number"
+								value={amount}
+								InputProps={{
+									endAdornment: <InputAdornment position="end"> / {userAsset.count}</InputAdornment>,
+								}}
+								onChange={(e) => {
+									const newAmount = parseInt(e.target.value)
+									if (newAmount > userAsset.count || newAmount <= 0) {
+										setFormError("Amount exceeds total or below 0")
+									} else {
+										setFormError(undefined)
+									}
+									setAmount(newAmount)
+								}}
+							/>
+						</Stack>
+					</Stack>
+
+					<Stack direction="row" justifyContent="center" alignItems="center" spacing="1rem" sx={{ pt: "1rem" }}>
+						<Tooltip title={"XSYN currently unavailable"}>
+							<FancyButton
+								borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
+								loading={loading}
+								sx={{ flex: 1 }}
+								onClick={() =>
+									setFeeType((prev) => {
+										return undefined
+										// cant currently select XSYN
+										// if (prev ==="XSYN") return undefined
+										// return "XSYN"
+									})
+								}
+							>
+								Pay with XSYN
+							</FancyButton>
+						</Tooltip>
 						<FancyButton
-							borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
+							borderColor={feeType === "SUPS" ? undefined : "#6b6b6b"}
 							loading={loading}
+							sx={{
+								flex: 1,
+								span: {
+									color: colors.neonBlue,
+								},
+							}}
 							onClick={() =>
 								setFeeType((prev) => {
-									return undefined
-									// cant currently select XSYN
-									// if (prev ==="XSYN") return undefined
-									// return "XSYN"
+									if (prev === "SUPS") return undefined
+									return "SUPS"
 								})
 							}
 						>
-							Pay with XSYN
+							Pay with SUPS
+						</FancyButton>
+					</Stack>
+
+					<Tooltip title={!feeType && "Select a payment method"}>
+						<FancyButton
+							borderColor={!!feeType && !error && !formError ? undefined : "#6b6b6b"}
+							loading={loading}
+							sx={{
+								py: "1rem",
+								span: {
+									color: colors.neonBlue,
+								},
+							}}
+							onClick={async () => {
+								if (!feeType && !error && !formError) return
+								if (userAsset.service_name_locked_in) {
+									await transferFromSupremacy()
+									return
+								}
+								await transferToSupremacy()
+							}}
+						>
+							Confirm transfer{" "}
+							{feeType === "SUPS" ? (
+								<>
+									&nbsp;<span>5</span>&nbsp; sups gas
+								</>
+							) : (
+								<></>
+							)}
 						</FancyButton>
 					</Tooltip>
 
-					<FancyButton
-						borderColor={feeType === "SUPS" ? undefined : "#6b6b6b"}
-						loading={loading}
-						sx={{
-							span: {
-								color: colors.neonBlue,
-							},
-						}}
-						onClick={() =>
-							setFeeType((prev) => {
-								if (prev === "SUPS") return undefined
-								return "SUPS"
-							})
-						}
-					>
-						Pay with SUPS
-					</FancyButton>
-				</Box>
-				<Tooltip title={!feeType && "Select a payment method"}>
-					<FancyButton
-						fullWidth
-						borderColor={!!feeType ? undefined : "#6b6b6b"}
-						loading={loading}
-						sx={{
-							span: {
-								color: colors.neonBlue,
-							},
-						}}
-						onClick={async () => {
-							if (!feeType) return
-							if (userAsset.service_name_locked_in) {
-								await transferFromSupremacy()
-								return
-							}
-							await transferToSupremacy()
-						}}
-					>
-						Confirm transfer{" "}
-						{feeType === "SUPS" ? (
-							<>
-								&nbsp;<span>5</span>&nbsp; sups gas
-							</>
-						) : (
-							<></>
-						)}
-					</FancyButton>
-				</Tooltip>
-
-				{error && <Typography sx={{ mt: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
+					{error && <Typography sx={{ mt: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
+				</Stack>
 			</DialogActions>
 		</Dialog>
 	)

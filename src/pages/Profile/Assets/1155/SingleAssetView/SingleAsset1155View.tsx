@@ -8,7 +8,7 @@ import { useHistory } from "react-router-dom"
 import { useInterval } from "react-use"
 import { FancyButton } from "../../../../../components/fancyButton"
 import { Loading } from "../../../../../components/loading"
-import { API_ENDPOINT_HOSTNAME } from "../../../../../config"
+import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK } from "../../../../../config"
 import { useWeb3 } from "../../../../../containers/web3"
 import { getStringFromShoutingSnakeCase } from "../../../../../helpers"
 import HubKey from "../../../../../keys"
@@ -60,7 +60,6 @@ export const SingleAsset1155View = ({ tokenID, edit, locked, collection_slug, ow
 				setOwner(resp.owner)
 				setCollection(resp.collection)
 			} catch (e) {
-				console.error(e)
 				setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
 			} finally {
 				setLoading(false)
@@ -81,11 +80,21 @@ export const SingleAsset1155View = ({ tokenID, edit, locked, collection_slug, ow
 	}
 
 	const openseaURL =
-		collection.mint_contract === "0x17f5655c7d834e4772171f30e7315bbc3221f1ee"
+		collection.mint_contract === "0xFE8fc4CCC213928ffbA3D92013Da1537a80b2af4"
 			? `https://testnets.opensea.io/assets/goerli/${collection.mint_contract}/${userAsset.external_token_id}`
 			: `https://opensea.io/assets/${collection.mint_contract}/${userAsset.external_token_id}`
 
-	return <AssetView openseaURL={openseaURL} owner={owner} userAsset={userAsset} collection={collection} error={error} edit={edit} />
+	return (
+		<AssetView
+			openseaURL={openseaURL}
+			owner={owner}
+			userAsset={userAsset}
+			collection={collection}
+			error={error}
+			edit={edit}
+			loadAsset={loadAsset}
+		/>
+	)
 }
 
 interface AssetViewProps {
@@ -95,9 +104,10 @@ interface AssetViewProps {
 	error: string | null
 	openseaURL: string
 	edit: boolean
+	loadAsset: () => void
 }
 
-export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edit }: AssetViewProps) => {
+export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edit, loadAsset }: AssetViewProps) => {
 	const history = useHistory()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [showWithdrawModal, setWithdrawModal] = useState(false)
@@ -110,6 +120,11 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 					{userAsset.service_name_locked_in && `Transition from ${userAsset.service_name_locked_in} to XSYN`}
 					{!userAsset.service_name_locked_in && `Transition from XSYN to supremacy`}
 				</FancyButton>
+				{userAsset.service_name_locked_in && (
+					<FancyButton size="small" onClick={() => window.open(`${BATTLE_ARENA_LINK}/hangar`, "_blank")?.focus()}>
+						View item in {userAsset.service_name_locked_in}
+					</FancyButton>
+				)}
 
 				{!userAsset.service_name_locked_in && userAsset.count > 0 && (
 					<FancyButton size="small" onClick={() => setWithdrawModal(true)}>
@@ -128,7 +143,6 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 		)
 	}
 
-	console.log(collection.mint_contract)
 	return (
 		<>
 			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
@@ -226,6 +240,14 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 								<Typography variant="subtitle1" color={userAsset.service_name_locked_in ? colors.skyBlue : colors.lightGrey}>
 									{userAsset.service_name_locked_in ? userAsset.service_name_locked_in : "XSYN"}
 								</Typography>
+							</Box>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "baseline",
+									gap: ".5rem",
+								}}
+							>
 								<Typography variant="subtitle2" color={colors.darkGrey}>
 									Amount Owned:
 								</Typography>
@@ -235,9 +257,10 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 							</Box>
 
 							<Divider sx={{ mt: ".6rem", mb: "1rem" }} />
+							<Typography variant="h4">{userAsset.description}</Typography>
 
 							{isWiderThan1000px && (
-								<Stack spacing=".5rem" alignItems="flex-start">
+								<Stack spacing=".5rem" alignItems="flex-start" sx={{ py: "1.5rem" }}>
 									{edit && Buttons}
 								</Stack>
 							)}
@@ -321,11 +344,9 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 				<Transfer1155Modal
 					open={transferModalOpen}
 					onClose={() => {
-						console.log("CLOSE")
+						setTransferModalOpen(false)
 					}}
-					onSuccess={() => {
-						console.log("SUCCESS")
-					}}
+					onSuccess={loadAsset}
 					userAsset={userAsset}
 					collectionSlug={collection.slug}
 				/>
@@ -337,6 +358,9 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 					tokenID={userAsset.external_token_id.toString()}
 					asset={userAsset}
 					mintContract={collection.mint_contract}
+					onClose={() => {
+						loadAsset()
+					}}
 				/>
 			)}
 		</>

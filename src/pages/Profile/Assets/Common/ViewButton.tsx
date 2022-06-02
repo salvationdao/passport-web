@@ -12,7 +12,7 @@ export const ViewButton = (props: BoxProps) => (
 			height: "2.6rem",
 			width: "2.6rem",
 			backgroundColor: "#00000099",
-			border: `3px solid ${colors.purple}`,
+			border: `3px solid ${colors.purple}99`,
 			color: "inherit",
 			font: "inherit",
 			transform: "rotate(45deg)",

@@ -14,7 +14,7 @@ export interface Asset721ItemCardProps {
 }
 
 export const Asset1155ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps> = ({ userAsset, username }) => {
-	const { animation_url, image_url, external_token_id, label, description, service_id, collection_slug } = userAsset
+	const { animation_url, image_url, external_token_id, label, description, service_id, collection_slug, count } = userAsset
 	const [open, setOpen] = useState<boolean>(false)
 	const history = useHistory()
 
@@ -57,11 +57,28 @@ export const Asset1155ItemCard: React.VoidFunctionComponent<Asset721ItemCardProp
 						textOverflow: "ellipsis",
 						WebkitLineClamp: 2,
 						WebkitBoxOrient: "vertical",
+						mr: "1rem",
 					}}
 				>
 					{label}
 				</Typography>
-
+				<Tooltip title={"Amount Owned"}>
+					<Stack
+						sx={{
+							position: "absolute",
+							top: "0%",
+							right: "2%",
+							borderRadius: "50%",
+							border: `3px solid ${colors.darkerNeonPink}99`,
+							width: "2.5rem",
+							height: "2.5rem",
+						}}
+						justifyContent={"center"}
+						alignItems={"center"}
+					>
+						<Typography sx={{ fontFamily: fonts.bizmoblack }}>x{count}</Typography>
+					</Stack>
+				</Tooltip>
 				<Box sx={{ position: "relative", height: "15rem", mt: "auto !important" }}>
 					<Box
 						className="asset-animation"
@@ -71,6 +88,7 @@ export const Asset1155ItemCard: React.VoidFunctionComponent<Asset721ItemCardProp
 							top: "50%",
 							left: "50%",
 							width: "100%",
+							height: "100%",
 							transform: "translate(-50%, -50%)",
 							transition: "all .2s ease-in",
 						}}
@@ -101,25 +119,6 @@ export const Asset1155ItemCard: React.VoidFunctionComponent<Asset721ItemCardProp
 							</Tooltip>
 						</Stack>
 					)}
-				</Box>
-
-				<Box>
-					<Typography
-						sx={{
-							fontFamily: fonts.bizmoblack,
-							fontStyle: "italic",
-							letterSpacing: "2px",
-							display: "-webkit-box",
-							overflow: "hidden",
-							overflowWrap: "anywhere",
-							textOverflow: "ellipsis",
-							WebkitLineClamp: 2,
-							WebkitBoxOrient: "vertical",
-							mr: "1.2rem",
-						}}
-					>
-						{description}
-					</Typography>
 				</Box>
 
 				<ViewButton

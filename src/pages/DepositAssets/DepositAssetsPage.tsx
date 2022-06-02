@@ -22,9 +22,10 @@ export const DepositAssetsPage = () => {
 				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/collection/1155/all`)
 				const body = (await resp.clone().json()) as Collections1155
 				setCollections(body)
-				setCollectionsLoading(false)
 			} catch (e) {
 				console.error(e)
+			} finally {
+				setCollectionsLoading(false)
 			}
 		})()
 	}, [isCorrectChain])

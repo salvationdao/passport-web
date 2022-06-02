@@ -41,7 +41,6 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 	const [filterSortOptions, setFilterSortOptions] = useState<FilterSortOptions>(initialFilterSort)
 
 	useEffect(() => {
-		console.log(filterSortOptions)
 		const filtersItems: any[] = []
 
 		if (filterSortOptions.showOffWorldOnly !== undefined) {

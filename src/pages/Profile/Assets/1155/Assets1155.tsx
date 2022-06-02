@@ -62,7 +62,6 @@ export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: U
 
 	if (!!collection_slug && !!token_id && !!locked) {
 		const lock = locked === "true"
-		console.log("WORKING")
 
 		return (
 			<SingleAsset1155View
@@ -107,23 +106,9 @@ export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: U
 								whiteSpace: "nowrap",
 							}}
 						>
-							Owned Assets
+							Achievements Earned
 						</Typography>
 					</Stack>
-
-					<SearchBar
-						label="Search"
-						placeholder="Keywords..."
-						value={search}
-						size="small"
-						onChange={(value: string) => setSearch(value)}
-						sx={{
-							ml: "auto",
-							width: "500px",
-							minWidth: "200px",
-							maxWidth: "800px",
-						}}
-					/>
 				</Stack>
 
 				{userAssets && userAssets.length > 0 ? (
