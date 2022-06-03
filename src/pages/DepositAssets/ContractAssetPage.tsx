@@ -10,7 +10,6 @@ import { useParams } from "react-router-dom"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import { DepositAssetCard } from "./DepositAssetCard"
 import { BigNumber } from "ethers"
-import { FancyButton } from "../../components/fancyButton"
 
 export const ContractAssetPage = () => {
 	const [collection, setCollections] = useState<Collection1155>()

@@ -61,7 +61,7 @@ export const DepositAssetModal = ({
 		} finally {
 			setLoading(false)
 		}
-	}, [amount, collectionSlug, mintContract, safeTransferFrom1177, send, state, tokenID, transferAddress])
+	}, [amount, collectionSlug, history, mintContract, safeTransferFrom1177, send, state, tokenID, transferAddress])
 
 	return (
 		<Dialog
