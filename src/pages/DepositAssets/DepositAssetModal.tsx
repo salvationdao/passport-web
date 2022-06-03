@@ -6,8 +6,12 @@ import { colors } from "../../theme"
 import { useWeb3 } from "../../containers/web3"
 import { useCallback, useState } from "react"
 import CloseIcon from "@mui/icons-material/Close"
+import { metamaskErrorHandling } from "../../helpers/web3"
+import HubKey from "../../keys"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
+import { useHistory } from "react-router-dom"
 
-interface DespositAssetModalProps {
+interface DepositAssetModalProps {
 	open: boolean
 	maxAmount: BigNumber
 	asset: Asset1155Json
@@ -15,25 +19,49 @@ interface DespositAssetModalProps {
 	tokenID: number
 	mintContract: string
 	setOpen: (value: ((prevState: boolean) => boolean) | boolean) => void
+	collectionSlug: string
 }
 
-export const DespositAssetModal = ({ open, maxAmount, asset, tokenID, transferAddress, mintContract, setOpen }: DespositAssetModalProps) => {
+export const DepositAssetModal = ({
+	open,
+	maxAmount,
+	asset,
+	tokenID,
+	transferAddress,
+	mintContract,
+	setOpen,
+	collectionSlug,
+}: DepositAssetModalProps) => {
 	const [amount, setAmount] = useState<number>(1)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [error, setError] = useState<string>()
 	const { safeTransferFrom1177 } = useWeb3()
+	const { state, send } = usePassportCommandsUser("/commander")
+	const history = useHistory()
 
 	const startTransfer = useCallback(async () => {
+		if (state !== WebSocket.OPEN) return
 		try {
 			setLoading(true)
-			const resp = await safeTransferFrom1177(mintContract, tokenID, amount, transferAddress)
-			if (!resp) return
+			const tx = await safeTransferFrom1177(mintContract, tokenID, amount, transferAddress)
+			if (!tx) return
+			await tx.wait()
+
+			await send(HubKey.Asset1155Deposit, {
+				transaction_hash: tx.hash,
+				amount: amount,
+				token_id: tokenID,
+				collection_slug: collectionSlug,
+			})
+			history.push("/deposit-assets/deposit-status")
 		} catch (e) {
+			const err = metamaskErrorHandling(e)
+			setError(err)
 			console.error(e)
 		} finally {
 			setLoading(false)
 		}
-	}, [amount, mintContract, safeTransferFrom1177, tokenID, transferAddress])
+	}, [amount, collectionSlug, mintContract, safeTransferFrom1177, send, state, tokenID, transferAddress])
 
 	return (
 		<Dialog

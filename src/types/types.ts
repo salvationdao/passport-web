@@ -164,3 +164,14 @@ export interface Asset1155Json {
 	animation_url: string | undefined
 	attributes: User1155Asset[]
 }
+
+export interface AssetDepositTransaction {
+	username: string
+	tx_hash: string
+	amount: number
+	token_id: number
+	collection_name: string
+	status: "pending" | "confirmed"
+	deleted_at?: Date
+	created_at: Date
+}

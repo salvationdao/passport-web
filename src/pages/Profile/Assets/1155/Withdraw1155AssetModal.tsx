@@ -25,9 +25,11 @@ export const Withdraw1155AssetModal = ({ open, asset, tokenID, mintContract, onC
 			const nonce = await get1155Nonce(mintContract)
 			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/1155/${account}/${tokenID}/${nonce.toString()}/1`)
 			const signature = (await resp.clone().json()) as string
-			await signedMint1155(mintContract, signature, parseInt(tokenID))
+			const tx = await signedMint1155(mintContract, signature, parseInt(tokenID))
 
 			if (!resp) return
+			await tx.wait()
+			onClose()
 		} catch (e) {
 			console.error(e)
 		} finally {

@@ -10,6 +10,7 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import SavingsIcon from "@mui/icons-material/Savings"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded"
 import MoveDownRoundedIcon from "@mui/icons-material/MoveDownRounded"
 import { Box, Button, Divider, Drawer, SxProps, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
@@ -279,6 +280,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				</NavButton>
 				<NavButton to="/deposit-assets" startIcon={<MoveDownRoundedIcon />}>
 					Deposit Assets
+				</NavButton>
+				<NavButton to="/deposit-assets/deposit-status" startIcon={<HistoryRoundedIcon />}>
+					Asset Deposit History
 				</NavButton>
 			</Box>
 

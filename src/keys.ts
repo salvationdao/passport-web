@@ -30,6 +30,8 @@ enum HubKey {
 	AssetTransferFromSupremacy = "ASSET:TRANSFER:FROM:SUPREMACY",
 	Asset1155TransferToSupremacy = "ASSET:1155:TRANSFER:TO:SUPREMACY",
 	Asset1155TransferFromSupremacy = "ASSET:1155:TRANSFER:FROM:SUPREMACY",
+	Asset1155Deposit = "ASSET:1155:DEPOSIT",
+	Asset1155DepositList = "ASSET:1155:DEPOSIT:LIST",
 
 	CollectionSubscribe = "COLLECTION:SUBSCRIBE",
 

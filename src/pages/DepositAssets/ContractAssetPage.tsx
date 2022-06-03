@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import { DepositAssetCard } from "./DepositAssetCard"
 import { BigNumber } from "ethers"
+import { FancyButton } from "../../components/fancyButton"
 
 export const ContractAssetPage = () => {
 	const [collection, setCollections] = useState<Collection1155>()
@@ -118,6 +119,7 @@ export const ContractAssetPage = () => {
 								mintAddress={collection.mint_contract}
 								transferAddress={collection.transfer_address}
 								showOwned={showOwned}
+								collectionSlug={collection.slug}
 							/>
 						</Box>
 					)}
@@ -134,9 +136,10 @@ interface ContractAssetPageInnerProp {
 	mintAddress: string
 	transferAddress: string
 	showOwned: boolean
+	collectionSlug: string
 }
 
-const ContractAssetPagetInner = ({ tokenIDs, uri, balance, mintAddress, transferAddress, showOwned }: ContractAssetPageInnerProp) => {
+const ContractAssetPagetInner = ({ tokenIDs, uri, balance, mintAddress, transferAddress, showOwned, collectionSlug }: ContractAssetPageInnerProp) => {
 	return (
 		<Stack direction="row" alignItems="flex-start" sx={{ flexWrap: "wrap", height: "fit-content" }}>
 			{tokenIDs.length > 0 &&
@@ -150,6 +153,7 @@ const ContractAssetPagetInner = ({ tokenIDs, uri, balance, mintAddress, transfer
 							mintContract={mintAddress}
 							transferAddress={transferAddress}
 							showOwned={showOwned}
+							collectionSlug={collectionSlug}
 						/>
 					)
 				})}

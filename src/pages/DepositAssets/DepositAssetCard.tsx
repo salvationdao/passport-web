@@ -6,7 +6,7 @@ import { Loading } from "../../components/loading"
 import { colors } from "../../theme"
 import { FancyButton } from "../../components/fancyButton"
 import { BigNumber } from "ethers"
-import { DespositAssetModal } from "./DespositAssetModal"
+import { DepositAssetModal } from "./DepositAssetModal"
 
 interface DepositAssetCardProps {
 	uri: string
@@ -15,9 +15,10 @@ interface DepositAssetCardProps {
 	mintContract: string
 	transferAddress: string
 	showOwned: boolean
+	collectionSlug: string
 }
 
-export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transferAddress, showOwned }: DepositAssetCardProps) => {
+export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transferAddress, showOwned, collectionSlug }: DepositAssetCardProps) => {
 	const { convertURIWithID } = useWeb3()
 	const [asset1155Json, setAsset1155Json] = useState<Asset1155Json>()
 	const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -69,6 +70,7 @@ export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transfer
 			tokenID={tokenID}
 			transferAddress={transferAddress}
 			canShow={canShow}
+			collectionSlug={collectionSlug}
 		/>
 	)
 }
@@ -84,6 +86,7 @@ interface DepositAssetCardInnerProps {
 	tokenID: number
 	transferAddress: string
 	canShow: boolean
+	collectionSlug: string
 }
 
 const DepositAssetCardInner = ({
@@ -97,6 +100,7 @@ const DepositAssetCardInner = ({
 	tokenID,
 	transferAddress,
 	canShow,
+	collectionSlug,
 }: DepositAssetCardInnerProps) => {
 	return (
 		<>
@@ -171,7 +175,7 @@ const DepositAssetCardInner = ({
 			</Box>
 
 			{balance && assetData && (
-				<DespositAssetModal
+				<DepositAssetModal
 					asset={assetData}
 					open={open}
 					mintContract={mintContract}
@@ -179,6 +183,7 @@ const DepositAssetCardInner = ({
 					tokenID={tokenID}
 					transferAddress={transferAddress}
 					setOpen={setOpen}
+					collectionSlug={collectionSlug}
 				/>
 			)}
 		</>

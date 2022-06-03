@@ -31,6 +31,7 @@ import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 import { usePassportCommandsUser } from "./hooks/usePassport"
 import { DepositAssetsPage } from "./pages/DepositAssets/DepositAssetsPage"
 import { ContractAssetPage } from "./pages/DepositAssets/ContractAssetPage"
+import { AssetDepositTransactionPage } from "./pages/DepositAssets/DepositHistoryTable/AssetDepositTransactionPage"
 
 export const Routes = () => {
 	const { account } = useWeb3()
@@ -176,6 +177,9 @@ export const Routes = () => {
 						</Route>
 
 						<Switch>
+							<Route path="/deposit-assets/deposit-status">
+								<AssetDepositTransactionPage />
+							</Route>
 							<Route path="/deposit-assets/:collection_slug">
 								<ContractAssetPage />
 							</Route>
