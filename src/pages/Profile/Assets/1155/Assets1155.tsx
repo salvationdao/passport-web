@@ -4,80 +4,43 @@ import { useHistory, useParams } from "react-router-dom"
 import { GradientHeartIconImagePath } from "../../../../assets"
 import { FancyButton } from "../../../../components/fancyButton"
 import { PageSizeSelectionInput } from "../../../../components/pageSizeSelectionInput"
-import { SearchBar } from "../../../../components/searchBar"
-import { useDebounce } from "../../../../hooks/useDebounce"
 import { usePagination } from "../../../../hooks/usePagination"
 import { usePassportCommandsUser } from "../../../../hooks/usePassport"
 import HubKey from "../../../../keys"
 import { colors, fonts } from "../../../../theme"
-import { UserAsset } from "../../../../types/purchased_item"
+import { User1155Asset } from "../../../../types/purchased_item"
 import { User } from "../../../../types/types"
 import WarMachine from "../../../../assets/images/WarMachine.png"
-import { SortDrawer } from "./SortDrawer"
-import { Asset721ItemCard } from "./Asset721ItemCard"
-import { SingleAsset721View } from "./SingleAssetView/SingleAsset721View"
+import { Asset1155ItemCard } from "./Asset1155ItemCard"
+import { SingleAsset1155View } from "./SingleAssetView/SingleAsset1155View"
 
 export interface FilterSortOptions {
 	sort: { column: string; direction: string }
-	showOffWorldOnly?: boolean
-	rarities: Set<string>
 }
 
-const initialFilterSort: FilterSortOptions = { sort: { column: "name", direction: "asc" }, showOffWorldOnly: false, rarities: new Set() }
-
-export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: User }) => {
+export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: User }) => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string>()
 	const { send } = usePassportCommandsUser("/commander")
-	const { asset_hash } = useParams<{ username: string; asset_hash: string }>()
 	const history = useHistory()
 
-	// Collection data
-	const [search, setSearch] = useDebounce("", 300)
+	// // Collection data
+	// const [search, setSearch] = useDebounce("", 300)
 	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({ pageSize: 20, page: 1 })
-	const [userAssets, setUserAssets] = useState<UserAsset[]>([])
+	const [userAssets, setUserAssets] = useState<User1155Asset[]>([])
+	const { collection_slug, token_id, locked } = useParams<{ collection_slug: string; token_id: string; locked: string }>()
 	// Filter/Sort
-	const [filterSortDrawerOpen, setFilterSortDrawerOpen] = useState(false)
-	const [filterSortOptions, setFilterSortOptions] = useState<FilterSortOptions>(initialFilterSort)
+	// const [filterSortDrawerOpen, setFilterSortDrawerOpen] = useState(false)
+	// const [filterSortOptions, setFilterSortOptions] = useState<FilterSortOptions>(initialFilterSort)
 
 	useEffect(() => {
-		const filtersItems: any[] = []
-
-		if (filterSortOptions.showOffWorldOnly !== undefined) {
-			filtersItems.push({
-				// filter by on_chain_status
-				columnField: "on_chain_status",
-				operatorValue: filterSortOptions.showOffWorldOnly ? "=" : "!=",
-				value: "STAKABLE",
-			})
-		}
-
-		const attributeFilterItems: any[] = []
-		filterSortOptions.rarities.forEach((v) =>
-			attributeFilterItems.push({
-				// NOTE: "rarity" trait is now "tier" on the backend
-				trait: "tier",
-				value: v,
-				operatorValue: "contains",
-			}),
-		)
 		;(async () => {
 			try {
 				setLoading(true)
-				const resp = await send<{ assets: UserAsset[]; total: number }>(HubKey.AssetList721, {
+				const resp = await send<{ assets: User1155Asset[]; total: number }>(HubKey.AssetList1155, {
 					user_id: user.id,
-					search,
 					page,
 					page_size: pageSize,
-					attribute_filter: {
-						linkOperator: "or",
-						items: attributeFilterItems,
-					},
-					filter: {
-						linkOperator: "and",
-						items: filtersItems,
-					},
-					sort: filterSortOptions.sort,
 				})
 
 				if (!resp) return
@@ -90,9 +53,21 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 				setLoading(false)
 			}
 		})()
-	}, [user, search, page, pageSize, setLoading, send, setUserAssets, setTotalItems, setError, filterSortOptions])
+	}, [user, page, pageSize, setLoading, send, setUserAssets, setTotalItems, setError])
 
-	if (!!asset_hash) return <SingleAsset721View assetHash={asset_hash} edit={loggedInUser?.id === user.id} />
+	if (!!collection_slug && !!token_id && !!locked) {
+		const lock = locked === "true"
+
+		return (
+			<SingleAsset1155View
+				tokenID={parseInt(token_id)}
+				locked={lock}
+				collection_slug={collection_slug}
+				edit={loggedInUser?.id === user.id}
+				ownerID={user.id}
+			/>
+		)
+	}
 
 	return (
 		<>
@@ -126,39 +101,11 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 								whiteSpace: "nowrap",
 							}}
 						>
-							Owned Assets
+							Achievements Earned
 						</Typography>
 					</Stack>
-
-					<SearchBar
-						label="Search"
-						placeholder="Keywords..."
-						value={search}
-						size="small"
-						onChange={(value: string) => setSearch(value)}
-						sx={{
-							ml: "auto",
-							width: "500px",
-							minWidth: "200px",
-							maxWidth: "800px",
-						}}
-					/>
 				</Stack>
 
-				<Stack direction="row" alignItems="center" sx={{ mb: "1rem" }}>
-					<FancyButton
-						onClick={() => setFilterSortDrawerOpen(true)}
-						size="small"
-						sx={{
-							ml: "auto",
-							"@media (max-width: 630px)": {
-								width: "100%",
-							},
-						}}
-					>
-						Filters / Sort
-					</FancyButton>
-				</Stack>
 				{userAssets && userAssets.length > 0 ? (
 					<Box
 						sx={{
@@ -168,7 +115,7 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 						}}
 					>
 						{userAssets.map((a) => {
-							return <Asset721ItemCard key={a.id} userAsset={a} username={user.username} />
+							return <Asset1155ItemCard key={a.id} userAsset={a} username={user.username} />
 						})}
 					</Box>
 				) : (
@@ -259,13 +206,6 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 					/>
 				</Stack>
 			</Stack>
-
-			<SortDrawer
-				showOffWorldFilter={false}
-				open={filterSortDrawerOpen}
-				setOpen={setFilterSortDrawerOpen}
-				setFilterSortOptions={setFilterSortOptions}
-			/>
 		</>
 	)
 }

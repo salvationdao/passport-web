@@ -38,7 +38,9 @@ export interface User1155Asset {
 	id: string
 	owner_id: string
 	collection_id: string
+	collection_slug: string
 	external_token_id: number
+	mint_contract: string | undefined
 	count: number
 	label: string
 	description: string
@@ -46,8 +48,21 @@ export interface User1155Asset {
 	animation_url: string
 	keycard_group: string
 	attributes: Attribute1155[]
-	service_id: string
+	service_id: string | undefined
 	created_at: Date
+}
+
+export interface User1155AssetView {
+	id: string
+	owner_id: string
+	external_token_id: number
+	count: number
+	label: string
+	description: string
+	image_url: string
+	animation_url: string | undefined
+	attributes: Attribute1155
+	service_name_locked_in: string | undefined
 }
 
 interface Attribute721 {

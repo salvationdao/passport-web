@@ -1,22 +1,23 @@
 import { Box, Typography } from "@mui/material"
 import React from "react"
-import { BINANCE_CHAIN_ID } from "../../config"
+import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../../config"
 import { colors } from "../../theme"
 import { FancyButton } from "../fancyButton"
 
 interface SwitchNetworkOverlayProps {
 	currentChainId: number | undefined
 	changeChain: (chain: number) => Promise<void>
+	newChainID: string
 }
 
-export const SwitchNetworkOverlay = ({ currentChainId, changeChain }: SwitchNetworkOverlayProps) => {
+export const SwitchNetworkOverlay = ({ currentChainId, changeChain, newChainID }: SwitchNetworkOverlayProps) => {
 	const handleNetworkSwitch = async () => {
-		await changeChain(parseInt(BINANCE_CHAIN_ID))
+		await changeChain(parseInt(newChainID))
 	}
 	return (
 		<Box
 			sx={
-				currentChainId === parseInt(BINANCE_CHAIN_ID)
+				currentChainId === parseInt(newChainID)
 					? { display: "none" }
 					: {
 							zIndex: 5,
@@ -38,9 +39,22 @@ export const SwitchNetworkOverlay = ({ currentChainId, changeChain }: SwitchNetw
 				<Typography variant="h2" sx={{ textTransform: "uppercase", textAlign: "center", textDecoration: "underline", marginBottom: "2rem" }}>
 					Attention!
 				</Typography>
-				<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "2rem" }}>
-					Please switch your network to Binance Smart Chain. Click the button below and follow the prompts.
-				</Typography>
+				{newChainID === BINANCE_CHAIN_ID && (
+					<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "2rem" }}>
+						Please switch your network to Binance Smart Chain. Click the button below and follow the prompts.
+					</Typography>
+				)}
+				{newChainID === ETHEREUM_CHAIN_ID && (
+					<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "2rem" }}>
+						Please switch your network to Ethereum {ETHEREUM_CHAIN_ID === "5" ? "Testnet" : "Mainnet"}. Click the button below and follow
+						the prompts.
+					</Typography>
+				)}
+				{newChainID !== BINANCE_CHAIN_ID && newChainID !== ETHEREUM_CHAIN_ID && (
+					<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "2rem" }}>
+						Please switch your network. Click the button below and follow the prompts.
+					</Typography>
+				)}
 				<FancyButton borderColor={colors.skyBlue} sx={{ width: "50%" }} onClick={handleNetworkSwitch}>
 					Switch Network
 				</FancyButton>

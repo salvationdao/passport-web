@@ -7,7 +7,7 @@ import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
 import Safe from "../assets/images/gradient/safeLarge.png"
 import SupsToken from "../assets/images/sup-token.svg"
-import { API_ENDPOINT_HOSTNAME, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
@@ -117,7 +117,7 @@ export const WithdrawSupsForm = ({
 				}
 			})()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}, [user?.public_address])
 
@@ -269,7 +269,7 @@ export const WithdrawSupsForm = ({
 
 	return (
 		<>
-			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} />
+			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={BINANCE_CHAIN_ID} />
 			<ConnectWalletOverlay walletIsConnected={!!account} />
 			<Box
 				component="img"
