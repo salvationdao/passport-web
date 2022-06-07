@@ -13,7 +13,7 @@ env:
   NINJA_NPM_TOKEN: ${{ secrets.NINJA_NPM_TOKEN }}
   FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
   XGRID_LICENSE_KEY: ${{ secrets.XGRID_LICENSE_KEY }}
-  REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME: staging-passport.xsyn.io
+  REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME: api.xsyn.dev
   REACT_APP_SENTRY_DSN_FRONTEND: https://f389e257602342899d1639d9c0c7f476@o370480.ingest.sentry.io/6194602
   REACT_APP_SENTRY_ENVIRONMENT: staging
   REACT_APP_SENTRY_SAMPLERATE: 1
@@ -97,15 +97,15 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo -e "Host staging-passport.xsyn.io\n  User ${{ secrets.STAGING_SSH_USER }}\n Port ${{ secrets.STAGING_SSH_PORT }}" >> ~/.ssh/config
+          echo -e "Host api.xsyn.dev\n  User ${{ secrets.STAGING_SSH_USER }}\n Port ${{ secrets.STAGING_SSH_PORT }}" >> ~/.ssh/config
           echo '${{ secrets.STAGING_KNOWN_HOSTS }}' > ~/.ssh/known_hosts
           echo '${{ secrets.STAGING_SSH_PKEY }}' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
       - name: Rsync to server
         if: ${{ !env.ACT }} # if running in local test environment
-        run: rsync -av build/ staging-passport.xsyn.io:/usr/share/ninja_syndicate/passport-web_${{ needs.build.outputs.version }}
+        run: rsync -av build/ api.xsyn.dev:/usr/share/ninja_syndicate/passport-web_${{ needs.build.outputs.version }}
 
       - name: Bring new version online
         if: ${{ !env.ACT }} # if running in local test environment
-        run: ssh staging-passport.xsyn.io 'ln -Tfsv /usr/share/ninja_syndicate/passport-web_${{ needs.build.outputs.version }} /usr/share/ninja_syndicate/passport-web_online'
+        run: ssh api.xsyn.dev 'ln -Tfsv /usr/share/ninja_syndicate/passport-web_${{ needs.build.outputs.version }} /usr/share/ninja_syndicate/passport-web_online'
