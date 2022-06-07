@@ -6,6 +6,7 @@ import { colors } from "../../../../theme"
 import { FancyButton } from "../../../../components/fancyButton"
 import { User1155AssetView } from "../../../../types/purchased_item"
 import CloseIcon from "@mui/icons-material/Close"
+import { metamaskErrorHandling } from "../../../../helpers/web3"
 
 interface WithdrawAssetModalProps {
 	open: boolean
@@ -18,6 +19,7 @@ interface WithdrawAssetModalProps {
 export const Withdraw1155AssetModal = ({ open, asset, tokenID, mintContract, onClose }: WithdrawAssetModalProps) => {
 	const [loading, setLoading] = useState<boolean>(false)
 	const { signedMint1155, get1155Nonce, account } = useWeb3()
+	const [withdrawError, setWithdrawError] = useState<string>()
 
 	const startWithdraw = useCallback(async () => {
 		try {
@@ -31,7 +33,8 @@ export const Withdraw1155AssetModal = ({ open, asset, tokenID, mintContract, onC
 			await tx.wait()
 			onClose()
 		} catch (e) {
-			console.error(e)
+			const error = metamaskErrorHandling(e)
+			error ? setWithdrawError(error) : setWithdrawError("Issue depositing, please try again.")
 		} finally {
 			setLoading(false)
 		}
@@ -62,9 +65,9 @@ export const Withdraw1155AssetModal = ({ open, asset, tokenID, mintContract, onC
 				<Typography sx={{ color: `${colors.neonPink}` }}>{asset.label}</Typography>
 			</DialogContent>
 
-			<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row", gap: "1rem", p: "1rem" }}>
+			<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "column", gap: "1rem", p: "1rem" }}>
 				<Tooltip title={"Amount locked to 1 for achievements"}>
-					<Stack>
+					<Stack sx={{ width: "100%" }}>
 						<Typography>Amount:</Typography>
 						<TextField
 							id="outlined-basic"
@@ -75,14 +78,14 @@ export const Withdraw1155AssetModal = ({ open, asset, tokenID, mintContract, onC
 							InputProps={{
 								endAdornment: <InputAdornment position="end"> / {asset.count}</InputAdornment>,
 							}}
-							sx={{ width: "4rem" }}
-							size={"small"}
+							fullWidth
 						/>
 					</Stack>
 				</Tooltip>
-				<FancyButton loading={loading} onClick={startWithdraw}>
+				<FancyButton loading={loading} onClick={startWithdraw} fullWidth>
 					Withdraw Asset
 				</FancyButton>
+				{withdrawError && <Typography sx={{ color: `${colors.errorRed}` }}>{withdrawError}</Typography>}
 			</DialogActions>
 		</Dialog>
 	)

@@ -25,14 +25,20 @@ export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transfer
 	const [canDeposit, setCanDeposit] = useState<boolean>(false)
 	const [open, setOpen] = useState<boolean>(false)
 	const [canShow, setCanShow] = useState<boolean>(false)
+	const [error, setError] = useState<string>()
 
 	useEffect(() => {
 		;(async () => {
-			const idURI = convertURIWithID(uri, tokenID)
-			const resp = await fetch(idURI)
-			const asset1155 = (await resp.clone().json()) as Asset1155Json
-			setAsset1155Json(asset1155)
-			setIsLoading(false)
+			try {
+				setError(undefined)
+				const idURI = convertURIWithID(uri, tokenID)
+				const resp = await fetch(idURI)
+				const asset1155 = (await resp.clone().json()) as Asset1155Json
+				setAsset1155Json(asset1155)
+				setIsLoading(false)
+			} catch (e) {
+				setError(typeof e === "string" ? e : "Something went wrong while fetching collection data")
+			}
 		})()
 	}, [tokenID, convertURIWithID, uri])
 
@@ -71,6 +77,7 @@ export const DepositAssetCard = ({ uri, balance, tokenID, mintContract, transfer
 			transferAddress={transferAddress}
 			canShow={canShow}
 			collectionSlug={collectionSlug}
+			error={error}
 		/>
 	)
 }
@@ -87,6 +94,7 @@ interface DepositAssetCardInnerProps {
 	transferAddress: string
 	canShow: boolean
 	collectionSlug: string
+	error: string | undefined
 }
 
 const DepositAssetCardInner = ({
@@ -101,6 +109,7 @@ const DepositAssetCardInner = ({
 	transferAddress,
 	canShow,
 	collectionSlug,
+	error,
 }: DepositAssetCardInnerProps) => {
 	return (
 		<>
@@ -132,6 +141,11 @@ const DepositAssetCardInner = ({
 						overflow: "hidden",
 					}}
 				>
+					{error && (
+						<Typography variant={"h2"} sx={{ color: `${colors.errorRed}` }}>
+							{error}
+						</Typography>
+					)}
 					{loading && <Loading text="Loading Asset Data" />}
 					{assetData && !loading && (
 						<Stack sx={{ height: "100%" }}>

@@ -914,7 +914,7 @@ export const Web3Container = createContainer(() => {
 		[account, provider, signer],
 	)
 
-	const getURI1177 = useCallback(
+	const getURI1155 = useCallback(
 		async (contractAddr: string, tokenID: number) => {
 			if (!provider) throw new Error("provider not ready")
 			const erc1155ABI = new Interface(["function uri(uint256) view returns (string memory)"])
@@ -984,7 +984,7 @@ export const Web3Container = createContainer(() => {
 		safeTransferFrom1177,
 		batchBalanceOf,
 		convertURIWithID,
-		getURI1177,
+		getURI1155,
 		farmGetReward,
 		farmLPApproveMax,
 		farmCheckAllowance,

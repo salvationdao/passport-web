@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
-import { Box, Stack } from "@mui/material"
+import { Box, Stack, Typography } from "@mui/material"
 import { Navbar } from "../../components/home/navbar"
 import { colors } from "../../theme"
 import { Collections1155 } from "../../types/types"
@@ -14,15 +14,18 @@ export const DepositAssetsPage = () => {
 	const [collectionsLoading, setCollectionsLoading] = useState<boolean>(true)
 	const [isCorrectChain, setIsCorrectChain] = useState<boolean>(false)
 	const { currentChainId, changeChain } = useWeb3()
+	const [error, setError] = useState<string>()
 
 	useEffect(() => {
 		if (!isCorrectChain) return
 		;(async () => {
 			try {
+				setError(undefined)
 				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/collection/1155/all`)
 				const body = (await resp.clone().json()) as Collections1155
 				setCollections(body)
 			} catch (e) {
+				setError(typeof e === "string" ? e : "Something went wrong while fetching collection data")
 				console.error(e)
 			} finally {
 				setCollectionsLoading(false)
@@ -57,6 +60,11 @@ export const DepositAssetsPage = () => {
 						boxShadow: 3,
 					}}
 				>
+					{error && (
+						<Typography variant={"h2"} sx={{ color: `${colors.errorRed}` }}>
+							{error}
+						</Typography>
+					)}
 					{!isCorrectChain && (
 						<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={ETHEREUM_CHAIN_ID} />
 					)}

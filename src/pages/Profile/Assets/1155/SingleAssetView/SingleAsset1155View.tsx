@@ -40,6 +40,7 @@ export const SingleAsset1155View = ({ tokenID, edit, locked, collection_slug, ow
 	const loadAsset = useCallback(() => {
 		;(async () => {
 			try {
+				setError(null)
 				setLoading(true)
 				const resp = await send<UserAssetResponse>(HubKey.AssetGet1155, {
 					token_id: tokenID,

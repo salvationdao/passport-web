@@ -42,6 +42,7 @@ export const DepositAssetModal = ({
 	const startTransfer = useCallback(async () => {
 		if (state !== WebSocket.OPEN) return
 		try {
+			setError(undefined)
 			setLoading(true)
 			const tx = await safeTransferFrom1177(mintContract, tokenID, amount, transferAddress)
 			if (!tx) return
@@ -113,8 +114,10 @@ export const DepositAssetModal = ({
 						onChange={(e) => {
 							try {
 								const newAmount = parseInt(e.target.value)
-								if (BigNumber.from(newAmount).gt(maxAmount) || BigNumber.from(newAmount).lte(BigNumber.from(0))) {
-									setError("Amount exceeds total or below 0")
+								if (BigNumber.from(newAmount).gt(maxAmount)) {
+									setError("Amount exceeds total")
+								} else if (BigNumber.from(newAmount).lte(BigNumber.from(0))) {
+									setError("Amount is below 0")
 								} else {
 									setError(undefined)
 								}

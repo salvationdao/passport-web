@@ -19,7 +19,7 @@ export const ContractAssetPage = () => {
 	const [uri, setURI] = useState<string>()
 	const [balance, setBalance] = useState<BigNumber[]>()
 	const { collection_slug } = useParams<{ collection_slug: string }>()
-	const { account, getURI1177, currentChainId, changeChain, batchBalanceOf } = useWeb3()
+	const { account, getURI1155, currentChainId, changeChain, batchBalanceOf } = useWeb3()
 	const [showOwned, setShowOwned] = useState<boolean>(true)
 
 	useEffect(() => {
@@ -32,7 +32,7 @@ export const ContractAssetPage = () => {
 					setLoadError("Failed to get mint contract")
 					return
 				}
-				const uri = await getURI1177(collections.mint_contract, 0)
+				const uri = await getURI1155(collections.mint_contract, 0)
 				if (!uri) {
 					setLoadError("Failed to get uri from contract")
 
@@ -41,13 +41,13 @@ export const ContractAssetPage = () => {
 				setURI(uri)
 				setCollections(collections)
 			} catch (e) {
-				setLoadError("Error getting collection details")
+				setLoadError(typeof e === "string" ? e : "Something went wrong while fetching collection data")
 				console.error(e)
 			} finally {
 				setCollectionsLoading(false)
 			}
 		})()
-	}, [collection_slug, account, isCorrectChain, getURI1177])
+	}, [collection_slug, account, isCorrectChain, getURI1155])
 
 	useEffect(() => {
 		if (!currentChainId) return
@@ -72,6 +72,7 @@ export const ContractAssetPage = () => {
 					}
 				}
 			} catch (e) {
+				setLoadError(typeof e === "string" ? e : "Something went wrong while fetching collection data")
 				console.error(e)
 			}
 		})()
@@ -107,7 +108,6 @@ export const ContractAssetPage = () => {
 									label="Only show owned assets"
 									onChange={(e, checked) => {
 										setShowOwned(checked)
-										console.log(checked)
 									}}
 								/>
 							</FormGroup>
