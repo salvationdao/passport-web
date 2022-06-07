@@ -29,6 +29,9 @@ import { ProfileEditPage } from "./pages/Profile/Edit/ProfileEditPage"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 import { usePassportCommandsUser } from "./hooks/usePassport"
+import { DepositAssetsPage } from "./pages/DepositAssets/DepositAssetsPage"
+import { ContractAssetPage } from "./pages/DepositAssets/ContractAssetPage"
+import { AssetDepositTransactionPage } from "./pages/DepositAssets/DepositHistoryTable/AssetDepositTransactionPage"
 
 export const Routes = () => {
 	const { account } = useWeb3()
@@ -173,9 +176,24 @@ export const Routes = () => {
 							<IFrameBuyPage />
 						</Route>
 
+						<Switch>
+							<Route path="/deposit-assets/deposit-status">
+								<AssetDepositTransactionPage />
+							</Route>
+							<Route path="/deposit-assets/:collection_slug">
+								<ContractAssetPage />
+							</Route>
+							<Route path="/deposit-assets">
+								<DepositAssetsPage />
+							</Route>
+						</Switch>
+
 						{/* User-authenticated routes */}
 						{/* profile */}
 						<Switch>
+							<Route path="/profile/:username/asset1155/:collection_slug/:token_id/:locked">
+								<ProfilePage />
+							</Route>
 							<Route path="/profile/:username/asset/:asset_hash">
 								<ProfilePage />
 							</Route>

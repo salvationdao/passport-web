@@ -1,4 +1,5 @@
 import { Perm } from "./enums"
+import { User1155Asset } from "./purchased_item"
 
 export interface User {
 	id: string
@@ -128,3 +129,49 @@ export interface tokenSelect {
 }
 
 export type transferStateType = "waiting" | "error" | "confirm" | "none" | "unavailable"
+
+export interface Collections1155 {
+	collections: Collection1155[]
+}
+
+export interface Collection1155 {
+	name: string
+	description: string
+	slug: string
+	mint_contract: string | undefined
+	logo_url: string | undefined
+	background_url: string | undefined
+	token_ids: number[]
+	transfer_address: string | undefined
+}
+
+export interface AvantUserBalance {
+	owner_address: string
+	balances: AvantBalances[]
+}
+
+export interface AvantBalances {
+	token_id: number
+	value: string
+	value_int: string
+	value_decimals: string
+}
+
+export interface Asset1155Json {
+	name: string
+	description: string
+	image: string
+	animation_url: string | undefined
+	attributes: User1155Asset[]
+}
+
+export interface AssetDepositTransaction {
+	username: string
+	tx_hash: string
+	amount: number
+	token_id: number
+	collection_name: string
+	status: "pending" | "confirmed"
+	deleted_at?: Date
+	created_at: Date
+}

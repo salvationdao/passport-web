@@ -37,3 +37,4 @@
   REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE = ""
   REACT_APP_BYPASS_WHITELIST = "false"
   REACT_APP_BATTLE_ARENA_LINK = "https://staging.supremacygame.dev"
+  REACT_APP_AVANT_API_ENDPOINT = "v3-staging.supremacy-api.avantdata.com:3001"

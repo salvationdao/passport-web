@@ -16,6 +16,7 @@ import { User } from "../../types/types"
 import { Assets721 } from "./Assets/721/Assets721"
 import { LockButton, lockOptions, LockOptionsProps } from "./Locking/LockButton"
 import { LockModal } from "./Locking/LockModal"
+import { Assets1155 } from "./Assets/1155/Assets1155"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -26,7 +27,8 @@ export const ProfilePage = () => {
 const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const { displayMessage } = useSnackbar()
 	const { send } = usePassportCommandsUser("/commander")
-	const { username, asset_hash } = useParams<{ username: string; asset_hash: string }>()
+	const { username, asset_hash, collection_slug, token_id } =
+		useParams<{ username: string; asset_hash: string; collection_slug: string; token_id: string; locked: string }>()
 	const history = useHistory()
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -38,7 +40,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
 
 	// Tabs
-	const [tabValue, setTabValue] = useState(0)
+	const [tabValue, setTabValue] = useState(asset_hash ? 0 : collection_slug ? 1 : 0)
 
 	useEffect(() => {
 		;(async () => {
@@ -176,7 +178,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 				)}
 
 				<Paper sx={{ flex: 1, borderRadius: 1.5 }}>
-					{!asset_hash && (
+					{!asset_hash && !collection_slug && !token_id && (
 						<Tabs
 							value={tabValue}
 							sx={{ ".MuiTab-root": { px: "2rem", py: "1.2rem" }, borderBottom: 1, borderColor: "divider" }}
@@ -184,14 +186,14 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 								setTabValue(newValue)
 							}}
 						>
-							<Tab label="ASSETS 721" value={0} />
-							<Tab label="ASSETS 1155" value={1} />
+							<Tab label="GAME ASSETS" value={0} />
+							<Tab label="ACHIEVEMENTS" value={1} />
 						</Tabs>
 					)}
 
 					{tabValue === 0 && <Assets721 user={user} loggedInUser={loggedInUser} />}
 
-					{tabValue === 1 && <>IVAN</>}
+					{tabValue === 1 && <Assets1155 user={user} loggedInUser={loggedInUser} />}
 				</Paper>
 			</Stack>
 		</Stack>

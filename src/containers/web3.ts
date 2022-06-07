@@ -14,8 +14,8 @@ import {
 	BINANCE_CHAIN_ID,
 	BSC_SCAN_SITE,
 	BUSD_CONTRACT_ADDRESS,
-	ETHEREUM_CHAIN_ID,
 	ETH_SCAN_SITE,
+	ETHEREUM_CHAIN_ID,
 	LP_TOKEN_ADDRESS,
 	PURCHASE_ADDRESS,
 	SIGN_MESSAGE,
@@ -586,7 +586,7 @@ export const Web3Container = createContainer(() => {
 				const message = `Name:${name}Email:${email}Phone:${phone}Agrees:${agree}`
 				const hashMessage = hexlify(ethers.utils.toUtf8Bytes(message))
 				const signedMessage = await connector.signPersonalMessage([ethers.utils.toUtf8Bytes(message), acc]).catch((e) => {
-					console.log(e)
+					console.error(e)
 				})
 				const resp = await fetch(
 					`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/early/sign?signature=${signedMessage}&message=${message}&address=${acc}&agree=${agree}&hex=${hashMessage}`,
@@ -698,7 +698,13 @@ export const Web3Container = createContainer(() => {
 	}
 
 	const farmInfo = useCallback<
-		(farmContractAddr: string, pancakePoolAddr: string, lpTokenAddr: string, supsContractAddr: string, wbnbContractAddr: string) => Promise<FarmData | null>
+		(
+			farmContractAddr: string,
+			pancakePoolAddr: string,
+			lpTokenAddr: string,
+			supsContractAddr: string,
+			wbnbContractAddr: string,
+		) => Promise<FarmData | null>
 	>(
 		async (farmContractAddr: string, pancakePoolAddr: string, lpTokenAddr: string, supsContractAddr: string, wbnbContractAddr: string) => {
 			if (!provider || !account) return null
@@ -907,7 +913,78 @@ export const Web3Container = createContainer(() => {
 		},
 		[account, provider, signer],
 	)
+
+	const getURI1155 = useCallback(
+		async (contractAddr: string, tokenID: number) => {
+			if (!provider) throw new Error("provider not ready")
+			const erc1155ABI = new Interface(["function uri(uint256) view returns (string memory)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, provider)
+			return await contract.uri(tokenID)
+		},
+		[provider],
+	)
+
+	const safeTransferFrom1177 = useCallback(
+		async (contractAddr: string, tokenID: number, amount: number, toAddress: string) => {
+			if (!account) throw new Error("account not connected")
+			const erc1155ABI = new Interface(["function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, signer)
+			return await contract.safeTransferFrom(account, toAddress, tokenID, amount, "0x")
+		},
+		[account, signer],
+	)
+
+	const get1155Nonce = useCallback(
+		async (contractAddr: string): Promise<number> => {
+			if (!account) throw new Error("account not connected")
+			if (!provider) throw new Error("provider not ready")
+			const erc1155ABI = new Interface(["function nonces(address) public view returns (uint256)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, provider)
+			return await contract.nonces(account)
+		},
+		[account, provider],
+	)
+
+	const signedMint1155 = useCallback(
+		async (contractAddr: string, signature: string, tokenID: number) => {
+			if (!signer) throw new Error("signer not ready")
+			const erc1155ABI = new Interface(["function signedMint(uint256 tokenID, bytes signature)"])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, signer)
+			console.log(contract)
+			return await contract.signedMint(tokenID, signature)
+		},
+		[signer],
+	)
+
+	const convertURIWithID = (uri: string, tokenID: number): string => {
+		const hexTokenID = tokenID.toString(16).padStart(64, "0")
+		return uri.replace("{id}", hexTokenID)
+	}
+
+	const batchBalanceOf = useCallback(
+		async (tokenIDs: number[], contractAddr: string): Promise<BigNumber[]> => {
+			if (!account) throw new Error("account not connected")
+			if (!provider) throw new Error("provider not ready")
+			const address: string[] = []
+			for (let i = 0; i < tokenIDs.length; i++) {
+				address.push(account)
+			}
+			const erc1155ABI = new Interface([
+				"function balanceOfBatch(address[] memory accounts, uint256[] memory ids) view returns (uint256[] memory)",
+			])
+			const contract = new ethers.Contract(contractAddr, erc1155ABI, provider)
+			return await contract.balanceOfBatch(address, tokenIDs)
+		},
+		[account, provider],
+	)
+
 	return {
+		signedMint1155,
+		get1155Nonce,
+		safeTransferFrom1177,
+		batchBalanceOf,
+		convertURIWithID,
+		getURI1155,
 		farmGetReward,
 		farmLPApproveMax,
 		farmCheckAllowance,
