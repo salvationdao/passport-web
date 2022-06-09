@@ -173,9 +173,9 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				<EntryData
 					sx={{
 						textTransform: "uppercase",
-						fontFamily: entry.to.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						fontFamily: entry?.to?.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
 						"&::after":
-							entry.to.username === user?.username
+							entry?.to?.username === user?.username
 								? {
 										content: '"(You)"',
 										marginLeft: ".2rem",
@@ -184,7 +184,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								: undefined,
 					}}
 				>
-					{entry.to.username}
+					{entry?.to?.username}
 				</EntryData>
 			</EntryDataRow>
 			<EntryDataRow>
@@ -192,9 +192,9 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				<EntryData
 					sx={{
 						textTransform: "uppercase",
-						fontFamily: entry.from.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						fontFamily: entry?.from?.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
 						"&::after":
-							entry.from.username === user?.username
+							entry?.from?.username === user?.username
 								? {
 										content: '"(You)"',
 										marginLeft: ".2rem",
@@ -203,7 +203,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								: undefined,
 					}}
 				>
-					{entry.from.username}
+					{entry?.from?.username}
 				</EntryData>
 			</EntryDataRow>
 
