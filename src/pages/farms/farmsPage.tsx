@@ -171,15 +171,6 @@ const FarmInfo = (props: FarmInfoProps) => {
 				)}
 			</Stack>
 
-			<LabelContainer>
-				<InfoLabel>Global reward rate:</InfoLabel>
-				<InfoValue>
-					{props.loading ? "---" : (+formatUnits(props.rewardRate)).toFixed(6)}{" "}
-					<span style={{ fontSize: "1rem" }}>
-						SUPS/<span style={{ fontSize: ".8rem" }}>s</span>
-					</span>
-				</InfoValue>
-			</LabelContainer>
 			{formatUnits(props.userRewardRate) && props.hasAllowance && (
 				<LabelContainer>
 					<InfoLabel>Your reward rate:</InfoLabel>{" "}
