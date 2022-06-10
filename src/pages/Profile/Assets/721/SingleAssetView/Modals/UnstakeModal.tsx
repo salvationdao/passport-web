@@ -62,7 +62,7 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 			if (asset.on_chain_status === OnChainStatus.UNSTAKABLE_OLD) {
 				const abi = ["function unstake(address,uint256)"]
 				const signer = provider.getSigner()
-				const nftstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
+				const nftstakeContract = new ethers.Contract(collection.staking_contract_old, abi, signer)
 				await fetch(lock_endpoint(account, collection.slug, asset.token_id), { method: "POST" })
 				const tx = await nftstakeContract.unstake(collection.mint_contract, asset.token_id)
 				await tx.wait()
