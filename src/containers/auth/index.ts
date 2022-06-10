@@ -84,7 +84,11 @@ export const AuthContainer = createContainer(() => {
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
+			const isHangar = !!args["isHangar"]
+
+
 			Object.keys(args).forEach((key) => {
+
 				if (args[key] === "" || args[key] === "null" || !args[key]) {
 					return
 				}
@@ -93,7 +97,7 @@ export const AuthContainer = createContainer(() => {
 
 			const form = document.createElement("form")
 			form.method = "post"
-			form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/external`
+			form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/external${isHangar?"?isHangar=true":""}`
 
 			Object.keys(args).forEach((key) => {
 				const hiddenField = document.createElement("input")
@@ -216,10 +220,10 @@ export const AuthContainer = createContainer(() => {
 	 * External login User with passport cookie
 	 *
 	 */
-	const loginCookieExternal = useCallback(() => {
+	const loginCookieExternal = useCallback((isHangar:boolean) => {
 		const args = {
 			redirectURL,
-			authType: "cookie",
+			authType: isHangar?"hangar":"cookie",
 		}
 		if (redirectURL) {
 			externalAuth({ ...args, fingerprint: undefined })
@@ -232,7 +236,7 @@ export const AuthContainer = createContainer(() => {
 	 *
 	 * @param token Metamask public address
 	 */
-	const loginMetamask = useCallback(async () => {
+	const loginMetamask = useCallback(async (isHangar:string) => {
 		try {
 			const acc = await connect()
 			const signature = await sign()
@@ -244,6 +248,7 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint,
 					authType: "wallet",
+					isHangar:isHangar,
 				}
 				if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })

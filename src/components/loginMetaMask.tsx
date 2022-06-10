@@ -45,7 +45,8 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			if (onClick && !(await onClick())) return
 
 			try {
-				const resp = await loginMetamask()
+				const isHangar = window.location.search.includes("hangar")
+				const resp = await loginMetamask(isHangar ? "hangar" : "")
 				if (!resp || !resp.payload) {
 					setErrorMessage("There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.")
 					setIsProcessing(false)
