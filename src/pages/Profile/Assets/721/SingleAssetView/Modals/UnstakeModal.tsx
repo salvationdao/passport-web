@@ -60,7 +60,9 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 					setError((err as any).message)
 					return
 				}
+
 				const respJson = await resp.json() as GetSignatureResponse
+				console.log(respJson)
 				const tx = await unstakeContract.signedUnstake(collection.mint_contract, asset.token_id, respJson.messageSignature, respJson.expiry)
 				await tx.wait()
 			}
