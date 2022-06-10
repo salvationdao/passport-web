@@ -30,7 +30,6 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
 	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
 
-	// TODO: fix unstaking vinnie - 25/02/22
 	const unstake = useCallback(async () => {
 		if (!account || !provider) return
 		try {
@@ -54,7 +53,9 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 					setError((err as any).message)
 					return
 				}
-				const respJson: GetSignatureResponse = await resp.clone().json()
+				console.log("here1")
+				const respJson = await resp.json() as GetSignatureResponse
+				console.log("here2")
 				const tx = await unstakeContract.signedUnstake(collection.mint_contract, asset.token_id, respJson.messageSignature, respJson.expiry)
 				await tx.wait()
 			}
@@ -70,6 +71,7 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 			}
 			setUnstakingSuccess(true)
 		} catch (e: any) {
+			console.log(e)
 			const err = metamaskErrorHandling(e)
 			err ? setError(err) : setError("Something went wrong, please try again")
 		} finally {
