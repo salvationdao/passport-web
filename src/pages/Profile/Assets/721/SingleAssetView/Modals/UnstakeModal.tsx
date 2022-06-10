@@ -51,7 +51,8 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				const resp = await fetch(unstake_endpoint)
 				if (resp.status !== 200) {
 					const err = await resp.json()
-					throw (err as any).message
+					setError((err as any).message)
+					return
 				}
 				const respJson: GetSignatureResponse = await resp.clone().json()
 				const tx = await unstakeContract.signedUnstake(collection.mint_contract, asset.token_id, respJson.messageSignature, respJson.expiry)
@@ -62,7 +63,6 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 			if (asset.on_chain_status === OnChainStatus.UNSTAKABLE_OLD) {
 				const abi = ["function unstake(address,uint256)"]
 				const signer = provider.getSigner()
-				// TODO: Update to handle old and new stake contracts
 				const nftstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
 				await fetch(lock_endpoint(account, collection.slug, asset.token_id), { method: "POST" })
 				const tx = await nftstakeContract.unstake(collection.mint_contract, asset.token_id)
