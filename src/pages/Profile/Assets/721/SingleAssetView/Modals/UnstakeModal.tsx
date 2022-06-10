@@ -46,6 +46,13 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				const signer = provider.getSigner()
 				const unstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
 				const nonce = await unstakeContract.nonces(account)
+				console.log()
+				console.log(account)
+				console.log(nonce)
+				console.log(collection.slug)
+				console.log(asset.token_id)
+				console.log()
+
 				const unstake_endpoint = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/unstake/owner_address/${account}/nonce/${nonce}/collection_slug/${collection.slug}/token_id/${asset.token_id}`
 				const resp = await fetch(unstake_endpoint)
 				if (resp.status !== 200) {
