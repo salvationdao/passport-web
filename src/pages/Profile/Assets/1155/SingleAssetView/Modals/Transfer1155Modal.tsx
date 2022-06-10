@@ -179,6 +179,7 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 
 					<Tooltip title={!feeType && "Select a payment method"}>
 						<FancyButton
+							disabled={!!error}
 							borderColor={!!feeType && !error && !formError ? undefined : "#6b6b6b"}
 							loading={loading}
 							sx={{
