@@ -42,7 +42,7 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				// get nonce
 				const abi = [
 					"function nonces(address) view returns (uint256)",
-					"function signedUnstake(uint256 tokenID, bytes signature, uint256 expiry)",
+					"function signedUnstake(address collection, uint256 tokenID, bytes signature, uint256 expiry)",
 				]
 				const signer = provider.getSigner()
 				const unstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
@@ -67,9 +67,8 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				await fetch(lock_endpoint(account, collection.slug, asset.token_id), { method: "POST" })
 				const tx = await nftstakeContract.unstake(collection.mint_contract, asset.token_id)
 				await tx.wait()
-				setUnstakingSuccess(true)
 			}
-
+			setUnstakingSuccess(true)
 		} catch (e: any) {
 			const err = metamaskErrorHandling(e)
 			err ? setError(err) : setError("Something went wrong, please try again")
