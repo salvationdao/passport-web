@@ -46,7 +46,7 @@ export const LockButton = ({ option, setOpen, setLockOption }: LockButtonProps) 
 	}, [option.type, user?.mint_lock, user?.total_lock, user?.withdraw_lock])
 
 	return (
-		<Tooltip placement="right" title={option ? option.title : ""}>
+		<Tooltip title={option ? option.title : ""}>
 			<Box>
 				<FancyButton
 					disabled={isLocked}

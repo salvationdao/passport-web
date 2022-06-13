@@ -1,10 +1,18 @@
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
-import { Box, Button, ButtonProps, Dialog, Divider, Link, Stack, styled, Typography, useMediaQuery } from "@mui/material"
+import {
+	Box,
+	Button,
+	ButtonProps,
+	Dialog,
+	Divider,
+	Stack,
+	styled,
+	Typography,
+} from "@mui/material"
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useHistory } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { useInterval } from "react-use"
 import { FancyButton } from "../../../../../components/fancyButton"
 import { Loading } from "../../../../../components/loading"
@@ -36,15 +44,14 @@ export interface UserAssetResponse {
 }
 
 interface SingleAsset721ViewProps {
-	assetHash: string
 	edit: boolean
 }
 
-export const SingleAsset721View = ({ assetHash, edit }: SingleAsset721ViewProps) => {
+export const SingleAsset721View = ({ edit }: SingleAsset721ViewProps) => {
 	const { send } = usePassportCommandsUser("/commander")
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-
+	const { asset_hash: assetHash } = useParams<{ asset_hash: string }>()
 	const [userAsset, setUserAsset] = useState<UserAsset>()
 	const [owner, setOwner] = useState<User>()
 	const [collection, setCollection] = useState<Collection>()
@@ -129,29 +136,25 @@ interface AssetViewProps {
 }
 
 export const AssetView = ({
-	locked,
-	userAsset,
-	collection,
-	error,
-	owner,
-	showMint,
-	showStake,
-	showUnstake,
-	onWorld,
-	openseaURL,
-	showOpenseaURL,
-	edit,
-	loadAsset,
-}: AssetViewProps) => {
+							  locked,
+							  userAsset,
+							  collection,
+							  error,
+							  owner,
+							  showMint,
+							  showStake,
+							  showUnstake,
+							  onWorld,
+							  openseaURL,
+							  showOpenseaURL,
+							  edit,
+							  loadAsset,
+						  }: AssetViewProps) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null)
-	useInterval(() => {
-		setRemainingTime(formatDistanceToNow(userAsset.unlocked_at))
-	}, 1000)
+	useInterval(() => setRemainingTime(formatDistanceToNow(userAsset.unlocked_at)), 1000)
 
-	const history = useHistory()
 	const [openLocked, setOpenLocked] = useState(isFuture(userAsset.unlocked_at))
 	const { provider } = useWeb3()
-	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 	const [mintWindowOpen, setMintWindowOpen] = useState(false)
 	const [stakeModalOpen, setStakeModalOpen] = useState<boolean>(false)
 	const [unstakeModalOpen, setUnstakeModalOpen] = useState<boolean>(false)
@@ -180,9 +183,9 @@ export const AssetView = ({
 		return (
 			<>
 				{!showStake && (
-				<FancyButton disabled={locked} size="small" onClick={() => setTransferModalOpen(true)}>
-					Transition from XSYN to Supremacy
-				</FancyButton>)}
+					<FancyButton disabled={locked} size="small" onClick={() => setTransferModalOpen(true)}>
+						Transition from XSYN to Supremacy
+					</FancyButton>)}
 
 				{showStake && (
 					<FancyButton disabled={locked} size="small" onClick={() => setStakeModalOpen(true)}>
@@ -216,29 +219,6 @@ export const AssetView = ({
 	return (
 		<>
 			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
-				<Link
-					variant="h5"
-					underline="hover"
-					sx={{
-						alignSelf: "start",
-						display: "flex",
-						alignItems: "center",
-						mb: "1rem",
-						textTransform: "uppercase",
-					}}
-					color={colors.white}
-					component={"button"}
-					onClick={() => history.goBack()}
-				>
-					<ChevronLeftIcon />
-					Go Back
-				</Link>
-
-				{!isWiderThan1000px && (
-					<Stack spacing=".5rem" alignItems="flex-start" sx={{ mb: "1rem" }}>
-						{edit && Buttons}
-					</Stack>
-				)}
 				<Stack spacing="1rem">
 					<Box
 						sx={{
@@ -252,6 +232,7 @@ export const AssetView = ({
 								position: "relative",
 								width: "100%",
 								maxWidth: "23rem",
+								margin: "auto",
 							}}
 						>
 							<Box
@@ -297,7 +278,7 @@ export const AssetView = ({
 						<Box
 							sx={{
 								flex: 1,
-								flexBasis: "400px",
+								minWidth: "200px",
 							}}
 						>
 							<Typography
@@ -351,11 +332,10 @@ export const AssetView = ({
 
 							<Divider sx={{ mt: ".6rem", mb: "1rem" }} />
 
-							{isWiderThan1000px && (
-								<Stack spacing=".5rem" alignItems="flex-start">
-									{edit && Buttons}
-								</Stack>
-							)}
+							<Stack spacing=".5rem" alignItems="flex-start">
+								{edit && Buttons}
+							</Stack>
+
 						</Box>
 					</Box>
 
@@ -500,19 +480,24 @@ export const AssetView = ({
 			)}
 
 			{provider && userAsset && (
-				<StakeModal collection={collection} open={stakeModalOpen} asset={userAsset} onClose={() => setStakeModalOpen(false)} />
+				<StakeModal collection={collection} open={stakeModalOpen} asset={userAsset}
+							onClose={() => setStakeModalOpen(false)} />
 			)}
 
 			{provider && userAsset && (
-				<UnstakeModal collection={collection} open={unstakeModalOpen} asset={userAsset} onClose={() => setUnstakeModalOpen(false)} />
+				<UnstakeModal collection={collection} open={unstakeModalOpen} asset={userAsset}
+							  onClose={() => setUnstakeModalOpen(false)} />
 			)}
 
-			<TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} onSuccess={loadAsset} userAsset={userAsset} />
+			<TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} onSuccess={loadAsset}
+						   userAsset={userAsset} />
 		</>
 	)
 }
 
-const StyledDisabledButton = styled(({ navigate, ...props }: ButtonProps & { navigate?: any }) => <Button {...props} variant="text" disabled />)({
+const StyledDisabledButton = styled(({ navigate, ...props }: ButtonProps & { navigate?: any }) => <Button {...props}
+																										  variant="text"
+																										  disabled />)({
 	justifyContent: "start",
 	color: `${colors.darkerGrey} !important`,
 })

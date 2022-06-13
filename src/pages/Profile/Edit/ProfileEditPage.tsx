@@ -1,20 +1,31 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, Paper, styled, Typography } from "@mui/material"
+import {
+	Box,
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	Link,
+	Paper, Stack,
+	styled,
+	Typography,
+} from "@mui/material"
 import { User } from "@sentry/react"
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useHistory, useParams } from "react-router-dom"
 import { PrivacyPolicy, TermsAndConditions } from "../../../assets"
 import { InputField } from "../../../components/form/inputField"
-import { Navbar } from "../../../components/home/navbar"
 import { Loading } from "../../../components/loading"
 import { useAuth } from "../../../containers/auth"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { usePassportCommandsUser } from "../../../hooks/usePassport"
+import { LockButton, lockOptions, LockOptionsProps } from "../Locking/LockButton"
+import { LockModal } from "../Locking/LockModal"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -57,66 +68,34 @@ export const ProfileEditPage: React.FC = () => {
 		return <Loading text={loadingText} />
 	}
 
-	return (
-		<Box
+	return (<Box
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				minHeight: "100%",
+				alignItems: "center",
+				padding: "0 3rem",
+				flex: 1,
+				marginBottom: "3rem",
 			}}
 		>
-			<Navbar />
+
+			<ProfileEdit setNewUsername={setNewUsername} setDisplayResult={setDisplayResult}
+						 setSuccessful={setSuccessful} />
 			<Box
 				sx={{
 					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					padding: "0 3rem",
-					marginBottom: "3rem",
+					justifyContent: "space-between",
+					width: "100%",
+					maxWidth: "600px",
+					marginTop: "auto",
 				}}
 			>
-				<Box
-					sx={{
-						width: "100%",
-						maxWidth: "800px",
-						marginBottom: "1rem",
-					}}
-				>
-					<Link
-						variant="h5"
-						underline="hover"
-						sx={{
-							display: "flex",
-							alignItems: "center",
-							textTransform: "uppercase",
-						}}
-						color={colors.white}
-						component={"button"}
-						onClick={() => {
-							history.push("/profile")
-						}}
-					>
-						<ChevronLeftIcon />
-						Go Back
-					</Link>
-				</Box>
-				<ProfileEdit setNewUsername={setNewUsername} setDisplayResult={setDisplayResult} setSuccessful={setSuccessful} />
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "space-between",
-						width: "100%",
-						maxWidth: "600px",
-						marginTop: "auto",
-					}}
-				>
-					<Link href={TermsAndConditions} target="_blank">
-						Privacy Policy
-					</Link>
-					<Link href={PrivacyPolicy} target="_blank">
-						Terms And Conditions
-					</Link>
-				</Box>
+				<Link href={TermsAndConditions} target="_blank">
+					Privacy Policy
+				</Link>
+				<Link href={PrivacyPolicy} target="_blank">
+					Terms And Conditions
+				</Link>
 			</Box>
 			<Dialog open={displayResult} onClose={() => setDisplayResult(false)}>
 				<Box sx={{ border: `4px solid ${colors.darkNavyBackground}`, padding: ".5rem", maxWidth: "500px" }}>
@@ -215,6 +194,8 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 	const { user } = useAuth()
 	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
+	const [lockOption, setLockOption] = useState<LockOptionsProps>()
+	const [lockOpen, setLockOpen] = useState<boolean>(false)
 
 	// Setup form
 	const { control, handleSubmit, reset, formState } = useForm<UserInput>()
@@ -334,6 +315,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 				maxWidth: "800px",
 				marginBottom: "2rem",
 				padding: "2rem",
+				flex: 1,
 			}}
 		>
 			<Box
@@ -341,6 +323,8 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 				onSubmit={onSaveForm}
 				sx={{
 					display: "flex",
+					height: "100%",
+					overflow: "auto",
 					flexDirection: "column",
 					// marginBottom: "3rem",
 					"& > *:not(:last-child)": {
@@ -351,6 +335,20 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 				<Typography id="profile" variant="h1" component="h2">
 					Edit Profile
 				</Typography>
+
+				{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
+
+				<Stack spacing=".5rem">
+					<Typography variant="h6">Account Locks</Typography>
+
+					<Stack spacing={".5rem"}>
+						{lockOptions.map((option) => (
+							<LockButton key={option.type} option={option} setLockOption={setLockOption}
+										setOpen={setLockOpen} />
+						))}
+					</Stack>
+				</Stack>
+
 
 				{/* Temporarily removed for public sale */}
 				{/* <Section>
@@ -372,35 +370,40 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 
 				<Section>
 					<Typography variant="subtitle1">User Details</Typography>
-					<InputField
-						label="Username"
-						name="new_username"
-						control={control}
-						rules={{
-							required: "Username cannot be empty",
-						}}
-						disabled={submitting}
-						fullWidth
-					/>
-					<Box
-						sx={{
-							display: "flex",
-							"& > *:not(:last-child)": {
-								marginRight: ".5rem",
-							},
-						}}
-					>
-						<InputField label="First Name" name="first_name" control={control} disabled={submitting} fullWidth />
-						<InputField label="Last Name" name="last_name" control={control} disabled={submitting} fullWidth />
-					</Box>{" "}
-					<Box
-						sx={{
-							display: "flex",
-							"& > *:not(:last-child)": {
-								marginRight: ".5rem",
-							},
-						}}
-					>
+					<Box sx={{
+						display: "flex",
+						flex: 1,
+						height: "100%",
+						flexWrap: "wrap",
+						gap: "0.5rem",
+					}}>
+
+
+						<InputField
+							label="Username"
+							name="new_username"
+							control={control}
+							rules={{
+								required: "Username cannot be empty",
+							}}
+							disabled={submitting}
+							sx={{ minWidth: "180px", flex: "1 0 48%" }}
+						/>
+
+						<InputField
+							label="First Name"
+							name="first_name"
+							control={control}
+							disabled={submitting}
+							sx={{ minWidth: "180px", flex: "1 0 48%" }}
+						/>
+						<InputField
+							label="Last Name"
+							name="last_name"
+							control={control}
+							disabled={submitting}
+							sx={{ minWidth: "180px", flex: "1 0 48%" }}
+						/>
 						<InputField
 							name="email"
 							label="Email"
@@ -415,8 +418,15 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 								},
 							}}
 							disabled={submitting}
+							sx={{ minWidth: "180px", flex: "1 0 48%" }}
 						/>
-						<InputField label="Mobile Number" name="mobile_number" control={control} disabled={submitting} fullWidth />
+						<InputField
+							label="Mobile Number"
+							name="mobile_number"
+							control={control}
+							disabled={submitting}
+							sx={{ minWidth: "180px", flex: "1 0 48%" }}
+						/>
 					</Box>
 				</Section>
 
@@ -483,26 +493,20 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					)}
 				</Section> */}
 
-				<Box
+				<Button
 					sx={{
-						display: "flex",
-						justifyContent: "flex-end",
-						"& > *:not(:last-child)": {
-							marginRight: ".5rem",
-						},
+						marginTop: "auto",
 					}}
+					type="submit"
+					//add this to disabled when avatar change is ready: && !avatarChanged
+					disabled={(!isDirty && !changePassword) || submitting}
+					variant="contained"
+					color="primary"
+					startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}
 				>
-					<Button
-						type="submit"
-						//add this to disabled when avatar change is ready: && !avatarChanged
-						disabled={(!isDirty && !changePassword) || submitting}
-						variant="contained"
-						color="primary"
-						startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}
-					>
-						Save
-					</Button>
-				</Box>
+					Save
+				</Button>
+
 			</Box>
 			{/* Temporarily removed for public sale */}
 			{/* <Box

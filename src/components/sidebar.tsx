@@ -32,7 +32,7 @@ import { ProfileButton } from "./profileButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
 import { useSubscription } from "../containers/ws/useSubscription"
 
-const drawerWidth = 320
+const drawerWidth = 280
 
 export interface SidebarLayoutProps {
 	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
@@ -98,15 +98,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		})()
 	}, [user])
 
-	let truncatedUsername = ""
-	if (user) {
-		const maxLength = 8
-		truncatedUsername = user.username
-		if (truncatedUsername.length > maxLength) {
-			truncatedUsername = `${user.username.substring(0, maxLength)}...`
-		}
-	}
-
 	const content = user ? (
 		<Box
 			sx={{
@@ -157,7 +148,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					<Typography variant="subtitle1">
 						{user.first_name} {user.last_name}
 					</Typography>
-					<Typography variant="h5">{truncatedUsername}</Typography>
+					<Typography variant="h5">{user.username}</Typography>
 				</Box>
 			</Box>
 
@@ -281,9 +272,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				<NavButton to="/deposit-assets" startIcon={<MoveDownRoundedIcon />}>
 					Deposit Assets
 				</NavButton>
-				<NavButton to="/deposit-assets/deposit-status" startIcon={<HistoryRoundedIcon />}>
-					Asset Deposit History
-				</NavButton>
 			</Box>
 
 			<Divider />
@@ -302,6 +290,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				</NavButton>
 				<NavButton to="/deposit" startIcon={<SavingsIcon />}>
 					Deposit
+				</NavButton>
+				<NavButton to="/deposit/history/sups" startIcon={<HistoryRoundedIcon />}>
+					Deposit History
 				</NavButton>
 				<NavButton to="/staking" startIcon={<AgricultureIcon />}>
 					Staking

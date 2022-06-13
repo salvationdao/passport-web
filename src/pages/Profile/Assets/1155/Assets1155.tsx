@@ -1,13 +1,12 @@
 import { Box, MenuItem, Pagination, Select, Stack, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
-import { GradientHeartIconImagePath } from "../../../../assets"
 import { FancyButton } from "../../../../components/fancyButton"
 import { PageSizeSelectionInput } from "../../../../components/pageSizeSelectionInput"
 import { usePagination } from "../../../../hooks/usePagination"
 import { usePassportCommandsUser } from "../../../../hooks/usePassport"
 import HubKey from "../../../../keys"
-import { colors, fonts } from "../../../../theme"
+import { colors } from "../../../../theme"
 import { User1155Asset } from "../../../../types/purchased_item"
 import { User } from "../../../../types/types"
 import WarMachine from "../../../../assets/images/WarMachine.png"
@@ -26,9 +25,21 @@ export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: U
 
 	// // Collection data
 	// const [search, setSearch] = useDebounce("", 300)
-	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({ pageSize: 20, page: 1 })
+	const {
+		page,
+		changePage,
+		totalItems,
+		setTotalItems,
+		totalPages,
+		pageSize,
+		setPageSize,
+	} = usePagination({ pageSize: 20, page: 1 })
 	const [userAssets, setUserAssets] = useState<User1155Asset[]>([])
-	const { collection_slug, token_id, locked } = useParams<{ collection_slug: string; token_id: string; locked: string }>()
+	const {
+		collection_slug,
+		token_id,
+		locked,
+	} = useParams<{ collection_slug: string; token_id: string; locked: string }>()
 	// Filter/Sort
 	// const [filterSortDrawerOpen, setFilterSortDrawerOpen] = useState(false)
 	// const [filterSortOptions, setFilterSortOptions] = useState<FilterSortOptions>(initialFilterSort)
@@ -71,41 +82,7 @@ export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: U
 
 	return (
 		<>
-			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
-				<Stack
-					direction="row"
-					sx={{
-						flexWrap: "wrap",
-						alignItems: "center",
-						mb: ".5rem",
-						"@media (max-width: 630px)": {
-							flexDirection: "column",
-							alignItems: "stretch",
-						},
-					}}
-				>
-					<Stack direction="row" alignItems="center">
-						<Box
-							component="img"
-							src={GradientHeartIconImagePath}
-							alt="Heart icon"
-							sx={{
-								mr: ".5rem",
-								height: "3.6rem",
-							}}
-						/>
-						<Typography
-							sx={{
-								fontFamily: fonts.bizmoextra_bold,
-								fontSize: "1.5rem",
-								whiteSpace: "nowrap",
-							}}
-						>
-							Achievements Earned
-						</Typography>
-					</Stack>
-				</Stack>
-
+			<Stack sx={{ flexGrow: 1, p: "1rem", overflow: "auto" }}>
 				{userAssets && userAssets.length > 0 ? (
 					<Box
 						sx={{
@@ -164,18 +141,24 @@ export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: U
 									}}
 								/>
 								<Stack alignItems="center" sx={{ zIndex: 2 }}>
-									<Typography variant="body1" sx={{ textTransform: "uppercase", fontSize: "1.3rem", textAlign: "center" }}>
-										Your Inventory Is Empty
+									<Typography variant="body1" sx={{
+										textTransform: "uppercase",
+										fontSize: "1.3rem",
+										textAlign: "center",
+									}}>
+										Inventory Is Empty
 									</Typography>
-									<FancyButton size="small" sx={{ p: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
+									{loggedInUser.id === user.id && <FancyButton size="small" sx={{ p: "0.5rem 2rem" }}
+																				 onClick={() => history.push("/store")}>
 										Go To Store
-									</FancyButton>
+									</FancyButton>}
 								</Stack>
 							</Stack>
 						)}
 					</Stack>
 				)}
-				<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: "auto", pt: "1.5rem" }}>
+				<Stack direction="row" justifyContent="space-between" alignItems="center"
+					   sx={{ mt: "auto", pt: "1.5rem" }}>
 					<Stack>
 						<Typography sx={{ ml: ".2rem" }}>
 							Showing {userAssets ? userAssets.length : 0} of {totalItems}
