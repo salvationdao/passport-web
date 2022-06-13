@@ -25,13 +25,12 @@ import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { ProfilePage } from "./pages/Profile/ProfilePage"
-import { ProfileEditPage } from "./pages/Profile/Edit/ProfileEditPage"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 import { usePassportCommandsUser } from "./hooks/usePassport"
 import { DepositAssetsPage } from "./pages/DepositAssets/DepositAssetsPage"
 import { ContractAssetPage } from "./pages/DepositAssets/ContractAssetPage"
-import { AssetDepositTransactionPage } from "./pages/DepositAssets/DepositHistoryTable/AssetDepositTransactionPage"
+import { DepositHistoryPage } from "./pages/DepositAssets/DepositHistoryTable/DepositHistoryPage"
 
 export const Routes = () => {
 	const { account } = useWeb3()
@@ -137,6 +136,7 @@ export const Routes = () => {
 						<LoginPage />
 					</Route>
 					<Sidebar onClose={() => setSidebarOpen(false)}>
+						<Switch>
 						<Route exact path="/">
 							<LoginPage />
 						</Route>
@@ -166,6 +166,9 @@ export const Routes = () => {
 						<Route path="/withdraw">
 							<WithdrawPage />
 						</Route>
+						<Route path="/deposit/history">
+							<DepositHistoryPage />
+						</Route>
 						<Route path="/deposit">
 							<DepositPage />
 						</Route>
@@ -176,37 +179,19 @@ export const Routes = () => {
 							<IFrameBuyPage />
 						</Route>
 
-						<Switch>
-							<Route path="/deposit-assets/deposit-status">
-								<AssetDepositTransactionPage />
-							</Route>
-							<Route path="/deposit-assets/:collection_slug">
-								<ContractAssetPage />
-							</Route>
-							<Route path="/deposit-assets">
-								<DepositAssetsPage />
-							</Route>
-						</Switch>
+
+						<Route path="/deposit-assets/:collection_slug">
+							<ContractAssetPage />
+						</Route>
+						<Route path="/deposit-assets">
+							<DepositAssetsPage />
+						</Route>
 
 						{/* User-authenticated routes */}
 						{/* profile */}
-						<Switch>
-							<Route path="/profile/:username/asset1155/:collection_slug/:token_id/:locked">
-								<ProfilePage />
-							</Route>
-							<Route path="/profile/:username/asset/:asset_hash">
-								<ProfilePage />
-							</Route>
-							<Route path="/profile/:username/edit">
-								<ProfileEditPage />
-							</Route>
-							<Route path="/profile/:username">
-								<ProfilePage />
-							</Route>
-							<Route path="/profile">
-								<ProfilePage />
-							</Route>
-						</Switch>
+						<Route path={"/profile/:username?"}>
+							<ProfilePage />
+						</Route>
 
 						<Route path="/asset/:asset_hash">
 							<AssetRedirectPage />
@@ -214,6 +199,7 @@ export const Routes = () => {
 						<Route path="/store">
 							<StorePage />
 						</Route>
+						</Switch>
 					</Sidebar>
 				</Switch>
 			</BrowserRouter>

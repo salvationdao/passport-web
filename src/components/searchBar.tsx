@@ -34,6 +34,7 @@ export const SearchBar: React.VoidFunctionComponent<SearchBarProps> = ({
 
 	return (
 		<TextField
+			fullWidth
 			label={label || "Search"}
 			variant={variant || "filled"}
 			value={value}

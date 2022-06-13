@@ -72,6 +72,7 @@ export const StakeModal = ({ open, onClose, asset, collection }: StakeModelProps
 		if (!account) return
 		if (!provider) return
 		try {
+			setError(undefined)
 			setStakingLoading(true)
 			const abi = ["function stake(address,uint256)"]
 			const signer = provider.getSigner()

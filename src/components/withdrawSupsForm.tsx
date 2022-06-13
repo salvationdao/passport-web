@@ -269,8 +269,7 @@ export const WithdrawSupsForm = ({
 
 	return (
 		<>
-			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={BINANCE_CHAIN_ID} />
-			<ConnectWalletOverlay walletIsConnected={!!account} />
+
 			<Box
 				component="img"
 				src={Safe}
@@ -279,7 +278,8 @@ export const WithdrawSupsForm = ({
 					height: "12rem",
 				}}
 			/>
-
+			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={BINANCE_CHAIN_ID} />
+			<ConnectWalletOverlay walletIsConnected={!!account} />
 			<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: ".5rem" }}>
 				Withdraw $Sups
 			</Typography>

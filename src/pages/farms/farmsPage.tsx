@@ -52,38 +52,29 @@ export const FarmsPage = () => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				minHeight: "100%",
+				height: '100%',
 			}}
 		>
-			<Navbar sx={{ marginBottom: "2rem" }} />
+			<Navbar />
 			<Box
 				sx={{
-					flex: 1,
 					display: "flex",
-					flexDirection: "column",
-					padding: "0 3rem",
-					marginBottom: "3rem",
-					"@media (max-width:600px)": {
-						p: 0,
-						mb: 0,
-					},
+					flex: 1,
+					m: '0 2rem 2rem 2rem',
 				}}
 			>
 				<Paper
 					sx={{
-						flexGrow: 1,
-						position: "relative",
 						display: "flex",
+						flex: 1,
 						flexDirection: "column",
 						alignItems: "center",
-						width: "100%",
-						maxWidth: "1700px",
-						margin: "0 auto",
-						padding: "2rem",
-						gap: "2rem",
-						"@media (max-width:600px)": {
-							p: "1em",
-						},
+						padding: "1rem",
+						overflow: 'auto',
+						borderRadius: 1.5,
+						gap:'1rem',
+						justifyContent: 'center',
+						position: 'relative'
 					}}
 				>
 					{currentChainId && currentChainId.toString() !== BINANCE_CHAIN_ID && (
