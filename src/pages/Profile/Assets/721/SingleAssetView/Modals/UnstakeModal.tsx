@@ -4,10 +4,10 @@ import { ethers } from "ethers"
 import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { SwitchNetworkButton } from "../../../../../../components/switchNetwortButton"
-import { ETHEREUM_CHAIN_ID } from "../../../../../../config"
+import {API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID} from "../../../../../../config"
 import { useWeb3 } from "../../../../../../containers/web3"
 import { metamaskErrorHandling } from "../../../../../../helpers/web3"
-import { UserAsset } from "../../../../../../types/purchased_item"
+import {OnChainStatus, UserAsset} from "../../../../../../types/purchased_item"
 import { Collection } from "../../../../../../types/types"
 import { lock_endpoint } from "../SingleAsset721View"
 
@@ -18,24 +18,64 @@ interface UnstakeModalProps {
 	asset: UserAsset
 }
 
+interface GetSignatureResponse {
+	messageSignature: string
+	expiry: number
+}
+
+
 export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalProps) => {
 	const { account, provider, currentChainId, changeChain } = useWeb3()
 	const [error, setError] = useState<string>()
 	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
 	const [unstakingSuccess, setUnstakingSuccess] = useState<boolean>(false)
 
-	// TODO: fix unstaking vinnie - 25/02/22
 	const unstake = useCallback(async () => {
 		if (!account || !provider) return
 		try {
 			setUnstakingLoading(true)
-			const abi = ["function unstake(address,uint256)"]
-			const signer = provider.getSigner()
-			// TODO: Update to handle old and new stake contracts
-			const nftstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
-			const tx = await nftstakeContract.unstake(collection.mint_contract, asset.token_id)
-			await fetch(lock_endpoint(account, collection.slug, asset.token_id), { method: "POST" })
-			await tx.wait()
+			setError(undefined)
+
+			// handle new stakes
+			if (asset.on_chain_status === OnChainStatus.UNSTAKABLE) {
+				// get nonce
+				const abi = [
+					"function nonces(address) view returns (uint256)",
+					"function signedUnstake(address collection, uint256 tokenID, bytes signature, uint256 expiry)",
+				]
+				const signer = provider.getSigner()
+				const unstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
+				const nonce = await unstakeContract.nonces(account)
+				console.log()
+				console.log(account)
+				console.log(nonce)
+				console.log(collection.slug)
+				console.log(asset.token_id)
+				console.log()
+
+				const unstake_endpoint = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/unstake/owner_address/${account}/nonce/${nonce}/collection_slug/${collection.slug}/token_id/${asset.token_id}`
+				const resp = await fetch(unstake_endpoint)
+				if (resp.status !== 200) {
+					const err = await resp.json()
+					setError((err as any).message)
+					return
+				}
+
+				const respJson = await resp.json() as GetSignatureResponse
+				console.log(respJson)
+				const tx = await unstakeContract.signedUnstake(collection.mint_contract, asset.token_id, respJson.messageSignature, respJson.expiry)
+				await tx.wait()
+			}
+
+			// handle old stakes
+			if (asset.on_chain_status === OnChainStatus.UNSTAKABLE_OLD) {
+				const abi = ["function unstake(address,uint256)"]
+				const signer = provider.getSigner()
+				const nftstakeContract = new ethers.Contract(collection.staking_contract_old, abi, signer)
+				await fetch(lock_endpoint(account, collection.slug, asset.token_id), { method: "POST" })
+				const tx = await nftstakeContract.unstake(collection.mint_contract, asset.token_id)
+				await tx.wait()
+			}
 			setUnstakingSuccess(true)
 		} catch (e: any) {
 			const err = metamaskErrorHandling(e)
@@ -44,6 +84,7 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 			setUnstakingLoading(false)
 		}
 	}, [provider, asset, account, collection])
+
 
 	return (
 		<Dialog

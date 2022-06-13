@@ -76,9 +76,8 @@ export const StakeModal = ({ open, onClose, asset, collection }: StakeModelProps
 			const abi = ["function stake(address,uint256)"]
 			const signer = provider.getSigner()
 			const nftstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
-			const tx = await nftstakeContract.stake(collection.mint_contract, asset.token_id)
-
 			await fetch(lock_endpoint(account, collection.slug, asset.token_id), { method: "POST" })
+			const tx = await nftstakeContract.stake(collection.mint_contract, asset.token_id)
 			await tx.wait()
 			setStakingSuccess(true)
 		} catch (e: any) {

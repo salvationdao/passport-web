@@ -60,7 +60,8 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				const resp = await fetch(mint_endpoint)
 				if (resp.status !== 200) {
 					const err = await resp.json()
-					throw (err as any).message
+					setErrorMinting((err as any).message)
+					return
 				}
 				const respJson: GetSignatureResponse = await resp.clone().json()
 				const tx = await mintContract.signedMint(assetExternalTokenID, respJson.messageSignature, respJson.expiry)

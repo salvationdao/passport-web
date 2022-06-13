@@ -76,6 +76,7 @@ export interface Collection {
 	// image: string
 	mint_contract: string
 	stake_contract: string
+	staking_contract_old: string
 	created_at: Date
 	updated_at: Date
 	// frozen_at?: Date
