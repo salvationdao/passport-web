@@ -16,8 +16,8 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 				width: "100%",
 				maxWidth: "1700px",
 				margin: "0 auto",
-				padding: "0 3rem",
-				paddingTop: "3rem",
+				padding: "1rem 2rem",
+				paddingTop: "2rem",
 				...sx,
 			}}
 			{...props}
