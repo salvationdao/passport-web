@@ -72,16 +72,16 @@ export const TransactionsPage = () => {
 					case "Ungrouped":
 						// Get only ungrouped transactions
 						filterItems.push({
-							columnField: "group",
-							operatorValue: "=",
+							column: "group",
+							operator: "=",
 							value: "''",
 						})
 						break
 					default:
 						// Get transactions of a specific group
 						filterItems.push({
-							columnField: "group",
-							operatorValue: "=",
+							column: "group",
+							operator: "=",
 							value: selectedGroup,
 						})
 
@@ -92,15 +92,15 @@ export const TransactionsPage = () => {
 									break
 								case "Ungrouped":
 									filterItems.push({
-										columnField: "sub_group",
-										operatorValue: "=",
+										column: "sub_group",
+										operator: "=",
 										value: "''",
 									})
 									break
 								default:
 									filterItems.push({
-										columnField: "sub_group",
-										operatorValue: "=",
+										column: "sub_group",
+										operator: "=",
 										value: selectedSubGroup,
 									})
 							}

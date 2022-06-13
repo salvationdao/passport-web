@@ -46,8 +46,8 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 		if (filterSortOptions.showOffWorldOnly !== undefined) {
 			filtersItems.push({
 				// filter by on_chain_status
-				columnField: "on_chain_status",
-				operatorValue: filterSortOptions.showOffWorldOnly ? "=" : "!=",
+				column: "on_chain_status",
+				operator: filterSortOptions.showOffWorldOnly ? "=" : "!=",
 				value: "STAKABLE",
 			})
 		}
