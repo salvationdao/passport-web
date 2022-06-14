@@ -16,8 +16,19 @@ export interface Asset721ItemCardProps {
 export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps> = ({ userAsset, username }) => {
 	const history = useHistory()
 
-	const { tier, name, hash, image_url, card_animation_url } = userAsset
+	const { tier, name, hash, image_url, card_animation_url, asset_type } = userAsset
 	const rarityStyles = rarityTextStyles[tier as Rarity]
+
+	const renderAssetTypeText = (assetType: string) => {
+		switch (assetType) {
+			case "mech":
+				return "War Machine"
+			case "weapon":
+				return "Weapon"
+			case "mystery_crate":
+				return "Crate"
+		}
+	}
 
 	return (
 		<Stack
@@ -113,7 +124,7 @@ export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps
 			</Box>
 
 			<Box>
-				<Typography sx={{ textTransform: "uppercase" }}>{"War Machine"}</Typography>
+				<Typography sx={{ textTransform: "uppercase" }}>{renderAssetTypeText(asset_type)}</Typography>
 				<Typography
 					variant="h4"
 					sx={{
