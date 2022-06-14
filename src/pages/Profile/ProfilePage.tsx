@@ -170,5 +170,13 @@ interface SingleAsset1155ViewPageProps {
 const SingleAsset1155ViewPage = ({ edit, ownerID }: SingleAsset1155ViewPageProps) => {
 	const { collection_slug, token_id, locked } = useParams<{ collection_slug: string; token_id: string; locked: string }>()
 
-	return <SingleAsset1155View edit={edit} ownerID={ownerID} collection_slug={collection_slug} tokenID={parseInt(token_id, 10)} locked={!!locked} />
+	return (
+		<SingleAsset1155View
+			edit={edit}
+			ownerID={ownerID}
+			collection_slug={collection_slug}
+			tokenID={parseInt(token_id, 10)}
+			locked={locked !== "false"}
+		/>
+	)
 }
