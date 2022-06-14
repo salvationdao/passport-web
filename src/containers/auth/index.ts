@@ -84,11 +84,10 @@ export const AuthContainer = createContainer(() => {
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
-			const isHangar = !!args["isHangar"]
-
+			const source = args["source"]
+			const host = args["host"]
 
 			Object.keys(args).forEach((key) => {
-
 				if (args[key] === "" || args[key] === "null" || !args[key]) {
 					return
 				}
@@ -97,7 +96,18 @@ export const AuthContainer = createContainer(() => {
 
 			const form = document.createElement("form")
 			form.method = "post"
-			form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/external${isHangar?"?isHangar=true":""}`
+			form.action = `https://${host || API_ENDPOINT_HOSTNAME}/api/auth/external`
+
+			switch (source) {
+				case "website":
+					form.action += "?website=true"
+					break
+				case "hangar":
+					form.action += "?isHangar=true"
+					break
+				default:
+					break
+			}
 
 			Object.keys(args).forEach((key) => {
 				const hiddenField = document.createElement("input")
@@ -220,74 +230,94 @@ export const AuthContainer = createContainer(() => {
 	 * External login User with passport cookie
 	 *
 	 */
-	const loginCookieExternal = useCallback((isHangar:boolean) => {
-		const args = {
-			redirectURL,
-			authType: isHangar?"hangar":"cookie",
-		}
-		if (redirectURL) {
-			externalAuth({ ...args, fingerprint: undefined })
-			return
-		}
-	}, [externalAuth, redirectURL])
+	const loginCookieExternal = useCallback(
+		(source: string) => {
+			let authType = ""
+			switch (source) {
+				case "hangar":
+					authType = "hangar"
+					break
+				case "website":
+					authType = "website"
+					break
+				default:
+					authType = "cookie"
+					break
+			}
+
+			const args = {
+				redirectURL,
+				authType,
+			}
+			if (redirectURL) {
+				externalAuth({ ...args, fingerprint: undefined })
+				return
+			}
+		},
+		[externalAuth, redirectURL],
+	)
 
 	/**
 	 * Logs a User in using a Metamask public address
 	 *
 	 * @param token Metamask public address
 	 */
-	const loginMetamask = useCallback(async (isHangar:string) => {
-		try {
-			const acc = await connect()
-			const signature = await sign()
-			if (acc) {
-				const args = {
-					redirectURL,
-					public_address: acc,
-					signature: signature,
-					session_id: sessionId,
-					fingerprint,
-					authType: "wallet",
-					isHangar:isHangar,
+	const loginMetamask = useCallback(
+		async (source: string, host: string) => {
+			try {
+				const acc = await connect()
+				const signature = await sign()
+				if (acc) {
+					const args = {
+						redirectURL,
+						public_address: acc,
+						signature: signature,
+						session_id: sessionId,
+						fingerprint,
+						authType: "wallet",
+						source,
+						host,
+					}
+					if (redirectURL) {
+						externalAuth({ ...args, fingerprint: undefined })
+						return
+					}
+
+					const resp = await login({
+						redirectURL,
+						public_address: acc,
+						signature: signature,
+						session_id: sessionId,
+						fingerprint,
+						authType: "wallet",
+					})
+
+					console.log(resp.payload)
+
+					if (!resp || resp.error || !resp.payload) {
+						clear()
+						return
+					}
+					setUser(resp.payload)
+					setAuthorised(true)
+					setLoading(false)
+
+					return resp
 				}
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
+			} catch (e: any) {
+				console.error(e)
+				clear()
+				setUser(undefined)
+				//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
+				const err = metamaskErrorHandling(e)
+				if (err) {
+					throw err
 				}
-
-				const resp = await login({
-					redirectURL,
-					public_address: acc,
-					signature: signature,
-					session_id: sessionId,
-					fingerprint,
-					authType: "wallet",
-				})
-
-				console.log(resp.payload)
-
-				if (!resp || resp.error || !resp.payload) {
-					clear()
-					return
-				}
-				setUser(resp.payload)
-				setAuthorised(true)
-				setLoading(false)
-
-				return resp
+				throw e
 			}
-		} catch (e: any) {
-			console.error(e)
-			clear()
-			setUser(undefined)
-			//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
-			const err = metamaskErrorHandling(e)
-			if (err) {
-				throw err
-			}
-			throw e
-		}
-	}, [connect, sign, redirectURL, sessionId, fingerprint, login, externalAuth, clear])
+		},
+		[connect, sign, redirectURL, sessionId, fingerprint, login, externalAuth, clear],
+	)
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *

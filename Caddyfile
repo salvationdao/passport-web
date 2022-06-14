@@ -28,6 +28,16 @@ https://hangar.supremacygame.io {
 	}
 }
 
+https://website.supremacygame.io {
+	log {
+		output discard
+	}
+	reverse_proxy * localhost:3000
+	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
+		ca ./certs/__supremacygame_io.ca-bundle
+	}
+}
+
 https://api.xsyndev.io {
 	log {
 		output discard

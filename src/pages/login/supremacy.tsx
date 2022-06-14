@@ -53,13 +53,16 @@ const SupremacyLogin = () => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
 	const { userID, loginCookieExternal } = useAuth()
 	const isFromExternal = window.location.pathname === "/external/login"
-	const isHangar = window.location.search.includes("hangar")
 	if (userID) {
 		// if it is not from external, redirect user to profile page
 		if (!isFromExternal) return <Redirect to={"/profile"} />
 
+		// get source
+		let source = ""
+		if (window.location.search.includes("hangar")) source = "hangar"
+		else if (window.location.search.includes("website")) source = "website"
 		// else sign user
-		loginCookieExternal(isHangar)
+		loginCookieExternal(source)
 		return <Loading />
 	}
 	return (
