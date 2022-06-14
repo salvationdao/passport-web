@@ -128,6 +128,7 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 								}}
 								onChange={(e) => {
 									const newAmount = parseInt(e.target.value)
+									if (newAmount < 0) return
 									if (newAmount > userAsset.count || newAmount <= 0) {
 										setFormError("Amount exceeds total or below 0")
 									} else {

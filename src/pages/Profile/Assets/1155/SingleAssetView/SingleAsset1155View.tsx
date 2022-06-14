@@ -110,7 +110,7 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 	const Buttons = useMemo(() => {
 		return (
 			<>
-				<FancyButton size="small" onClick={() => setTransferModalOpen(true)}>
+				<FancyButton size="small" onClick={() => setTransferModalOpen(true)} disabled={userAsset.count <= 0}>
 					{userAsset.service_name_locked_in && `Transition from ${userAsset.service_name_locked_in} to XSYN`}
 					{!userAsset.service_name_locked_in && `Transition from XSYN to supremacy`}
 				</FancyButton>
@@ -334,19 +334,19 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 				</Stack>
 			</Stack>
 
-			{transferModalOpen && (
 				<Transfer1155Modal
 					open={transferModalOpen}
 					onClose={() => {
 						setTransferModalOpen(false)
 					}}
-					onSuccess={loadAsset}
+					onSuccess={()=>{
+							history.push(`/profile/${owner.username}/achievements`)
+					}}
 					userAsset={userAsset}
 					collectionSlug={collection.slug}
 				/>
-			)}
 
-			{showWithdrawModal && userAsset.count > 0 && (
+			{userAsset.count > 0 && (
 				<Withdraw1155AssetModal
 					open={showWithdrawModal}
 					tokenID={userAsset.external_token_id.toString()}
