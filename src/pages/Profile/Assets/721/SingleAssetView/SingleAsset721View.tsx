@@ -1,14 +1,5 @@
 import OpenInNewIcon from "@mui/icons-material/OpenInNew"
-import {
-	Box,
-	Button,
-	ButtonProps,
-	Dialog,
-	Divider,
-	Stack,
-	styled,
-	Typography,
-} from "@mui/material"
+import { Box, Button, ButtonProps, Dialog, Divider, Stack, styled, Typography } from "@mui/material"
 import { formatDistanceToNow } from "date-fns"
 import isFuture from "date-fns/isFuture"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -136,20 +127,20 @@ interface AssetViewProps {
 }
 
 export const AssetView = ({
-							  locked,
-							  userAsset,
-							  collection,
-							  error,
-							  owner,
-							  showMint,
-							  showStake,
-							  showUnstake,
-							  onWorld,
-							  openseaURL,
-							  showOpenseaURL,
-							  edit,
-							  loadAsset,
-						  }: AssetViewProps) => {
+	locked,
+	userAsset,
+	collection,
+	error,
+	owner,
+	showMint,
+	showStake,
+	showUnstake,
+	onWorld,
+	openseaURL,
+	showOpenseaURL,
+	edit,
+	loadAsset,
+}: AssetViewProps) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	useInterval(() => setRemainingTime(formatDistanceToNow(userAsset.unlocked_at)), 1000)
 
@@ -185,7 +176,8 @@ export const AssetView = ({
 				{!showStake && (
 					<FancyButton disabled={locked} size="small" onClick={() => setTransferModalOpen(true)}>
 						Transition from XSYN to Supremacy
-					</FancyButton>)}
+					</FancyButton>
+				)}
 
 				{showStake && (
 					<FancyButton disabled={locked} size="small" onClick={() => setStakeModalOpen(true)}>
@@ -258,21 +250,23 @@ export const AssetView = ({
 								<source src={userAsset.animation_url} type="video/mp4" />
 							</Box>
 
-							<Box
-								component="img"
-								src={userAsset.avatar_url}
-								alt="Asset avatar"
-								sx={{
-									position: "absolute",
-									bottom: "1rem",
-									right: "1rem",
-									height: "4rem",
-									width: "4rem",
-									objectFit: "contain",
-									border: `1px solid ${colors.darkGrey}`,
-									backgroundColor: colors.darkGrey,
-								}}
-							/>
+							{userAsset.avatar_url && (
+								<Box
+									component="img"
+									src={userAsset.avatar_url}
+									alt="Asset avatar"
+									sx={{
+										position: "absolute",
+										bottom: "1rem",
+										right: "1rem",
+										height: "4rem",
+										width: "4rem",
+										objectFit: "contain",
+										border: `1px solid ${colors.darkGrey}`,
+										backgroundColor: colors.darkGrey,
+									}}
+								/>
+							)}
 						</Box>
 
 						<Box
@@ -335,7 +329,6 @@ export const AssetView = ({
 							<Stack spacing=".5rem" alignItems="flex-start">
 								{edit && Buttons}
 							</Stack>
-
 						</Box>
 					</Box>
 
@@ -480,24 +473,19 @@ export const AssetView = ({
 			)}
 
 			{provider && userAsset && (
-				<StakeModal collection={collection} open={stakeModalOpen} asset={userAsset}
-							onClose={() => setStakeModalOpen(false)} />
+				<StakeModal collection={collection} open={stakeModalOpen} asset={userAsset} onClose={() => setStakeModalOpen(false)} />
 			)}
 
 			{provider && userAsset && (
-				<UnstakeModal collection={collection} open={unstakeModalOpen} asset={userAsset}
-							  onClose={() => setUnstakeModalOpen(false)} />
+				<UnstakeModal collection={collection} open={unstakeModalOpen} asset={userAsset} onClose={() => setUnstakeModalOpen(false)} />
 			)}
 
-			<TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} onSuccess={loadAsset}
-						   userAsset={userAsset} />
+			<TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} onSuccess={loadAsset} userAsset={userAsset} />
 		</>
 	)
 }
 
-const StyledDisabledButton = styled(({ navigate, ...props }: ButtonProps & { navigate?: any }) => <Button {...props}
-																										  variant="text"
-																										  disabled />)({
+const StyledDisabledButton = styled(({ navigate, ...props }: ButtonProps & { navigate?: any }) => <Button {...props} variant="text" disabled />)({
 	justifyContent: "start",
 	color: `${colors.darkerGrey} !important`,
 })

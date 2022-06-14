@@ -12,6 +12,7 @@ export interface UserAsset {
 	tier: string
 	hash: string
 	owner_id: string
+	asset_type: string
 	attributes: Attribute721[]
 	name: string
 	image_url?: string
