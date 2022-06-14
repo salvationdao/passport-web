@@ -21,7 +21,7 @@ export const Asset1155ItemCard: React.VoidFunctionComponent<Asset721ItemCardProp
 			<Stack
 				spacing=".5rem"
 				onClick={() => {
-					history.push(`/profile/${username}/asset1155/${collection_slug}/${external_token_id}/${service_id ? "true" : "false'"}`)
+					history.push(`/profile/${username}/asset1155/${collection_slug}/${external_token_id}/${service_id ? "true" : "false"}`)
 				}}
 				sx={{
 					position: "relative",

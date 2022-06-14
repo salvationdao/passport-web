@@ -14,6 +14,7 @@ import { Assets721 } from "./Assets/721/Assets721"
 import { Assets1155 } from "./Assets/1155/Assets1155"
 import { ProfileEditPage } from "./Edit/ProfileEditPage"
 import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
+import { SingleAsset1155View } from "./Assets/1155/SingleAssetView/SingleAsset1155View"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -31,7 +32,6 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
-
 
 	useEffect(() => {
 		;(async () => {
@@ -62,17 +62,24 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	if (!user) return <Loading text={loadingText} />
 
 	return (
-		<Box sx={{
-			display: "flex", flex: 1, flexDirection: "column", height: "100%",
-		}}>
-			<Navbar />
-			<Box sx={{
+		<Box
+			sx={{
 				display: "flex",
 				flex: 1,
-				m: "0 2rem 2rem 2rem",
 				flexDirection: "column",
-				alignItems: "center",
-			}}>
+				height: "100%",
+			}}
+		>
+			<Navbar />
+			<Box
+				sx={{
+					display: "flex",
+					flex: 1,
+					m: "0 2rem 2rem 2rem",
+					flexDirection: "column",
+					alignItems: "center",
+				}}
+			>
 				<Box
 					sx={{
 						// p: "2rem",
@@ -84,34 +91,40 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 				>
 					{loggedInUser?.id === user.id && <ProfileButton size="5rem" disabled sx={{ mb: "1rem" }} />}
 					<Stack gap={"1rem"}>
-						<Typography variant="h3" marginBottom={"0.5rem"}>{user.username}</Typography>
+						<Typography variant="h3" marginBottom={"0.5rem"}>
+							{user.username}
+						</Typography>
 						{loggedInUser?.username === user.username && (user.first_name || user.last_name) && (
 							<Typography variant="subtitle2">
 								{user.first_name} {user.last_name}
 							</Typography>
 						)}
-						{loggedInUser?.id === user.id && <FancyButton size="small" sx={{ width: "100%" }}>
-							<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
-						</FancyButton>}
+						{loggedInUser?.id === user.id && (
+							<FancyButton size="small" sx={{ width: "100%" }}>
+								<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
+							</FancyButton>
+						)}
 					</Stack>
 				</Box>
 
-				<Paper sx={{
-					display: "flex",
-					flexDirection: "column",
-					overflow: "auto",
-					width: "100%",
-					borderRadius: 1.5,
-					flexBasis: 0,
-					flexGrow: 1,
-				}}>
+				<Paper
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						overflow: "auto",
+						width: "100%",
+						borderRadius: 1.5,
+						flexBasis: 0,
+						flexGrow: 1,
+					}}
+				>
 					<Switch>
 						<Route exact path="/profile/:username/asset/:asset_hash">
 							<SingleAsset721View edit={loggedInUser?.id === user.id} />
 						</Route>
-						{/*<Route exact path="/profile/:username/asset1155/:collection_slug/:token_id/:locked">*/}
-						{/*    <ProfilePage/>*/}
-						{/*</Route>*/}
+						<Route exact path="/profile/:username/asset1155/:collection_slug/:token_id/:locked">
+							<SingleAsset1155ViewPage edit={loggedInUser?.id === user.id} ownerID={user.id} />
+						</Route>
 						<Route>
 							<Tabs
 								value={location.pathname}
@@ -142,11 +155,20 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 								</Route>
 							</Switch>
 						</Route>
-
-
 					</Switch>
 				</Paper>
 			</Box>
 		</Box>
 	)
+}
+
+interface SingleAsset1155ViewPageProps {
+	edit: boolean
+	ownerID: string
+}
+
+const SingleAsset1155ViewPage = ({ edit, ownerID }: SingleAsset1155ViewPageProps) => {
+	const { collection_slug, token_id, locked } = useParams<{ collection_slug: string; token_id: string; locked: string }>()
+
+	return <SingleAsset1155View edit={edit} ownerID={ownerID} collection_slug={collection_slug} tokenID={parseInt(token_id, 10)} locked={!!locked} />
 }
