@@ -170,7 +170,7 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 					mt: "auto",
 					pt: "1.5rem",
 					display: "flex",
-					direction: "row",
+					flexDirection: "row",
 					justifyContent: "space-between",
 					alignItems: "center",
 					marginTop: "auto",
