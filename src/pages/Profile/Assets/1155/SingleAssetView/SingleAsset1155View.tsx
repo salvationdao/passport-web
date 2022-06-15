@@ -115,7 +115,7 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 					{!userAsset.service_name_locked_in && `Transition from XSYN to supremacy`}
 				</FancyButton>
 				{userAsset.service_name_locked_in && (
-					<FancyButton size="small" onClick={() => window.open(`${BATTLE_ARENA_LINK}/hangar`, "_blank")?.focus()}>
+					<FancyButton size="small" onClick={() => window.open(`${BATTLE_ARENA_LINK}/fleet`, "_blank")?.focus()}>
 						View item in {userAsset.service_name_locked_in}
 					</FancyButton>
 				)}
