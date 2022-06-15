@@ -26,7 +26,7 @@ export const ContractAssetPage = () => {
 		if (!collection_slug || !account || !isCorrectChain) return
 		;(async () => {
 			try {
-				const ppResp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/collection/supremacy-achievements`)
+				const ppResp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/collection/${collection_slug}`)
 				const collections = (await ppResp.clone().json()) as Collection1155
 				if (!collections.mint_contract) {
 					setLoadError("Failed to get mint contract")

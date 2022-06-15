@@ -54,7 +54,7 @@ export const DepositAssetModal = ({
 				token_id: tokenID,
 				collection_slug: collectionSlug,
 			})
-			history.push("/deposit-assets/deposit-status")
+			history.push("/deposit/history/assets")
 		} catch (e) {
 			const err = metamaskErrorHandling(e)
 			setError(err)
