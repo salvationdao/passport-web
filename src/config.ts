@@ -17,16 +17,14 @@ export const SENTRY_CONFIG = {
 
 export const SUPREMACY_IMAGE_FOLDER = process.env.REACT_APP_SUPREMACY_IMAGE_FOLDER || "https://afiles.ninja-cdn.com/supremacy/images"
 
-export const TOKEN_SALE_ENDPOINT = process.env.REACT_APP_TOKEN_SALE_ENDPOINT || `${window.location.protocol}//${window.location.host}/buy`
+export const TOKEN_SALE_ENDPOINT = process.env.REACT_APP_TOKEN_SALE_ENDPOINT || `${window.location.protocol}//${"api.xsyndev.io"}/buy`
 
-export const API_ENDPOINT_HOSTNAME = process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME || window.location.host
+export const API_ENDPOINT_HOSTNAME = process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME || "passport.supremacygame.io" || "api.xsyndev.io"
 
 export const SIGN_MESSAGE = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
 export const BYPASS_WHITELIST = process.env.REACT_APP_BYPASS_WHITELIST || "false"
-export const BATTLE_ARENA_LINK = process.env.REACT_APP_BATTLE_ARENA_LINK || "https://staging-watch.supremacy.game"
+export const BATTLE_ARENA_LINK = process.env.REACT_APP_BATTLE_ARENA_LINK || "https://play.supremacygame.io"
 
-// export const NFT_CONTRACT_ADDRESS = process.env.REACT_APP_NFT_CONTRACT_ADDRESS || "0xc1ce98f52e771bd82938c4cb6ccaa40dc2b3258d"
-// export const NFT_STAKING_CONTRACT_ADDRESS = process.env.REACT_APP_NFT_STAKING_CONTRACT_ADDRESS || "0xceED4Db9234e7374fe3132a2610c31275712685C"
 export const SUPS_CONTRACT_ADDRESS = process.env.REACT_APP_SUPS_CONTRACT_ADDRESS || "0x5e8b6999B44E011F485028bf1AF0aF601F845304"
 export const USDC_CONTRACT_ADDRESS = process.env.REACT_APP_USDC_CONTRACT_ADDRESS || "0x8BB4eC208CDDE7761ac7f3346deBb9C931f80A33"
 export const BUSD_CONTRACT_ADDRESS = process.env.REACT_APP_BUSD_CONTRACT_ADDRESS || "0xeAf33Ba4AcA3fE3110EAddD7D4cf0897121583D0"
@@ -50,3 +48,5 @@ export const PANCAKE_POOL_ADDRESS = process.env.REACT_APP_PANCAKE_POOL_ADDRESS |
 export const LP_TOKEN_ADDRESS = process.env.REACT_APP_LP_TOKEN_ADDRESS || "0xd96e4e2e0b1b41cad0627431a8cda64aaa5acd01"
 export const WRAPPED_BNB_ADDRESS = process.env.REACT_APP_WRAPPED_BNB_ADDRESS || "0xae13d989dac2f0debff460ac112a837c89baa7cd"
 export const PANCAKE_SWAP_ADDRESS = process.env.REACT_APP_PANCAKE_SWAP_ADDRESS || "pancake.kiemtienonline360.com/#"
+
+export const AVANT_API_ENDPOINT = process.env.REACT_APP_AVANT_API_ENDPOINT || "v3-staging.supremacy-api.avantdata.com:3001"

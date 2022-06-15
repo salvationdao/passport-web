@@ -26,12 +26,13 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 	const history = useHistory()
 	const [isProcessing, setIsProcessing] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
 	const click = useCallback(async () => {
 		if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
 			try {
 				displayMessage("Please refer to your wallet for authentication")
 				const resp = await loginWalletConnect()
-				if (!resp || !resp.is_new) return
+				if (!resp || !resp.payload) return
 				!publicSale && history.push("/onboarding?skip_username=true")
 			} catch (e) {
 				setIsProcessing(false)
@@ -44,9 +45,21 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			if (onClick && !(await onClick())) return
 
 			try {
-				const resp = await loginMetamask()
-				if (!resp || !resp.is_new) {
-					setErrorMessage("There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.")
+				const URLParam = new URLSearchParams(window.location.search)
+
+				let source = ""
+				let host = ""
+				if (URLParam.get("hangar")) source = "hangar"
+				else if (URLParam.get("website")) {
+					source = "website"
+					host = URLParam.get("host") || ""
+				}
+
+				const resp = await loginMetamask(source, host)
+				if (!resp || !resp.payload) {
+					setErrorMessage(
+						"There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.",
+					)
 					setIsProcessing(false)
 					return
 				}

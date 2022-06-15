@@ -1,10 +1,10 @@
 import { Alert, Box, Button, IconButton, Paper, TextField, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import QRCode from "react-qr-code"
-import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 interface TFASecret {
 	secret: string
@@ -13,7 +13,7 @@ interface TFASecret {
 
 // TODO: fix 2fa stuff
 export const TwoFactorAuthenticationSetup = () => {
-	const { send } = useWebsocket()
+	const { send } = usePassportCommandsUser("/commander")
 	const [tfaSecret, setTFASecret] = useState<TFASecret>()
 	const [showSecretCode, setShowSecretCode] = useState(false)
 	const [passcode, setPasscode] = useState("")
@@ -72,8 +72,8 @@ export const TwoFactorAuthenticationSetup = () => {
 				</Box>
 
 				<Typography variant="body2">
-					Scan The following QR code with the two-factor authentication app on your mobile. If you can't use the QR code, click on the button and copy
-					the code instead.
+					Scan The following QR code with the two-factor authentication app on your mobile. If you can't use the QR code, click on the
+					button and copy the code instead.
 				</Typography>
 				{tfaSecret && (
 					<Box

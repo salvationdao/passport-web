@@ -52,42 +52,33 @@ export const FarmsPage = () => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				minHeight: "100%",
+				height: '100%',
 			}}
 		>
-			<Navbar sx={{ marginBottom: "2rem" }} />
+			<Navbar />
 			<Box
 				sx={{
-					flex: 1,
 					display: "flex",
-					flexDirection: "column",
-					padding: "0 3rem",
-					marginBottom: "3rem",
-					"@media (max-width:600px)": {
-						p: 0,
-						mb: 0,
-					},
+					flex: 1,
+					m: '0 2rem 2rem 2rem',
 				}}
 			>
 				<Paper
 					sx={{
-						flexGrow: 1,
-						position: "relative",
 						display: "flex",
+						flex: 1,
 						flexDirection: "column",
 						alignItems: "center",
-						width: "100%",
-						maxWidth: "1700px",
-						margin: "0 auto",
-						padding: "2rem",
-						gap: "2rem",
-						"@media (max-width:600px)": {
-							p: "1em",
-						},
+						padding: "1rem",
+						overflow: 'auto',
+						borderRadius: 1.5,
+						gap:'1rem',
+						justifyContent: 'center',
+						position: 'relative'
 					}}
 				>
 					{currentChainId && currentChainId.toString() !== BINANCE_CHAIN_ID && (
-						<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} />
+						<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={BINANCE_CHAIN_ID} />
 					)}
 					{!account && <ConnectWalletOverlay walletIsConnected={!!account} />}
 					<Stack gap="1rem">
@@ -166,7 +157,8 @@ const FarmInfo = (props: FarmInfoProps) => {
 			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
 				{showAPR && (
 					<LabelContainer>
-						<InfoLabel>* Dynamic APR:</InfoLabel> <InfoValue sx={{ display: "flex", alignItems: "center", gap: ".5rem" }}>{apr}</InfoValue>
+						<InfoLabel>* Dynamic APR:</InfoLabel>{" "}
+						<InfoValue sx={{ display: "flex", alignItems: "center", gap: ".5rem" }}>{apr}</InfoValue>
 					</LabelContainer>
 				)}
 			</Stack>
@@ -187,7 +179,8 @@ const FarmInfo = (props: FarmInfoProps) => {
 }
 
 const FarmCard = (props: FarmCardProps) => {
-	const { provider, signer, account, block, farmInfo, farmWithdraw, farmExit, farmCheckAllowance, farmLPApproveMax, farmStake, farmGetReward } = useWeb3()
+	const { provider, signer, account, block, farmInfo, farmWithdraw, farmExit, farmCheckAllowance, farmLPApproveMax, farmStake, farmGetReward } =
+		useWeb3()
 	const [data, setData] = useState<FarmData | null>(null)
 	const [stakeAmount, setStakeAmount] = useState<BigNumber | null>(null)
 	const [stakeDisplayAmount, setStakeDisplayAmount] = useState<string>("")
@@ -677,7 +670,14 @@ const FarmCard = (props: FarmCardProps) => {
 						</AccordionSummary>
 						<AccordionDetails sx={{ display: "flex", flexDirection: "column", position: "relative", fontSize: ".8rem" }}>
 							<Box
-								sx={{ background: colors.darkerGrey, height: ".5px", width: "calc(100% - 2rem)", position: "absolute", top: 0, left: "1rem" }}
+								sx={{
+									background: colors.darkerGrey,
+									height: ".5px",
+									width: "calc(100% - 2rem)",
+									position: "absolute",
+									top: 0,
+									left: "1rem",
+								}}
 							/>
 							<Button onClick={() => setOpenTutorial(true)} endIcon={<HelpCenterIcon />} sx={{ fontSize: "1rem" }}>
 								<strong>Learn how to participate</strong>
@@ -734,20 +734,20 @@ const FarmCard = (props: FarmCardProps) => {
 												Dynamic APR
 											</span>
 											<p>
-												The purpose of displaying APR is simply an indicator as to the current APR rewards received at the time you
-												place liquidity.
+												The purpose of displaying APR is simply an indicator as to the current APR rewards received at the
+												time you place liquidity.
 											</p>
 											<p>
-												APR represented is not a reflection of the APR you will receive. There is no guarantee you will ever receive the
-												APR displayed to you.
+												APR represented is not a reflection of the APR you will receive. There is no guarantee you will ever
+												receive the APR displayed to you.
 											</p>
 											<p>
-												By placing liquidity, you acknowledge that you understand the mechanics of the provision of liquidity in a
-												decentralised exchange.
+												By placing liquidity, you acknowledge that you understand the mechanics of the provision of liquidity
+												in a decentralised exchange.
 											</p>
 											<p>
-												You acknowledge and understand the more people that provide liquidity within the pool the lower APR you will
-												receive.
+												You acknowledge and understand the more people that provide liquidity within the pool the lower APR
+												you will receive.
 											</p>
 										</Box>
 									}
@@ -885,7 +885,11 @@ const Tutorial: React.FC<ITutorialProps> = ({ cb }) => {
 							},
 						}}
 					>
-						<Typography component="a" href="https://supremacy.game//news/supremacy-yield-farming---frequently-asked-questions" target="_blank">
+						<Typography
+							component="a"
+							href="https://supremacy.game//news/supremacy-yield-farming---frequently-asked-questions"
+							target="_blank"
+						>
 							FAQ
 						</Typography>
 						<Typography component="a" href="https://supremacy.game/news/supremacy-yield-farming-program" target="_blank">

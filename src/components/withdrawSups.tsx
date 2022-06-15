@@ -2,12 +2,12 @@ import { Box, Typography } from "@mui/material"
 import { BigNumber } from "ethers"
 import React, { useEffect, useState } from "react"
 import { API_ENDPOINT_HOSTNAME } from "../config"
-import { SocketState, WSSendFn } from "../containers/socket"
 import { transferStateType, User } from "../types/types"
 import { EarlyContributorSignMessage } from "./earlyContributorSignMessage"
 import { EarlySaftAgreement } from "./earlySaftAgreement"
 import { Loading } from "./loading"
 import { WithdrawSupsForm } from "./withdrawSupsForm"
+import { SendFunc } from "../containers/ws/useCommands"
 
 interface WithdrawSupsProps {
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
@@ -18,8 +18,8 @@ interface WithdrawSupsProps {
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
 	user: User | undefined
-	state: SocketState
-	send: WSSendFn
+	state: number
+	send: SendFunc
 }
 
 interface EarlyContributorCheck {
@@ -81,7 +81,10 @@ export const WithdrawSups = ({
 	if (loadingEarlyCheck) return <Loading text="Loading User Data" />
 
 	return (
-		<Box component="div" sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "3em", width: "100%" }}>
+		<Box
+			component="div"
+			sx={{  display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "3em", width: "100%" }}
+		>
 			{showAgreement && <EarlySaftAgreement setReadAgreement={setReadAgreement} />}
 
 			{showUserDisagree && (
@@ -99,7 +102,6 @@ export const WithdrawSups = ({
 			)}
 
 			{showWithdrawSupsForm && (
-				<>
 					<WithdrawSupsForm
 						currentTransferState={currentTransferState}
 						withdrawAmount={withdrawAmount}
@@ -112,7 +114,7 @@ export const WithdrawSups = ({
 						state={state}
 						send={send}
 					/>
-				</>
+
 			)}
 		</Box>
 	)

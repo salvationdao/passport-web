@@ -1,58 +1,57 @@
 import { CssBaseline } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
-import { Action, Client, ClientContextProvider, createClient } from "react-fetching-library"
-import { API_ENDPOINT_HOSTNAME } from "./config"
 import { Themes } from "./containers"
-import { AssetProvider } from "./containers/assets"
-import { AuthProvider } from "./containers/auth"
-import { FingerprintProvider } from "./containers/fingerprint"
+import { useAuth, UserUpdater } from "./containers/auth"
 import { SidebarStateProvider } from "./containers/sidebar"
-import { SnackbarProvider } from "./containers/snackbar"
-import { SocketProvider } from "./containers/socket"
-import { Web3Provider } from "./containers/web3"
 import "./fonts.css"
 import { loadIcons } from "./helpers/loadicons"
 import { Routes } from "./routes"
+import { Loading } from "./components/loading"
+import { API_ENDPOINT_HOSTNAME } from "./config"
+import { Redirect, Route, Switch } from "react-router-dom"
+import LoginPage from "./pages/login/login"
+import { ws } from "./containers/ws"
 
 loadIcons()
 
-const prefixURL = (prefix: string) => (client: Client) => async (action: Action) => {
-	return {
-		...action,
-		endpoint: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}${prefix}${action.endpoint}`,
-	}
-}
+ws.Initialise({ defaultHost: API_ENDPOINT_HOSTNAME })
 
-export const client = createClient({
-	//None of the options is required
-	requestInterceptors: [prefixURL("/api")],
-	responseInterceptors: [],
-})
+const AppInner = () => {
+	const { user, userID, loading } = useAuth()
+	if (loading) return <Loading />
+	if (!user) {
+		return (
+			<Switch>
+				<Route path="/external/login">
+					<LoginPage />
+				</Route>
+				<Route path="/login">
+					<LoginPage />
+				</Route>
+				<Route path="/">
+					<Redirect to={"/login"} />
+				</Route>
+			</Switch>
+		)
+	}
+	return (
+		<>
+			{!!userID && <UserUpdater />}
+			<SidebarStateProvider>
+				<Routes />
+			</SidebarStateProvider>
+		</>
+	)
+}
 
 const AppAdmin = () => {
 	const { currentTheme } = Themes.useContainer()
 
 	return (
-		<SocketProvider>
-			<SnackbarProvider>
-				<Web3Provider>
-					<ClientContextProvider client={client}>
-						<FingerprintProvider>
-							<AuthProvider>
-								<SidebarStateProvider>
-									<AssetProvider>
-										<ThemeProvider theme={currentTheme}>
-											<CssBaseline />
-											<Routes />
-										</ThemeProvider>
-									</AssetProvider>
-								</SidebarStateProvider>
-							</AuthProvider>
-						</FingerprintProvider>
-					</ClientContextProvider>
-				</Web3Provider>
-			</SnackbarProvider>
-		</SocketProvider>
+		<ThemeProvider theme={currentTheme}>
+			<CssBaseline />
+			<AppInner />
+		</ThemeProvider>
 	)
 }
 

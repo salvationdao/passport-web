@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
-import { useWebsocket } from "../containers/socket"
 import HubKey from "../keys"
+import { usePassportCommandsUser } from "../hooks/usePassport"
 
 export const useQuery = <P = any, R = any>(hubKey: HubKey, initFetch?: boolean, request?: R) => {
-	const { send } = useWebsocket()
+	const { send } = usePassportCommandsUser("/commander")
 	const [loading, setLoading] = useState<boolean>(false)
 	const [payload, setPayload] = useState<P | undefined>(undefined)
 	const [error, setError] = useState<string | undefined>(undefined)

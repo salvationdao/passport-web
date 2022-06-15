@@ -1,12 +1,12 @@
 import { Box, Button, Paper, TextField, Typography } from "@mui/material"
 import { red } from "@mui/material/colors"
 import { useState } from "react"
-import { useWebsocket } from "../../containers/socket"
 import HubKey from "../../keys"
 import { Logo } from "../logo"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 export const TwoFactorAuthenticationVerification = () => {
-	const { send } = useWebsocket()
+	const { send } = usePassportCommandsUser("/commander")
 	const [code, setCode] = useState("")
 	const [errMessage, setErrMessage] = useState("")
 

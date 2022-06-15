@@ -9,8 +9,8 @@ import { useAuth } from "../containers/auth"
 
 export const Home = () => {
 	const history = useHistory()
-	const { user } = useAuth()
 
+	const { user } = useAuth()
 	return (
 		<>
 			<Box

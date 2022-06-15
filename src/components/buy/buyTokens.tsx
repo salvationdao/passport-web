@@ -8,9 +8,7 @@ import Arrow from "../../assets/images/arrow.png"
 import SupsToken from "../../assets/images/supsToken.png"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../../config"
 import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { MetaMaskState, useWeb3 } from "../../containers/web3"
-import { useSecureSubscription } from "../../hooks/useSecureSubscription"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { ExchangeRates, tokenSelect } from "../../types/types"
@@ -18,14 +16,15 @@ import { ConnectWallet } from "../connectWallet"
 import { FancyButton } from "../fancyButton"
 import { Loading } from "../loading"
 import { TokenSelect } from "./tokenSelect"
+import { useSubscription } from "../../containers/ws/useSubscription"
+
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
 const BIG_NUMBER_FIX = 10 ** 6
 const MINIMUM_SPEND = "5"
 
 export const BuyTokens: React.FC = () => {
-	const { state, subscribe } = useWebsocket()
-	const { user } = useAuth()
+	const { user, userID } = useAuth()
 	const {
 		changeChain,
 		currentChainId,
@@ -52,7 +51,7 @@ export const BuyTokens: React.FC = () => {
 	const [minAmount, setMinAmount] = useState<BigNumber>()
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
-	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
+	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
 	const acceptedChainExceptions = currentChainId?.toString() === BINANCE_CHAIN_ID || currentChainId?.toString() === ETHEREUM_CHAIN_ID
 	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
 	const [tokenDecimals, setTokenDecimals] = useState(18)
@@ -68,13 +67,16 @@ export const BuyTokens: React.FC = () => {
 		}
 	}, [exchangeRates])
 
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		return subscribe<string>(HubKey.SupTotalRemaining, (amount) => {
+	useSubscription<string>(
+		{
+			URI: `/user/${userID}/sups`,
+			key: HubKey.SupTotalRemaining,
+		},
+		(amount) => {
 			const maxAmount = parseUnits("500000", 18)
 			setAmountRemaining(BigNumber.from(amount).lt(maxAmount) ? BigNumber.from(amount) : maxAmount)
-		})
-	}, [subscribe, state])
+		},
+	)
 
 	useEffect(() => {
 		if (currentToken.name === "usdc") {
@@ -237,9 +239,12 @@ export const BuyTokens: React.FC = () => {
 		}
 	}, [currentChainId, acceptedChainExceptions, setCurrentToken, tokenOptions, currentToken.name, currentToken.chainId])
 
-	useEffect(() => {
-		if (state !== SocketState.OPEN) return
-		return subscribe<{ bnb_to_usd: string; eth_to_usd: string; sup_to_usd: string; enable_sale: boolean }>(HubKey.SupExchangeRates, (rates) => {
+	useSubscription<{ bnb_to_usd: string; eth_to_usd: string; sup_to_usd: string; enable_sale: boolean }>(
+		{
+			URI: `/user/${userID}/sups`,
+			key: HubKey.SupExchangeRates,
+		},
+		(rates) => {
 			if (!rates) {
 				window.location.replace("https://supremacy.game/launch")
 				return
@@ -256,8 +261,8 @@ export const BuyTokens: React.FC = () => {
 					return
 				}
 			setExchangeRates(r)
-		})
-	}, [state, subscribe])
+		},
+	)
 
 	useEffect(() => {
 		if (enableSale === false) {
@@ -300,7 +305,6 @@ export const BuyTokens: React.FC = () => {
 		setLoading(true)
 		setTransferState("waiting")
 		try {
-			if (state !== SocketState.OPEN) return
 			let tx
 			if (currentToken.isNative) {
 				tx = await sendNativeTransfer(tokenAmt)
@@ -486,7 +490,9 @@ export const BuyTokens: React.FC = () => {
 					<Typography variant="h3" sx={{ margin: "2rem 0 1rem 0", textTransform: "uppercase" }}>
 						Error
 					</Typography>
-					<Typography variant="h4">{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}</Typography>
+					<Typography variant="h4">
+						{transferError ? (transferError.code === 4001 ? "Transaction Rejected" : "Purchase Failed") : null}
+					</Typography>
 					{/* <Typography sx={{ marginTop: "1rem" }} variant="body1">
 						{transferError ? (transferError.code === undefined ? transferError : null) : null}
 					</Typography> */}
@@ -542,7 +548,10 @@ export const BuyTokens: React.FC = () => {
 			{/* Purchase Sups Form */}
 			<Box
 				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId && transferState === "none" && metaMaskState === MetaMaskState.Active
+					acceptedChainExceptions &&
+					currentChainId === currentToken.chainId &&
+					transferState === "none" &&
+					metaMaskState === MetaMaskState.Active
 						? {
 								"@media (max-width:400px)": {
 									p: "1rem",
@@ -580,7 +589,9 @@ export const BuyTokens: React.FC = () => {
 						>
 							Purchase $SUPS
 						</Typography>
-						<Typography sx={{ fontSize: ".9rem", color: colors.darkGrey, textTransform: "uppercase" }}>Directly from Supremacy</Typography>
+						<Typography sx={{ fontSize: ".9rem", color: colors.darkGrey, textTransform: "uppercase" }}>
+							Directly from Supremacy
+						</Typography>
 					</Stack>
 					<form onSubmit={handleSubmit}>
 						<Box
@@ -719,12 +730,21 @@ export const BuyTokens: React.FC = () => {
 											}}
 										>
 											<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
-												Max: <b>{tokenBalance ? parseFloat(formatUnits(tokenBalance, tokenDecimals)).toPrecision(4) : "--"}</b>
+												Max:{" "}
+												<b>{tokenBalance ? parseFloat(formatUnits(tokenBalance, tokenDecimals)).toPrecision(4) : "--"}</b>
 											</Typography>
 										</Button>
 									</Box>
 
-									<Box sx={{ display: "flex", backgroundColor: colors.inputBg, borderRadius: "10px", padding: ".5rem 1rem", gap: ".5em" }}>
+									<Box
+										sx={{
+											display: "flex",
+											backgroundColor: colors.inputBg,
+											borderRadius: "10px",
+											padding: ".5rem 1rem",
+											gap: ".5em",
+										}}
+									>
 										<Box sx={{ display: "flex", flexDirection: "column", gap: ".5em", width: "100%" }}>
 											<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 												<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">

@@ -7,19 +7,20 @@ import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
 import Safe from "../assets/images/gradient/safeLarge.png"
 import SupsToken from "../assets/images/sup-token.svg"
-import { API_ENDPOINT_HOSTNAME, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
 import { useSnackbar } from "../containers/snackbar"
-import { SocketState, WSSendFn } from "../containers/socket"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import { AddressDisplay, metamaskErrorHandling } from "../helpers/web3"
-import { useSecureSubscription } from "../hooks/useSecureSubscription"
+import { useSubscription } from "../containers/ws/useSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { transferStateType, User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ConnectWalletOverlay } from "./transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "./transferStatesOverlay/switchNetworkOverlay"
+import { useAuth } from "../containers/auth"
+import { SendFunc } from "../containers/ws/useCommands"
 
 interface WithdrawSupsFormProps {
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
@@ -30,8 +31,8 @@ interface WithdrawSupsFormProps {
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
 	user: User | undefined
-	state: SocketState
-	send: WSSendFn
+	state: number
+	send: SendFunc
 }
 
 const UseSignatureMode = true
@@ -67,7 +68,8 @@ export const WithdrawSupsForm = ({
 }: WithdrawSupsFormProps) => {
 	const { account, metaMaskState, supBalance, provider, signer, changeChain, currentChainId } = useWeb3()
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
-	const { payload: userSups } = useSecureSubscription<string>(HubKey.UserSupsSubscribe)
+	const { userID } = useAuth()
+	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsWalletTotal, setSupsWalletTotal] = useState<BigNumber>()
@@ -115,7 +117,7 @@ export const WithdrawSupsForm = ({
 				}
 			})()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}, [user?.public_address])
 
@@ -201,7 +203,9 @@ export const WithdrawSupsForm = ({
 			const abi = ["function nonces(address user) view returns (uint256)", "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
 			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
-			const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`)
+			const resp = await fetch(
+				`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`,
+			)
 			const respJson: GetSignatureResponse & ErrorResponse = await resp.json()
 			if (!resp.ok) {
 				if (resp.status === 500) {
@@ -244,7 +248,9 @@ export const WithdrawSupsForm = ({
 				setWithdrawContractAmount(bal)
 			} catch (e) {
 				const message = metamaskErrorHandling(e)
-				!!message ? displayMessage(message) : displayMessage(e === "string" ? e : "Issue getting withdraw contract balance , please try again.")
+				!!message
+					? displayMessage(message)
+					: displayMessage(e === "string" ? e : "Issue getting withdraw contract balance , please try again.")
 			}
 		})()
 	}, [provider, displayMessage, currentChainId])
@@ -263,8 +269,7 @@ export const WithdrawSupsForm = ({
 
 	return (
 		<>
-			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} />
-			<ConnectWalletOverlay walletIsConnected={!!account} />
+
 			<Box
 				component="img"
 				src={Safe}
@@ -273,7 +278,8 @@ export const WithdrawSupsForm = ({
 					height: "12rem",
 				}}
 			/>
-
+			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={BINANCE_CHAIN_ID} />
+			<ConnectWalletOverlay walletIsConnected={!!account} />
 			<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: ".5rem" }}>
 				Withdraw $Sups
 			</Typography>
@@ -337,7 +343,10 @@ export const WithdrawSupsForm = ({
 									<SportsEsportsIcon sx={{ fontSize: "1.2rem", color: colors.darkGrey }} />
 								</Box>
 								<Box sx={{ display: "flex" }}>
-									<Typography variant="h6" sx={{ color: colors.lightNavyBlue2, fontWeight: 800, marginRight: ".5rem", alignSelf: "center" }}>
+									<Typography
+										variant="h6"
+										sx={{ color: colors.lightNavyBlue2, fontWeight: 800, marginRight: ".5rem", alignSelf: "center" }}
+									>
 										Amount:
 									</Typography>
 									<TextField
@@ -497,7 +506,8 @@ export const WithdrawSupsForm = ({
 					</DialogTitle>
 					<DialogContent>
 						<Typography variant="subtitle2" sx={{ color: colors.supremacyGold }}>
-							WARNING: When you start this process, the SUPS will be removed from your account. Before you begin, please make sure you have:
+							WARNING: When you start this process, the SUPS will be removed from your account. Before you begin, please make sure you
+							have:
 							<br />
 							<br />
 							- Your wallet connected
@@ -508,12 +518,13 @@ export const WithdrawSupsForm = ({
 						<br />
 						<br />
 						<Typography variant="subtitle2">
-							If you trigger the withdraw process but for any reason need to cancel the transaction, please contact the support team on Discord.
+							If you trigger the withdraw process but for any reason need to cancel the transaction, please contact the support team on
+							Discord.
 						</Typography>
 						<br />
 						<Typography variant="subtitle2">
-							Please confirm your withdrawal of <b>{withdrawAmount ? formatUnits(withdrawAmount, 18) : null}</b> $SUPS from {user?.username} into
-							wallet address: {account ? AddressDisplay(account) : null}.
+							Please confirm your withdrawal of <b>{withdrawAmount ? formatUnits(withdrawAmount, 18) : null}</b> $SUPS from{" "}
+							{user?.username} into wallet address: {account ? AddressDisplay(account) : null}.
 						</Typography>
 					</DialogContent>
 					<DialogContent sx={{ width: "100%", display: "flex", justifyContent: "flex-end" }}>

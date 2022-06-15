@@ -1,12 +1,12 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import { Box, Button, styled, Typography, TypographyProps } from "@mui/material"
 import { useEffect, useState } from "react"
-import { useAuth } from "../../containers/auth"
-import { SocketState, useWebsocket } from "../../containers/socket"
 import { supFormatter } from "../../helpers/items"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
+import { useAuth } from "../../containers/auth"
 
 export interface TransactionTableProps {
 	transactionIDs: string[]
@@ -89,21 +89,18 @@ export interface TransactionEntryProps {
 
 const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 	const { user } = useAuth()
-	const { state, subscribe } = useWebsocket()
+	const { state, send } = usePassportCommandsUser("/commander")
 	const [entry, setEntry] = useState<Transaction>()
 	const [error, setError] = useState<string>()
 
 	useEffect(() => {
-		if (state !== SocketState.OPEN || !subscribe || !user) return
+		if (state !== WebSocket.OPEN || !user) return
 
 		try {
-			return subscribe<Transaction>(
-				HubKey.TransactionSubscribe,
-				(payload) => {
-					setEntry(payload)
-				},
-				{ transaction_id: transactionID },
-			)
+			send<Transaction>(HubKey.TransactionSubscribe, { transaction_id: transactionID }).then((payload) => {
+				if (!payload) return
+				setEntry(payload)
+			})
 		} catch (e) {
 			if (typeof e === "string") {
 				setError(e)
@@ -111,7 +108,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				setError(e.message)
 			}
 		}
-	}, [subscribe, state, user, transactionID])
+	}, [state, user, transactionID, send])
 
 	if (error)
 		return (
@@ -198,9 +195,9 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
-						fontFamily: entry.to.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						fontFamily: entry?.to?.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
 						"&::after":
-							entry.to.username === user?.username
+							entry?.to?.username === user?.username
 								? {
 										content: '"(You)"',
 										marginLeft: "1ch",
@@ -209,7 +206,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								: undefined,
 					}}
 				>
-					{entry.to.username}
+					{entry?.to?.username}
 				</EntryData>
 			</td>
 			<td align="left">
@@ -217,9 +214,9 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
-						fontFamily: entry.from.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						fontFamily: entry?.from?.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
 						"&::after":
-							entry.from.username === user?.username
+							entry?.from?.username === user?.username
 								? {
 										content: '"(You)"',
 										marginLeft: ".2rem",
@@ -228,7 +225,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								: undefined,
 					}}
 				>
-					{entry.from.username}
+					{entry?.from?.username}
 				</EntryData>
 			</td>
 			<td align="right">
