@@ -20,7 +20,7 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 	const [loading, setLoading] = useState<boolean>(false)
 	const [error, setError] = useState<string>()
 	const [formError, setFormError] = useState<string>()
-	const [feeType, setFeeType] = useState<"XSYN" | "SUPS" | undefined>()
+	const [feeType, setFeeType] = useState<"XSYN" | "SUPS" | undefined>("SUPS")
 	const [amount, setAmount] = useState<number>(1)
 
 	const close = () => {
@@ -143,6 +143,7 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 					<Stack direction="row" justifyContent="center" alignItems="center" spacing="1rem" sx={{ pt: "1rem" }}>
 						<Tooltip title={"XSYN currently unavailable"}>
 							<FancyButton
+								disabled
 								borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
 								loading={loading}
 								sx={{ flex: 1 }}
@@ -155,7 +156,7 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 									})
 								}
 							>
-								Pay with XSYN
+								Pay with XSYN (Coming soon)
 							</FancyButton>
 						</Tooltip>
 						<FancyButton

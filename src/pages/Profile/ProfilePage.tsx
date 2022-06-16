@@ -89,7 +89,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 						marginBottom: "0.5rem",
 					}}
 				>
-					{loggedInUser?.id === user.id && <ProfileButton size="5rem" disabled sx={{ mb: "1rem" }} />}
+					<Box>{loggedInUser?.id === user.id && <ProfileButton size="5rem" disabled sx={{ mb: "1rem" }} />}</Box>
 					<Stack gap={"1rem"}>
 						<Typography variant="h3" marginBottom={"0.5rem"}>
 							{user.username}
