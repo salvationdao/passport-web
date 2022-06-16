@@ -41,7 +41,7 @@ export const StorePage = () => {
 						XSYN STORE IS CLOSED
 					</Typography>
 					<Typography variant="h6" sx={{ textAlign: "center" }}>
-						Go to Supremacy Marketplace to purchase assets
+						Go to Supremacy Marketplace or Storefront to purchase assets
 					</Typography>
 					<FancyButton
 						borderColor={colors.neonPink}
@@ -49,6 +49,13 @@ export const StorePage = () => {
 						onClick={() => window.open(`${BATTLE_ARENA_LINK}/marketplace`, "_blank")?.focus()}
 					>
 						<Typography sx={{ color: colors.neonPink, fontFamily: fonts.bizmoextra_bold }}>SUPREMACY MARKETPLACE</Typography>
+					</FancyButton>
+					<FancyButton
+						borderColor={colors.neonPink}
+						sx={{ py: ".7rem" }}
+						onClick={() => window.open(`${BATTLE_ARENA_LINK}/storefront`, "_blank")?.focus()}
+					>
+						<Typography sx={{ color: colors.neonPink, fontFamily: fonts.bizmoextra_bold }}>SUPREMACY STOREFRONT</Typography>
 					</FancyButton>
 					<Link
 						underline="none"
