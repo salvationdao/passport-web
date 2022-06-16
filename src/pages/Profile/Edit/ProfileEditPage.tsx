@@ -54,7 +54,7 @@ export const ProfileEditPage: React.FC = () => {
 		} else if (user.username !== username && user.username !== newUsername) {
 			setLoadingText("You do not have permission view this page. Redirecting to profile page...")
 			userTimeout = setTimeout(() => {
-				history.push("/profile")
+				history.push(`/profile/${user.username}/game-assets`)
 			}, 2000)
 		}
 
@@ -62,7 +62,7 @@ export const ProfileEditPage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
-	}, [user, history, username, authLoading, newUsername])
+	}, [user, history, authLoading])
 
 	if (!user || (user.username !== username && user.username !== newUsername)) {
 		return <Loading text={loadingText} />
@@ -212,7 +212,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 		if (!user) return
 		const { new_username, new_password, ...input } = data
 		setSubmitting(true)
-		setNewUsername(new_username)
 		try {
 			// let avatarID: string | undefined = user.avatar_id
 			// if (avatarChanged) {
@@ -246,12 +245,13 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 			if (resp) {
 				setDisplayResult(true)
 				setSuccessful(true)
+				setChangePassword(false)
+				setDisplayResult(true)
+				setNewUsername(new_username)
+				setTimeout(() => {
+					history.push(`/profile`)
+				}, 3000)
 			}
-			setChangePassword(false)
-			setDisplayResult(true)
-			setTimeout(() => {
-				history.push(`/profile`)
-			}, 3000)
 		} catch (e) {
 			setDisplayResult(true)
 			setSuccessful(false)
