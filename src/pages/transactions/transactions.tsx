@@ -59,8 +59,7 @@ export const TransactionsPage = () => {
 
 	useEffect(() => {
 		if (state !== WebSocket.OPEN || !send || !user) return
-			;
-		(async () => {
+		;(async () => {
 			setLoading(true)
 			try {
 				// Get transaction IDs
@@ -134,8 +133,7 @@ export const TransactionsPage = () => {
 
 	useEffect(() => {
 		if (state !== WebSocket.OPEN || !send || !user) return
-			;
-		(async () => {
+		;(async () => {
 			setLoading(true)
 			try {
 				// Get transaction group IDs
@@ -224,7 +222,8 @@ export const TransactionsPage = () => {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
 
-	return (<Box
+	return (
+		<Box
 			sx={{
 				display: "flex",
 				flexDirection: "column",
@@ -251,7 +250,6 @@ export const TransactionsPage = () => {
 						gap: "1rem",
 					}}
 				>
-
 					<Typography
 						variant="h2"
 						sx={{
@@ -290,12 +288,7 @@ export const TransactionsPage = () => {
 								},
 							}}
 						>
-							<Stack
-								spacing=".5rem"
-								direction="row"
-								alignItems="baseline"
-
-							>
+							<Stack spacing=".5rem" direction="row" alignItems="baseline">
 								<Autocomplete
 									value={selectedGroup}
 									disablePortal
@@ -446,7 +439,7 @@ export const TransactionsPage = () => {
 				onClose={() => setOpenFilterDrawer(false)}
 				onOpen={() => setOpenFilterDrawer(true)}
 				anchor="bottom"
-				swipeAreaWidth={56}
+				swipeAreaWidth={0}
 				ModalProps={{ keepMounted: true }}
 				PaperProps={{
 					sx: {
