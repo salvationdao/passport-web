@@ -10,24 +10,24 @@ import { useWeb3 } from "../containers/web3"
 
 export const BuyPage: React.FC = () => {
 	const { currentChainId } = useWeb3()
-	const { user, loading } = useAuth()
+	const { userID } = useAuth()
 	const history = useHistory()
 
 	//placeholder for private routes
 	useEffect(() => {
-		if (user) return
+		if (userID) return
 
 		const userTimeout = setTimeout(() => {
 			history.push("/login")
 		}, 2000)
 		return () => clearTimeout(userTimeout)
-	}, [user, history])
+	}, [userID, history])
 
-	if (!user) {
+	if (!userID) {
 		return <Loading text="You need to be logged in to view this page. Redirecting to login page..." />
 	}
 
-	return !loading && currentChainId && user ? (
+	return currentChainId && userID ? (
 		<Box sx={{ display: "flex", position: "relative", flexDirection: "column", width: "100%", height: "100vh" }}>
 			<Navbar />
 			<GradientCircleThing

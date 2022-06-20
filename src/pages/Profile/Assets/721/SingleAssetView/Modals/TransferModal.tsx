@@ -1,6 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close"
 import { Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, Typography } from "@mui/material"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { usePassportCommandsUser } from "../../../../../../hooks/usePassport"
 import HubKey from "../../../../../../keys"

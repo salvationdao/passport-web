@@ -69,12 +69,17 @@ export const BuyTokens: React.FC = () => {
 
 	useSubscription<string>(
 		{
-			URI: `/user/${userID}/sups`,
+			URI: `/public/sups_remaining`,
 			key: HubKey.SupTotalRemaining,
 		},
 		(amount) => {
 			const maxAmount = parseUnits("500000", 18)
-			setAmountRemaining(BigNumber.from(amount).lt(maxAmount) ? BigNumber.from(amount) : maxAmount)
+			const bigAmt = BigNumber.from(amount)
+			if (bigAmt.lt(maxAmount)) {
+				setAmountRemaining(bigAmt)
+			} else {
+				setAmountRemaining(maxAmount)
+			}
 		},
 	)
 
@@ -241,7 +246,7 @@ export const BuyTokens: React.FC = () => {
 
 	useSubscription<{ bnb_to_usd: string; eth_to_usd: string; sup_to_usd: string; enable_sale: boolean }>(
 		{
-			URI: `/user/${userID}/sups`,
+			URI: "/public/exchange_rates",
 			key: HubKey.SupExchangeRates,
 		},
 		(rates) => {
