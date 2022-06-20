@@ -69,7 +69,7 @@ export const BuyTokens: React.FC = () => {
 
 	useSubscription<string>(
 		{
-			URI: `/user/${userID}/sups`,
+			URI: `/public/sups_remaining`,
 			key: HubKey.SupTotalRemaining,
 		},
 		(amount) => {
@@ -241,7 +241,7 @@ export const BuyTokens: React.FC = () => {
 
 	useSubscription<{ bnb_to_usd: string; eth_to_usd: string; sup_to_usd: string; enable_sale: boolean }>(
 		{
-			URI: `/user/${userID}/sups`,
+			URI: "/public/exchange_rates",
 			key: HubKey.SupExchangeRates,
 		},
 		(rates) => {
