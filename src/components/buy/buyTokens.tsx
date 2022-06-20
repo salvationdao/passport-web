@@ -74,9 +74,9 @@ export const BuyTokens: React.FC = () => {
 		},
 		(amount) => {
 			const maxAmount = parseUnits("500000", 18)
-			const amountInt = parseInt(amount)
-			if (parseUnits(amountInt.toString()).lt(maxAmount)) {
-				setAmountRemaining(BigNumber.from(amount))
+			const bigAmt = BigNumber.from(amount)
+			if (bigAmt.lt(maxAmount)) {
+				setAmountRemaining(bigAmt)
 			} else {
 				setAmountRemaining(maxAmount)
 			}
