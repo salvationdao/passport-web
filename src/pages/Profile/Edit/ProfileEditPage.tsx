@@ -1,18 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import {
-	Box,
-	Button,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogTitle,
-	Link,
-	Paper, Stack,
-	styled,
-	Typography,
-} from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, Paper, Stack, styled, Typography } from "@mui/material"
 import { User } from "@sentry/react"
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -21,9 +10,9 @@ import { PrivacyPolicy, TermsAndConditions } from "../../../assets"
 import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
 import { useAuth } from "../../../containers/auth"
+import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
-import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import { LockButton, lockOptions, LockOptionsProps } from "../Locking/LockButton"
 import { LockModal } from "../Locking/LockModal"
 
@@ -62,13 +51,15 @@ export const ProfileEditPage: React.FC = () => {
 			if (!userTimeout) return
 			clearTimeout(userTimeout)
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [user, history, authLoading])
 
 	if (!user || (user.username !== username && user.username !== newUsername)) {
 		return <Loading text={loadingText} />
 	}
 
-	return (<Box
+	return (
+		<Box
 			sx={{
 				display: "flex",
 				flexDirection: "column",
@@ -78,9 +69,7 @@ export const ProfileEditPage: React.FC = () => {
 				marginBottom: "3rem",
 			}}
 		>
-
-			<ProfileEdit setNewUsername={setNewUsername} setDisplayResult={setDisplayResult}
-						 setSuccessful={setSuccessful} />
+			<ProfileEdit setNewUsername={setNewUsername} setDisplayResult={setDisplayResult} setSuccessful={setSuccessful} />
 			<Box
 				sx={{
 					display: "flex",
@@ -343,12 +332,10 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 
 					<Stack spacing={".5rem"}>
 						{lockOptions.map((option) => (
-							<LockButton key={option.type} option={option} setLockOption={setLockOption}
-										setOpen={setLockOpen} />
+							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
 						))}
 					</Stack>
 				</Stack>
-
 
 				{/* Temporarily removed for public sale */}
 				{/* <Section>
@@ -370,15 +357,15 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 
 				<Section>
 					<Typography variant="subtitle1">User Details</Typography>
-					<Box sx={{
-						display: "flex",
-						flex: 1,
-						height: "100%",
-						flexWrap: "wrap",
-						gap: "0.5rem",
-					}}>
-
-
+					<Box
+						sx={{
+							display: "flex",
+							flex: 1,
+							height: "100%",
+							flexWrap: "wrap",
+							gap: "0.5rem",
+						}}
+					>
 						<InputField
 							label="Username"
 							name="new_username"
@@ -506,7 +493,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 				>
 					Save
 				</Button>
-
 			</Box>
 			{/* Temporarily removed for public sale */}
 			{/* <Box
