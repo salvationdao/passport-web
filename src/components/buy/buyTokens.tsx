@@ -773,15 +773,13 @@ export const BuyTokens: React.FC = () => {
 														>
 															x
 														</span>{" "}
-														$Sups = {exchangeRates?.sup_to_usd && (exchangeRates?.sup_to_usd * 100).toFixed(0)}
+														$Sups = ${exchangeRates?.sup_to_usd && (exchangeRates?.sup_to_usd).toFixed(4)}
 														<span
 															style={{
 																fontSize: ".8rem",
 																textTransform: "lowercase",
 															}}
-														>
-															c
-														</span>
+														></span>
 													</Typography>
 												</Box>
 											</Box>
