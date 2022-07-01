@@ -1,12 +1,12 @@
-import * as React from "react"
-import { useState } from "react"
 import { Box, Typography } from "@mui/material"
 import { styled } from "@mui/system"
-import { XSYNLogo } from "../../assets"
-import LoginForm from "./form"
-import { useAuth } from "../../containers/auth"
+import { useState } from "react"
 import { Redirect } from "react-router-dom"
+import { XSYNLogo } from "../../assets"
 import { Loading } from "../../components/loading"
+import { useAuth } from "../../containers/auth"
+import { colors } from "../../theme"
+import LoginForm from "./form"
 
 interface LoginBoxProps {
 	wp: string
@@ -67,7 +67,16 @@ const SupremacyLogin = () => {
 	}
 	return (
 		<LoginBox wp={wp}>
-			<Box sx={{ padding: "50px 50px 20px 50px", flex: 1, display: "flex" }}>
+			<Box
+				sx={{
+					padding: "50px 50px 20px 50px",
+					flex: 1,
+					display: "flex",
+					"@media (max-width:600px)": {
+						p: "2em 1em",
+					},
+				}}
+			>
 				<ContentBox>
 					<Box sx={{ p: 2 }}>
 						<Typography component="h1">Login</Typography>
@@ -78,8 +87,8 @@ const SupremacyLogin = () => {
 					<LoginForm />
 				</ContentBox>
 			</Box>
-			<Box>
-				<Typography>Powered by</Typography>
+			<a href="https://xsyn.io" target="_blank" rel="noreferrer">
+				<Typography sx={{ color: colors.white, textDecoration: "unset" }}>Powered by</Typography>
 				<Box
 					component={XSYNLogo}
 					sx={{
@@ -87,7 +96,7 @@ const SupremacyLogin = () => {
 						margin: "1rem",
 					}}
 				/>
-			</Box>
+			</a>
 		</LoginBox>
 	)
 }

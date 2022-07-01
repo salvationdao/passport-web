@@ -1,3 +1,4 @@
+import MetaMaskOnboarding from "@metamask/onboarding"
 import { useCallback, useMemo, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { AuthContainer } from "../containers"
@@ -11,15 +12,13 @@ interface MetaMaskLoginButtonRenderProps {
 	isProcessing: boolean
 	errorMessage: string | null
 }
-
 interface LoginMetaMaskProps {
-	publicSale?: boolean
 	onFailure?: (err: string) => void
-	onClick?: () => Promise<boolean> // return false to stop login
+	onClick?: () => void // return false to stop login
 	render: (props: MetaMaskLoginButtonRenderProps) => JSX.Element
 }
 
-export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ publicSale, onFailure, onClick, render }) => {
+export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ onFailure, onClick, render }) => {
 	const { loginMetamask, loginWalletConnect } = AuthContainer.useContainer()
 	const { metaMaskState } = useWeb3()
 	const { displayMessage } = useSnackbar()
@@ -28,60 +27,48 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
 	const click = useCallback(async () => {
-		if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
-			try {
-				displayMessage("Please refer to your wallet for authentication")
-				const resp = await loginWalletConnect()
-				if (!resp || !resp.payload) return
-				!publicSale && history.push("/onboarding?skip_username=true")
-			} catch (e) {
-				setIsProcessing(false)
-				if (onFailure) {
-					onFailure(typeof e === "string" ? e : "Something went wrong, please try again.")
-				}
-			}
-		} else {
-			setIsProcessing(true)
-			if (onClick && !(await onClick())) return
-
-			try {
-				const URLParam = new URLSearchParams(window.location.search)
-
-				let source = ""
-				let host = ""
-				if (URLParam.get("hangar")) source = "hangar"
-				else if (URLParam.get("website")) {
-					source = "website"
-					host = URLParam.get("host") || ""
-				}
-
-				const resp = await loginMetamask(source, host)
-				if (!resp || !resp.payload) {
-					setErrorMessage(
-						"There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.",
-					)
-					setIsProcessing(false)
-					return
-				}
-				setIsProcessing(false)
-				!publicSale && history.push("/onboarding?skip_username=true")
-			} catch (e: any) {
-				setIsProcessing(false)
-				if (onFailure) {
-					const err = metamaskErrorHandling(e)
-					if (err) {
-						onFailure(err)
-						setErrorMessage(err)
-						return
-					}
-					onFailure("Something went wrong, please try again.")
-				}
-			}
+		if (metaMaskState === MetaMaskState.NotInstalled) {
+			const onboarding = new MetaMaskOnboarding()
+			onboarding.startOnboarding()
 			return
 		}
+		setIsProcessing(true)
+		if (onClick) {
+			onClick()
+		}
+		try {
+			const URLParam = new URLSearchParams(window.location.search)
+			let source = ""
+			let host = ""
+			if (URLParam.get("hangar")) source = "hangar"
+			else if (URLParam.get("website")) {
+				source = "website"
+				host = URLParam.get("host") || ""
+			}
 
+			const resp = await loginMetamask(source, host)
+			if (!resp || !resp.payload) {
+				setErrorMessage(
+					"There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.",
+				)
+				setIsProcessing(false)
+				return
+			}
+			setIsProcessing(false)
+		} catch (e: any) {
+			setIsProcessing(false)
+			if (onFailure) {
+				const err = metamaskErrorHandling(e)
+				if (err) {
+					onFailure(err)
+					setErrorMessage(err)
+					return
+				}
+				onFailure("Something went wrong, please try again.")
+			}
+		}
 		setIsProcessing(false)
-	}, [onFailure, history, loginMetamask, onClick, loginWalletConnect, publicSale, displayMessage])
+	}, [onFailure, history, loginMetamask, onClick, displayMessage, metaMaskState])
 
 	const propsForRender = useMemo(
 		() => ({

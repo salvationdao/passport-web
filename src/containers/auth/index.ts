@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { Action, useMutation, useQuery } from "react-fetching-library"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
+import keys from "../../keys"
 import { LoginRequest, VerifyAccountResponse } from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
-import { Action, useMutation, useQuery } from "react-fetching-library"
-import useSignup from "./signup"
 import { useSubscription } from "../ws/useSubscription"
-import keys from "../../keys"
+import useSignup from "./signup"
 
 export enum VerificationType {
 	EmailVerification,
