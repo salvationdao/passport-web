@@ -17,7 +17,7 @@ export enum VerificationType {
 	ForgotPassword,
 }
 
-const loginAction = (formValues: LoginRequest & { authType: string }): Action<User> => ({
+const loginAction = (formValues: LoginRequest & { authType: AuthTypes }): Action<User> => ({
 	method: "POST",
 	endpoint: `/auth/${formValues.authType}`,
 	responseType: "json",
@@ -28,6 +28,16 @@ const loginAction = (formValues: LoginRequest & { authType: string }): Action<Us
 /**
  * A Container that handles Authorisation
  */
+
+export enum AuthTypes {
+	Wallet = "wallet",
+	Email = "email",
+	Hangar = "hangar",
+	Website = "website",
+	Cookie = "cookie",
+	Token = "token",
+}
+
 export const AuthContainer = createContainer(() => {
 	const { fingerprint } = useFingerprint()
 	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
@@ -36,8 +46,6 @@ export const AuthContainer = createContainer(() => {
 	const setUser = (user?: User) => {
 		_setUser(user)
 	}
-
-	const [authType, setAuthType] = useState<string>("wallet")
 
 	const [recheckAuth, setRecheckAuth] = useState(false)
 	const [authorised, setAuthorised] = useState(false)
@@ -99,10 +107,10 @@ export const AuthContainer = createContainer(() => {
 			form.action = `https://${host || API_ENDPOINT_HOSTNAME}/api/auth/external`
 
 			switch (source) {
-				case "website":
+				case AuthTypes.Website:
 					form.action += "?website=true"
 					break
-				case "hangar":
+				case AuthTypes.Hangar:
 					form.action += "?isHangar=true"
 					break
 				default:
@@ -167,7 +175,7 @@ export const AuthContainer = createContainer(() => {
 					password,
 					session_id: sessionId,
 					fingerprint,
-					authType,
+					authType: AuthTypes.Email,
 				})
 
 				if (!resp || resp.error || !resp.payload) {
@@ -181,7 +189,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : "Something went wrong, please try again."
 			}
 		},
-		[login, redirectURL, sessionId, fingerprint, authType, clear],
+		[login, redirectURL, sessionId, fingerprint, clear],
 	)
 
 	/**
@@ -196,7 +204,7 @@ export const AuthContainer = createContainer(() => {
 				token,
 				session_id: sessionId,
 				fingerprint,
-				authType: "token",
+				authType: AuthTypes.Token,
 			}
 			if (redirectURL) {
 				externalAuth({ ...args, fingerprint: undefined })
@@ -232,16 +240,13 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const loginCookieExternal = useCallback(
 		(source: string) => {
-			let authType = ""
+			let authType = AuthTypes.Cookie
 			switch (source) {
-				case "hangar":
-					authType = "hangar"
+				case AuthTypes.Hangar:
+					authType = AuthTypes.Hangar
 					break
-				case "website":
-					authType = "website"
-					break
-				default:
-					authType = "cookie"
+				case AuthTypes.Website:
+					authType = AuthTypes.Website
 					break
 			}
 
@@ -274,7 +279,7 @@ export const AuthContainer = createContainer(() => {
 						signature: signature,
 						session_id: sessionId,
 						fingerprint,
-						authType: "wallet",
+						authType: AuthTypes.Wallet,
 						source,
 						host,
 					}
@@ -289,10 +294,8 @@ export const AuthContainer = createContainer(() => {
 						signature: signature,
 						session_id: sessionId,
 						fingerprint,
-						authType: "wallet",
+						authType: AuthTypes.Wallet,
 					})
-
-					console.log(resp.payload)
 
 					if (!resp || resp.error || !resp.payload) {
 						clear()
@@ -334,7 +337,7 @@ export const AuthContainer = createContainer(() => {
 					signature: wcSignature || "",
 					session_id: sessionId,
 					fingerprint,
-					authType,
+					authType: AuthTypes.Wallet,
 				})
 
 				if (!resp || resp.error || !resp.payload) {
@@ -351,7 +354,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, authType, clear])
+	}, [wcSignature, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, clear])
 
 	// Effect
 	useEffect(() => {
@@ -466,8 +469,6 @@ export const AuthContainer = createContainer(() => {
 		sessionId,
 		showSimulation,
 		setShowSimulation,
-		authType,
-		setAuthType,
 		loginCookieExternal,
 	}
 })

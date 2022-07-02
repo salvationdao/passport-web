@@ -4,11 +4,9 @@ import { MetaMaskIcon, WalletConnectIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { MetaMaskLogin } from "../../components/loginMetaMask"
 import { WalletConnectLogin } from "../../components/loginWalletConnect"
-import { useAuth } from "../../containers/auth"
 import EmailLogin from "./email"
 
 const LoginForm = () => {
-	const { authType, setAuthType } = useAuth()
 	const [error, setError] = useState<string | undefined>(undefined)
 
 	return (
@@ -18,9 +16,6 @@ const LoginForm = () => {
 					<EmailLogin />
 					<MetaMaskLogin
 						onFailure={setError}
-						onClick={() => {
-							setAuthType("wallet")
-						}}
 						render={(props) => (
 							<FancyButton
 								onClick={props.onClick}
@@ -38,9 +33,6 @@ const LoginForm = () => {
 					/>
 					<WalletConnectLogin
 						onFailure={setError}
-						onClick={() => {
-							setAuthType("wallet")
-						}}
 						render={(props) => (
 							<FancyButton
 								onClick={props.onClick}

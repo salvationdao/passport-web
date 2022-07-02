@@ -1,8 +1,6 @@
 import MetaMaskOnboarding from "@metamask/onboarding"
 import { useCallback, useMemo, useState } from "react"
-import { useHistory } from "react-router-dom"
-import { AuthContainer } from "../containers"
-import { useSnackbar } from "../containers/snackbar"
+import { useAuth } from "../containers/auth"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { metamaskErrorHandling } from "../helpers/web3"
 
@@ -19,10 +17,8 @@ interface LoginMetaMaskProps {
 }
 
 export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ onFailure, onClick, render }) => {
-	const { loginMetamask, loginWalletConnect } = AuthContainer.useContainer()
+	const { loginMetamask } = useAuth()
 	const { metaMaskState } = useWeb3()
-	const { displayMessage } = useSnackbar()
-	const history = useHistory()
 	const [isProcessing, setIsProcessing] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -68,7 +64,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			}
 		}
 		setIsProcessing(false)
-	}, [onFailure, history, loginMetamask, onClick, displayMessage, metaMaskState])
+	}, [onFailure, loginMetamask, onClick, metaMaskState])
 
 	const propsForRender = useMemo(
 		() => ({

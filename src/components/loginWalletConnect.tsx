@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
-import { AuthContainer } from "../containers"
+import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { useWeb3 } from "../containers/web3"
 
@@ -15,7 +15,7 @@ interface WalletConnectProps {
 }
 
 export const WalletConnectLogin: React.VoidFunctionComponent<WalletConnectProps> = ({ onFailure, onClick, render }) => {
-	const { loginWalletConnect } = AuthContainer.useContainer()
+	const { loginWalletConnect } = useAuth()
 	const { metaMaskState } = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const [isProcessing, setIsProcessing] = useState(false)
