@@ -1,3 +1,4 @@
+import { ResetPasswordRequest } from "./../../types/auth"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Action, useMutation, useQuery } from "react-fetching-library"
 import { createContainer } from "unstated-next"
@@ -21,6 +22,7 @@ export enum AuthTypes {
 	Token = "token",
 	Signup = "signup",
 	Forgot = "forgot",
+	Reset = "reset",
 }
 
 export enum VerificationType {
@@ -37,6 +39,14 @@ const loginAction = (formValues: LoginRequest & { authType: AuthTypes }): Action
 })
 
 const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.Reset}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.Forgot}`,
 	responseType: "json",
@@ -83,6 +93,7 @@ export const AuthContainer = createContainer(() => {
 
 	const { loading: loginLoading, mutate: login, error: loginError } = useMutation(loginAction)
 	const { loading: forgotPasswordLoading, mutate: forgot } = useMutation(forgotPasswordAction)
+	const { loading: resetPasswordLoading, mutate: reset } = useMutation(resetPasswordAction)
 	const { query: logoutQuery } = useQuery(
 		{
 			method: "GET",
@@ -277,6 +288,40 @@ export const AuthContainer = createContainer(() => {
 			}
 		},
 		[forgot, redirectURL, sessionId, fingerprint, clear],
+	)
+
+	/**
+	 * Reset Password sends email to the user with jwt token to reset password
+	 */
+	const resetPassword = useCallback(
+		async (password: string, token: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const resp = await reset({
+					redirectURL,
+					password,
+					token,
+					session_id: sessionId,
+					fingerprint,
+				})
+				if (resp.error) {
+					clear()
+					throw resp.payload
+				}
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[reset, redirectURL, sessionId, fingerprint, clear],
 	)
 
 	/**
@@ -559,6 +604,8 @@ export const AuthContainer = createContainer(() => {
 		signupPassword,
 		forgotPassword,
 		forgotPasswordLoading,
+		resetPassword,
+		resetPasswordLoading,
 	}
 })
 

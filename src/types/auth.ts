@@ -28,6 +28,12 @@ export interface ForgotPasswordRequest extends BasicLoginRequest {
 	session_id?: string
 }
 
+export interface ResetPasswordRequest extends BasicLoginRequest {
+	token: string
+	password: string
+	session_id?: string
+}
+
 export interface BasicLoginResponse {
 	user: User
 	token: string

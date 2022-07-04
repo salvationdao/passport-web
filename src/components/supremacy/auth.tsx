@@ -51,7 +51,7 @@ const ContentBox = styled(Box)({
 
 const wallpapers = ["/img/rm.png", "/img/bc.png", "/img/zai.png"]
 
-export const SupremacyAuth: React.FC<{ forgotPassword?: boolean }> = ({ children, forgotPassword }) => {
+export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title }) => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
 	const { userID, loginCookieExternal } = useAuth()
 	const isFromExternal = window.location.pathname === "/external/login"
@@ -80,7 +80,7 @@ export const SupremacyAuth: React.FC<{ forgotPassword?: boolean }> = ({ children
 				}}
 			>
 				<ContentBox>
-					<Typography component="h1">{forgotPassword ? "Forgot Password" : "Connect"}</Typography>
+					<Typography component="h1">{title ? title : "Connect"}</Typography>
 					<Box component="img" sx={{ width: "50px" }} src={"/img/sups_logo.svg"} alt={"Login to Supremacy"} />
 					{children}
 				</ContentBox>

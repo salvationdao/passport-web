@@ -12,6 +12,7 @@ import { Redirect, Route, Switch } from "react-router-dom"
 import { LoginPage } from "./pages/login"
 import { ws } from "./containers/ws"
 import ForgotPassword from "./pages/forgotPassword"
+import ResetPassword from "./pages/resetPassword"
 
 loadIcons()
 
@@ -31,6 +32,9 @@ const AppInner = () => {
 				</Route>
 				<Route path="/forgot-password">
 					<ForgotPassword />
+				</Route>
+				<Route path="/reset-password">
+					<ResetPassword />
 				</Route>
 				<Route path="/">
 					<Redirect to={"/login"} />

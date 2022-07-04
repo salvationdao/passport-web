@@ -7,11 +7,12 @@ import { SupremacyAuth } from "../components/supremacy/auth"
 import { useAuth } from "../containers/auth"
 import { colors } from "../theme"
 
-const ForgotPassword: React.FC = () => {
+const ResetPassword: React.FC = () => {
 	const theme = useTheme()
-	const { forgotPassword, forgotPasswordLoading } = useAuth()
+	const searchParams = new URLSearchParams(window.location.search)
+	const token = searchParams.get("token")
+	const { resetPassword, resetPasswordLoading } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
-	const [success, setSuccess] = React.useState<string | null>(null)
 
 	const errorCallback = (msg: string) => {
 		setError(msg)
@@ -20,17 +21,17 @@ const ForgotPassword: React.FC = () => {
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const data = new FormData(event.currentTarget)
-		const email = data.get("email")?.toString()
-		if (!email) {
-			setError("No email has been set.")
+		const password = data.get("password")?.toString()
+		const confirmPassword = data.get("confirmPassword")?.toString()
+		if (!password || !token) {
+			return
+		}
+		if (confirmPassword !== password) {
+			setError("Password does not match")
 			return
 		}
 
-		const successMessage = await forgotPassword(email, errorCallback)
-
-		if (!error) {
-			setSuccess(successMessage)
-		}
+		await resetPassword(password, token, errorCallback)
 	}
 	const formatError = error?.split(" ")
 	let firstWordError = ""
@@ -40,26 +41,37 @@ const ForgotPassword: React.FC = () => {
 	formatError?.shift()
 
 	return (
-		<SupremacyAuth title="Forgot Password">
+		<SupremacyAuth title="Reset Password">
 			<Stack sx={{ mt: "2rem", borderTop: 1, borderColor: "divider", p: "2em" }}>
 				<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "25rem" }}>
-					<Typography sx={{ textAlign: "left" }}>Enter your email address to recover your password:</Typography>
+					<Typography sx={{ textAlign: "left" }}>Enter your new password:</Typography>
 					<TextField
 						margin="normal"
 						required
 						fullWidth
-						id="email"
-						label="Email Address"
-						name="email"
-						type="email"
-						autoComplete="email"
-						onFocus={() => {
-							if (success || error) {
-								setSuccess(null)
+						name="password"
+						label="Password"
+						type="password"
+						id="password"
+						autoComplete="current-password"
+						inputProps={{ minLength: 8 }}
+					/>
+					<TextField
+						margin="normal"
+						required
+						fullWidth
+						name="confirmPassword"
+						label="Confirm Password"
+						type="password"
+						id="confirmPassword"
+						inputProps={{ minLength: 8 }}
+						onChange={() => {
+							if (error) {
 								setError(null)
 							}
 						}}
 					/>
+
 					{formatError && (
 						<Box sx={{ display: "flex" }}>
 							<Typography
@@ -74,20 +86,16 @@ const ForgotPassword: React.FC = () => {
 							</Typography>
 						</Box>
 					)}
-					{success && (
-						<Typography component="span" variant="caption" sx={{ color: colors.skyBlue, width: "fit-content", textAlign: "left" }}>
-							{success}
-						</Typography>
-					)}
+
 					<FancyButton
-						loading={forgotPasswordLoading}
+						loading={resetPasswordLoading}
 						submit
 						fullWidth
 						filled
 						borderColor={theme.palette.primary.main}
 						sx={{ mt: 3, mb: 2 }}
 					>
-						Send email
+						Reset Password
 					</FancyButton>
 				</Stack>
 				<Link to="/login">
@@ -115,4 +123,4 @@ const ForgotPassword: React.FC = () => {
 	)
 }
 
-export default ForgotPassword
+export default ResetPassword
