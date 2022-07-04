@@ -1,4 +1,4 @@
-import { Stack, Typography, useTheme } from "@mui/material"
+import { Box, Stack, Typography, useTheme } from "@mui/material"
 import TextField from "@mui/material/TextField"
 import * as React from "react"
 import { Link } from "react-router-dom"
@@ -22,7 +22,6 @@ const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const data = new FormData(event.currentTarget)
-		const username = data.get("username")?.toString()
 		const email = data.get("email")?.toString()
 		const password = data.get("password")?.toString()
 		const confirmPassword = data.get("confirmPassword")?.toString()
@@ -31,11 +30,25 @@ const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 			setError("Password does not match")
 			return
 		}
-
-		if (email && password) {
-			signup && username ? await signupPassword(username, email, password, errorCallback) : await loginPassword(email, password, errorCallback)
+		if (!email || !password) {
+			setError("No email or password has been set.")
+			return
+		}
+		if (signup) {
+			const username = data.get("username")?.toString()
+			username && (await signupPassword(username, email, password, errorCallback))
+		} else {
+			await loginPassword(email, password, errorCallback)
 		}
 	}
+
+	const formatError = error?.split(" ")
+	let firstWordError = ""
+	if (formatError) {
+		firstWordError = formatError[0]
+	}
+	formatError?.shift()
+
 	return (
 		<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "25rem" }}>
 			{signup && (
@@ -84,14 +97,19 @@ const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 					}}
 				/>
 			)}
-			{error && (
-				<Typography
-					component="span"
-					variant="caption"
-					sx={{ display: "inline-block", color: colors.errorRed, width: "fit-content", textAlign: "left" }}
-				>
-					{error}
-				</Typography>
+			{formatError && (
+				<Box sx={{ display: "flex" }}>
+					<Typography
+						component="span"
+						variant="caption"
+						sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left", textTransform: "capitalize" }}
+					>
+						{firstWordError}&nbsp;
+					</Typography>
+					<Typography component="span" variant="caption" sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left" }}>
+						{formatError.join(" ")}
+					</Typography>
+				</Box>
 			)}
 			{/* <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" /> */}
 

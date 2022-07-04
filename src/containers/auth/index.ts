@@ -182,18 +182,19 @@ export const AuthContainer = createContainer(() => {
 
 				if (!resp || resp.error || !resp.payload) {
 					clear()
-					throw resp
+					throw resp.payload
 				}
 				setUser(resp.payload)
 				setAuthorised(true)
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
-				if (e.response.data.message) {
-					errMsg = e.response.data.message
+				if (e.message) {
+					errMsg = e.message
 				}
 				if (errorCallback) {
 					errorCallback(errMsg)
 				}
+				console.error(e)
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
