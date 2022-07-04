@@ -137,68 +137,67 @@ export const Routes = () => {
 					</Route>
 					<Sidebar onClose={() => setSidebarOpen(false)}>
 						<Switch>
-						<Route exact path="/">
-							<LoginPage />
-						</Route>
-						<Route exact path="/login">
-							<LoginPage />
-						</Route>
-						<Route path="/signup">
-							<SignUpPage />
-						</Route>
-						<Route path="/onboarding">
-							<PassportReady />
-						</Route>
+							<Route exact path="/">
+								<LoginPage />
+							</Route>
+							<Route exact path="/login">
+								<LoginPage />
+							</Route>
+							<Route path="/signup">
+								<SignUpPage />
+							</Route>
+							<Route path="/onboarding">
+								<PassportReady />
+							</Route>
 
-						<Route path="/privacy-policy">
-							<Home />
-						</Route>
-						<Route path="/terms-and-conditions">
-							<Home />
-						</Route>
-						<Route path="/transactions">
-							<TransactionsPage />
-						</Route>
+							<Route path="/privacy-policy">
+								<Home />
+							</Route>
+							<Route path="/terms-and-conditions">
+								<Home />
+							</Route>
+							<Route path="/transactions">
+								<TransactionsPage />
+							</Route>
 
-						<Route path="/staking">
-							<FarmsPage />
-						</Route>
-						<Route path="/withdraw">
-							<WithdrawPage />
-						</Route>
-						<Route path="/deposit/history">
-							<DepositHistoryPage />
-						</Route>
-						<Route path="/deposit">
-							<DepositPage />
-						</Route>
-						<Route path="/buy">
-							<BuyPage />
-						</Route>
-						<Route path="/external/buy">
-							<IFrameBuyPage />
-						</Route>
+							<Route path="/staking">
+								<FarmsPage />
+							</Route>
+							<Route path="/withdraw">
+								<WithdrawPage />
+							</Route>
+							<Route path="/deposit/history">
+								<DepositHistoryPage />
+							</Route>
+							<Route path="/deposit">
+								<DepositPage />
+							</Route>
+							<Route path="/buy">
+								<BuyPage />
+							</Route>
+							<Route path="/external/buy">
+								<IFrameBuyPage />
+							</Route>
 
+							<Route path="/deposit-assets/:collection_slug">
+								<ContractAssetPage />
+							</Route>
+							<Route path="/deposit-assets">
+								<DepositAssetsPage />
+							</Route>
 
-						<Route path="/deposit-assets/:collection_slug">
-							<ContractAssetPage />
-						</Route>
-						<Route path="/deposit-assets">
-							<DepositAssetsPage />
-						</Route>
+							{/* User-authenticated routes */}
+							{/* profile */}
+							<Route path={"/profile/:username?"}>
+								<ProfilePage />
+							</Route>
 
-						{/* User-authenticated routes */}
-						{/* profile */}
-						<Route path={"/profile/:username?"}>
-							<ProfilePage />
-						</Route>
-
-						<Route path="/asset/:asset_hash">
-							<AssetRedirectPage />
-						</Route>
-						<Route path="/store">
-							<StorePage />
-						</Route>
+							<Route path="/asset/:asset_hash">
+								<AssetRedirectPage />
+							</Route>
+							<Route path="/store">
+								<StorePage />
+							</Route>
 						</Switch>
 					</Sidebar>
 				</Switch>

@@ -23,8 +23,6 @@ export const LoginPage: React.FC = () => {
 	const { setSidebarOpen } = useSidebarState()
 	const { displayMessage } = useSnackbar()
 
-	const { loginPassword } = AuthContainer.useContainer()
-
 	const { control, handleSubmit, reset } = useForm<LogInInput>()
 	const [loading, setLoading] = useState(false)
 	const [showEmailLogin, setShowEmailLogin] = useState(false)
@@ -37,7 +35,7 @@ export const LoginPage: React.FC = () => {
 	const onEmailLogin = handleSubmit(async (input) => {
 		try {
 			setLoading(true)
-			await loginPassword(input.email, input.password)
+			// await loginPassword(input.email, input.password)
 		} catch (e) {
 			displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
 		} finally {

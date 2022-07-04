@@ -1,12 +1,13 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, Paper, Stack, styled, Typography } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, Paper, Stack, styled, Tooltip, Typography } from "@mui/material"
 import { User } from "@sentry/react"
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useHistory, useParams } from "react-router-dom"
 import { PrivacyPolicy, TermsAndConditions } from "../../../assets"
+import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
 import { useAuth } from "../../../containers/auth"
@@ -327,16 +328,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 
 				{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
 
-				<Stack spacing=".5rem">
-					<Typography variant="h6">Account Locks</Typography>
-
-					<Stack spacing={".5rem"}>
-						{lockOptions.map((option) => (
-							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
-						))}
-					</Stack>
-				</Stack>
-
 				{/* Temporarily removed for public sale */}
 				{/* <Section>
 					<Typography variant="subtitle1">Avatar</Typography>
@@ -416,6 +407,20 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 						/>
 					</Box>
 				</Section>
+				<Stack spacing=".5rem">
+					<Typography variant="h6">Account</Typography>
+
+					<Box sx={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
+						<Tooltip title="Change your password">
+							<FancyButton sx={{ minWidth: "15rem", width: "calc(50% - .5rem)" }} size="small">
+								Change Password
+							</FancyButton>
+						</Tooltip>
+						{lockOptions.map((option) => (
+							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
+						))}
+					</Box>
+				</Stack>
 
 				{/* Temporarily removed for public sale */}
 				{/* <Section>

@@ -141,17 +141,18 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 								<Tab label="ACHIEVEMENTS" value={`/profile/${username}/achievements`} />
 							</Tabs>
 							<Switch>
+								<Route path={`/profile/${username}/edit`}>
+									<ProfileEditPage />
+								</Route>
 								<Route path={`/profile/${username}/game-assets`}>
 									<Assets721 user={user} loggedInUser={loggedInUser} />
 								</Route>
 								<Route path={`/profile/${username}/achievements`}>
 									<Assets1155 user={user} loggedInUser={loggedInUser} />
 								</Route>
-								<Route path={`/profile/${username}/edit`}>
-									<ProfileEditPage />
-								</Route>
+
 								<Route>
-									<Redirect to={`/profile/${username || user.username}/game-assets`} />
+									<Redirect to={`/profile/${username || user.username}/edit`} />
 								</Route>
 							</Switch>
 						</Route>

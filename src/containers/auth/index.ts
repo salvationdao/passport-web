@@ -36,6 +36,7 @@ export enum AuthTypes {
 	Website = "website",
 	Cookie = "cookie",
 	Token = "token",
+	Signup = "signup",
 }
 
 export const AuthContainer = createContainer(() => {
@@ -167,26 +168,69 @@ export const AuthContainer = createContainer(() => {
 	 * Logs a User in using their email and password.
 	 */
 	const loginPassword = useCallback(
-		async (email: string, password: string) => {
+		async (email: string, password: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await login({
+				const formValues = {
 					redirectURL,
 					email,
 					password,
 					session_id: sessionId,
 					fingerprint,
 					authType: AuthTypes.Email,
-				})
+				}
+				const resp = await login(formValues)
 
 				if (!resp || resp.error || !resp.payload) {
 					clear()
-					return
+					throw resp
 				}
 				setUser(resp.payload)
 				setAuthorised(true)
-				setLoading(false)
-			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.response.data.message) {
+					errMsg = e.response.data.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[login, redirectURL, sessionId, fingerprint, clear],
+	)
+
+	/**
+	 * Registers a User in using their email and password.
+	 */
+	const signupPassword = useCallback(
+		async (username: string, email: string, password: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const resp = await login({
+					redirectURL,
+					username,
+					email,
+					password,
+					session_id: sessionId,
+					fingerprint,
+					authType: AuthTypes.Signup,
+				})
+				if (!resp || resp.error || !resp.payload) {
+					clear()
+					throw resp.payload
+				}
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
 			}
 		},
 		[login, redirectURL, sessionId, fingerprint, clear],
@@ -470,6 +514,7 @@ export const AuthContainer = createContainer(() => {
 		showSimulation,
 		setShowSimulation,
 		loginCookieExternal,
+		signupPassword,
 	}
 })
 

@@ -43,6 +43,8 @@ const ContentBox = styled(Box)({
 	width: "100%",
 	boxSizing: "border-box",
 	flexDirection: "column",
+	padding: "1rem",
+	gap: "1rem",
 	alignItems: "center",
 	background: "rgba(0, 0, 0, 0.7)",
 })
@@ -78,17 +80,13 @@ const SupremacyLogin = () => {
 				}}
 			>
 				<ContentBox>
-					<Box sx={{ p: 2 }}>
-						<Typography component="h1">Login</Typography>
-					</Box>
-					<Box sx={{ p: 2 }}>
-						<Box component="img" sx={{ width: "50px" }} src={"/img/sups_logo.svg"} alt={"Login to Supremacy"} />
-					</Box>
+					<Typography component="h1">Login</Typography>
+					<Box component="img" sx={{ width: "50px" }} src={"/img/sups_logo.svg"} alt={"Login to Supremacy"} />
 					<LoginForm />
 				</ContentBox>
 			</Box>
-			<a href="https://xsyn.io" target="_blank" rel="noreferrer">
-				<Typography sx={{ color: colors.white, textDecoration: "unset" }}>Powered by</Typography>
+			<a href="https://xsyn.io" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+				<Typography sx={{ color: colors.white, textDecoration: "none" }}>Powered by</Typography>
 				<Box
 					component={XSYNLogo}
 					sx={{
