@@ -4,13 +4,24 @@ import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
 import keys from "../../keys"
-import { LoginRequest, VerifyAccountResponse } from "../../types/auth"
+import { ForgotPasswordRequest, LoginRequest, VerifyAccountResponse } from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 import { useSubscription } from "../ws/useSubscription"
 import useSignup from "./signup"
+
+export enum AuthTypes {
+	Wallet = "wallet",
+	Email = "email",
+	Hangar = "hangar",
+	Website = "website",
+	Cookie = "cookie",
+	Token = "token",
+	Signup = "signup",
+	Forgot = "forgot",
+}
 
 export enum VerificationType {
 	EmailVerification,
@@ -25,19 +36,16 @@ const loginAction = (formValues: LoginRequest & { authType: AuthTypes }): Action
 	body: formValues,
 })
 
+const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.Forgot}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
 /**
  * A Container that handles Authorisation
  */
-
-export enum AuthTypes {
-	Wallet = "wallet",
-	Email = "email",
-	Hangar = "hangar",
-	Website = "website",
-	Cookie = "cookie",
-	Token = "token",
-	Signup = "signup",
-}
 
 export const AuthContainer = createContainer(() => {
 	const { fingerprint } = useFingerprint()
@@ -74,6 +82,7 @@ export const AuthContainer = createContainer(() => {
 	}, [])
 
 	const { loading: loginLoading, mutate: login, error: loginError } = useMutation(loginAction)
+	const { loading: forgotPasswordLoading, mutate: forgot } = useMutation(forgotPasswordAction)
 	const { query: logoutQuery } = useQuery(
 		{
 			method: "GET",
@@ -216,7 +225,7 @@ export const AuthContainer = createContainer(() => {
 					fingerprint,
 					authType: AuthTypes.Signup,
 				})
-				if (!resp || resp.error || !resp.payload) {
+				if (resp.error) {
 					clear()
 					throw resp.payload
 				}
@@ -235,6 +244,39 @@ export const AuthContainer = createContainer(() => {
 			}
 		},
 		[login, redirectURL, sessionId, fingerprint, clear],
+	)
+
+	/**
+	 * Forgot Password sends email to the user with jwt token to reset password
+	 */
+	const forgotPassword = useCallback(
+		async (email: string, errorCallback?: (msg: string) => void): Promise<string> => {
+			try {
+				const resp = await forgot({
+					redirectURL,
+					email,
+					session_id: sessionId,
+					fingerprint,
+				})
+				if (resp.error) {
+					clear()
+					console.log(resp)
+					throw resp.payload
+				}
+				return resp.payload
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[forgot, redirectURL, sessionId, fingerprint, clear],
 	)
 
 	/**
@@ -260,10 +302,9 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await login(args)
 
-				if (!resp || resp.error || !resp.payload) {
-					console.log(resp)
+				if (resp.error) {
 					clear()
-					return
+					throw resp.payload
 				}
 				setUser(resp.payload)
 				setAuthorised(true)
@@ -516,6 +557,8 @@ export const AuthContainer = createContainer(() => {
 		setShowSimulation,
 		loginCookieExternal,
 		signupPassword,
+		forgotPassword,
+		forgotPasswordLoading,
 	}
 })
 

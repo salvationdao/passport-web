@@ -6,7 +6,6 @@ import { XSYNLogo } from "../../assets"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { colors } from "../../theme"
-import LoginForm from "./form"
 
 interface LoginBoxProps {
 	wp: string
@@ -47,11 +46,12 @@ const ContentBox = styled(Box)({
 	gap: "1rem",
 	alignItems: "center",
 	background: "rgba(0, 0, 0, 0.7)",
+	position: "relative",
 })
 
 const wallpapers = ["/img/rm.png", "/img/bc.png", "/img/zai.png"]
 
-const SupremacyLogin = () => {
+export const SupremacyAuth: React.FC<{ forgotPassword?: boolean }> = ({ children, forgotPassword }) => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
 	const { userID, loginCookieExternal } = useAuth()
 	const isFromExternal = window.location.pathname === "/external/login"
@@ -80,9 +80,9 @@ const SupremacyLogin = () => {
 				}}
 			>
 				<ContentBox>
-					<Typography component="h1">Login</Typography>
+					<Typography component="h1">{forgotPassword ? "Forgot Password" : "Connect"}</Typography>
 					<Box component="img" sx={{ width: "50px" }} src={"/img/sups_logo.svg"} alt={"Login to Supremacy"} />
-					<LoginForm />
+					{children}
 				</ContentBox>
 			</Box>
 			<a href="https://xsyn.io" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
@@ -98,4 +98,3 @@ const SupremacyLogin = () => {
 		</LoginBox>
 	)
 }
-export default SupremacyLogin

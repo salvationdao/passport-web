@@ -9,8 +9,9 @@ import { Routes } from "./routes"
 import { Loading } from "./components/loading"
 import { API_ENDPOINT_HOSTNAME } from "./config"
 import { Redirect, Route, Switch } from "react-router-dom"
-import LoginPage from "./pages/login/login"
+import { LoginPage } from "./pages/login"
 import { ws } from "./containers/ws"
+import ForgotPassword from "./pages/forgotPassword"
 
 loadIcons()
 
@@ -27,6 +28,9 @@ const AppInner = () => {
 				</Route>
 				<Route path="/login">
 					<LoginPage />
+				</Route>
+				<Route path="/forgot-password">
+					<ForgotPassword />
 				</Route>
 				<Route path="/">
 					<Redirect to={"/login"} />

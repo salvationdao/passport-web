@@ -4,14 +4,14 @@ import { MetaMaskIcon, WalletConnectIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { MetaMaskLogin } from "../../components/loginMetaMask"
 import { WalletConnectLogin } from "../../components/loginWalletConnect"
-import EmailLogin from "./email"
+import { EmailLogin } from "./email"
 
 enum FormTabs {
 	Login = "login",
 	Signup = "signup",
 }
 
-const LoginForm = () => {
+export const LoginForm = () => {
 	const [error, setError] = useState<string | undefined>(undefined)
 	const [tab, setTab] = useState(FormTabs.Login)
 
@@ -70,5 +70,3 @@ const LoginForm = () => {
 		</Stack>
 	)
 }
-
-export default LoginForm

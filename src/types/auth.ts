@@ -23,6 +23,11 @@ export interface PasswordLoginRequest {
 	fingerprint?: Fingerprint
 }
 
+export interface ForgotPasswordRequest extends BasicLoginRequest {
+	email: string
+	session_id?: string
+}
+
 export interface BasicLoginResponse {
 	user: User
 	token: string

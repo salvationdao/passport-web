@@ -8,29 +8,29 @@ import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
 import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
-import { StorePage } from "./pages/Store/StorePage"
 import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
 import { useSnackbar } from "./containers/snackbar"
 import { useWeb3 } from "./containers/web3"
+import { usePassportCommandsUser } from "./hooks/usePassport"
 import HubKey from "./keys"
-import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/AssetRedirectPage"
 import { CorrectWalletConnected } from "./pages/auth/correctWalletConnected"
-import LoginPage from "./pages/login/login"
 import { PassportReady } from "./pages/auth/onboarding"
 import { SignUpPage } from "./pages/auth/signup"
 import { BuyPage } from "./pages/buy"
 import { DepositPage } from "./pages/deposit/depositPage"
+import { ContractAssetPage } from "./pages/DepositAssets/ContractAssetPage"
+import { DepositAssetsPage } from "./pages/DepositAssets/DepositAssetsPage"
+import { DepositHistoryPage } from "./pages/DepositAssets/DepositHistoryTable/DepositHistoryPage"
 import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
+import { LoginPage } from "./pages/login"
+import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/AssetRedirectPage"
 import { ProfilePage } from "./pages/Profile/ProfilePage"
+import { StorePage } from "./pages/Store/StorePage"
 import { TransactionsPage } from "./pages/transactions/transactions"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
-import { usePassportCommandsUser } from "./hooks/usePassport"
-import { DepositAssetsPage } from "./pages/DepositAssets/DepositAssetsPage"
-import { ContractAssetPage } from "./pages/DepositAssets/ContractAssetPage"
-import { DepositHistoryPage } from "./pages/DepositAssets/DepositHistoryTable/DepositHistoryPage"
 
 export const Routes = () => {
 	const { account } = useWeb3()
@@ -143,6 +143,7 @@ export const Routes = () => {
 							<Route exact path="/login">
 								<LoginPage />
 							</Route>
+
 							<Route path="/signup">
 								<SignUpPage />
 							</Route>

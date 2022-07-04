@@ -10,7 +10,7 @@ interface IEmailLoginProps {
 	signup?: boolean
 }
 
-const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
+export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const theme = useTheme()
 	const { loginPassword, signupPassword, login } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
@@ -48,6 +48,10 @@ const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 		firstWordError = formatError[0]
 	}
 	formatError?.shift()
+
+	React.useEffect(() => {
+		setError(null)
+	}, [signup])
 
 	return (
 		<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "25rem" }}>
@@ -145,5 +149,3 @@ const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 		</Stack>
 	)
 }
-
-export default EmailLogin
