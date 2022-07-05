@@ -1,7 +1,7 @@
 import ArrowBack from "@mui/icons-material/ArrowBack"
 import { Box, Stack, TextField, Typography, useTheme } from "@mui/material"
 import React from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { FancyButton } from "../components/fancyButton"
 import { SupremacyAuth } from "../components/supremacy/auth"
 import { useAuth } from "../containers/auth"
@@ -9,8 +9,8 @@ import { colors } from "../theme"
 
 const ResetPassword: React.FC = () => {
 	const theme = useTheme()
-	const searchParams = new URLSearchParams(window.location.search)
-	const token = searchParams.get("token")
+	const location = useLocation()
+	const token = location.search.replace("?token=", "")
 	const { resetPassword, resetPasswordLoading } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
 

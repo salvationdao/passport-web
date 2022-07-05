@@ -40,7 +40,7 @@ const loginAction = (formValues: LoginRequest & { authType: AuthTypes }): Action
 
 const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
 	method: "POST",
-	endpoint: `/auth/${AuthTypes.Reset}`,
+	endpoint: `/auth/${AuthTypes.Forgot}`,
 	responseType: "json",
 	credentials: "include",
 	body: formValues,
@@ -48,7 +48,7 @@ const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
 
 const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
 	method: "POST",
-	endpoint: `/auth/${AuthTypes.Forgot}`,
+	endpoint: `/auth/${AuthTypes.Reset}`,
 	responseType: "json",
 	credentials: "include",
 	body: formValues,
@@ -303,6 +303,8 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint,
 				})
+
+				console.log(resp)
 				if (resp.error) {
 					clear()
 					throw resp.payload

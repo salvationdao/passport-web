@@ -199,6 +199,7 @@ export const Routes = () => {
 							<Route path="/store">
 								<StorePage />
 							</Route>
+							<Redirect to="/profile" />
 						</Switch>
 					</Sidebar>
 				</Switch>
