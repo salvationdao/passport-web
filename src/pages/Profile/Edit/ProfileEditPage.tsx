@@ -428,7 +428,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 								size="small"
 								onClick={() => setOpenChangePassword(true)}
 							>
-								Change Password
+								{user.has_password ? "Change Password" : "Set Password"}
 							</FancyButton>
 						</Tooltip>
 						{lockOptions.map((option) => (

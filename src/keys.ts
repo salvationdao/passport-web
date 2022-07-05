@@ -18,7 +18,7 @@ enum HubKey {
 	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
 	UserFingerprint = "USER:FINGERPRINT",
 	UserLock = "USER:LOCK",
-	UserLogout = "USER:LOGOUT",
+	UserInit = "USER:INIT",
 
 	ImageList = "IMAGE:LIST",
 

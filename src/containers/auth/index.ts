@@ -699,9 +699,10 @@ export const UserUpdater = () => {
 		},
 	)
 
-	usePassportSubscriptionUser({ URI: `/logout`, key: keys.UserLogout }, (payload) => {
-		if (!payload) return
-		window.location.reload()
+	usePassportSubscriptionUser({ URI: `/init`, key: keys.UserInit }, (payload) => {
+		if (!payload) {
+			window.location.reload()
+		}
 	})
 
 	return null
