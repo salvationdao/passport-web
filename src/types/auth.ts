@@ -1,5 +1,5 @@
-import { User } from "./types"
 import { QueryResponse } from "react-fetching-library"
+import { User } from "./types"
 
 export interface Fingerprint {
 	visitor_id: string
@@ -15,12 +15,16 @@ export interface RegisterResponse {
 	token: string
 }
 
+interface BasicLoginRequest {
+	fingerprint?: Fingerprint
+	redirectURL?: string
+}
+
 export interface PasswordLoginRequest {
 	email: string
 	password: string
 	admin?: boolean
 	session_id?: string
-	fingerprint?: Fingerprint
 }
 
 export interface ForgotPasswordRequest extends BasicLoginRequest {
@@ -34,6 +38,12 @@ export interface ResetPasswordRequest extends BasicLoginRequest {
 	session_id?: string
 }
 
+export interface ChangePasswordRequest extends BasicLoginRequest {
+	newPassword: string
+	password: string
+	session_id?: string
+}
+
 export interface BasicLoginResponse {
 	user: User
 	token: string
@@ -42,11 +52,6 @@ export interface BasicLoginResponse {
 }
 
 export interface PasswordLoginResponse extends BasicLoginResponse {}
-
-interface BasicLoginRequest {
-	fingerprint?: Fingerprint
-	redirectURL?: string
-}
 
 export interface TokenLoginRequest extends BasicLoginRequest {
 	token: string

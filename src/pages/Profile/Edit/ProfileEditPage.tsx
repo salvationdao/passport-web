@@ -16,6 +16,7 @@ import HubKey from "../../../keys"
 import { colors } from "../../../theme"
 import { LockButton, lockOptions, LockOptionsProps } from "../Locking/LockButton"
 import { LockModal } from "../Locking/LockModal"
+import { ChangePasswordModal } from "./ChangePasswordModal"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -186,6 +187,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 	const history = useHistory()
 	const [lockOption, setLockOption] = useState<LockOptionsProps>()
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
+	const [openChangePassword, setOpenChangePassword] = useState(false)
 
 	// Setup form
 	const { control, handleSubmit, reset, formState } = useForm<UserInput>()
@@ -326,6 +328,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					Edit Profile
 				</Typography>
 
+				<ChangePasswordModal open={openChangePassword} setOpen={setOpenChangePassword} />
 				{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
 
 				{/* Temporarily removed for public sale */}
@@ -406,13 +409,30 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 							sx={{ minWidth: "180px", flex: "1 0 48%" }}
 						/>
 					</Box>
+					<Button
+						sx={{
+							my: "1rem",
+						}}
+						type="submit"
+						//add this to disabled when avatar change is ready: && !avatarChanged
+						disabled={(!isDirty && !changePassword) || submitting}
+						variant="contained"
+						color="primary"
+						startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}
+					>
+						Save
+					</Button>
 				</Section>
 				<Stack spacing=".5rem">
 					<Typography variant="h6">Account</Typography>
 
 					<Box sx={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
 						<Tooltip title="Change your password">
-							<FancyButton sx={{ minWidth: "15rem", width: "calc(50% - .5rem)" }} size="small">
+							<FancyButton
+								sx={{ minWidth: "15rem", width: "calc(50% - .5rem)" }}
+								size="small"
+								onClick={() => setOpenChangePassword(true)}
+							>
 								Change Password
 							</FancyButton>
 						</Tooltip>
@@ -484,20 +504,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 						</>
 					)}
 				</Section> */}
-
-				<Button
-					sx={{
-						marginTop: "auto",
-					}}
-					type="submit"
-					//add this to disabled when avatar change is ready: && !avatarChanged
-					disabled={(!isDirty && !changePassword) || submitting}
-					variant="contained"
-					color="primary"
-					startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}
-				>
-					Save
-				</Button>
 			</Box>
 			{/* Temporarily removed for public sale */}
 			{/* <Box

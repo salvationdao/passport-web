@@ -1,17 +1,16 @@
-import { ResetPasswordRequest } from "./../../types/auth"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Action, useMutation, useQuery } from "react-fetching-library"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
 import keys from "../../keys"
-import { ForgotPasswordRequest, LoginRequest, VerifyAccountResponse } from "../../types/auth"
+import { ChangePasswordRequest, ForgotPasswordRequest, LoginRequest, VerifyAccountResponse } from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 import { useSubscription } from "../ws/useSubscription"
-import useSignup from "./signup"
+import { ResetPasswordRequest } from "./../../types/auth"
 
 export enum AuthTypes {
 	Wallet = "wallet",
@@ -23,6 +22,7 @@ export enum AuthTypes {
 	Signup = "signup",
 	Forgot = "forgot",
 	Reset = "reset",
+	ChangePassword = "change-password",
 }
 
 export enum VerificationType {
@@ -30,6 +30,7 @@ export enum VerificationType {
 	ForgotPassword,
 }
 
+// Actions
 const loginAction = (formValues: LoginRequest & { authType: AuthTypes }): Action<User> => ({
 	method: "POST",
 	endpoint: `/auth/${formValues.authType}`,
@@ -47,12 +48,21 @@ const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
 })
 
 const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
-	method: "POST",
+	method: "PATCH",
 	endpoint: `/auth/${AuthTypes.Reset}`,
 	responseType: "json",
 	credentials: "include",
 	body: formValues,
 })
+
+const changePasswordAction = (formValues: ChangePasswordRequest): Action => ({
+	method: "PATCH",
+	endpoint: `/auth/${AuthTypes.ChangePassword}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
 /**
  * A Container that handles Authorisation
  */
@@ -79,10 +89,7 @@ export const AuthContainer = createContainer(() => {
 		return urlParams.get("redirectURL") || undefined
 	}, [])
 
-	const { signUpMetamask, setSignupType, signupType } = useSignup()
-
 	const [sessionId, setSessionID] = useState("")
-
 	const isLogoutPage = window.location.pathname.startsWith("/external/logout")
 
 	const clear = useCallback(() => {
@@ -91,9 +98,13 @@ export const AuthContainer = createContainer(() => {
 		setUser(undefined)
 	}, [])
 
+	// Mutated actions
 	const { loading: loginLoading, mutate: login, error: loginError } = useMutation(loginAction)
 	const { loading: forgotPasswordLoading, mutate: forgot } = useMutation(forgotPasswordAction)
 	const { loading: resetPasswordLoading, mutate: reset } = useMutation(resetPasswordAction)
+	const { loading: changePasswordLoading, mutate: change } = useMutation(changePasswordAction)
+
+	// useQueries
 	const { query: logoutQuery } = useQuery(
 		{
 			method: "GET",
@@ -303,8 +314,6 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint,
 				})
-
-				console.log(resp)
 				if (resp.error) {
 					clear()
 					throw resp.payload
@@ -324,6 +333,39 @@ export const AuthContainer = createContainer(() => {
 			}
 		},
 		[reset, redirectURL, sessionId, fingerprint, clear],
+	)
+
+	/**
+	 * Change Password sends email to the user with jwt token to reset password
+	 */
+	const changePassword = useCallback(
+		async (password: string, newPassword: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const resp = await change({
+					redirectURL,
+					password,
+					newPassword,
+					session_id: sessionId,
+					fingerprint,
+				})
+
+				if (resp.error) {
+					clear()
+					throw resp.payload
+				}
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[change, redirectURL, sessionId, fingerprint, clear],
 	)
 
 	/**
@@ -572,7 +614,6 @@ export const AuthContainer = createContainer(() => {
 	//  Container  //
 	/////////////////
 	return {
-		loginPassword,
 		loginToken,
 		loginMetamask,
 		loginWalletConnect,
@@ -582,11 +623,7 @@ export const AuthContainer = createContainer(() => {
 			loading: loginLoading,
 			error: loginError,
 		},
-		signup: {
-			signUpMetamask,
-			setSignupType,
-			signupType,
-		},
+
 		hasPermission,
 		recheckAuth,
 		user: user,
@@ -598,16 +635,30 @@ export const AuthContainer = createContainer(() => {
 		verifying,
 		verifyCompleteType,
 		setSessionID,
-		signUpMetamask,
 		sessionId,
 		showSimulation,
 		setShowSimulation,
 		loginCookieExternal,
-		signupPassword,
-		forgotPassword,
-		forgotPasswordLoading,
-		resetPassword,
-		resetPasswordLoading,
+		signupPassword: {
+			action: signupPassword,
+			loading: loginLoading,
+		},
+		loginPassword: {
+			action: loginPassword,
+			loading: loginLoading,
+		},
+		forgotPassword: {
+			action: forgotPassword,
+			loading: forgotPasswordLoading,
+		},
+		resetPassword: {
+			action: resetPassword,
+			loading: resetPasswordLoading,
+		},
+		changePassword: {
+			action: changePassword,
+			loading: changePasswordLoading,
+		},
 	}
 })
 

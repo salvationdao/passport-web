@@ -9,7 +9,7 @@ import { colors } from "../theme"
 
 const ForgotPassword: React.FC = () => {
 	const theme = useTheme()
-	const { forgotPassword, forgotPasswordLoading } = useAuth()
+	const { forgotPassword } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
 	const [success, setSuccess] = React.useState<string | null>(null)
 
@@ -26,7 +26,7 @@ const ForgotPassword: React.FC = () => {
 			return
 		}
 
-		const successMessage = await forgotPassword(email, errorCallback)
+		const successMessage = await forgotPassword.action(email, errorCallback)
 
 		if (!error) {
 			setSuccess(successMessage)
@@ -80,7 +80,7 @@ const ForgotPassword: React.FC = () => {
 						</Typography>
 					)}
 					<FancyButton
-						loading={forgotPasswordLoading}
+						loading={forgotPassword.loading}
 						submit
 						fullWidth
 						filled

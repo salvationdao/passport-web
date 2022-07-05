@@ -11,7 +11,7 @@ const ResetPassword: React.FC = () => {
 	const theme = useTheme()
 	const location = useLocation()
 	const token = location.search.replace("?token=", "")
-	const { resetPassword, resetPasswordLoading } = useAuth()
+	const { resetPassword } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
 
 	const errorCallback = (msg: string) => {
@@ -31,7 +31,7 @@ const ResetPassword: React.FC = () => {
 			return
 		}
 
-		await resetPassword(password, token, errorCallback)
+		await resetPassword.action(password, token, errorCallback)
 	}
 	const formatError = error?.split(" ")
 	let firstWordError = ""
@@ -88,7 +88,7 @@ const ResetPassword: React.FC = () => {
 					)}
 
 					<FancyButton
-						loading={resetPasswordLoading}
+						loading={resetPassword.loading}
 						submit
 						fullWidth
 						filled

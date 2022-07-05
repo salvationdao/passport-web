@@ -12,7 +12,7 @@ interface IEmailLoginProps {
 
 export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const theme = useTheme()
-	const { loginPassword, signupPassword, login } = useAuth()
+	const { loginPassword, signupPassword } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
 
 	const errorCallback = (msg: string) => {
@@ -36,9 +36,9 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 		}
 		if (signup) {
 			const username = data.get("username")?.toString()
-			username && (await signupPassword(username, email, password, errorCallback))
+			username && (await signupPassword.action(username, email, password, errorCallback))
 		} else {
-			await loginPassword(email, password, errorCallback)
+			await loginPassword.action(email, password, errorCallback)
 		}
 	}
 
@@ -123,9 +123,9 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 				filled
 				borderColor={signup ? theme.palette.secondary.main : theme.palette.primary.main}
 				sx={{ mt: 3, mb: 2 }}
-				loading={login.loading}
+				loading={loginPassword.loading}
 			>
-				{login.loading ? "Loading..." : signup ? "Sign up" : "Sign In"}
+				{loginPassword.loading ? "Loading..." : signup ? "Sign up" : "Sign In"}
 			</FancyButton>
 			{!signup && (
 				<Link to="/forgot-password">
