@@ -1,6 +1,6 @@
 import ArrowBack from "@mui/icons-material/ArrowBack"
 import { Box, Stack, TextField, Typography, useTheme } from "@mui/material"
-import React from "react"
+import React, { useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { FancyButton } from "../components/fancyButton"
 import { SupremacyAuth } from "../components/supremacy/auth"
@@ -10,7 +10,14 @@ import { colors } from "../theme"
 const ResetPassword: React.FC = () => {
 	const theme = useTheme()
 	const location = useLocation()
-	const token = location.search.replace("?token=", "")
+
+	const tokenGroup = useMemo(() => {
+		const group = location.search.split("&token=")
+		const tokenId = group[0].replace("?id=", "")
+		const token = group[1]
+		return { id: tokenId, token }
+	}, [location.search])
+
 	const { resetPassword } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
 
@@ -23,7 +30,7 @@ const ResetPassword: React.FC = () => {
 		const data = new FormData(event.currentTarget)
 		const password = data.get("password")?.toString()
 		const confirmPassword = data.get("confirmPassword")?.toString()
-		if (!password || !token) {
+		if (!password || !tokenGroup.token || !tokenGroup.id) {
 			return
 		}
 		if (confirmPassword !== password) {
@@ -31,7 +38,7 @@ const ResetPassword: React.FC = () => {
 			return
 		}
 
-		await resetPassword.action(password, token, errorCallback)
+		await resetPassword.action(password, tokenGroup, errorCallback)
 	}
 	const formatError = error?.split(" ")
 	let firstWordError = ""

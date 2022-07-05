@@ -106,9 +106,7 @@ export const ProfileEditPage: React.FC = () => {
 								marginBottom: ".5rem",
 							}}
 						>
-							{successful
-								? "Your Profile has successfully been updated! Redirecting you back to your profile page."
-								: "Something went wrong, please try again."}
+							{successful ? "Your account has successfully been updated! ." : "Something went wrong, please try again."}
 						</Typography>
 						{!successful && (
 							<Box
@@ -328,9 +326,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					Edit Profile
 				</Typography>
 
-				<ChangePasswordModal open={openChangePassword} setOpen={setOpenChangePassword} />
-				{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
-
 				{/* Temporarily removed for public sale */}
 				{/* <Section>
 					<Typography variant="subtitle1">Avatar</Typography>
@@ -505,6 +500,15 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					)}
 				</Section> */}
 			</Box>
+
+			<ChangePasswordModal
+				open={openChangePassword}
+				setOpen={setOpenChangePassword}
+				setSuccessfull={setSuccessful}
+				setDisplayResult={setDisplayResult}
+			/>
+			{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
+
 			{/* Temporarily removed for public sale */}
 			{/* <Box
 				sx={{

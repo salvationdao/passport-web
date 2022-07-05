@@ -33,13 +33,15 @@ export interface ForgotPasswordRequest extends BasicLoginRequest {
 }
 
 export interface ResetPasswordRequest extends BasicLoginRequest {
+	id: string
 	token: string
 	password: string
 	session_id?: string
 }
 
 export interface ChangePasswordRequest extends BasicLoginRequest {
-	newPassword: string
+	user_id: string
+	new_password: string
 	password: string
 	session_id?: string
 }

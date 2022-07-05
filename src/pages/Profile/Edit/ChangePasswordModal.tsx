@@ -7,10 +7,12 @@ import { colors } from "../../../theme"
 
 interface IChangePasswordModalProps {
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>
+	setSuccessfull: React.Dispatch<React.SetStateAction<boolean>>
+	setDisplayResult: React.Dispatch<React.SetStateAction<boolean>>
 	open: boolean
 }
 
-export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open, setOpen }) => {
+export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open, setOpen, setSuccessfull, setDisplayResult }) => {
 	const { changePassword } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
 
@@ -32,6 +34,11 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 		}
 
 		await changePassword.action(password, newPassword, errorCallback)
+		if (!error) {
+			setSuccessfull(true)
+			setDisplayResult(true)
+			setOpen(false)
+		}
 	}
 	const formatError = error?.split(" ")
 	let firstWordError = ""

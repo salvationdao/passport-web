@@ -3,6 +3,7 @@ import { Action, useMutation, useQuery } from "react-fetching-library"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
+import { usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
 import { ChangePasswordRequest, ForgotPasswordRequest, LoginRequest, VerifyAccountResponse } from "../../types/auth"
 import { Perm } from "../../types/enums"
@@ -22,7 +23,7 @@ export enum AuthTypes {
 	Signup = "signup",
 	Forgot = "forgot",
 	Reset = "reset",
-	ChangePassword = "change-password",
+	ChangePassword = "change_password",
 }
 
 export enum VerificationType {
@@ -48,7 +49,7 @@ const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
 })
 
 const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
-	method: "PATCH",
+	method: "POST",
 	endpoint: `/auth/${AuthTypes.Reset}`,
 	responseType: "json",
 	credentials: "include",
@@ -56,7 +57,7 @@ const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
 })
 
 const changePasswordAction = (formValues: ChangePasswordRequest): Action => ({
-	method: "PATCH",
+	method: "POST",
 	endpoint: `/auth/${AuthTypes.ChangePassword}`,
 	responseType: "json",
 	credentials: "include",
@@ -210,8 +211,8 @@ export const AuthContainer = createContainer(() => {
 					authType: AuthTypes.Email,
 				}
 				const resp = await login(formValues)
-
-				if (!resp || resp.error || !resp.payload) {
+				console.log(resp)
+				if (resp.error) {
 					clear()
 					throw resp.payload
 				}
@@ -305,12 +306,20 @@ export const AuthContainer = createContainer(() => {
 	 * Reset Password sends email to the user with jwt token to reset password
 	 */
 	const resetPassword = useCallback(
-		async (password: string, token: string, errorCallback?: (msg: string) => void) => {
+		async (
+			password: string,
+			tokenGroup: {
+				id: string
+				token: string
+			},
+			errorCallback?: (msg: string) => void,
+		) => {
 			try {
 				const resp = await reset({
 					redirectURL,
 					password,
-					token,
+					id: tokenGroup.id,
+					token: tokenGroup.token,
 					session_id: sessionId,
 					fingerprint,
 				})
@@ -340,11 +349,20 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const changePassword = useCallback(
 		async (password: string, newPassword: string, errorCallback?: (msg: string) => void) => {
+			if (user && !user.id && errorCallback) {
+				errorCallback("User not authenticated.")
+				return
+			}
+
+			if (!user) return
+			if (!user.id) return
+
 			try {
 				const resp = await change({
 					redirectURL,
+					user_id: user?.id,
 					password,
-					newPassword,
+					new_password: newPassword,
 					session_id: sessionId,
 					fingerprint,
 				})
@@ -365,7 +383,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[change, redirectURL, sessionId, fingerprint, clear],
+		[change, redirectURL, sessionId, fingerprint, clear, user],
 	)
 
 	/**
@@ -680,6 +698,11 @@ export const UserUpdater = () => {
 			setUser(payload)
 		},
 	)
+
+	usePassportSubscriptionUser({ URI: `/logout`, key: keys.UserLogout }, (payload) => {
+		if (!payload) return
+		window.location.reload()
+	})
 
 	return null
 }

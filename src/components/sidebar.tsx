@@ -3,15 +3,15 @@ import AgricultureIcon from "@mui/icons-material/Agriculture"
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
+import MoveDownRoundedIcon from "@mui/icons-material/MoveDownRounded"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import SavingsIcon from "@mui/icons-material/Savings"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded"
-import MoveDownRoundedIcon from "@mui/icons-material/MoveDownRounded"
 import { Box, Button, Divider, Drawer, SxProps, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import React, { useEffect, useState } from "react"
@@ -23,6 +23,7 @@ import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { useSubscription } from "../containers/ws/useSubscription"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { colors } from "../theme"
@@ -30,7 +31,6 @@ import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import { useSubscription } from "../containers/ws/useSubscription"
 
 const drawerWidth = 280
 
@@ -87,6 +87,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
+		if (!user?.public_address) return
 		;(async () => {
 			try {
 				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/holding/${user?.public_address}`)
