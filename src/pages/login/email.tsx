@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, useTheme } from "@mui/material"
+import { Alert, Stack, Typography, useTheme } from "@mui/material"
 import TextField from "@mui/material/TextField"
 import * as React from "react"
 import { Link } from "react-router-dom"
@@ -102,18 +102,10 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 				/>
 			)}
 			{formatError && (
-				<Box sx={{ display: "flex" }}>
-					<Typography
-						component="span"
-						variant="caption"
-						sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left", textTransform: "capitalize" }}
-					>
-						{firstWordError}&nbsp;
-					</Typography>
-					<Typography component="span" variant="caption" sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left" }}>
-						{formatError.join(" ")}
-					</Typography>
-				</Box>
+				<Alert severity="error">
+					{firstWordError}&nbsp;
+					{formatError.join(" ")}
+				</Alert>
 			)}
 			{/* <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" /> */}
 

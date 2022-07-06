@@ -1,5 +1,5 @@
 import ArrowBack from "@mui/icons-material/ArrowBack"
-import { Box, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { Alert, Stack, TextField, Typography, useTheme } from "@mui/material"
 import React from "react"
 import { Link } from "react-router-dom"
 import { FancyButton } from "../components/fancyButton"
@@ -61,18 +61,10 @@ const ForgotPassword: React.FC = () => {
 						}}
 					/>
 					{formatError && (
-						<Box sx={{ display: "flex" }}>
-							<Typography
-								component="span"
-								variant="caption"
-								sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left", textTransform: "capitalize" }}
-							>
-								{firstWordError}&nbsp;
-							</Typography>
-							<Typography component="span" variant="caption" sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left" }}>
-								{formatError.join(" ")}
-							</Typography>
-						</Box>
+						<Alert severity="error">
+							{firstWordError}&nbsp;
+							{formatError.join(" ")}
+						</Alert>
 					)}
 					{success && (
 						<Typography component="span" variant="caption" sx={{ color: colors.skyBlue, width: "fit-content", textAlign: "left" }}>

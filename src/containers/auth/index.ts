@@ -5,7 +5,7 @@ import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
 import { usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
-import { ChangePasswordRequest, ForgotPasswordRequest, LoginRequest, VerifyAccountResponse } from "../../types/auth"
+import { ChangePasswordRequest, ForgotPasswordRequest, LoginRequest, NewPasswordRequest, VerifyAccountResponse } from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
@@ -24,6 +24,7 @@ export enum AuthTypes {
 	Forgot = "forgot",
 	Reset = "reset",
 	ChangePassword = "change_password",
+	NewPassword = "new_password",
 }
 
 export enum VerificationType {
@@ -59,6 +60,14 @@ const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
 const changePasswordAction = (formValues: ChangePasswordRequest): Action => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.ChangePassword}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const newPasswordAction = (formValues: NewPasswordRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.NewPassword}`,
 	responseType: "json",
 	credentials: "include",
 	body: formValues,
@@ -104,6 +113,7 @@ export const AuthContainer = createContainer(() => {
 	const { loading: forgotPasswordLoading, mutate: forgot } = useMutation(forgotPasswordAction)
 	const { loading: resetPasswordLoading, mutate: reset } = useMutation(resetPasswordAction)
 	const { loading: changePasswordLoading, mutate: change } = useMutation(changePasswordAction)
+	const { loading: newPasswordLoading, mutate: newPass } = useMutation(newPasswordAction)
 
 	// useQueries
 	const { query: logoutQuery } = useQuery(
@@ -317,7 +327,7 @@ export const AuthContainer = createContainer(() => {
 			try {
 				const resp = await reset({
 					redirectURL,
-					password,
+					new_password: password,
 					id: tokenGroup.id,
 					token: tokenGroup.token,
 					session_id: sessionId,
@@ -345,7 +355,7 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Change Password sends email to the user with jwt token to reset password
+	 * Change Password resets a users password
 	 */
 	const changePassword = useCallback(
 		async (password: string, newPassword: string, errorCallback?: (msg: string) => void) => {
@@ -368,7 +378,6 @@ export const AuthContainer = createContainer(() => {
 				})
 
 				if (resp.error) {
-					clear()
 					throw resp.payload
 				}
 			} catch (e: any) {
@@ -383,9 +392,48 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[change, redirectURL, sessionId, fingerprint, clear, user],
+		[change, redirectURL, sessionId, fingerprint, user],
 	)
 
+	/**
+	 * Change Password sends email to the user with jwt token to reset password
+	 */
+	const newPassword = useCallback(
+		async (password: string, errorCallback?: (msg: string) => void) => {
+			if (user && !user.id && errorCallback) {
+				errorCallback("User not authenticated.")
+				return
+			}
+
+			if (!user) return
+			if (!user.id) return
+
+			try {
+				const resp = await newPass({
+					redirectURL,
+					user_id: user?.id,
+					new_password: password,
+					session_id: sessionId,
+					fingerprint,
+				})
+
+				if (resp.error) {
+					throw resp.payload
+				}
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[newPass, redirectURL, sessionId, fingerprint, user],
+	)
 	/**
 	 * Logs a User in using their saved login token.
 	 *
@@ -676,6 +724,10 @@ export const AuthContainer = createContainer(() => {
 		changePassword: {
 			action: changePassword,
 			loading: changePasswordLoading,
+		},
+		newPassword: {
+			action: newPassword,
+			loading: newPasswordLoading,
 		},
 	}
 })

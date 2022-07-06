@@ -1,5 +1,5 @@
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
-import { Box, Divider, Modal, Stack, TextField, Typography } from "@mui/material"
+import { Alert, Box, Divider, Modal, Stack, TextField, Typography } from "@mui/material"
 import React from "react"
 import { FancyButton } from "../../../components/fancyButton"
 import { useAuth } from "../../../containers/auth"
@@ -10,11 +10,11 @@ interface IChangePasswordModalProps {
 	setSuccessfull: React.Dispatch<React.SetStateAction<boolean>>
 	setDisplayResult: React.Dispatch<React.SetStateAction<boolean>>
 	open: boolean
-	new?: boolean
+	isNew?: boolean
 }
 
-export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open, setOpen, setSuccessfull, setDisplayResult }) => {
-	const { changePassword } = useAuth()
+export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open, setOpen, setSuccessfull, setDisplayResult, isNew }) => {
+	const { changePassword, newPassword } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
 
 	const errorCallback = (msg: string) => {
@@ -25,16 +25,20 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 		event.preventDefault()
 		const data = new FormData(event.currentTarget)
 		const password = data.get("password")?.toString()
-		const newPassword = data.get("newPassword")?.toString()
+		const password2 = data.get(isNew ? "confirmPassword" : "newPassword")?.toString()
 		if (!password || !newPassword) {
 			return
 		}
-		if (newPassword !== password) {
+		if (password2 !== password) {
 			setError("Password does not match")
 			return
 		}
 
-		await changePassword.action(password, newPassword, errorCallback)
+		if (isNew) {
+			await newPassword.action(password, errorCallback)
+		} else {
+			await changePassword.action(password, password2, errorCallback)
+		}
 		if (!error) {
 			setSuccessfull(true)
 			setDisplayResult(true)
@@ -75,12 +79,14 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 						<Box sx={{ display: "flex" }}>
 							<WarningAmberIcon color="warning" sx={{ fontSize: "3rem", mr: "1rem" }} />
 							<Typography variant="h5" sx={{ fontSize: "2rem", textTransform: "uppercase", alignSelf: "flex-end" }}>
-								Change Password
+								{isNew ? "Setup Password" : "Change Password"}
 							</Typography>
 						</Box>
 						<Divider />
-						<Typography variant="body2">Changing your password will disconnect user from all other sessions.</Typography>
-						<Typography variant="body2">Please enter your current password and new password:</Typography>
+						<Typography variant="body2">
+							{isNew ? "Setting up" : "Changing"} your password will disconnect user from all other sessions.
+						</Typography>
+						<Typography variant="body2">Please enter your {!isNew && "current password and"}&nbsp;new password:</Typography>
 						<TextField
 							margin="normal"
 							required
@@ -96,10 +102,10 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 							margin="normal"
 							required
 							fullWidth
-							name="newPassword"
-							label="New Password"
+							name={isNew ? "confirmPassword" : "newPassword"}
+							label={isNew ? "Confirm Password" : "New Password"}
 							type="password"
-							id="newPassword"
+							id={isNew ? "confirmPassword" : "newPassword"}
 							inputProps={{ minLength: 8 }}
 							onChange={() => {
 								if (error) {
@@ -108,22 +114,10 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 							}}
 						/>
 						{formatError && (
-							<Box sx={{ display: "flex" }}>
-								<Typography
-									component="span"
-									variant="caption"
-									sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left", textTransform: "capitalize" }}
-								>
-									{firstWordError}&nbsp;
-								</Typography>
-								<Typography
-									component="span"
-									variant="caption"
-									sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left" }}
-								>
-									{formatError.join(" ")}
-								</Typography>
-							</Box>
+							<Alert severity="error">
+								{firstWordError}&nbsp;
+								{formatError.join(" ")}
+							</Alert>
 						)}
 					</Stack>
 
@@ -135,11 +129,11 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 						<FancyButton
 							size="small"
 							variant="outlined"
-							loading={changePassword.loading}
+							loading={isNew ? newPassword.loading : changePassword.loading}
 							submit
 							sx={{ backgroundColor: colors.neonPink }}
 						>
-							Confirm
+							Submit
 						</FancyButton>
 					</Stack>
 				</Box>

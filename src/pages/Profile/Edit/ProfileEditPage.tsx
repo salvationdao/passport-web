@@ -506,6 +506,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 				setOpen={setOpenChangePassword}
 				setSuccessfull={setSuccessful}
 				setDisplayResult={setDisplayResult}
+				isNew={!user.has_password}
 			/>
 			{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
 

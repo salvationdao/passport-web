@@ -1,11 +1,10 @@
 import ArrowBack from "@mui/icons-material/ArrowBack"
-import { Box, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { Alert, Stack, TextField, Typography, useTheme } from "@mui/material"
 import React, { useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { FancyButton } from "../components/fancyButton"
 import { SupremacyAuth } from "../components/supremacy/auth"
 import { useAuth } from "../containers/auth"
-import { colors } from "../theme"
 
 const ResetPassword: React.FC = () => {
 	const theme = useTheme()
@@ -80,18 +79,10 @@ const ResetPassword: React.FC = () => {
 					/>
 
 					{formatError && (
-						<Box sx={{ display: "flex" }}>
-							<Typography
-								component="span"
-								variant="caption"
-								sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left", textTransform: "capitalize" }}
-							>
-								{firstWordError}&nbsp;
-							</Typography>
-							<Typography component="span" variant="caption" sx={{ color: colors.errorRed, width: "fit-content", textAlign: "left" }}>
-								{formatError.join(" ")}
-							</Typography>
-						</Box>
+						<Alert severity="error">
+							{firstWordError}&nbsp;
+							{formatError.join(" ")}
+						</Alert>
 					)}
 
 					<FancyButton
