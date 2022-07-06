@@ -10,6 +10,7 @@ interface IChangePasswordModalProps {
 	setSuccessfull: React.Dispatch<React.SetStateAction<boolean>>
 	setDisplayResult: React.Dispatch<React.SetStateAction<boolean>>
 	open: boolean
+	new?: boolean
 }
 
 export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open, setOpen, setSuccessfull, setDisplayResult }) => {
