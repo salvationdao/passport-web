@@ -1,30 +1,33 @@
 import { Box, Modal, Typography } from "@mui/material"
+import { useEffect, useState } from "react"
 import { FancyButton } from "../../components/fancyButton"
-import { colors } from "../../theme"
 import { useAuth } from "../../containers/auth"
 import { useWeb3 } from "../../containers/web3"
-import { useState, useEffect } from "react"
 import { AddressDisplay } from "../../helpers/web3"
+import { colors } from "../../theme"
 
 export const CorrectWalletConnected = () => {
 	const { logout, user } = useAuth()
-	const { account } = useWeb3()
-	const [correctWalletConnected, setCorrectWalletConnected] = useState(false)
+	const { account, disableWalletModal } = useWeb3()
+	const [correctWalletConnected, setCorrectWalletConnected] = useState<boolean | undefined>(false)
 
 	//Compares user's passport address to wallet address
-	const correctWalletCheck = (userPubAddr: string, metaMaskAcc: string) => {
-		return userPubAddr.toUpperCase() === metaMaskAcc.toUpperCase()
+	const correctWalletCheck = (metaMaskAcc: string, userPubAddr?: string) => {
+		if (userPubAddr) return userPubAddr.toUpperCase() === metaMaskAcc.toUpperCase()
 	}
 
 	//compares addresses everytime there's a change
 	useEffect(() => {
+		if (disableWalletModal) {
+			setCorrectWalletConnected(true)
+			return
+		}
 		if (!user) return
-		if (!user.public_address || !account) return
-		setCorrectWalletConnected(correctWalletCheck(user.public_address, account))
-	}, [user, account])
-
+		if (!account) return
+		setCorrectWalletConnected(correctWalletCheck(account, user.public_address))
+	}, [user, account, disableWalletModal])
 	return (
-		<Modal open={!correctWalletConnected} sx={{ backdropFilter: "blur(5px)" }}>
+		<Modal open={correctWalletConnected === false} sx={{ backdropFilter: "blur(5px)" }}>
 			<Box
 				sx={{
 					position: "absolute",
@@ -63,7 +66,7 @@ export const CorrectWalletConnected = () => {
 							Mismatching wallets
 						</Typography>
 					</Box>
-					<Typography variant="subtitle2" sx={{ textAlign: "center", margin: { lg: "1rem 0 .5rem 0" } }}>
+					<Typography variant="subtitle2" sx={{ margin: { lg: "1rem 0 .5rem 0" } }}>
 						If you switch accounts, you will be unable use the Xsyn Passport until the connected wallet account address
 						<Box component="span" sx={{ color: colors.darkNeonBlue }}>
 							{` (${AddressDisplay(account ? account : "")}) `}
@@ -73,8 +76,9 @@ export const CorrectWalletConnected = () => {
 							{` (${user && user.public_address ? AddressDisplay(user.public_address) : null}).`}
 						</Box>
 					</Typography>
-					<Typography variant="subtitle2" sx={{ textAlign: "center" }}>
-						You may change your connected wallet in your Web3 wallet, or logout.
+					<Typography variant="subtitle2">
+						Please disconnect your wallets and then connect one through your profile or, please change to the wallet that belongs to this
+						account.
 					</Typography>
 				</Box>
 

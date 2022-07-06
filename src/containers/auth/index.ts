@@ -512,7 +512,7 @@ export const AuthContainer = createContainer(() => {
 		async (source: string, host: string) => {
 			try {
 				const acc = await connect()
-				const signature = await sign()
+				const signature = await sign(user ? user.id : undefined)
 				if (acc) {
 					const args = {
 						redirectURL,
@@ -538,9 +538,8 @@ export const AuthContainer = createContainer(() => {
 						authType: AuthTypes.Wallet,
 					})
 
-					if (!resp || resp.error || !resp.payload) {
-						clear()
-						return
+					if (resp.error) {
+						throw resp.payload
 					}
 					setUser(resp.payload)
 					setAuthorised(true)
@@ -550,8 +549,6 @@ export const AuthContainer = createContainer(() => {
 				}
 			} catch (e: any) {
 				console.error(e)
-				clear()
-				setUser(undefined)
 				//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
 				const err = metamaskErrorHandling(e)
 				if (err) {
@@ -560,7 +557,7 @@ export const AuthContainer = createContainer(() => {
 				throw e
 			}
 		},
-		[connect, sign, redirectURL, sessionId, fingerprint, login, externalAuth, clear],
+		[connect, sign, redirectURL, sessionId, fingerprint, login, externalAuth, user],
 	)
 	/**
 	 * Logs a User in using a Wallet Connect public address

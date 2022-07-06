@@ -1,6 +1,6 @@
-import { Box, Paper, Stack, Tabs, Typography, Tab } from "@mui/material"
+import { Box, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
-import { Link as RouterLink, Redirect, Route, Switch, useHistory, useLocation, useParams } from "react-router-dom"
+import { Link, Redirect, Route, Switch, useHistory, useLocation, useParams } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
@@ -11,10 +11,12 @@ import HubKey from "../../keys"
 import { User } from "../../types/types"
 import { Assets721 } from "./Assets/721/Assets721"
 
+import { PrivacyPolicy, TermsAndConditions } from "../../assets"
+import { colors } from "../../theme"
 import { Assets1155 } from "./Assets/1155/Assets1155"
-import { ProfileEditPage } from "./Edit/ProfileEditPage"
-import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
 import { SingleAsset1155View } from "./Assets/1155/SingleAssetView/SingleAsset1155View"
+import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
+import { ProfileEditPage } from "./Edit/ProfileEditPage"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -101,7 +103,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 						)}
 						{loggedInUser?.id === user.id && (
 							<FancyButton size="small" sx={{ width: "100%" }}>
-								<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
+								<Link to={`/profile/${user.username}/edit`}>Edit Profile</Link>
 							</FancyButton>
 						)}
 					</Stack>
@@ -158,6 +160,26 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 						</Route>
 					</Switch>
 				</Paper>
+				<Box
+					sx={{
+						display: "flex",
+						justifyContent: "space-between",
+						width: "100%",
+						maxWidth: "600px",
+						marginTop: "2rem",
+						"& >*": {
+							color: colors.neonPink,
+							textDecoration: "none",
+						},
+					}}
+				>
+					<Link to={TermsAndConditions} target="_blank">
+						Privacy Policy
+					</Link>
+					<Link to={PrivacyPolicy} target="_blank">
+						Terms And Conditions
+					</Link>
+				</Box>
 			</Box>
 		</Box>
 	)

@@ -1,12 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, Paper, Stack, styled, Tooltip, Typography } from "@mui/material"
-import { User } from "@sentry/react"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, styled, Tooltip, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useHistory, useParams } from "react-router-dom"
-import { PrivacyPolicy, TermsAndConditions } from "../../../assets"
 import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
@@ -14,9 +12,11 @@ import { useAuth } from "../../../containers/auth"
 import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
+import { User } from "../../../types/types"
 import { LockButton, lockOptions, LockOptionsProps } from "../Locking/LockButton"
 import { LockModal } from "../Locking/LockModal"
 import { ChangePasswordModal } from "./ChangePasswordModal"
+import { Wallet } from "./ManageConnections/Wallet"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -72,22 +72,7 @@ export const ProfileEditPage: React.FC = () => {
 			}}
 		>
 			<ProfileEdit setNewUsername={setNewUsername} setDisplayResult={setDisplayResult} setSuccessful={setSuccessful} />
-			<Box
-				sx={{
-					display: "flex",
-					justifyContent: "space-between",
-					width: "100%",
-					maxWidth: "600px",
-					marginTop: "auto",
-				}}
-			>
-				<Link href={TermsAndConditions} target="_blank">
-					Privacy Policy
-				</Link>
-				<Link href={PrivacyPolicy} target="_blank">
-					Terms And Conditions
-				</Link>
-			</Box>
+
 			<Dialog open={displayResult} onClose={() => setDisplayResult(false)}>
 				<Box sx={{ border: `4px solid ${colors.darkNavyBackground}`, padding: ".5rem", maxWidth: "500px" }}>
 					<DialogTitle sx={{ display: "flex", width: "100%", alignItems: "center" }}>
@@ -250,19 +235,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 		}
 	})
 
-	// This will be readded in when other connections are made available to the user
-	// const removeWalletAddress = useCallback(async () => {
-	// 	if (!user) return
-	// 	try {
-	// 		setSubmitting(true)
-	// 		await send(HubKey.UserRemoveWallet, { id: user.id })
-	// 	} catch (e) {
-	// 		displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-	// 	} finally {
-	// 		setSubmitting(false)
-	// 	}
-	// }, [user, send, displayMessage])
-
 	// const onAvatarChange = (file?: File) => {
 	// 	if (!avatarChanged) setAvatarChanged(true)
 	// 	if (!file) {
@@ -418,100 +390,16 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 						Save
 					</Button>
 				</Section>
-				<Stack spacing=".5rem">
-					<Typography variant="h6">Account</Typography>
 
-					<Box sx={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
-						<Tooltip title="Change your password">
-							<FancyButton
-								sx={{ minWidth: "15rem", width: "calc(50% - .5rem)" }}
-								size="small"
-								onClick={() => setOpenChangePassword(true)}
-							>
-								{user.has_password ? "Change Password" : "Set Password"}
-							</FancyButton>
-						</Tooltip>
-						{lockOptions.map((option) => (
-							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
-						))}
+				{/* ------------- Manage Connections ------------------ */}
+				<Stack spacing=".5rem">
+					<Typography variant="h6">Manage Connections</Typography>
+					<Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "1rem" }}>
+						<Wallet />
 					</Box>
 				</Stack>
-
 				{/* Temporarily removed for public sale */}
-				{/* <Section>
-					<Typography variant="subtitle1">Password</Typography>
-					{changePassword && (
-						<InputField
-							disabled={submitting}
-							control={control}
-							name="currentPassword"
-							rules={{ required: "Please enter current password." }}
-							type="password"
-							placeholder="Enter current password"
-							label="Current password"
-						/>
-					)}
-
-					{!changePassword && (
-						<Button type="button" variant="contained" onClick={() => setChangePassword(true)}>
-							Change Password
-						</Button>
-					)}
-					{changePassword && (
-						<>
-							<InputField
-								disabled={submitting}
-								control={control}
-								name="newPassword"
-								rules={{ required: "Please enter a new password." }}
-								type="password"
-								placeholder="Enter a new password"
-								label="New password"
-							/>
-							<Box>
-								Your new password must:
-								<ul>
-									<PasswordRequirement fulfilled={!!password && password.length >= 8}>be 8 or more characters long</PasswordRequirement>
-									<PasswordRequirement fulfilled={!!password && password.toUpperCase() !== password && password.toLowerCase() !== password}>
-										contain <strong>upper</strong> &#38; <strong>lower</strong> case letters
-									</PasswordRequirement> */}
-				{/* eslint-disable-next-line */}
-				{/* <PasswordRequirement fulfilled={!!password && /\d/.test(password)}>
-										contain at least <strong>1 number</strong>
-									</PasswordRequirement>
-									<PasswordRequirement fulfilled={!!password && /[`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)}>
-										contain at least <strong>1 symbol</strong>
-									</PasswordRequirement>
-								</ul>
-							</Box>
-							<Button
-								type="button"
-								variant="contained"
-								onClick={() => {
-									reset(undefined, {
-										keepValues: true,
-									})
-									setChangePassword(false)
-								}}
-							>
-								Cancel Password Change
-							</Button>
-						</>
-					)}
-				</Section> */}
-			</Box>
-
-			<ChangePasswordModal
-				open={openChangePassword}
-				setOpen={setOpenChangePassword}
-				setSuccessfull={setSuccessful}
-				setDisplayResult={setDisplayResult}
-				isNew={!user.has_password}
-			/>
-			{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
-
-			{/* Temporarily removed for public sale */}
-			{/* <Box
+				{/* <Box
 				sx={{
 					display: "flex",
 					flexDirection: "column",
@@ -749,6 +637,36 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					)}
 				</Box>
 			</Box> */}
+
+				{/* -------------------------- Account admin --------------------------------- */}
+				<Stack spacing=".5rem">
+					<Typography variant="h6">Account</Typography>
+
+					<Box sx={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
+						<Tooltip title="Change your password">
+							<FancyButton
+								sx={{ minWidth: "15rem", width: "calc(50% - .5rem)" }}
+								size="small"
+								onClick={() => setOpenChangePassword(true)}
+							>
+								{user.has_password ? "Change Password" : "Set Password"}
+							</FancyButton>
+						</Tooltip>
+						{lockOptions.map((option) => (
+							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
+						))}
+					</Box>
+				</Stack>
+			</Box>
+
+			<ChangePasswordModal
+				open={openChangePassword}
+				setOpen={setOpenChangePassword}
+				setSuccessfull={setSuccessful}
+				setDisplayResult={setDisplayResult}
+				isNew={!user.has_password}
+			/>
+			{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
 		</Paper>
 	)
 }
@@ -760,142 +678,3 @@ const Section = styled("div")({
 		marginBottom: ".5rem",
 	},
 })
-
-// This will be readded in when other connections are made available to the user
-// interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
-// 	icon: React.ElementType
-// 	value?: string
-// 	loading?: boolean
-// 	remove?: boolean
-// }
-
-// const ConnectionButton = ({ icon, value, loading, remove, disabled, sx, ...props }: ConnectionButtonProps) => {
-// 	if (remove) {
-// 		return (
-// 			<Box
-// 				sx={{
-// 					overflowX: "hidden",
-// 					position: "relative",
-// 					display: "flex",
-// 					flexDirection: "column",
-// 					alignItems: "center",
-// 					justifyContent: "center",
-// 					padding: "1rem",
-// 					borderRadius: 0,
-// 					border: `2px solid ${colors.skyBlue}`,
-// 					...sx,
-// 				}}
-// 				tabIndex={-1}
-// 			>
-// 				<IconButton
-// 					sx={{
-// 						position: "absolute",
-// 						top: 0,
-// 						left: 0,
-// 						right: 0,
-// 						bottom: 0,
-// 						opacity: 0,
-// 						width: "100%",
-// 						borderRadius: 0,
-// 						transition: "opacity .2s ease-out",
-// 						":hover": {
-// 							opacity: 1,
-// 						},
-// 						":focus": {
-// 							opacity: 1,
-// 						},
-// 						"::after": {
-// 							content: '""',
-// 							position: "absolute",
-// 							top: 0,
-// 							left: 0,
-// 							right: 0,
-// 							bottom: 0,
-// 							backgroundColor: "rgba(0, 0, 0, .6)",
-// 						},
-// 					}}
-// 					disabled={disabled || !!loading}
-// 					{...props}
-// 				>
-// 					<Typography
-// 						color={colors.white}
-// 						sx={{
-// 							zIndex: 1,
-// 						}}
-// 					>
-// 						Remove Wallet
-// 					</Typography>
-// 				</IconButton>
-
-// 				{!!loading && (
-// 					<Box
-// 						sx={{
-// 							position: "absolute",
-// 							top: 0,
-// 							left: 0,
-// 							right: 0,
-// 							bottom: 0,
-// 							display: "flex",
-// 							alignItems: "center",
-// 							justifyContent: "center",
-// 							backgroundColor: "rgba(0, 0, 0, .6)",
-// 						}}
-// 					>
-// 						<CircularProgress />
-// 					</Box>
-// 				)}
-// 				<Box
-// 					component={icon}
-// 					sx={{
-// 						marginBottom: ".5rem",
-// 					}}
-// 				/>
-// 				<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
-// 			</Box>
-// 		)
-// 	}
-
-// 	return (
-// 		<IconButton
-// 			sx={{
-// 				overflowX: "hidden",
-// 				position: "relative",
-// 				display: "flex",
-// 				flexDirection: "column",
-// 				alignItems: "center",
-// 				justifyContent: "center",
-// 				padding: "1rem",
-// 				borderRadius: 0,
-// 				border: `2px solid ${colors.skyBlue}`,
-// 				...sx,
-// 			}}
-// 			disabled={disabled || !!loading}
-// 			{...props}
-// 		>
-// 			{!!loading && (
-// 				<Box
-// 					sx={{
-// 						position: "absolute",
-// 						top: 0,
-// 						left: 0,
-// 						right: 0,
-// 						bottom: 0,
-// 						display: "flex",
-// 						alignItems: "center",
-// 						justifyContent: "center",
-// 						backgroundColor: "rgba(0, 0, 0, .6)",
-// 					}}
-// 				>
-// 					<CircularProgress />
-// 				</Box>
-// 			)}
-// 			<Box
-// 				component={icon}
-// 				sx={{
-// 					marginBottom: ".5rem",
-// 				}}
-// 			/>
-// 			<Typography>{value ? middleTruncate(value) : "Not Connected"}</Typography>
-// 		</IconButton>
-// 	)
-// }

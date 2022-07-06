@@ -19,6 +19,7 @@ enum HubKey {
 	UserFingerprint = "USER:FINGERPRINT",
 	UserLock = "USER:LOCK",
 	UserInit = "USER:INIT",
+	UserAddWallet = "USER:ADD_WALLET",
 
 	ImageList = "IMAGE:LIST",
 
