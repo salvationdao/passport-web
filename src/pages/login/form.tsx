@@ -1,9 +1,11 @@
-import { Alert, Box, Stack, Tab, Tabs } from "@mui/material"
+import { Alert, Box, Stack, styled, Tab, Tabs } from "@mui/material"
 import { useState } from "react"
-import { MetaMaskIcon, WalletConnectIcon } from "../../assets"
+import { FacebookIcon, MetaMaskIcon, WalletConnectIcon } from "../../assets"
+import { FacebookLogin } from "../../components/facebookLogin"
 import { FancyButton } from "../../components/fancyButton"
 import { MetaMaskLogin } from "../../components/loginMetaMask"
 import { WalletConnectLogin } from "../../components/loginWalletConnect"
+import { colors } from "../../theme"
 import { EmailLogin } from "./email"
 
 enum FormTabs {
@@ -18,7 +20,7 @@ export const LoginForm = () => {
 	return (
 		<Stack>
 			<Box sx={{ borderTop: 1, borderColor: "divider", padding: "20px", flex: 1, display: "flex" }}>
-				<Stack sx={{ height: "100%", justifyContent: "center", alignItems: "center", gap: "1rem" }}>
+				<Stack sx={{ height: "100%", justifyContent: "center", alignItems: "center", gap: "1rem", maxWidth: "30rem" }}>
 					<Tabs
 						variant="fullWidth"
 						value={tab}
@@ -30,43 +32,57 @@ export const LoginForm = () => {
 						<Tab label="Signup" value={FormTabs.Signup} />
 					</Tabs>
 					<EmailLogin signup={tab === FormTabs.Signup} />
-					<MetaMaskLogin
-						onFailure={setError}
-						render={(props) => (
-							<FancyButton
-								onClick={props.onClick}
-								loading={props.isProcessing}
-								title="Connect Wallet to account"
-								sx={{
-									width: "100%",
-									borderRadius: ".5rem",
-								}}
-								startIcon={<MetaMaskIcon />}
-							>
-								MetaMask
-							</FancyButton>
-						)}
-					/>
-					<WalletConnectLogin
-						onFailure={setError}
-						render={(props) => (
-							<FancyButton
-								onClick={props.onClick}
-								loading={props.isProcessing}
-								title="Connect Wallet to account"
-								sx={{
-									width: "100%",
-									borderRadius: ".5rem",
-								}}
-								startIcon={<WalletConnectIcon />}
-							>
-								Wallet Connect
-							</FancyButton>
-						)}
-					/>
+					<Box sx={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+						<MetaMaskLogin
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									onClick={props.onClick}
+									loading={props.isProcessing}
+									title="Connect Wallet to account"
+									startIcon={<MetaMaskIcon />}
+								>
+									MetaMask
+								</ConnectButton>
+							)}
+						/>
+						<WalletConnectLogin
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									onClick={props.onClick}
+									loading={props.isProcessing}
+									title="Connect Wallet to account"
+									startIcon={<WalletConnectIcon />}
+								>
+									Wallet Connect
+								</ConnectButton>
+							)}
+						/>
+						<FacebookLogin
+							callback={() => console.log("it works")}
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									onClick={props.onClick}
+									loading={props.isProcessing}
+									title="Connect Wallet to account"
+									startIcon={<FacebookIcon />}
+								>
+									Facebook
+								</ConnectButton>
+							)}
+						/>
+					</Box>
 				</Stack>
 			</Box>
 			{error && <Alert severity="error">{error}</Alert>}
 		</Stack>
 	)
 }
+
+const ConnectButton = styled(FancyButton)({
+	width: "calc(50% - .5rem)",
+	borderRadius: ".5rem",
+	backgroundColor: colors.darkNavyBlue,
+})

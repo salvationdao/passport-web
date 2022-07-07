@@ -102,9 +102,18 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 							</Typography>
 						)}
 						{loggedInUser?.id === user.id && (
-							<FancyButton size="small" sx={{ width: "100%" }}>
-								<Link to={`/profile/${user.username}/edit`}>Edit Profile</Link>
-							</FancyButton>
+							<Link to={`/profile/${user.username}/edit`} style={{ textDecoration: "none", color: colors.neonPink }}>
+								<FancyButton
+									size="small"
+									sx={{
+										width: "100%",
+										zIndex: 9999,
+										position: "relative",
+									}}
+								>
+									Edit Profile
+								</FancyButton>
+							</Link>
 						)}
 					</Stack>
 				</Box>
@@ -143,18 +152,17 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 								<Tab label="ACHIEVEMENTS" value={`/profile/${username}/achievements`} />
 							</Tabs>
 							<Switch>
-								<Route path={`/profile/${username}/edit`}>
-									<ProfileEditPage />
-								</Route>
 								<Route path={`/profile/${username}/game-assets`}>
 									<Assets721 user={user} loggedInUser={loggedInUser} />
 								</Route>
 								<Route path={`/profile/${username}/achievements`}>
 									<Assets1155 user={user} loggedInUser={loggedInUser} />
 								</Route>
-
+								<Route path={`/profile/${username}/edit`}>
+									<ProfileEditPage />
+								</Route>
 								<Route>
-									<Redirect to={`/profile/${username || user.username}/edit`} />
+									<Redirect to={`/profile/${username || user.username}/game-assets`} />
 								</Route>
 							</Switch>
 						</Route>

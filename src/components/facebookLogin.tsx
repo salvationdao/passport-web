@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { API_ENDPOINT_HOSTNAME } from "./../config"
 import { getIsMobile, getParamsFromObject } from "../helpers"
+import { API_ENDPOINT_HOSTNAME } from "./../config"
 
 const decodeParamForKey = (paramString: string, key: string) =>
 	window.decodeURIComponent(
@@ -38,14 +38,14 @@ interface FacebookLoginButtonRenderProps {
 
 interface FacebookLoginProps {
 	callback(userInfo: ReactFacebookLoginInfo | ReactFacebookFailureResponse): void
-	onFailure?(response: ReactFacebookFailureResponse): void
+	onFailure?: (err: string) => void
 	render?: (props: FacebookLoginButtonRenderProps) => JSX.Element
 }
 
 export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailure, render }) => {
 	const [isSdkLoaded, setIsSdkLoaded] = useState(false)
 	const [isProcessing, setIsProcessing] = useState(false)
-	const appId = "577913423867745"
+	const appId = "628321385187603"
 	const language = "en_US"
 	const fields = "email"
 	const version = "3.1"
@@ -62,7 +62,10 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 
 	const isRedirectedFromFb = useCallback(() => {
 		const params = window.location.search
-		return decodeParamForKey(params, "state") === "facebookdirect" && (decodeParamForKey(params, "code") || decodeParamForKey(params, "granted_scopes"))
+		return (
+			decodeParamForKey(params, "state") === "facebookdirect" &&
+			(decodeParamForKey(params, "code") || decodeParamForKey(params, "granted_scopes"))
+		)
 	}, [])
 
 	const loadSdkAsynchronously = useCallback(() => {
@@ -97,9 +100,9 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 				responseApi(response.authResponse)
 			} else {
 				if (onFailure) {
-					onFailure({ status: response.status })
+					onFailure(response.status)
 				} else {
-					callback({ status: response.status })
+					callback(response.status)
 				}
 			}
 		},
@@ -152,7 +155,7 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 			} else {
 				if (!window.FB) {
 					if (onFailure) {
-						onFailure({ status: "facebookNotLoaded" })
+						onFailure("facebookNotLoaded")
 					}
 					return
 				}
@@ -169,7 +172,7 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 							})
 						} catch (e) {
 							if (onFailure) {
-								onFailure({ status: "Failed to get login status" })
+								onFailure("Failed to get login status")
 							}
 							return
 						}
