@@ -5,7 +5,6 @@ import { Link } from "react-router-dom"
 import { FancyButton } from "../components/fancyButton"
 import { SupremacyAuth } from "../components/supremacy/auth"
 import { useAuth } from "../containers/auth"
-import { colors } from "../theme"
 
 const ForgotPassword: React.FC = () => {
 	const theme = useTheme()
@@ -66,11 +65,7 @@ const ForgotPassword: React.FC = () => {
 							{formatError.join(" ")}
 						</Alert>
 					)}
-					{success && (
-						<Typography component="span" variant="caption" sx={{ color: colors.skyBlue, width: "fit-content", textAlign: "left" }}>
-							{success}
-						</Typography>
-					)}
+					{success && <Alert severity="success">{success}</Alert>}
 					<FancyButton
 						loading={forgotPassword.loading}
 						submit

@@ -47,7 +47,7 @@ export const Wallet: React.FC = () => {
 					displayMessage("Wallet connected to account.", "success")
 				} catch (err: any) {
 					console.error(err)
-					displayMessage(err ? err : "Something went wrong", "error")
+					displayMessage(err.message ? err.message : err, "error")
 				} finally {
 					setDisableWalletModal(false)
 				}

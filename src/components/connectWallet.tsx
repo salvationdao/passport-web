@@ -1,29 +1,65 @@
-import { Button } from "@mui/material"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
+import { useAuth } from "../containers/auth"
+import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { usePassportCommandsUser } from "../hooks/usePassport"
+import HubKey from "../keys"
+import { colors } from "../theme"
+import { User } from "../types/types"
+import { FancyButton } from "./fancyButton"
 
-interface ConnectWalletProps {
-	addNewWallet?: () => Promise<void>
-}
+export const ConnectWallet = () => {
+	const { connect, wcConnect, sign, setDisableWalletModal, wcSignature, signWalletConnect, metaMaskState } = useWeb3()
+	const { user, setUser } = useAuth()
+	const { displayMessage } = useSnackbar()
+	const { send } = usePassportCommandsUser("/commander")
 
-export const ConnectWallet = ({ addNewWallet }: ConnectWalletProps) => {
-	const { metaMaskState, connect, wcConnect } = useWeb3()
+	if (!user) {
+		return null
+	}
 
 	return (
-		<Button
+		<FancyButton
+			sx={{
+				background: colors.darkNavyBackground,
+			}}
 			onClick={async () => {
-				if (metaMaskState !== MetaMaskState.NotInstalled) {
-					await connect()
-				} else {
-					await wcConnect()
+				try {
+					setDisableWalletModal(true)
+					let acc: string | undefined, signature: string | undefined
+					if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
+						acc = await wcConnect()
+						if (wcSignature) {
+							signature = wcSignature
+						} else {
+							await signWalletConnect()
+						}
+					} else {
+						acc = await connect()
+						signature = await sign(user.id)
+					}
+					if (signature === undefined) {
+						throw Error("No signature was found in process.")
+					}
+					const resp = await send<User>(HubKey.UserAddWallet, {
+						id: user.id,
+						public_address: acc,
+						signature,
+					})
+					setUser(resp)
+					displayMessage("Wallet connected to account.", "success")
+				} catch (err: any) {
+					console.error(err)
+					displayMessage(err.message ? err.message : err, "error")
+				} finally {
+					setDisableWalletModal(false)
 				}
 			}}
 			title="Connect Wallet to account"
 			startIcon={metaMaskState === MetaMaskState.NotInstalled ? <WalletConnectIcon /> : <MetaMaskIcon />}
-			variant="contained"
 			fullWidth
 		>
 			Connect Wallet to account
-		</Button>
+		</FancyButton>
 	)
 }
