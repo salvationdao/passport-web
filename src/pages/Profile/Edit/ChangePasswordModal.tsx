@@ -115,7 +115,7 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 						/>
 						{formatError && (
 							<Alert severity="error">
-								{firstWordError}&nbsp;
+								<span style={{ textTransform: "capitalize" }}>{firstWordError}</span>&nbsp;
 								{formatError.join(" ")}
 							</Alert>
 						)}
