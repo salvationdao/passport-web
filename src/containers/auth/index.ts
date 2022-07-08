@@ -5,7 +5,15 @@ import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
 import { usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
-import { ChangePasswordRequest, ForgotPasswordRequest, LoginRequest, NewPasswordRequest, VerifyAccountResponse } from "../../types/auth"
+import {
+	ChangePasswordRequest,
+	FacebookLoginRequest,
+	ForgotPasswordRequest,
+	GoogleLoginRequest,
+	LoginRequest,
+	NewPasswordRequest,
+	VerifyAccountResponse,
+} from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
@@ -25,6 +33,8 @@ export enum AuthTypes {
 	Reset = "reset",
 	ChangePassword = "change_password",
 	NewPassword = "new_password",
+	Google = "google",
+	Facebook = "facebook",
 }
 
 export enum VerificationType {
@@ -73,6 +83,22 @@ const newPasswordAction = (formValues: NewPasswordRequest): Action => ({
 	body: formValues,
 })
 
+const googleLoginAction = (formValues: GoogleLoginRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.Google}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const facebookLoginAction = (formValues: FacebookLoginRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.Facebook}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
 /**
  * A Container that handles Authorisation
  */
@@ -114,6 +140,8 @@ export const AuthContainer = createContainer(() => {
 	const { loading: resetPasswordLoading, mutate: reset } = useMutation(resetPasswordAction)
 	const { loading: changePasswordLoading, mutate: change } = useMutation(changePasswordAction)
 	const { loading: newPasswordLoading, mutate: newPass } = useMutation(newPasswordAction)
+	const { loading: googleLoginLoading, mutate: google } = useMutation(googleLoginAction)
+	const { loading: facebookLoginLoading, mutate: facebook } = useMutation(facebookLoginAction)
 
 	// useQueries
 	const { query: logoutQuery } = useQuery(
@@ -396,7 +424,7 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Change Password sends email to the user with jwt token to reset password
+	 * New Password sets a new password if user never set it before
 	 */
 	const newPassword = useCallback(
 		async (password: string, errorCallback?: (msg: string) => void) => {
@@ -434,6 +462,78 @@ export const AuthContainer = createContainer(() => {
 		},
 		[newPass, redirectURL, sessionId, fingerprint, user],
 	)
+
+	/**
+	 * Google login use oauth to give access to user
+	 */
+	const googleLogin = useCallback(
+		async (id: string, username: string, email: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const resp = await google({
+					redirectURL,
+					username,
+					email,
+					google_id: id,
+					session_id: sessionId,
+					fingerprint,
+				})
+
+				if (resp.error) {
+					throw resp.payload
+				}
+
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[google, redirectURL, sessionId, fingerprint],
+	)
+	/**
+	 * Facebook login use oauth to give access to user
+	 */
+	const facebookLogin = useCallback(
+		async (id: string, name: string, email: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const resp = await facebook({
+					redirectURL,
+					email,
+					facebook_id: id,
+					name,
+					session_id: sessionId,
+					fingerprint,
+				})
+
+				if (resp.error) {
+					throw resp.payload
+				}
+
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[facebook, redirectURL, sessionId, fingerprint],
+	)
+
 	/**
 	 * Logs a User in using their saved login token.
 	 *
@@ -725,6 +825,14 @@ export const AuthContainer = createContainer(() => {
 		newPassword: {
 			action: newPassword,
 			loading: newPasswordLoading,
+		},
+		googleLogin: {
+			action: googleLogin,
+			loading: googleLoginLoading,
+		},
+		facebookLogin: {
+			action: facebookLogin,
+			loading: facebookLoginLoading,
 		},
 	}
 })

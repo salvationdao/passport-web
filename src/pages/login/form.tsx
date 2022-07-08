@@ -1,12 +1,14 @@
 import { Alert, Box, Stack, styled, Tab, Tabs } from "@mui/material"
 import { useState } from "react"
-import { FacebookIcon, MetaMaskIcon, WalletConnectIcon } from "../../assets"
-import { FacebookLogin } from "../../components/facebookLogin"
+import { GoogleIcon, MetaIcon, MetaMaskIcon, TwitterIcon, WalletConnectIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { MetaMaskLogin } from "../../components/loginMetaMask"
 import { WalletConnectLogin } from "../../components/loginWalletConnect"
 import { colors } from "../../theme"
 import { EmailLogin } from "./email"
+import FacebookLoginWrapper from "./oauth/facebook"
+import GoogleLoginWrapper from "./oauth/google"
+import TwitterLoginWrapper from "./oauth/twitter"
 
 enum FormTabs {
 	Login = "login",
@@ -59,17 +61,42 @@ export const LoginForm = () => {
 								</ConnectButton>
 							)}
 						/>
-						<FacebookLogin
-							callback={() => console.log("it works")}
+						<FacebookLoginWrapper
+							onFailure={setError}
+							render={(props, loading) => (
+								<ConnectButton
+									onClick={props.onClick}
+									loading={loading ? loading : props.isProcessing}
+									title="Connect Wallet to account"
+									startIcon={<MetaIcon />}
+								>
+									Meta
+								</ConnectButton>
+							)}
+						/>
+						<GoogleLoginWrapper
 							onFailure={setError}
 							render={(props) => (
 								<ConnectButton
+									loading={props.loading}
 									onClick={props.onClick}
-									loading={props.isProcessing}
 									title="Connect Wallet to account"
-									startIcon={<FacebookIcon />}
+									startIcon={<GoogleIcon />}
 								>
-									Facebook
+									Google
+								</ConnectButton>
+							)}
+						/>
+						<TwitterLoginWrapper
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									loading={props.isProcessing}
+									onClick={props.onClick}
+									title="Connect Wallet to account"
+									startIcon={<TwitterIcon />}
+								>
+									Twitter
 								</ConnectButton>
 							)}
 						/>
@@ -85,4 +112,8 @@ const ConnectButton = styled(FancyButton)({
 	width: "calc(50% - .5rem)",
 	borderRadius: ".5rem",
 	backgroundColor: colors.darkNavyBlue,
+	height: "5rem",
+	"& .MuiButton-startIcon>svg": {
+		height: "2.5rem",
+	},
 })

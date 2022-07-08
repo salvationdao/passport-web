@@ -7,14 +7,14 @@ const decodeParamForKey = (paramString: string, key: string) =>
 		paramString.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[.+*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"),
 	)
 export interface ReactFacebookFailureResponse {
-	status?: string
+	status: string
 }
 
 export interface ReactFacebookLoginInfo {
 	id: string
 	accessToken: string
-	name?: string
-	email?: string
+	first_name: string
+	email: string
 	picture?: {
 		data: {
 			height?: number
@@ -30,7 +30,7 @@ export interface ReactFacebookLoginState {
 	isProcessing?: boolean
 }
 
-interface FacebookLoginButtonRenderProps {
+export interface FacebookLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 	isProcessing: boolean
 	isSdkLoaded: boolean
@@ -47,7 +47,7 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 	const [isProcessing, setIsProcessing] = useState(false)
 	const appId = "628321385187603"
 	const language = "en_US"
-	const fields = "email"
+	const fields = "email,first_name,last_name"
 	const version = "3.1"
 	const xfbml = false
 	const cookie = false
@@ -100,7 +100,8 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 				responseApi(response.authResponse)
 			} else {
 				if (onFailure) {
-					onFailure(response.status)
+					const errMsg = "Failed to login through Facebook"
+					onFailure(errMsg)
 				} else {
 					callback(response.status)
 				}

@@ -52,6 +52,20 @@ export interface NewPasswordRequest extends BasicLoginRequest {
 	session_id?: string
 }
 
+export interface GoogleLoginRequest extends BasicLoginRequest {
+	google_id: string
+	email: string
+	username: string
+	session_id?: string
+}
+
+export interface FacebookLoginRequest extends BasicLoginRequest {
+	facebook_id: string
+	email: string
+	name: string
+	session_id?: string
+}
+
 export interface BasicLoginResponse {
 	user: User
 	token: string
@@ -100,25 +114,13 @@ export interface SocialLoginRequest extends BasicLoginRequest {
 	token: string
 	session_id?: string
 	username?: string
-	service: string
-	fingerprint?: Fingerprint
-}
-
-export interface GoogleLoginRequest extends BasicLoginRequest {
-	token: string
-	session_id?: string
+	service?: string
 	fingerprint?: Fingerprint
 }
 
 export interface FacebookSignUpRequest {
 	token: string
 	username: string
-	session_id?: string
-	fingerprint?: Fingerprint
-}
-
-export interface FacebookLoginRequest extends BasicLoginRequest {
-	token: string
 	session_id?: string
 	fingerprint?: Fingerprint
 }

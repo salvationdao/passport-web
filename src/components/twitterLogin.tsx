@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { getParamsFromObject } from "../helpers"
 import { API_ENDPOINT_HOSTNAME } from "../config"
+import { getParamsFromObject } from "../helpers"
 
 export interface ReactTwitterFailureResponse {
 	status?: string
@@ -15,7 +15,7 @@ export interface ReactTwitterLoginState {
 	isProcessing?: boolean
 }
 
-interface TwitterLoginButtonRenderProps {
+export interface TwitterLoginButtonRenderProps {
 	onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 	isProcessing: boolean
 }
@@ -39,7 +39,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ callback, onFailure,
 		setIsProcessing(true)
 
 		const twitterParams = {
-			oauth_callback: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
+			oauth_callback: window.location.href.replace("/login", ""),
 		}
 
 		const href = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter${getParamsFromObject(twitterParams)}`

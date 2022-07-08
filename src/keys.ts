@@ -45,6 +45,18 @@ enum HubKey {
 	SupExchangeRates = "SUPS:EXCHANGE",
 	SupsDeposit = "SUPS:DEPOSIT",
 	SupsDepositList = "SUPS:DEPOSIT:LIST",
+
+	// OAUTH
+	UserRemoveFacebook = "USER:REMOVE_FACEBOOK",
+	UserAddFacebook = "USER:ADD_FACEBOOK",
+	UserRemoveGoogle = "USER:REMOVE_GOOGLE",
+	UserAddGoogle = "USER:ADD_GOOGLE",
+	UserRemoveTwitch = "USER:REMOVE_TWITCH",
+	UserAddTwitch = "USER:ADD_TWITCH",
+	UserRemoveTwitter = "USER:REMOVE_TWITTER",
+	UserAddTwitter = "USER:ADD_TWITTER",
+	UserRemoveDiscord = "USER:REMOVE_DISCORD",
+	UserAddDiscord = "USER:ADD_DISCORD",
 }
 
 export default HubKey

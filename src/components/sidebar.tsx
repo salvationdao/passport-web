@@ -77,10 +77,12 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		}
 
 		// no wallet connected
-		if (!user.public_address) {
+		if (!userPublicAddress) {
 			setWalletMsg("Wallet not connected")
 			setWalletSups(undefined)
 			return
+		} else {
+			setWalletMsg(undefined)
 		}
 
 		if (supBalance) setWalletSups(supBalance.toString())
