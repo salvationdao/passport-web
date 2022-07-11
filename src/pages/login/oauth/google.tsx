@@ -35,7 +35,7 @@ const GoogleLoginWrapper: React.FC<IGoogleLoginWrapperProps> = ({ onFailure, ren
 				setLoading(false)
 			}}
 			onFailure={(err) => {
-				onFailure(err)
+				onFailure("Failed to authenticated user.")
 				setLoading(false)
 			}}
 			cookiePolicy={"single_host_origin"}

@@ -123,7 +123,6 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 				<Link to="/forgot-password">
 					<Typography
 						component="span"
-						variant="caption"
 						sx={{
 							display: "inline-block",
 							textDecoration: "underline",

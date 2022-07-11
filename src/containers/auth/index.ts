@@ -3,7 +3,7 @@ import { Action, useMutation, useQuery } from "react-fetching-library"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
-import { usePassportSubscriptionUser } from "../../hooks/usePassport"
+import { usePassportSubscription, usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
 import {
 	ChangePasswordRequest,
@@ -772,6 +772,13 @@ export const AuthContainer = createContainer(() => {
 			window.close()
 		}
 	}, [authorised, sessionId, isLogoutPage])
+
+	usePassportSubscription<User>({ URI: `/twitter`, key: keys.AuthTwitter }, (user) => {
+		if (user.id) {
+			setUser(user)
+			setAuthorised(true)
+		}
+	})
 
 	/////////////////
 	//  Container  //

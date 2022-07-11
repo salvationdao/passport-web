@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { getIsMobile, getParamsFromObject } from "../helpers"
-import { API_ENDPOINT_HOSTNAME } from "./../config"
+import { API_ENDPOINT_HOSTNAME, FACEBOOK_APP_ID } from "./../config"
 
 const decodeParamForKey = (paramString: string, key: string) =>
 	window.decodeURIComponent(
@@ -45,7 +45,6 @@ interface FacebookLoginProps {
 export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailure, render }) => {
 	const [isSdkLoaded, setIsSdkLoaded] = useState(false)
 	const [isProcessing, setIsProcessing] = useState(false)
-	const appId = "628321385187603"
 	const language = "en_US"
 	const fields = "email,first_name,last_name"
 	const version = "3.1"
@@ -125,7 +124,7 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 		;(window as any).fbAsyncInit = () => {
 			window.FB.init({
 				version: `v${version}`,
-				appId,
+				appId: FACEBOOK_APP_ID,
 				xfbml,
 				cookie,
 			})
@@ -134,7 +133,7 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 				window.FB.getLoginStatus(checkLoginAfterRefresh)
 			}
 		}
-	}, [appId, xfbml, cookie, version, autoLoad, isRedirectedFromFb, checkLoginAfterRefresh])
+	}, [xfbml, cookie, version, autoLoad, isRedirectedFromFb, checkLoginAfterRefresh])
 
 	const click = useCallback(
 		async (e) => {
@@ -143,7 +142,7 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({ callback, onFailur
 			}
 			setIsProcessing(true)
 			const params = {
-				client_id: appId,
+				client_id: FACEBOOK_APP_ID,
 				redirect_uri: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}`,
 				state,
 				return_scopes: returnScopes,

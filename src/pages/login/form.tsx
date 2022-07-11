@@ -64,40 +64,35 @@ export const LoginForm = () => {
 						<FacebookLoginWrapper
 							onFailure={setError}
 							render={(props, loading) => (
-								<ConnectButton
+								<OAuthButton
 									onClick={props.onClick}
 									loading={loading ? loading : props.isProcessing}
 									title="Connect Wallet to account"
 									startIcon={<MetaIcon />}
 								>
 									Meta
-								</ConnectButton>
+								</OAuthButton>
 							)}
 						/>
 						<GoogleLoginWrapper
 							onFailure={setError}
 							render={(props) => (
-								<ConnectButton
+								<OAuthButton
 									loading={props.loading}
 									onClick={props.onClick}
 									title="Connect Wallet to account"
 									startIcon={<GoogleIcon />}
 								>
 									Google
-								</ConnectButton>
+								</OAuthButton>
 							)}
 						/>
 						<TwitterLoginWrapper
 							onFailure={setError}
 							render={(props) => (
-								<ConnectButton
-									loading={props.isProcessing}
-									onClick={props.onClick}
-									title="Connect Wallet to account"
-									startIcon={<TwitterIcon />}
-								>
+								<OAuthButton onClick={props.onClick} title="Connect Wallet to account" startIcon={<TwitterIcon />}>
 									Twitter
-								</ConnectButton>
+								</OAuthButton>
 							)}
 						/>
 					</Box>
@@ -115,5 +110,20 @@ const ConnectButton = styled(FancyButton)({
 	height: "5rem",
 	"& .MuiButton-startIcon>svg": {
 		height: "2.5rem",
+	},
+})
+
+const OAuthButton = styled(ConnectButton)({
+	display: "flex",
+	flexDirection: "column",
+	alignItems: "center",
+	justifyContent: "center",
+	width: "calc((100% - 2rem)/3)",
+	gap: ".5rem",
+	"&>span": {
+		margin: 0,
+	},
+	"& .MuiButton-startIcon>svg": {
+		height: "1.5rem",
 	},
 })
