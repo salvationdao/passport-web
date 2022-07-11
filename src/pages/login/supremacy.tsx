@@ -1,12 +1,11 @@
-import * as React from "react"
-import { useState } from "react"
 import { Box, Typography } from "@mui/material"
 import { styled } from "@mui/system"
-import { XSYNLogo } from "../../assets"
-import LoginForm from "./form"
-import { useAuth } from "../../containers/auth"
+import { useState } from "react"
 import { Redirect } from "react-router-dom"
+import { XSYNLogo } from "../../assets"
 import { Loading } from "../../components/loading"
+import { useAuth } from "../../containers/auth"
+import LoginForm from "./form"
 
 interface LoginBoxProps {
 	wp: string
@@ -57,12 +56,8 @@ const SupremacyLogin = () => {
 		// if it is not from external, redirect user to profile page
 		if (!isFromExternal) return <Redirect to={"/profile"} />
 
-		// get source
-		let source = ""
-		if (window.location.search.includes("hangar")) source = "hangar"
-		else if (window.location.search.includes("website")) source = "website"
 		// else sign user
-		loginCookieExternal(source)
+		loginCookieExternal()
 		return <Loading />
 	}
 	return (
