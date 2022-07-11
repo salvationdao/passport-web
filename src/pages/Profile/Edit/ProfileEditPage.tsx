@@ -16,6 +16,9 @@ import { User } from "../../../types/types"
 import { LockButton, lockOptions, LockOptionsProps } from "../Locking/LockButton"
 import { LockModal } from "../Locking/LockModal"
 import { ChangePasswordModal } from "./ChangePasswordModal"
+import { Facebook } from "./ManageConnections/Facebook"
+import { Google } from "./ManageConnections/Google"
+import { Twitter } from "./ManageConnections/Twitter"
 import { Wallet } from "./ManageConnections/Wallet"
 
 export const ProfileEditPage: React.FC = () => {
@@ -288,6 +291,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 					height: "100%",
 					overflow: "auto",
 					flexDirection: "column",
+					gap: "1rem",
 					// marginBottom: "3rem",
 					"& > *:not(:last-child)": {
 						marginBottom: "1rem",
@@ -394,8 +398,11 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 				{/* ------------- Manage Connections ------------------ */}
 				<Stack spacing=".5rem">
 					<Typography variant="h6">Manage Connections</Typography>
-					<Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "1rem" }}>
+					<Box sx={{ display: "flex", gap: "1rem" }}>
 						<Wallet />
+						<Facebook />
+						<Google />
+						<Twitter />
 					</Box>
 				</Stack>
 				{/* Temporarily removed for public sale */}

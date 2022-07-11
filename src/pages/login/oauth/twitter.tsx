@@ -11,10 +11,10 @@ const TwitterLoginWrapper: React.FC<ITwitterLoginWrapperProps> = ({ onFailure, r
 
 	return (
 		<TwitterLogin
-			callback={async () => {
-				console.log("it works")
+			onFailure={(err) => {
+				console.log(err)
+				if (err.status) onFailure(err.status)
 			}}
-			onFailure={(err) => console.log(err)}
 			render={(props) => render(props)}
 		/>
 	)

@@ -62,7 +62,7 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 					transform: "translate(-50%, -50%)",
 					maxWidth: "50rem",
 					boxShadow: 6,
-					backgroundColor: colors.darkerNavyBackground,
+					backgroundColor: colors.black2,
 				}}
 			>
 				<Box

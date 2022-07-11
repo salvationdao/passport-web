@@ -10,7 +10,7 @@ import { colors } from "../../theme"
 export const LoginRedirect = () => {
 	const searchParams = new URLSearchParams(window.location.search)
 	const token = searchParams.get("token")
-	const [message, setMessage] = useState("Logging you in...")
+	const [message, setMessage] = useState("Loading...")
 
 	const failed = useCallback(() => {
 		setMessage("Failed to authenticate, please close this window and try again.")

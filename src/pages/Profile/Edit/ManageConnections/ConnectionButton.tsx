@@ -1,6 +1,7 @@
 import { Box, CircularProgress, IconButton, IconButtonProps, Typography } from "@mui/material"
-import React, { useState } from "react"
+import React from "react"
 import { middleTruncate } from "../../../../helpers"
+import useHover from "../../../../hooks/useHover"
 import { colors } from "../../../../theme"
 
 interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
@@ -8,41 +9,46 @@ interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
 	value?: string
 	loading?: boolean
 	disabled?: boolean
-	handleClick?: () => Promise<void>
+	handleClick?: any
+	connected?: boolean
+	small?: boolean
 }
 
-export const ConnectionButton = ({ icon, value, loading, disabled, sx, handleClick, ...props }: ConnectionButtonProps) => {
-	const [btnLoading, setBtnLoading] = useState(loading)
+export const ConnectionButton = ({ icon, value, loading, disabled, sx, handleClick, connected, small, ...props }: ConnectionButtonProps) => {
+	const [hoverRef, isHovered] = useHover<HTMLButtonElement>()
 
-	const btnClick = async () => {
-		if (!handleClick) return
-		setBtnLoading(true)
-		await handleClick()
-		setBtnLoading(false)
-	}
+	let greyBorder = disabled || connected
 
 	return (
 		<IconButton
-			onClick={btnClick}
+			ref={hoverRef}
+			onClick={handleClick}
 			sx={{
-				minWidth: "10rem",
+				flex: "1",
+				maxWidth: small ? "8rem" : "unset",
 				color: colors.white,
 				width: "max-content",
 				overflowX: "hidden",
 				position: "relative",
 				display: "flex",
-				flexDirection: "column",
+				flexDirection: small ? "column" : "row",
 				alignItems: "center",
 				justifyContent: "center",
 				padding: "1rem",
-				borderRadius: 0,
-				border: `2px solid ${disabled ? colors.darkerGrey : colors.skyBlue}`,
+				borderRadius: "15px",
+				border: `2px solid ${greyBorder ? colors.darkerGrey : small ? colors.skyBlue : colors.gold}`,
+				"&>svg": {
+					height: small ? "2rem" : "2.7rem",
+				},
+				"&:hover": {
+					border: `2px solid ${small ? colors.skyBlue : colors.gold}`,
+				},
 				...sx,
 			}}
 			disabled={disabled || !!loading}
 			{...props}
 		>
-			{!!btnLoading && (
+			{loading && (
 				<Box
 					sx={{
 						position: "absolute",
@@ -66,7 +72,18 @@ export const ConnectionButton = ({ icon, value, loading, disabled, sx, handleCli
 					filter: disabled ? "grayscale(1)" : "unset",
 				}}
 			/>
-			<Typography>{value ? middleTruncate(value) : "Connect"}</Typography>
+			<Typography
+				component="span"
+				sx={{
+					color: connected ? colors.darkGrey : colors.white,
+					transition: "all .2s",
+					"&:hover": {
+						color: colors.white,
+					},
+				}}
+			>
+				{value ? middleTruncate(value) : isHovered && connected ? "Disconnect" : connected ? "Connected" : props.title}
+			</Typography>
 		</IconButton>
 	)
 }

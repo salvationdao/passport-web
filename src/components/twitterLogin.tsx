@@ -20,16 +20,20 @@ export interface TwitterLoginButtonRenderProps {
 }
 
 interface TwitterLoginProps {
-	callback: () => Promise<void>
+	onClick?: () => Promise<void>
 	onFailure?: (response: ReactTwitterFailureResponse) => void
-
+	add?: string
 	render?: (props: TwitterLoginButtonRenderProps) => JSX.Element
 }
 
-export const TwitterLogin: React.FC<TwitterLoginProps> = ({ callback, onFailure, render }) => {
+export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, render, add }) => {
 	const click = useCallback(async () => {
+		if (onClick) {
+			await onClick()
+			return
+		}
 		const twitterParams = {
-			oauth_callback: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter?redirect=${window.location.origin}/redirect`,
+			oauth_callback: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter?add=${add}&redirect=${window.location.origin}/redirect`,
 		}
 
 		const href = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter${getParamsFromObject(twitterParams)}`
@@ -52,7 +56,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ callback, onFailure,
 			}
 			return
 		}
-	}, [onFailure])
+	}, [onFailure, onClick, add])
 
 	const propsForRender = useMemo(
 		() => ({

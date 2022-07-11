@@ -20,6 +20,7 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	}
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		setError(null)
 		event.preventDefault()
 		const data = new FormData(event.currentTarget)
 		const email = data.get("email")?.toString()
