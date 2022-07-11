@@ -3,6 +3,7 @@ import { API_ENDPOINT_HOSTNAME } from "../config"
 import { getParamsFromObject } from "../helpers"
 import { usePassportSubscription } from "../hooks/usePassport"
 import keys from "../keys"
+import { User } from "../types/types"
 
 export interface ReactTwitterFailureResponse {
 	status?: string
@@ -63,7 +64,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ callback, onFailure,
 		setTwitterOAuthPopup(popup)
 	}, [isProcessing, onFailure])
 
-	usePassportSubscription({ URI: `/twitter`, key: keys.AuthTwitter }, (payload) => {
+	usePassportSubscription<User>({ URI: `/twitter`, key: keys.AuthTwitter }, (payload) => {
 		console.log(payload)
 	})
 
