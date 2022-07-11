@@ -32,9 +32,9 @@ export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps
 			case "mech_skin":
 				return "War Machine Submodel"
 			case "power_core":
-				return "War Machine Powercore"
+				return "Powercore"
 			case "weapon_skin":
-				return "War Machine Weapon Submodel"
+				return "Weapon Submodel"
 		}
 	}
 
