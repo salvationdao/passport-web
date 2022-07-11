@@ -28,24 +28,35 @@ export const Google: React.FC = () => {
 			onSuccess={async (res) => {
 				setLoading(true)
 				if (user.google_id) {
-					const resp = await send<User>(HubKey.UserRemoveGoogle)
-					setUser(resp)
+					try {
+						const resp = await send<User>(HubKey.UserRemoveGoogle)
+						setUser(resp)
+					} catch (err: any) {
+						console.error(err)
+						displayMessage(err, "error")
+					}
 				} else {
 					if (res.code) {
-						displayMessage(`Couldn't connect to Google: ${res.code}`)
+						displayMessage(`Couldn't connect to Google: ${res.code}`, "error")
 						return
 					}
 					const r = res as GoogleLoginResponse
-					const resp = await send<User>(HubKey.UserAddGoogle, {
-						google_id: r.googleId,
-					})
-					setUser(resp)
+					try {
+						const resp = await send<User>(HubKey.UserAddGoogle, {
+							google_id: r.googleId,
+						})
+						console.log(resp)
+						setUser(resp)
+					} catch (err: any) {
+						console.log(err)
+						displayMessage(err, "error")
+					}
 				}
 
 				setLoading(false)
 			}}
-			onFailure={(err) => {
-				displayMessage("Failed to authenticated user.")
+			onFailure={() => {
+				displayMessage("Failed to authenticated user", "error")
 				setLoading(false)
 			}}
 			cookiePolicy={"single_host_origin"}

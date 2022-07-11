@@ -14,15 +14,28 @@ export const Twitter: React.FC = () => {
 	const { send } = usePassportCommandsUser("/commander")
 	const [loading, setLoading] = useState(false)
 
-	usePassportSubscriptionUser({ URI: `/twitter`, key: HubKey.UserAddTwitter }, (payload: User) => {
-		if (payload.id) {
-			setUser(payload)
+	usePassportSubscriptionUser({ URI: `/twitter`, key: HubKey.UserAddTwitter }, (payload: { user: User; error: string }) => {
+		if (payload.user) {
+			setLoading(true)
+			setUser(payload.user)
+			setLoading(false)
+		} else if (payload.error) {
+			displayMessage(payload.error, "error")
 		}
 	})
+
 	const handleRemove = useCallback(async () => {
-		const resp = await send<User>(HubKey.UserRemoveTwitter)
-		setUser(resp)
-	}, [send, setUser])
+		try {
+			setLoading(true)
+			const resp = await send<User>(HubKey.UserRemoveTwitter)
+			setUser(resp)
+		} catch (err: any) {
+			console.error(err)
+			displayMessage(err, "error")
+		} finally {
+			setLoading(false)
+		}
+	}, [send, setUser, displayMessage])
 
 	if (!user) {
 		return null

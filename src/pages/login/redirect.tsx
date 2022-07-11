@@ -10,7 +10,8 @@ import { colors } from "../../theme"
 export const LoginRedirect = () => {
 	const searchParams = new URLSearchParams(window.location.search)
 	const token = searchParams.get("token")
-	const [message, setMessage] = useState("Loading...")
+	const bypass = searchParams.get("bypass")
+	const [message, setMessage] = useState(bypass ? "Closing..." : "Logging in...")
 
 	const failed = useCallback(() => {
 		setMessage("Failed to authenticate, please close this window and try again.")
@@ -19,13 +20,16 @@ export const LoginRedirect = () => {
 
 	// Receives token from the url param and passes it to the parent via postMessage
 	useEffect(() => {
-		if (!token) failed()
-
-		try {
-			// Send the auth token to the parent
-			window.opener.postMessage({ token })
-		} catch {
+		if (!token && !bypass) {
 			failed()
+		}
+		if (token) {
+			try {
+				// Send the auth token to the parent
+				window.opener.postMessage({ token })
+			} catch {
+				failed()
+			}
 		}
 
 		const currentUrl = window.location.href
@@ -39,7 +43,7 @@ export const LoginRedirect = () => {
 		setTimeout(() => {
 			window.close()
 		}, 1200)
-	}, [failed, token])
+	}, [failed, token, bypass])
 
 	return (
 		<Stack alignItems="center" justifyContent="center" sx={{ height: "100vh", p: "3.8rem", backgroundColor: colors.darkNavyBackground }}>

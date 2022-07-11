@@ -22,17 +22,29 @@ export const Facebook: React.FC = () => {
 			callback={async (res) => {
 				window.FB.logout()
 				if (user.facebook_id) {
-					const resp = await send<User>(HubKey.UserRemoveFacebook)
-					setUser(resp)
+					try {
+						const resp = await send<User>(HubKey.UserRemoveFacebook)
+						setUser(resp)
+					} catch (err: any) {
+						console.error(err)
+						displayMessage(err, "error")
+					}
 				} else {
-					const u = res as ReactFacebookLoginInfo
-					const resp = await send<User>(HubKey.UserAddFacebook, {
-						facebook_id: u.id,
-					})
-					setUser(resp)
+					try {
+						const u = res as ReactFacebookLoginInfo
+						const resp = await send<User>(HubKey.UserAddFacebook, {
+							facebook_id: u.id,
+						})
+						setUser(resp)
+					} catch (err: any) {
+						console.error(err)
+						displayMessage(err, "error")
+					}
 				}
 			}}
-			onFailure={displayMessage}
+			onFailure={(err) => {
+				displayMessage(err, "error")
+			}}
 			render={(props) => (
 				<ConnectionButton
 					handleClick={props.onClick}

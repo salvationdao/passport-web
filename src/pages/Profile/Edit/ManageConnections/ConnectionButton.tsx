@@ -38,7 +38,8 @@ export const ConnectionButton = ({ icon, value, loading, disabled, sx, handleCli
 				borderRadius: "15px",
 				border: `2px solid ${greyBorder ? colors.darkerGrey : small ? colors.skyBlue : colors.gold}`,
 				"&>svg": {
-					height: small ? "2rem" : "2.7rem",
+					height: small ? "2rem" : "3rem",
+					mr: small ? "unset" : "5px",
 				},
 				"&:hover": {
 					border: `2px solid ${small ? colors.skyBlue : colors.gold}`,
@@ -74,6 +75,7 @@ export const ConnectionButton = ({ icon, value, loading, disabled, sx, handleCli
 			/>
 			<Typography
 				component="span"
+				variant="body1"
 				sx={{
 					color: connected ? colors.darkGrey : colors.white,
 					transition: "all .2s",
