@@ -1,20 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { Action, useMutation, useQuery } from "react-fetching-library"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
+import keys from "../../keys"
 import { LoginRequest, VerifyAccountResponse } from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
-import { Action, useMutation, useQuery } from "react-fetching-library"
-import useSignup from "./signup"
 import { useSubscription } from "../ws/useSubscription"
-import keys from "../../keys"
+import useSignup from "./signup"
 
 export enum VerificationType {
 	EmailVerification,
 	ForgotPassword,
+}
+
+export enum Source {
+	Hangar = "hangar",
+	Website = "website",
+	Admin = "admin",
+	Null = "",
 }
 
 const loginAction = (formValues: LoginRequest & { authType: string }): Action<User> => ({
@@ -45,7 +52,7 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const [showSimulation, setShowSimulation] = useState(false)
-
+	const [source, setSource] = useState<Source>(Source.Null)
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
@@ -53,9 +60,7 @@ export const AuthContainer = createContainer(() => {
 	}, [])
 
 	const { signUpMetamask, setSignupType, signupType } = useSignup()
-
 	const [sessionId, setSessionID] = useState("")
-
 	const isLogoutPage = window.location.pathname.startsWith("/external/logout")
 
 	const clear = useCallback(() => {
@@ -84,7 +89,6 @@ export const AuthContainer = createContainer(() => {
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
-			const source = args["source"]
 			const host = args["host"]
 
 			Object.keys(args).forEach((key) => {
@@ -99,11 +103,14 @@ export const AuthContainer = createContainer(() => {
 			form.action = `https://${host || API_ENDPOINT_HOSTNAME}/api/auth/external`
 
 			switch (source) {
-				case "website":
-					form.action += "?website=true"
+				case Source.Website:
+					form.action += `?${Source.Website}=true`
 					break
-				case "hangar":
+				case Source.Hangar:
 					form.action += "?isHangar=true"
+					break
+				case Source.Admin:
+					form.action += `?${Source.Admin}=true`
 					break
 				default:
 					break
@@ -121,7 +128,7 @@ export const AuthContainer = createContainer(() => {
 			document.body.appendChild(form)
 			form.submit()
 		},
-		[],
+		[source],
 	)
 
 	/////////////////
@@ -230,32 +237,32 @@ export const AuthContainer = createContainer(() => {
 	 * External login User with passport cookie
 	 *
 	 */
-	const loginCookieExternal = useCallback(
-		(source: string) => {
-			let authType = ""
-			switch (source) {
-				case "hangar":
-					authType = "hangar"
-					break
-				case "website":
-					authType = "website"
-					break
-				default:
-					authType = "cookie"
-					break
-			}
+	const loginCookieExternal = useCallback(() => {
+		let authType = ""
+		switch (source) {
+			case Source.Hangar:
+				authType = Source.Hangar
+				break
+			case Source.Website:
+				authType = Source.Website
+				break
+			case Source.Admin:
+				authType = Source.Admin
+				break
+			default:
+				authType = "cookie"
+				break
+		}
 
-			const args = {
-				redirectURL,
-				authType,
-			}
-			if (redirectURL) {
-				externalAuth({ ...args, fingerprint: undefined })
-				return
-			}
-		},
-		[externalAuth, redirectURL],
-	)
+		const args = {
+			redirectURL,
+			authType,
+		}
+		if (redirectURL) {
+			externalAuth({ ...args, fingerprint: undefined })
+			return
+		}
+	}, [externalAuth, redirectURL, source])
 
 	/**
 	 * Logs a User in using a Metamask public address
@@ -425,6 +432,18 @@ export const AuthContainer = createContainer(() => {
 		}
 	}, [authCheck, clear])
 
+	useEffect(() => {
+		const URLParam = new URLSearchParams(window.location.search)
+		let source = Source.Null
+		if (URLParam.get(Source.Hangar)) source = Source.Hangar
+		else if (URLParam.get(Source.Website)) {
+			source = Source.Website
+		} else if (URLParam.get(Source.Admin)) {
+			source = Source.Admin
+		}
+		setSource(source)
+	}, [])
+
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
 		if (authorised && sessionId && !isLogoutPage) {
@@ -469,6 +488,7 @@ export const AuthContainer = createContainer(() => {
 		authType,
 		setAuthType,
 		loginCookieExternal,
+		source,
 	}
 })
 
