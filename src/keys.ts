@@ -3,6 +3,7 @@ enum HubKey {
 	AuthSendVerifyEmail = "AUTH:SEND_VERIFY_EMAIL",
 	AuthGenerateTFA = "AUTH:GENERATE:TFA",
 	AuthCancelTFA = "AUTH:TFA:CANCEL",
+	AuthTwitter = "AUTH:TWITTER",
 	AuthTFAVerification = "AUTH:TFA:VERIFICATION",
 	AuthTFARecoveryCodeGet = "AUTH:TFA:RECOVERY:CODE:GET",
 	AuthTFARecoveryCodeSet = "AUTH:TFA:RECOVERY:CODE:SET",

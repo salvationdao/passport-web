@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { API_ENDPOINT_HOSTNAME } from "../config"
 import { getParamsFromObject } from "../helpers"
+import { usePassportSubscription } from "../hooks/usePassport"
+import keys from "../keys"
 
 export interface ReactTwitterFailureResponse {
 	status?: string
@@ -39,7 +41,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ callback, onFailure,
 		setIsProcessing(true)
 
 		const twitterParams = {
-			oauth_callback: window.location.href.replace("/login", ""),
+			oauth_callback: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter`,
 		}
 
 		const href = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter${getParamsFromObject(twitterParams)}`
@@ -60,6 +62,10 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ callback, onFailure,
 		}
 		setTwitterOAuthPopup(popup)
 	}, [isProcessing, onFailure])
+
+	usePassportSubscription({ URI: `/twitter`, key: keys.AuthTwitter }, (payload) => {
+		console.log(payload)
+	})
 
 	useEffect(() => {
 		if (!twitterOAuthPopup) return
