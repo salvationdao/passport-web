@@ -337,6 +337,10 @@ export const Web3Container = createContainer(() => {
 				const signMsg = ethers.utils.keccak256(convertMsg)
 				const signature = await connector.signMessage([acc, signMsg])
 				setWcSignature(signature)
+
+				// Disconnect after connecting
+				// Auth is through cookies
+				await walletConnectProvider.disconnect()
 			})
 
 			// Subscribe to accounts change
@@ -350,14 +354,14 @@ export const Web3Container = createContainer(() => {
 			walletConnectProvider.on("chainChanged", (chainId: number) => {
 				setCurrentChainId(chainId)
 			})
-			// Subscribe to session disconnection
-			walletConnectProvider.on("disconnect", (code: number, reason: string) => {
-				setAccount(undefined)
-				setProvider(undefined)
-				setWcProvider(undefined)
-				setMetaMaskState(MetaMaskState.NotInstalled)
-				localStorage.removeItem("token")
-			})
+			// // Subscribe to session disconnection
+			// walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+			// 	setAccount(undefined)
+			// 	setProvider(undefined)
+			// 	setWcProvider(undefined)
+			// 	setMetaMaskState(MetaMaskState.NotInstalled)
+			// 	localStorage.removeItem("token")
+			// })
 			return walletConnectProvider
 		},
 		[getNonce],
