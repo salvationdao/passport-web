@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { API_ENDPOINT_HOSTNAME } from "../config"
+import { useAuth } from "../containers/auth"
 import { getParamsFromObject } from "../helpers"
 
 export interface ReactTwitterFailureResponse {
@@ -27,6 +28,9 @@ interface TwitterLoginProps {
 }
 
 export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, render, add }) => {
+	const [twitterPopup, setTwitterPopup] = useState<Window | undefined>()
+	const { handleAuthCheck } = useAuth()
+
 	const click = useCallback(async () => {
 		if (onClick) {
 			await onClick()
@@ -57,6 +61,8 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 				})
 			}
 			return
+		} else {
+			setTwitterPopup(popup)
 		}
 	}, [onFailure, onClick, add])
 
@@ -66,6 +72,20 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 		}),
 		[click],
 	)
+
+	useEffect(() => {
+		if (!twitterPopup) return
+		const timer = setInterval(async () => {
+			if (twitterPopup.closed) {
+				await handleAuthCheck()
+				clearInterval(timer)
+			}
+		}, 1000)
+
+		return () => {
+			clearInterval(timer)
+		}
+	}, [twitterPopup, handleAuthCheck])
 
 	if (!render) {
 		throw new Error("TwitterLogin requires a render prop to render")

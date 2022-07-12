@@ -34,7 +34,7 @@ export const LoginForm = () => {
 						<Tab label="Signup" value={FormTabs.Signup} />
 					</Tabs>
 					<EmailLogin signup={tab === FormTabs.Signup} />
-					<Box sx={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+					<Box sx={{ display: "flex", flexWrap: "wrap", gap: ".5rem" }}>
 						<MetaMaskLogin
 							onFailure={setError}
 							render={(props) => (
@@ -104,7 +104,7 @@ export const LoginForm = () => {
 }
 
 const ConnectButton = styled(FancyButton)({
-	width: "calc(50% - .5rem)",
+	width: "calc(50% - .25rem)",
 	borderRadius: ".5rem",
 	backgroundColor: colors.darkNavyBlue,
 	height: "5rem",
@@ -118,7 +118,7 @@ const OAuthButton = styled(ConnectButton)({
 	flexDirection: "column",
 	alignItems: "center",
 	justifyContent: "center",
-	width: "calc((100% - 2rem)/3)",
+	width: "calc((100% - 1rem)/3)",
 	gap: ".5rem",
 	"&>span": {
 		margin: 0,

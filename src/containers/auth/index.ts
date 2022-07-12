@@ -3,7 +3,7 @@ import { Action, useMutation, useQuery } from "react-fetching-library"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
-import { usePassportSubscription, usePassportSubscriptionUser } from "../../hooks/usePassport"
+import { usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
 import {
 	ChangePasswordRequest,
@@ -469,13 +469,23 @@ export const AuthContainer = createContainer(() => {
 	const googleLogin = useCallback(
 		async (id: string, username: string, email: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await google({
+				const args = {
 					redirectURL,
 					username,
 					email,
 					google_id: id,
 					session_id: sessionId,
 					fingerprint,
+					authType: AuthTypes.Google,
+				}
+
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+
+				const resp = await google({
+					...args,
 				})
 
 				if (resp.error) {
@@ -496,7 +506,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[google, redirectURL, sessionId, fingerprint],
+		[google, redirectURL, sessionId, fingerprint, externalAuth],
 	)
 	/**
 	 * Facebook login use oauth to give access to user
@@ -742,6 +752,20 @@ export const AuthContainer = createContainer(() => {
 		return user.role.permissions.includes(perm)
 	}
 
+	// Auth check handler
+	const handleAuthCheck = useCallback(async () => {
+		const resp = await authCheck()
+		if (resp.error || !resp.payload) {
+			clear()
+			setLoading(false)
+			return
+		}
+		// else set up user
+		setUser(resp.payload)
+		setAuthorised(true)
+		setLoading(false)
+	}, [authCheck, clear])
+
 	///////////////////
 	//  Use Effects  //
 	///////////////////
@@ -750,21 +774,12 @@ export const AuthContainer = createContainer(() => {
 	useEffect(() => {
 		try {
 			;(async () => {
-				const resp = await authCheck()
-				if (resp.error || !resp.payload) {
-					clear()
-					setLoading(false)
-					return
-				}
-				// else set up user
-				setUser(resp.payload)
-				setAuthorised(true)
-				setLoading(false)
+				await handleAuthCheck()
 			})()
 		} catch (error) {
 			console.log(error)
 		}
-	}, [authCheck, clear])
+	}, [handleAuthCheck])
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
@@ -773,17 +788,11 @@ export const AuthContainer = createContainer(() => {
 		}
 	}, [authorised, sessionId, isLogoutPage])
 
-	usePassportSubscription<User>({ URI: `/twitter`, key: keys.AuthTwitter }, (user) => {
-		if (user.id) {
-			setUser(user)
-			setAuthorised(true)
-		}
-	})
-
 	/////////////////
 	//  Container  //
 	/////////////////
 	return {
+		handleAuthCheck,
 		loginToken,
 		loginMetamask,
 		loginWalletConnect,
