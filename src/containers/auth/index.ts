@@ -37,13 +37,18 @@ export enum AuthTypes {
 	Facebook = "facebook",
 }
 
+export enum Source {
+	Hangar = "hangar",
+	Website = "website",
+	Admin = "admin",
+	Null = "",
+}
 export enum VerificationType {
 	EmailVerification,
 	ForgotPassword,
 }
 
-// Actions
-const loginAction = (formValues: LoginRequest & { authType: AuthTypes }): Action<User> => ({
+const loginAction = (formValues: LoginRequest & { authType: string }): Action<User> => ({
 	method: "POST",
 	endpoint: `/auth/${formValues.authType}`,
 	responseType: "json",
@@ -118,7 +123,7 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const [showSimulation, setShowSimulation] = useState(false)
-
+	const [source, setSource] = useState<Source>(Source.Null)
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
@@ -163,7 +168,6 @@ export const AuthContainer = createContainer(() => {
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
-			const source = args["source"]
 			const host = args["host"]
 
 			Object.keys(args).forEach((key) => {
@@ -178,11 +182,14 @@ export const AuthContainer = createContainer(() => {
 			form.action = `https://${host || API_ENDPOINT_HOSTNAME}/api/auth/external`
 
 			switch (source) {
-				case AuthTypes.Website:
-					form.action += "?website=true"
+				case Source.Website:
+					form.action += `?${Source.Website}=true`
 					break
-				case AuthTypes.Hangar:
+				case Source.Hangar:
 					form.action += "?isHangar=true"
+					break
+				case Source.Admin:
+					form.action += `?${Source.Admin}=true`
 					break
 				default:
 					break
@@ -200,7 +207,7 @@ export const AuthContainer = createContainer(() => {
 			document.body.appendChild(form)
 			form.submit()
 		},
-		[],
+		[source],
 	)
 
 	/////////////////
@@ -589,29 +596,32 @@ export const AuthContainer = createContainer(() => {
 	 * External login User with passport cookie
 	 *
 	 */
-	const loginCookieExternal = useCallback(
-		(source: string) => {
-			let authType = AuthTypes.Cookie
-			switch (source) {
-				case AuthTypes.Hangar:
-					authType = AuthTypes.Hangar
-					break
-				case AuthTypes.Website:
-					authType = AuthTypes.Website
-					break
-			}
+	const loginCookieExternal = useCallback(() => {
+		let authType = ""
+		switch (source) {
+			case Source.Hangar:
+				authType = Source.Hangar
+				break
+			case Source.Website:
+				authType = Source.Website
+				break
+			case Source.Admin:
+				authType = Source.Admin
+				break
+			default:
+				authType = "cookie"
+				break
+		}
 
-			const args = {
-				redirectURL,
-				authType,
-			}
-			if (redirectURL) {
-				externalAuth({ ...args, fingerprint: undefined })
-				return
-			}
-		},
-		[externalAuth, redirectURL],
-	)
+		const args = {
+			redirectURL,
+			authType,
+		}
+		if (redirectURL) {
+			externalAuth({ ...args, fingerprint: undefined })
+			return
+		}
+	}, [externalAuth, redirectURL, source])
 
 	/**
 	 * Logs a User in using a Metamask public address
@@ -781,6 +791,18 @@ export const AuthContainer = createContainer(() => {
 		}
 	}, [handleAuthCheck])
 
+	useEffect(() => {
+		const URLParam = new URLSearchParams(window.location.search)
+		let source = Source.Null
+		if (URLParam.get(Source.Hangar)) source = Source.Hangar
+		else if (URLParam.get(Source.Website)) {
+			source = Source.Website
+		} else if (URLParam.get(Source.Admin)) {
+			source = Source.Admin
+		}
+		setSource(source)
+	}, [])
+
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
 		if (authorised && sessionId && !isLogoutPage) {
@@ -850,6 +872,7 @@ export const AuthContainer = createContainer(() => {
 			action: facebookLogin,
 			loading: facebookLoginLoading,
 		},
+		source,
 	}
 })
 

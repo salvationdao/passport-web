@@ -59,12 +59,8 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 		// if it is not from external, redirect user to profile page
 		if (!isFromExternal) return <Redirect to={"/profile"} />
 
-		// get source
-		let source = ""
-		if (window.location.search.includes("hangar")) source = "hangar"
-		else if (window.location.search.includes("website")) source = "website"
 		// else sign user
-		loginCookieExternal(source)
+		loginCookieExternal()
 		return <Loading />
 	}
 	return (
