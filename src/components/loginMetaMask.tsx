@@ -34,15 +34,8 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 		}
 		try {
 			const URLParam = new URLSearchParams(window.location.search)
-			let source = ""
-			let host = ""
-			if (URLParam.get("hangar")) source = "hangar"
-			else if (URLParam.get("website")) {
-				source = "website"
-				host = URLParam.get("host") || ""
-			}
-
-			const resp = await loginMetamask(source, host)
+			const host = URLParam.get("host") || ""
+			const resp = await loginMetamask(host)
 			if (!resp || !resp.payload) {
 				setErrorMessage(
 					"There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.",

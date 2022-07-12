@@ -3,9 +3,9 @@ import { styled } from "@mui/system"
 import { useState } from "react"
 import { Redirect } from "react-router-dom"
 import { XSYNLogo } from "../../assets"
-import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { colors } from "../../theme"
+import { Loading } from "../loading"
 
 interface LoginBoxProps {
 	wp: string
@@ -59,7 +59,7 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 		// if it is not from external, redirect user to profile page
 		if (!isFromExternal) return <Redirect to={"/profile"} />
 
-		// else sign user
+		// // else sign user
 		loginCookieExternal()
 		return <Loading />
 	}

@@ -37,12 +37,6 @@ export enum AuthTypes {
 	Facebook = "facebook",
 }
 
-export enum Source {
-	Hangar = "hangar",
-	Website = "website",
-	Admin = "admin",
-	Null = "",
-}
 export enum VerificationType {
 	EmailVerification,
 	ForgotPassword,
@@ -123,7 +117,6 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const [showSimulation, setShowSimulation] = useState(false)
-	const [source, setSource] = useState<Source>(Source.Null)
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
@@ -164,7 +157,6 @@ export const AuthContainer = createContainer(() => {
 		responseType: "json",
 		credentials: "include",
 	})
-
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
@@ -181,20 +173,6 @@ export const AuthContainer = createContainer(() => {
 			form.method = "post"
 			form.action = `https://${host || API_ENDPOINT_HOSTNAME}/api/auth/external`
 
-			switch (source) {
-				case Source.Website:
-					form.action += `?${Source.Website}=true`
-					break
-				case Source.Hangar:
-					form.action += "?isHangar=true"
-					break
-				case Source.Admin:
-					form.action += `?${Source.Admin}=true`
-					break
-				default:
-					break
-			}
-
 			Object.keys(args).forEach((key) => {
 				const hiddenField = document.createElement("input")
 				hiddenField.type = "hidden"
@@ -207,7 +185,7 @@ export const AuthContainer = createContainer(() => {
 			document.body.appendChild(form)
 			form.submit()
 		},
-		[source],
+		[],
 	)
 
 	/////////////////
@@ -482,13 +460,8 @@ export const AuthContainer = createContainer(() => {
 					email,
 					google_id: id,
 					session_id: sessionId,
-					fingerprint,
+					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.Google,
-				}
-
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
 				}
 
 				const resp = await google({
@@ -513,22 +486,29 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[google, redirectURL, sessionId, fingerprint, externalAuth],
+		[google, redirectURL, sessionId, fingerprint],
 	)
+	console.log(redirectURL)
 	/**
 	 * Facebook login use oauth to give access to user
 	 */
 	const facebookLogin = useCallback(
 		async (id: string, name: string, email: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await facebook({
+				const args = {
 					redirectURL,
 					email,
 					facebook_id: id,
 					name,
 					session_id: sessionId,
-					fingerprint,
-				})
+					fingerprint: redirectURL ? undefined : fingerprint,
+					authType: AuthTypes.Facebook,
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await facebook(args)
 
 				if (resp.error) {
 					throw resp.payload
@@ -548,7 +528,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[facebook, redirectURL, sessionId, fingerprint],
+		[facebook, redirectURL, sessionId, fingerprint, externalAuth],
 	)
 
 	/**
@@ -562,12 +542,8 @@ export const AuthContainer = createContainer(() => {
 				redirectURL,
 				token,
 				session_id: sessionId,
-				fingerprint,
+				fingerprint: redirectURL ? undefined : fingerprint,
 				authType: AuthTypes.Token,
-			}
-			if (redirectURL) {
-				externalAuth({ ...args, fingerprint: undefined })
-				return
 			}
 
 			setLoading(true)
@@ -589,39 +565,8 @@ export const AuthContainer = createContainer(() => {
 				setLoading(false)
 			}
 		},
-		[redirectURL, sessionId, fingerprint, externalAuth, login, clear],
+		[redirectURL, sessionId, fingerprint, login, clear],
 	)
-
-	/**
-	 * External login User with passport cookie
-	 *
-	 */
-	const loginCookieExternal = useCallback(() => {
-		let authType = ""
-		switch (source) {
-			case Source.Hangar:
-				authType = Source.Hangar
-				break
-			case Source.Website:
-				authType = Source.Website
-				break
-			case Source.Admin:
-				authType = Source.Admin
-				break
-			default:
-				authType = "cookie"
-				break
-		}
-
-		const args = {
-			redirectURL,
-			authType,
-		}
-		if (redirectURL) {
-			externalAuth({ ...args, fingerprint: undefined })
-			return
-		}
-	}, [externalAuth, redirectURL, source])
 
 	/**
 	 * Logs a User in using a Metamask public address
@@ -629,7 +574,7 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Metamask public address
 	 */
 	const loginMetamask = useCallback(
-		async (source: string, host: string) => {
+		async (host: string) => {
 			try {
 				const acc = await connect()
 				const signature = await sign(user ? user.id : undefined)
@@ -639,24 +584,15 @@ export const AuthContainer = createContainer(() => {
 						public_address: acc,
 						signature: signature,
 						session_id: sessionId,
-						fingerprint,
+						fingerprint: redirectURL ? undefined : fingerprint,
 						authType: AuthTypes.Wallet,
-						source,
-						host,
-					}
-					if (redirectURL) {
-						externalAuth({ ...args, fingerprint: undefined })
-						return
 					}
 
-					const resp = await login({
-						redirectURL,
-						public_address: acc,
-						signature: signature,
-						session_id: sessionId,
-						fingerprint,
-						authType: AuthTypes.Wallet,
-					})
+					if (redirectURL) {
+						externalAuth({ ...args, host, fingerprint: undefined })
+						return
+					}
+					const resp = await login(args)
 
 					if (resp.error) {
 						throw resp.payload
@@ -677,7 +613,7 @@ export const AuthContainer = createContainer(() => {
 				throw e
 			}
 		},
-		[connect, sign, redirectURL, sessionId, fingerprint, login, externalAuth, user],
+		[connect, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth],
 	)
 	/**
 	 * Logs a User in using a Wallet Connect public address
@@ -694,7 +630,7 @@ export const AuthContainer = createContainer(() => {
 					public_address: account as string,
 					signature: wcSignature || "",
 					session_id: sessionId,
-					fingerprint,
+					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.Wallet,
 				})
 
@@ -723,6 +659,20 @@ export const AuthContainer = createContainer(() => {
 		}
 	}, [wcSignature, loginWalletConnect])
 
+	/**
+	 * External login User with passport cookie
+	 *
+	 */
+	const loginCookieExternal = useCallback(() => {
+		const args = {
+			redirectURL,
+			authType: AuthTypes.Cookie,
+		}
+		if (redirectURL) {
+			externalAuth({ ...args, fingerprint: undefined })
+			return
+		}
+	}, [externalAuth, redirectURL])
 	/**
 	 * Verifies a User and takes them to the next page.
 	 */
@@ -791,18 +741,6 @@ export const AuthContainer = createContainer(() => {
 		}
 	}, [handleAuthCheck])
 
-	useEffect(() => {
-		const URLParam = new URLSearchParams(window.location.search)
-		let source = Source.Null
-		if (URLParam.get(Source.Hangar)) source = Source.Hangar
-		else if (URLParam.get(Source.Website)) {
-			source = Source.Website
-		} else if (URLParam.get(Source.Admin)) {
-			source = Source.Admin
-		}
-		setSource(source)
-	}, [])
-
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
 		if (authorised && sessionId && !isLogoutPage) {
@@ -814,6 +752,7 @@ export const AuthContainer = createContainer(() => {
 	//  Container  //
 	/////////////////
 	return {
+		loginCookieExternal,
 		handleAuthCheck,
 		loginToken,
 		loginMetamask,
@@ -839,7 +778,6 @@ export const AuthContainer = createContainer(() => {
 		sessionId,
 		showSimulation,
 		setShowSimulation,
-		loginCookieExternal,
 		signupPassword: {
 			action: signupPassword,
 			loading: loginLoading,
@@ -872,7 +810,6 @@ export const AuthContainer = createContainer(() => {
 			action: facebookLogin,
 			loading: facebookLoginLoading,
 		},
-		source,
 	}
 })
 
