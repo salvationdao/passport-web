@@ -20,7 +20,7 @@ interface LoginMetaMaskProps {
 }
 
 export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({ publicSale, onFailure, onClick, render }) => {
-	const { loginMetamask, loginWalletConnect } = AuthContainer.useContainer()
+	const { loginMetamask, loginWalletConnect, source } = AuthContainer.useContainer()
 	const { metaMaskState } = useWeb3()
 	const { displayMessage } = useSnackbar()
 	const history = useHistory()
@@ -46,14 +46,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 
 			try {
 				const URLParam = new URLSearchParams(window.location.search)
-
-				let source = ""
-				let host = ""
-				if (URLParam.get("hangar")) source = "hangar"
-				else if (URLParam.get("website")) {
-					source = "website"
-					host = URLParam.get("host") || ""
-				}
+				let host = URLParam.get("host") || ""
 
 				const resp = await loginMetamask(source, host)
 				if (!resp || !resp.payload) {
@@ -81,7 +74,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 		}
 
 		setIsProcessing(false)
-	}, [onFailure, history, loginMetamask, onClick, loginWalletConnect, publicSale, displayMessage])
+	}, [onFailure, history, loginMetamask, onClick, loginWalletConnect, publicSale, displayMessage, source])
 
 	const propsForRender = useMemo(
 		() => ({
