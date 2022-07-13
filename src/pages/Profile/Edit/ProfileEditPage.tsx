@@ -376,6 +376,14 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 							disabled={submitting}
 							sx={{ minWidth: "180px", flex: "1 0 48%" }}
 						/>
+
+						<InputField
+							label="Mobile Number"
+							name="mobile_number"
+							control={control}
+							disabled={submitting}
+							sx={{ minWidth: "180px", flex: "1 0 48%" }}
+						/>
 						<InputField
 							name="email"
 							label="Email"
@@ -389,13 +397,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 									message: "Invalid email address",
 								},
 							}}
-							disabled={submitting}
-							sx={{ minWidth: "180px", flex: "1 0 48%" }}
-						/>
-						<InputField
-							label="Mobile Number"
-							name="mobile_number"
-							control={control}
 							disabled={submitting}
 							sx={{ minWidth: "180px", flex: "1 0 48%" }}
 						/>
@@ -669,10 +670,10 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				<Stack spacing=".5rem">
 					<Typography variant="h6">Account</Typography>
 
-					<Box sx={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
+					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
 						<Tooltip title="Change your password">
 							<FancyButton
-								sx={{ minWidth: "15rem", width: "calc(50% - .5rem)" }}
+								sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
 								size="small"
 								onClick={() => setOpenChangePassword(true)}
 							>
