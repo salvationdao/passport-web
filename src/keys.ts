@@ -11,12 +11,18 @@ enum HubKey {
 
 	User = "USER",
 	UserUpdate = "USER:UPDATE",
-	UserSendVerify = "USER:SEND_VERIFY",
+	UserVerifySend = "USER:VERIFY:SEND",
+
+	// TFA
+	UserTFAGenerate = "USER:TFA:GENERATE",
+	UserTFACancel = "USER:TFA:CANCEL",
+	UserTFAVerification = "USER:TFA:VERIFICATION",
+	UserTFARecoveryCodeGet = "AUTH:TFA:RECOVERY:GET",
+	UserTFARecoveryCodeSet = "AUTH:TFA:RECOVERY:VERIFY",
+
 	/** Tracks user changes */
 	UserUsernameUpdate = "USER:USERNAME:UPDATE",
-
 	UserOnlineStatus = "USER:ONLINE_STATUS",
-
 	UserSupsSubscribe = "USER:SUPS:SUBSCRIBE",
 	UserFingerprint = "USER:FINGERPRINT",
 	UserLock = "USER:LOCK",
@@ -49,14 +55,14 @@ enum HubKey {
 	SupsDepositList = "SUPS:DEPOSIT:LIST",
 
 	// OAUTH
-	UserRemoveFacebook = "USER:REMOVE_FACEBOOK",
-	UserAddFacebook = "USER:ADD_FACEBOOK",
-	UserRemoveGoogle = "USER:REMOVE_GOOGLE",
-	UserAddGoogle = "USER:ADD_GOOGLE",
+	UserRemoveFacebook = "USER:FACEBOOK:REMOVE",
+	UserAddFacebook = "USER:FACEBOOK:ADD",
+	UserRemoveGoogle = "USER:GOOGLE:REMOVE",
+	UserAddGoogle = "USER:GOOGLE:ADD",
 	UserRemoveTwitch = "USER:REMOVE_TWITCH",
 	UserAddTwitch = "USER:ADD_TWITCH",
-	UserRemoveTwitter = "USER:REMOVE_TWITTER",
-	UserAddTwitter = "USER:ADD_TWITTER",
+	UserRemoveTwitter = "USER:TWITTER:REMOVE",
+	UserAddTwitter = "USER:TWITTER:ADD",
 	UserRemoveDiscord = "USER:REMOVE_DISCORD",
 	UserAddDiscord = "USER:ADD_DISCORD",
 }

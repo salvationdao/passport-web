@@ -8,7 +8,7 @@ import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 interface TFASecret {
 	secret: string
-	qrCodeStr: string
+	qr_code_str: string
 }
 
 // TODO: fix 2fa stuff
@@ -19,7 +19,7 @@ export const TwoFactorAuthenticationSetup = () => {
 	const [passcode, setPasscode] = useState("")
 	const [error, setError] = useState<string>()
 	useEffect(() => {
-		send<TFASecret>(HubKey.AuthGenerateTFA)
+		send<TFASecret>(HubKey.UserTFAGenerate)
 			.then((data) => setTFASecret(data))
 			.catch((e) => {
 				setError(e)
@@ -27,13 +27,13 @@ export const TwoFactorAuthenticationSetup = () => {
 	}, [send])
 
 	const onCancel = () => {
-		send(HubKey.AuthCancelTFA).catch((e) => {
+		send(HubKey.UserTFACancel).catch((e) => {
 			setError(e)
 		})
 	}
 
 	const onSubmit = () => {
-		send(HubKey.AuthTFAVerification, { passcode }).catch((e) => {
+		send(HubKey.UserTFAVerification, { passcode }).catch((e) => {
 			setError(e)
 		})
 	}
@@ -86,8 +86,18 @@ export const TwoFactorAuthenticationSetup = () => {
 							marginTop: "8px",
 						}}
 					>
-						<Box sx={{ height: "300px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-							{showSecretCode ? <Typography variant="h6">{tfaSecret.secret}</Typography> : <QRCode value={tfaSecret.qrCodeStr} />}
+						<Box
+							sx={{
+								height: "300px",
+								width: "300px",
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								background: "white",
+								padding: "16px",
+							}}
+						>
+							{showSecretCode ? <Typography variant="h6">{tfaSecret.secret}</Typography> : <QRCode value={tfaSecret.qr_code_str} />}
 						</Box>
 						<Box m={1} />
 						<Button variant="contained" onClick={() => setShowSecretCode((e) => !e)}>

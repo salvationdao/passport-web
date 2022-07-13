@@ -8,6 +8,7 @@ import { useHistory, useParams } from "react-router-dom"
 import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
+import { TwoFactorAuthenticationSetup } from "../../../components/twoFactorAuthentication/setup"
 import { useAuth } from "../../../containers/auth"
 import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import HubKey from "../../../keys"
@@ -415,6 +416,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 						Save
 					</Button>
 				</Section>
+				<TwoFactorAuthenticationSetup />
 
 				{/* ------------- Manage Connections ------------------ */}
 				<Stack spacing=".5rem">

@@ -39,7 +39,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const handleSendVerify = useCallback(async () => {
 		try {
 			setSentVerify(null)
-			const resp = await send<User>(HubKey.UserSendVerify, {
+			const resp = await send<User>(HubKey.UserVerifySend, {
 				user_agent: window.navigator.userAgent,
 			})
 

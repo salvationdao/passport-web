@@ -19,6 +19,10 @@ const VerifyEmail: React.FC = () => {
 	const [response, setResponse] = useState<string | null>(null)
 
 	useEffect(() => {
+		if (tokenGroup.id.length === 0 || tokenGroup.token.length === 0) {
+			window.location.replace("/")
+		}
+
 		;(async () => {
 			try {
 				const res = await fetch(
