@@ -1,5 +1,5 @@
 import { Alert, Box, Stack, styled, Tab, Tabs } from "@mui/material"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { GoogleIcon, MetaIcon, MetaMaskIcon, TwitterIcon, WalletConnectIcon } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { MetaMaskLogin } from "../../components/loginMetaMask"
@@ -16,8 +16,20 @@ enum FormTabs {
 }
 
 export const LoginForm = () => {
-	const [error, setError] = useState<string | undefined>(undefined)
+	const [error, setError] = useState<string | null>(null)
 	const [tab, setTab] = useState(FormTabs.Login)
+
+	useEffect(() => {
+		if (error) {
+			const timer = setTimeout(() => {
+				setError(null)
+			}, 2000)
+
+			return () => {
+				clearTimeout(timer)
+			}
+		}
+	}, [error])
 
 	return (
 		<Stack>
