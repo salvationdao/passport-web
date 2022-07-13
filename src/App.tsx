@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/forgotPassword"
 import { LoginPage } from "./pages/login"
 import { LoginRedirect } from "./pages/login/redirect"
 import ResetPassword from "./pages/resetPassword"
+import VerifyEmail from "./pages/verify"
 import { Routes } from "./routes"
 
 loadIcons()
@@ -44,6 +45,9 @@ const AppInner = () => {
 				</Route>
 				<Route path="/reset-password">
 					<ResetPassword />
+				</Route>
+				<Route path="/verify">
+					<VerifyEmail />
 				</Route>
 				<Route path="/redirect">
 					<LoginRedirect />

@@ -29,6 +29,7 @@ export const ProfileEditPage: React.FC = () => {
 	const [newUsername, setNewUsername] = useState<string | undefined>(user?.username)
 	const [displayResult, setDisplayResult] = useState<boolean>(false)
 	const [successful, setSuccessful] = useState<boolean>(false)
+	const [verifyMessage, setVerifyMessage] = useState<string | undefined>()
 
 	const [loadingText, setLoadingText] = useState<string>()
 
@@ -74,7 +75,12 @@ export const ProfileEditPage: React.FC = () => {
 				marginBottom: "3rem",
 			}}
 		>
-			<ProfileEdit setNewUsername={setNewUsername} setDisplayResult={setDisplayResult} setSuccessful={setSuccessful} />
+			<ProfileEdit
+				setNewUsername={setNewUsername}
+				setDisplayResult={setDisplayResult}
+				setSuccessful={setSuccessful}
+				setVerifyMessage={setVerifyMessage}
+			/>
 
 			<Dialog open={displayResult} onClose={() => setDisplayResult(false)}>
 				<Box sx={{ border: `4px solid ${colors.darkNavyBackground}`, padding: ".5rem", maxWidth: "500px" }}>
@@ -94,8 +100,14 @@ export const ProfileEditPage: React.FC = () => {
 								marginBottom: ".5rem",
 							}}
 						>
-							{successful ? "Your account has successfully been updated! ." : "Something went wrong, please try again."}
+							{successful ? "Your account has successfully been updated!" : "Something went wrong, please try again."}
 						</Typography>
+
+						{successful && verifyMessage && (
+							<Typography sx={{ my: "1rem", fontSize: "110%" }}>
+								<b>{verifyMessage}</b>
+							</Typography>
+						)}
 						{!successful && (
 							<Box
 								sx={{
@@ -164,9 +176,10 @@ interface ProfileEditProps {
 	setNewUsername: React.Dispatch<React.SetStateAction<string | undefined>>
 	setDisplayResult: React.Dispatch<React.SetStateAction<boolean>>
 	setSuccessful: React.Dispatch<React.SetStateAction<boolean>>
+	setVerifyMessage: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
-const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: ProfileEditProps) => {
+const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerifyMessage }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
 	const { user } = useAuth()
 	const { send } = usePassportCommandsUser("/commander")
@@ -210,6 +223,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 
 			const payload = {
 				...input,
+				user_agent: window.navigator.userAgent,
 				new_username: user.username !== new_username ? new_username : undefined,
 				new_password: changePassword ? new_password : undefined,
 				//avatar_id: avatarID,
@@ -226,13 +240,19 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful }: Profil
 				setChangePassword(false)
 				setDisplayResult(true)
 				setNewUsername(new_username)
-				setTimeout(() => {
-					history.push(`/profile`)
-				}, 3000)
+
+				if (payload.email !== user.email) {
+					setVerifyMessage(`An email was sent to ${payload.email}, please verify this email to change your current email.`)
+				} else {
+					setTimeout(() => {
+						history.push(`/profile`)
+					}, 3000)
+				}
 			}
 		} catch (e) {
 			setDisplayResult(true)
 			setSuccessful(false)
+			setVerifyMessage(undefined)
 		} finally {
 			setSubmitting(false)
 		}

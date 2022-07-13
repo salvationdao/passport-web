@@ -31,6 +31,7 @@ import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/As
 import { ProfilePage } from "./pages/Profile/ProfilePage"
 import { StorePage } from "./pages/Store/StorePage"
 import { TransactionsPage } from "./pages/transactions/transactions"
+import VerifyEmail from "./pages/verify"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 
 export const Routes = () => {
@@ -144,10 +145,13 @@ export const Routes = () => {
 							<Route exact path="/">
 								<LoginPage />
 							</Route>
+
 							<Route exact path="/login">
 								<LoginPage />
 							</Route>
-
+							<Route path="/verify">
+								<VerifyEmail />
+							</Route>
 							<Route path="/signup">
 								<SignUpPage />
 							</Route>

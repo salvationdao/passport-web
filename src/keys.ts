@@ -11,6 +11,7 @@ enum HubKey {
 
 	User = "USER",
 	UserUpdate = "USER:UPDATE",
+	UserSendVerify = "USER:SEND_VERIFY",
 	/** Tracks user changes */
 	UserUsernameUpdate = "USER:USERNAME:UPDATE",
 

@@ -1,5 +1,5 @@
-import { Box, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
-import { useEffect, useState } from "react"
+import { Alert, Box, CircularProgress, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
 import { Link, Redirect, Route, Switch, useHistory, useLocation, useParams } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
@@ -34,6 +34,24 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
+	const [sentVerify, setSentVerify] = useState<boolean | null>(false)
+
+	const handleSendVerify = useCallback(async () => {
+		try {
+			setSentVerify(null)
+			const resp = await send<User>(HubKey.UserSendVerify, {
+				user_agent: window.navigator.userAgent,
+			})
+
+			if (!resp.id) {
+				throw resp
+			}
+			setSentVerify(true)
+		} catch (err) {
+			console.error(err)
+			setSentVerify(false)
+		}
+	}, [send])
 
 	useEffect(() => {
 		;(async () => {
@@ -117,6 +135,35 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 						)}
 					</Stack>
 				</Box>
+				{!user.verified && (
+					<Alert severity={sentVerify ? "info" : "error"} sx={{ maxWidth: "600px", my: "1rem" }}>
+						{sentVerify ? (
+							"Email confirmation email sent! Please check your email."
+						) : (
+							<>
+								Please verify your email: {user.email}. <br />
+								Click{" "}
+								{sentVerify === null ? (
+									<CircularProgress size="15px" sx={{ mx: ".5rem", mt: ".5rem" }} />
+								) : (
+									<Typography
+										component="span"
+										onClick={handleSendVerify}
+										sx={{
+											cursor: "pointer",
+											color: colors.darkerNeonBlue,
+											fontWeight: "bold",
+											textDecoration: "underline",
+										}}
+									>
+										here
+									</Typography>
+								)}{" "}
+								to resend a confirmation link to your email.
+							</>
+						)}
+					</Alert>
+				)}
 
 				<Paper
 					sx={{

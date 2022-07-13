@@ -234,7 +234,6 @@ export const AuthContainer = createContainer(() => {
 					authType: AuthTypes.Email,
 				}
 				const resp = await login(formValues)
-				console.log(resp)
 				if (resp.error) {
 					clear()
 					throw resp.payload
@@ -488,7 +487,6 @@ export const AuthContainer = createContainer(() => {
 		},
 		[google, redirectURL, sessionId, fingerprint],
 	)
-	console.log(redirectURL)
 	/**
 	 * Facebook login use oauth to give access to user
 	 */
