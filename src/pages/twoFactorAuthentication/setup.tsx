@@ -169,10 +169,19 @@ export const TwoFactorAuthenticationSetup = () => {
 					<Typography component="h2" sx={{ fontSize: "1.2rem" }}>
 						Enter Passcode from authenticator app:
 					</Typography>
-					<Box display="flex" width="90%" maxWidth="400px" marginTop="20px" justifyContent="space-between" gap="1rem">
+					<Box
+						component="form"
+						onSubmit={onSubmit}
+						display="flex"
+						width="90%"
+						maxWidth="400px"
+						marginTop="20px"
+						justifyContent="space-between"
+						gap="1rem"
+					>
 						<TextField variant="outlined" label="Passcode" fullWidth onChange={(e) => setPasscode(e.target.value)} />
 
-						<LoadingButton loading={loading} variant="contained" onClick={onSubmit} sx={{ px: "2em" }}>
+						<LoadingButton loading={loading} variant="contained" sx={{ px: "2em" }}>
 							Submit
 						</LoadingButton>
 					</Box>

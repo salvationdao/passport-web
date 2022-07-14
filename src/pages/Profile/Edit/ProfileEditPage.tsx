@@ -9,7 +9,6 @@ import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
 import { useAuth } from "../../../containers/auth"
-import { useSnackbar } from "../../../containers/snackbar"
 import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
@@ -21,6 +20,7 @@ import { Facebook } from "./ManageConnections/Facebook"
 import { Google } from "./ManageConnections/Google"
 import { Twitter } from "./ManageConnections/Twitter"
 import { Wallet } from "./ManageConnections/Wallet"
+import { RemoveTFAModal } from "./RemoveTFAModal"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -182,8 +182,7 @@ interface ProfileEditProps {
 
 const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerifyMessage }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
-	const { user, setUser } = useAuth()
-	const { displayMessage } = useSnackbar()
+	const { user } = useAuth()
 	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 	const [lockOption, setLockOption] = useState<LockOptionsProps>()
@@ -451,20 +450,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 									history.push(`/tfa/${user.id}/setup`)
 									return
 								}
-								try {
-									const resp = await send<User>(HubKey.UserTFACancel)
-									if (!resp.id) {
-										throw resp
-									}
-									setUser(resp)
-								} catch (err) {
-									console.error(err)
-									displayMessage("Failed to remove Two-Factor authentication.", "error")
-								} finally {
-									setLoadingSetupBtn(false)
-									setSuccessful(true)
-									setDisplayResult(true)
-								}
 							}}
 						>
 							{user.two_factor_authentication_is_set ? "Remove Two-Factor Authentication" : "Setup Two-Factor Authentication"}
@@ -516,6 +501,14 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				isNew={!user.has_password}
 			/>
 			{lockOption && <LockModal option={lockOption} setOpen={setLockOpen} open={lockOpen} />}
+			{loadingSetupBtn && user.two_factor_authentication_is_set && (
+				<RemoveTFAModal
+					open={loadingSetupBtn && user.two_factor_authentication_is_set}
+					setOpen={setLoadingSetupBtn}
+					setSuccessful={setSuccessful}
+					setDisplayResult={setDisplayResult}
+				/>
+			)}
 		</Paper>
 	)
 }
