@@ -154,10 +154,10 @@ export const Routes = () => {
 							<Route path="/verify">
 								<VerifyEmail />
 							</Route>
-							<Route path="/tfa/:id/setup">
+							<Route path="/tfa/:username/setup">
 								<TwoFactorAuthenticationSetup />
 							</Route>
-							<Route path="/tfa/:id/recovery-code">
+							<Route path="/tfa/:username/recovery-code">
 								<TwoFactorAuthenticationRecoveryCode />
 							</Route>
 							<Route path="/signup">

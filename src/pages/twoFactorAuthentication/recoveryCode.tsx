@@ -6,6 +6,7 @@ import { useAuth } from "../../containers/auth"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
+import { TwoFactorAuthenticationCheck } from "./check"
 
 interface RecoveryCode {
 	user_id: string
@@ -13,12 +14,17 @@ interface RecoveryCode {
 	used_at: string
 }
 
-export const TwoFactorAuthenticationRecoveryCode = () => {
+interface ITwoFactorAuthenticationRecoveryCodeProps {
+	disableVerification?: boolean
+}
+
+export const TwoFactorAuthenticationRecoveryCode: React.FC<ITwoFactorAuthenticationRecoveryCodeProps> = ({ disableVerification }) => {
 	const { send } = usePassportCommandsUser("/commander")
 	const [recoveryCode, setRecoveryCode] = useState<RecoveryCode[] | undefined>()
-	const { id } = useParams<{ id: string }>()
-	const { userID } = useAuth()
+	const { username } = useParams<{ username: string }>()
+	const { user } = useAuth()
 	const [error, setError] = useState<string>()
+	const [verified, setVerified] = useState(false)
 
 	useEffect(() => {
 		send<RecoveryCode[]>(HubKey.UserTFARecoveryCodeGet)
@@ -27,10 +33,10 @@ export const TwoFactorAuthenticationRecoveryCode = () => {
 				typeof e === "string" ? setError(e) : setError("Issue getting recovery code, try again or contact support.")
 			})
 
-		if (id !== userID) {
-			window.location.replace(`/profile/${userID}/edit`)
+		if (username !== user?.username && !disableVerification) {
+			window.location.replace(`/profile/${username}/edit`)
 		}
-	}, [send, id, userID])
+	}, [send, username, user?.username, disableVerification])
 	const download = useCallback(() => {
 		if (!recoveryCode) return
 		var a = document.createElement("a")
@@ -48,6 +54,10 @@ export const TwoFactorAuthenticationRecoveryCode = () => {
 		a.click()
 		window.URL.revokeObjectURL(url)
 	}, [recoveryCode])
+
+	if (!verified && !disableVerification) {
+		return <TwoFactorAuthenticationCheck setVerified={setVerified} />
+	}
 
 	return (
 		<Box
@@ -73,7 +83,7 @@ export const TwoFactorAuthenticationRecoveryCode = () => {
 					mr: "auto",
 				}}
 			>
-				<Link to={`/profile/${userID}/edit`}>
+				<Link to={`/profile/${username}/edit`}>
 					<ArrowBackIcon fontSize="medium" />
 					Go back to profile page
 				</Link>

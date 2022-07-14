@@ -125,7 +125,6 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 									size="small"
 									sx={{
 										width: "100%",
-										zIndex: 9999,
 										position: "relative",
 									}}
 								>

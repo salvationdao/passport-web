@@ -77,7 +77,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 		if (!twitterPopup) return
 		const timer = setInterval(async () => {
 			if (twitterPopup.closed) {
-				await handleAuthCheck()
+				await handleAuthCheck(true)
 				clearInterval(timer)
 			}
 		}, 1000)

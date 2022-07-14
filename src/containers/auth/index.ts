@@ -1,3 +1,4 @@
+import { useHistory } from "react-router-dom"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Action, useMutation, useQuery } from "react-fetching-library"
 import { createContainer } from "unstated-next"
@@ -112,6 +113,7 @@ const twoFactorAuthLoginAction = (formValues: TwoFactorAuthLoginRequest): Action
  */
 
 export const AuthContainer = createContainer(() => {
+	const history = useHistory()
 	const { fingerprint } = useFingerprint()
 	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
 	const [user, _setUser] = useState<User>()
@@ -248,6 +250,13 @@ export const AuthContainer = createContainer(() => {
 					clear()
 					throw resp.payload
 				}
+
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				}
 				setUser(resp.payload)
 				setAuthorised(true)
 			} catch (e: any) {
@@ -262,7 +271,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[login, redirectURL, sessionId, fingerprint, clear],
+		[login, redirectURL, sessionId, fingerprint, clear, history],
 	)
 
 	/**
@@ -481,6 +490,13 @@ export const AuthContainer = createContainer(() => {
 					throw resp.payload
 				}
 
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				}
+
 				setUser(resp.payload)
 				setAuthorised(true)
 			} catch (e: any) {
@@ -495,7 +511,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[google, redirectURL, sessionId, fingerprint],
+		[google, redirectURL, sessionId, fingerprint, history],
 	)
 	/**
 	 * Facebook login use oauth to give access to user
@@ -522,6 +538,13 @@ export const AuthContainer = createContainer(() => {
 					throw resp.payload
 				}
 
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				}
+
 				setUser(resp.payload)
 				setAuthorised(true)
 			} catch (e: any) {
@@ -536,18 +559,21 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[facebook, redirectURL, sessionId, fingerprint, externalAuth],
+		[facebook, redirectURL, sessionId, fingerprint, externalAuth, history],
 	)
 
 	/**
 	 * Facebook login use oauth to give access to user
 	 */
 	const twoFactorAuthLogin = useCallback(
-		async (token: string, errorCallback?: (msg: string) => void) => {
+		async (token: string | undefined, code: string, isRecovery: boolean, isVerified?: boolean, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
 					redirectURL,
 					token,
+					user_id: isVerified ? user?.id : undefined,
+					passcode: isRecovery ? undefined : code,
+					recovery_code: isRecovery ? code : undefined,
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.TFA,
@@ -556,6 +582,7 @@ export const AuthContainer = createContainer(() => {
 					externalAuth({ ...args, fingerprint: undefined })
 					return
 				}
+
 				const resp = await twoFactorAuth(args)
 
 				if (resp.error) {
@@ -576,7 +603,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[twoFactorAuth, redirectURL, sessionId, fingerprint, externalAuth],
+		[twoFactorAuth, redirectURL, sessionId, fingerprint, externalAuth, user],
 	)
 
 	/**
@@ -646,8 +673,11 @@ export const AuthContainer = createContainer(() => {
 						throw resp.payload
 					}
 
-					// Check if user has 2FA
-					if (resp.payload?.two_factor_authentication_is_set) {
+					// Check if payload contains user or jwt
+					// Check if 2FA is set
+					if (!resp.payload?.id) {
+						history.push(`/tfa/check?token=${resp.payload}`)
+						return
 					}
 
 					setUser(resp.payload)
@@ -666,7 +696,7 @@ export const AuthContainer = createContainer(() => {
 				throw e
 			}
 		},
-		[connect, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth],
+		[connect, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth, history],
 	)
 	/**
 	 * Logs a User in using a Wallet Connect public address
@@ -774,12 +804,21 @@ export const AuthContainer = createContainer(() => {
 				setLoading(false)
 				return
 			}
+
+			if (isTwitter) {
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				}
+			}
 			// else set up user
 			setUser(resp.payload)
 			setAuthorised(true)
 			setLoading(false)
 		},
-		[authCheck, clear],
+		[authCheck, clear, history],
 	)
 
 	///////////////////

@@ -53,7 +53,7 @@ const AppInner = () => {
 				<Route path="/redirect">
 					<LoginRedirect />
 				</Route>
-				<Route path="/tfa/:token/check">
+				<Route path="/tfa/check">
 					<TwoFactorAuthenticationCheck />
 				</Route>
 				<Route path="/">

@@ -407,7 +407,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 					</Box>
 					<Button
 						sx={{
-							my: "1rem",
+							mb: "1rem",
 						}}
 						type="submit"
 						//add this to disabled when avatar change is ready: && !avatarChanged
@@ -447,7 +447,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 							onClick={async () => {
 								setLoadingSetupBtn(true)
 								if (!user.two_factor_authentication_is_set) {
-									history.push(`/tfa/${user.id}/setup`)
+									history.push(`/tfa/${user.username}/setup`)
 									return
 								}
 							}}
@@ -464,7 +464,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 							}}
 							size="small"
 							onClick={() => {
-								history.push(`/tfa/${user.id}/recovery-code`)
+								history.push(`/tfa/${user.username}/recovery-code`)
 							}}
 						>
 							Get Recovery Code

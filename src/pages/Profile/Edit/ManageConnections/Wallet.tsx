@@ -43,6 +43,9 @@ export const Wallet: React.FC = () => {
 						public_address: acc,
 						signature,
 					})
+					if (!resp.id) {
+						throw resp
+					}
 					setUser(resp)
 					displayMessage("Wallet connected to account.", "success")
 				} catch (err: any) {

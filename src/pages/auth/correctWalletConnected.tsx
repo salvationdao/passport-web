@@ -79,7 +79,7 @@ export const CorrectWalletConnected = () => {
 							</Box>
 							matches the address of this passport session{" "}
 							<Box component="span" sx={{ color: colors.darkNeonBlue }}>
-								{` (${user && user.public_address ? AddressDisplay(user.public_address) : null}).`}
+								{` (${user && user.public_address ? AddressDisplay(user.public_address) : "not set yet"}).`}
 							</Box>
 						</Typography>
 						<br />

@@ -1,39 +1,58 @@
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import { LoadingButton } from "@mui/lab"
 import { Alert, Box, Button, Paper, TextField, Typography } from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
-import { useHistory, useParams } from "react-router-dom"
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react"
+import { useHistory, useLocation } from "react-router-dom"
 import { useAuth } from "../../containers/auth"
-import { usePassportCommandsUser } from "../../hooks/usePassport"
+import { colors } from "../../theme"
 
-export const TwoFactorAuthenticationCheck = () => {
-	const { send } = usePassportCommandsUser("/commander")
-	const { token } = useParams<{ token: string }>()
-	const { twoFactorAuthLogin, setUser } = useAuth()
+interface ITwoFactorAuthenticationCheckProps {
+	setVerified?: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationCheckProps> = ({ setVerified }) => {
+	const location = useLocation()
 	const history = useHistory()
-	const [showSecretCode, setShowSecretCode] = useState(false)
-	const [passcode, setPasscode] = useState("")
+	const { twoFactorAuthLogin } = useAuth()
+	const [code, setCode] = useState("")
 	const [isRecovery, setIsRecovery] = useState(false)
 	const [error, setError] = useState<string>()
-	const [loading, setLoading] = useState(false)
+
+	const token = useMemo(() => {
+		return location.search.replace("?token=", "")
+	}, [location.search])
 
 	useEffect(() => {
 		if (!token || token.length === 0) {
-			window.location.replace("/")
+			!setVerified && window.location.replace("/")
 		}
-	}, [token])
+	}, [token, setVerified])
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
 	}, [])
 
-	const verifyPasscode = useCallback(async () => {
-		try {
-			await twoFactorAuthLogin.action(token, errorCallback)
-		} catch (err: any) {
-			console.error(err)
-			setError(err)
-		}
-	}, [token, errorCallback, twoFactorAuthLogin])
+	const handleSubmit = useCallback(
+		async (e: FormEvent) => {
+			e.preventDefault()
+			if (code.length === 0) {
+				return
+			}
+			try {
+				await twoFactorAuthLogin.action(!!setVerified ? undefined : token, code, isRecovery, !!setVerified, errorCallback)
+				if (setVerified) {
+					setVerified(true)
+				}
+			} catch (err: any) {
+				console.error(err)
+				setError(err)
+				if (setVerified) {
+					setVerified(false)
+				}
+			}
+		},
+		[token, errorCallback, twoFactorAuthLogin, code, isRecovery, setVerified],
+	)
 
 	// get 2fa secret
 	return (
@@ -49,6 +68,21 @@ export const TwoFactorAuthenticationCheck = () => {
 				p: "10%",
 			}}
 		>
+			<Button
+				onClick={() => history.goBack()}
+				sx={{
+					"&>*": {
+						textDecoration: "unset",
+						color: colors.skyBlue,
+					},
+					mr: "auto",
+					display: "flex",
+					gap: "1rem",
+				}}
+			>
+				<ArrowBackIcon fontSize="medium" />
+				Go Back
+			</Button>
 			<Paper
 				sx={{
 					padding: "1.5rem",
@@ -73,6 +107,7 @@ export const TwoFactorAuthenticationCheck = () => {
 					If you have lost access to you authenticator app, use one of the recovery codes provided to you or contact support.
 				</Typography>
 				<Box
+					onSubmit={handleSubmit}
 					component="form"
 					// onSubmit={onSubmit}
 					display="flex"
@@ -85,11 +120,19 @@ export const TwoFactorAuthenticationCheck = () => {
 					<TextField
 						variant="outlined"
 						label={isRecovery ? "Recovery code" : "Passcode"}
+						value={code}
 						fullWidth
-						onChange={(e) => setPasscode(e.target.value)}
+						onChange={(e) => setCode(e.target.value)}
 					/>
 
-					<LoadingButton color={isRecovery ? "secondary" : "primary"} loading={loading} variant="contained" sx={{ px: "2em" }}>
+					<LoadingButton
+						type="submit"
+						color={isRecovery ? "secondary" : "primary"}
+						loading={twoFactorAuthLogin.loading}
+						disabled={twoFactorAuthLogin.loading}
+						variant="contained"
+						sx={{ px: "2em" }}
+					>
 						Submit
 					</LoadingButton>
 				</Box>
@@ -110,7 +153,7 @@ export const TwoFactorAuthenticationCheck = () => {
 							minWidth: "300px",
 						}}
 					>
-						{error}
+						{error.charAt(0).toUpperCase() + error.slice(1)}
 					</Alert>
 				)}
 			</Paper>

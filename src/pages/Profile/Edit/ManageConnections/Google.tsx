@@ -27,30 +27,21 @@ export const Google: React.FC = () => {
 			}}
 			onSuccess={async (res) => {
 				setLoading(true)
-				if (user.google_id) {
-					try {
-						const resp = await send<User>(HubKey.UserRemoveGoogle)
-						setUser(resp)
-					} catch (err: any) {
-						console.error(err)
-						displayMessage(err, "error")
-					}
-				} else {
-					if (res.code) {
-						displayMessage(`Couldn't connect to Google: ${res.code}`, "error")
-						return
-					}
-					const r = res as GoogleLoginResponse
-					try {
-						const resp = await send<User>(HubKey.UserAddGoogle, {
-							google_id: r.googleId,
-						})
-						console.log(resp)
-						setUser(resp)
-					} catch (err: any) {
-						console.log(err)
-						displayMessage(err, "error")
-					}
+
+				if (res.code) {
+					displayMessage(`Couldn't connect to Google: ${res.code}`, "error")
+					return
+				}
+				const r = res as GoogleLoginResponse
+				try {
+					const resp = await send<User>(HubKey.UserAddGoogle, {
+						google_id: r.googleId,
+					})
+					console.log(resp)
+					setUser(resp)
+				} catch (err: any) {
+					console.log(err)
+					displayMessage(err, "error")
 				}
 
 				setLoading(false)
@@ -62,7 +53,22 @@ export const Google: React.FC = () => {
 			cookiePolicy={"single_host_origin"}
 			render={(props) => (
 				<ConnectionButton
-					handleClick={props.onClick}
+					handleClick={async () => {
+						if (user.google_id) {
+							try {
+								setLoading(true)
+								const resp = await send<User>(HubKey.UserRemoveGoogle)
+								setUser(resp)
+							} catch (err: any) {
+								console.error(err)
+								displayMessage(err, "error")
+							} finally {
+								setLoading(false)
+							}
+						} else {
+							props.onClick()
+						}
+					}}
 					loading={loading}
 					icon={GoogleIcon}
 					title="Add Google"

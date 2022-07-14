@@ -1,15 +1,16 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import { LoadingButton } from "@mui/lab"
 import { Alert, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
+import { FormEvent, useCallback, useEffect, useState } from "react"
 import QRCode from "react-qr-code"
-import { Link, useHistory, useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { User } from "../../types/types"
+import { TwoFactorAuthenticationRecoveryCode } from "./recoveryCode"
 
 interface TFASecret {
 	secret: string
@@ -18,14 +19,14 @@ interface TFASecret {
 
 export const TwoFactorAuthenticationSetup = () => {
 	const { send } = usePassportCommandsUser("/commander")
-	const { id } = useParams<{ id: string }>()
-	const { userID, setUser } = useAuth()
-	const history = useHistory()
+	const { username } = useParams<{ username: string }>()
+	const { user, setUser } = useAuth()
 	const [tfaSecret, setTFASecret] = useState<TFASecret>()
 	const [showSecretCode, setShowSecretCode] = useState(false)
 	const [passcode, setPasscode] = useState("")
 	const [error, setError] = useState<string>()
 	const [loading, setLoading] = useState(false)
+	const [showRecoveryCode, setShowRecoveryCode] = useState(false)
 
 	useEffect(() => {
 		send<TFASecret>(HubKey.UserTFAGenerate)
@@ -34,38 +35,50 @@ export const TwoFactorAuthenticationSetup = () => {
 				setError(e)
 			})
 
-		if (id !== userID) {
-			window.location.replace(`/profile/${userID}/edit`)
+		if (username !== user?.username || user.two_factor_authentication_is_set) {
+			!showRecoveryCode && window.location.replace(`/profile/${username}/edit`)
 		}
-	}, [send, userID, id])
+	}, [send, user, username, showRecoveryCode])
 
 	const onCancel = useCallback(() => {
 		send(HubKey.UserTFACancel).catch((e) => {
 			setError(e)
 		})
 		setTFASecret(undefined)
-		window.location.replace(`/profile/${id}/edit`)
-	}, [send, id])
+		window.location.replace(`/profile/${username}/edit`)
+	}, [send, username])
 
-	const onSubmit = useCallback(async () => {
-		try {
-			setLoading(true)
-			const resp = await send<User>(HubKey.UserTFAVerification, { passcode })
-			if (!resp.id) {
-				throw resp
+	const onSubmit = useCallback(
+		async (e: FormEvent) => {
+			e.preventDefault()
+			if (passcode.length === 0) {
+				return
 			}
-			// Trigger loading
-			setTFASecret(undefined)
-			setUser(resp)
-			history.push(`/tfa/${id}/recovery-code`)
-		} catch (err: any) {
-			console.error(err)
-			setError(err)
-		} finally {
-			setPasscode("")
-			setLoading(false)
-		}
-	}, [send, passcode, history, id, setUser])
+			try {
+				setLoading(true)
+				const resp = await send<User>(HubKey.UserTFAVerification, { passcode })
+				if (!resp.id) {
+					throw resp
+				}
+				// Trigger loading
+				setTFASecret(undefined)
+				setShowRecoveryCode(true)
+				setUser(resp)
+			} catch (err: any) {
+				setShowRecoveryCode(false)
+				console.error(err)
+				setError(err)
+			} finally {
+				setPasscode("")
+				setLoading(false)
+			}
+		},
+		[send, passcode, setUser, setShowRecoveryCode],
+	)
+
+	if (showRecoveryCode) {
+		return <TwoFactorAuthenticationRecoveryCode disableVerification />
+	}
 
 	if (!tfaSecret) {
 		return <Loading />
@@ -97,7 +110,7 @@ export const TwoFactorAuthenticationSetup = () => {
 					mr: "auto",
 				}}
 			>
-				<Link to={`/profile/${userID}/edit`}>
+				<Link to={`/profile/${username}/edit`}>
 					<ArrowBackIcon fontSize="medium" />
 					Cancel
 				</Link>
@@ -181,7 +194,7 @@ export const TwoFactorAuthenticationSetup = () => {
 					>
 						<TextField variant="outlined" label="Passcode" fullWidth onChange={(e) => setPasscode(e.target.value)} />
 
-						<LoadingButton loading={loading} variant="contained" sx={{ px: "2em" }}>
+						<LoadingButton type="submit" loading={loading} variant="contained" sx={{ px: "2em" }}>
 							Submit
 						</LoadingButton>
 					</Box>
