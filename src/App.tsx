@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/forgotPassword"
 import { LoginPage } from "./pages/login"
 import { LoginRedirect } from "./pages/login/redirect"
 import ResetPassword from "./pages/resetPassword"
+import { TwoFactorAuthenticationCheck } from "./pages/twoFactorAuthentication/check"
 import VerifyEmail from "./pages/verify"
 import { Routes } from "./routes"
 
@@ -51,6 +52,9 @@ const AppInner = () => {
 				</Route>
 				<Route path="/redirect">
 					<LoginRedirect />
+				</Route>
+				<Route path="/tfa/:token/check">
+					<TwoFactorAuthenticationCheck />
 				</Route>
 				<Route path="/">
 					<Redirect to={"/login"} />

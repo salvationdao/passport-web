@@ -12,6 +12,7 @@ import {
 	GoogleLoginRequest,
 	LoginRequest,
 	NewPasswordRequest,
+	TwoFactorAuthLoginRequest,
 	VerifyAccountResponse,
 } from "../../types/auth"
 import { Perm } from "../../types/enums"
@@ -35,6 +36,7 @@ export enum AuthTypes {
 	NewPassword = "new_password",
 	Google = "google",
 	Facebook = "facebook",
+	TFA = "tfa",
 }
 
 export enum VerificationType {
@@ -98,6 +100,13 @@ const facebookLoginAction = (formValues: FacebookLoginRequest): Action => ({
 	body: formValues,
 })
 
+const twoFactorAuthLoginAction = (formValues: TwoFactorAuthLoginRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.TFA}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
 /**
  * A Container that handles Authorisation
  */
@@ -140,6 +149,7 @@ export const AuthContainer = createContainer(() => {
 	const { loading: newPasswordLoading, mutate: newPass } = useMutation(newPasswordAction)
 	const { loading: googleLoginLoading, mutate: google } = useMutation(googleLoginAction)
 	const { loading: facebookLoginLoading, mutate: facebook } = useMutation(facebookLoginAction)
+	const { loading: twoFactorLoginLoading, mutate: twoFactorAuth } = useMutation(twoFactorAuthLoginAction)
 
 	// useQueries
 	const { query: logoutQuery } = useQuery(
@@ -530,6 +540,46 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
+	 * Facebook login use oauth to give access to user
+	 */
+	const twoFactorAuthLogin = useCallback(
+		async (token: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const args = {
+					redirectURL,
+					token,
+					session_id: sessionId,
+					fingerprint: redirectURL ? undefined : fingerprint,
+					authType: AuthTypes.TFA,
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await twoFactorAuth(args)
+
+				if (resp.error) {
+					throw resp.payload
+				}
+
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[twoFactorAuth, redirectURL, sessionId, fingerprint, externalAuth],
+	)
+
+	/**
 	 * Logs a User in using their saved login token.
 	 *
 	 * @param token login token usually from local storage
@@ -595,6 +645,11 @@ export const AuthContainer = createContainer(() => {
 					if (resp.error) {
 						throw resp.payload
 					}
+
+					// Check if user has 2FA
+					if (resp.payload?.two_factor_authentication_is_set) {
+					}
+
 					setUser(resp.payload)
 					setAuthorised(true)
 					setLoading(false)
@@ -711,18 +766,21 @@ export const AuthContainer = createContainer(() => {
 	}
 
 	// Auth check handler
-	const handleAuthCheck = useCallback(async () => {
-		const resp = await authCheck()
-		if (resp.error || !resp.payload) {
-			clear()
+	const handleAuthCheck = useCallback(
+		async (isTwitter?: boolean) => {
+			const resp = await authCheck()
+			if (resp.error || !resp.payload) {
+				clear()
+				setLoading(false)
+				return
+			}
+			// else set up user
+			setUser(resp.payload)
+			setAuthorised(true)
 			setLoading(false)
-			return
-		}
-		// else set up user
-		setUser(resp.payload)
-		setAuthorised(true)
-		setLoading(false)
-	}, [authCheck, clear])
+		},
+		[authCheck, clear],
+	)
 
 	///////////////////
 	//  Use Effects  //
@@ -807,6 +865,10 @@ export const AuthContainer = createContainer(() => {
 		facebookLogin: {
 			action: facebookLogin,
 			loading: facebookLoginLoading,
+		},
+		twoFactorAuthLogin: {
+			action: twoFactorAuthLogin,
+			loading: twoFactorLoginLoading,
 		},
 	}
 })

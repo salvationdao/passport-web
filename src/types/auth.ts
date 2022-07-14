@@ -66,6 +66,11 @@ export interface FacebookLoginRequest extends BasicLoginRequest {
 	session_id?: string
 }
 
+export interface TwoFactorAuthLoginRequest extends BasicLoginRequest {
+	token: string
+	session_id?: string
+}
+
 export interface BasicLoginResponse {
 	user: User
 	token: string
