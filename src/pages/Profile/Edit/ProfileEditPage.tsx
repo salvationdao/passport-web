@@ -8,8 +8,8 @@ import { useHistory, useParams } from "react-router-dom"
 import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
-import { TwoFactorAuthenticationSetup } from "../../../components/twoFactorAuthentication/setup"
 import { useAuth } from "../../../containers/auth"
+import { useSnackbar } from "../../../containers/snackbar"
 import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
@@ -182,12 +182,16 @@ interface ProfileEditProps {
 
 const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerifyMessage }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
-	const { user } = useAuth()
+	const { user, setUser } = useAuth()
+	const { displayMessage } = useSnackbar()
 	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 	const [lockOption, setLockOption] = useState<LockOptionsProps>()
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
 	const [openChangePassword, setOpenChangePassword] = useState(false)
+
+	// TFA
+	const [loadingSetupBtn, setLoadingSetupBtn] = useState(false)
 
 	// Setup form
 	const { control, handleSubmit, reset, formState } = useForm<UserInput>()
@@ -416,7 +420,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 						Save
 					</Button>
 				</Section>
-				<TwoFactorAuthenticationSetup />
 
 				{/* ------------- Manage Connections ------------------ */}
 				<Stack spacing=".5rem">
@@ -428,249 +431,65 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 						<Twitter />
 					</Box>
 				</Stack>
-				{/* Temporarily removed for public sale */}
-				{/* <Box
-				sx={{
-					display: "flex",
-					flexDirection: "column",
-					"& > *:not(:last-child)": {
-						marginBottom: "1rem",
-					},
-				}}
-			>
-				<Typography id="connections" variant="h1" component="h2">
-					Manage Connections
-				</Typography>
-				<Box
-					sx={{
-						display: "grid",
-						gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-						gap: "1rem",
-					}}
-				>
-					{user.publicAddress ? (
-						<ConnectionButton
+				{/* -------------------------- Two Factor Authentication--------------------------------- */}
+				<Stack spacing=".5rem">
+					<Typography variant="h6">Two-Factor Authentication</Typography>
+
+					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
+						<FancyButton
+							loading={loadingSetupBtn}
+							filled
+							borderColor={user.two_factor_authentication_is_set ? colors.darkGrey : undefined}
+							sx={{
+								width: "calc(50% - .25rem)",
+								fontSize: "105%",
+							}}
+							size="small"
 							onClick={async () => {
-								await removeWalletAddress()
-							}}
-							title="Remove MetaMask"
-							icon={
-								typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined"
-									? WalletConnectIcon
-									: MetaMaskIcon
-							}
-							value={user.publicAddress}
-							remove
-						/>
-					) : (
-						<MetaMaskLogin
-							onFailure={(error) => {
-								displayMessage(error, "error")
-							}}
-							render={(props) => (
-								<ConnectionButton
-									onClick={props.onClick}
-									title="Connect Wallet"
-									icon={
-										typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined"
-											? WalletConnectIcon
-											: MetaMaskIcon
+								setLoadingSetupBtn(true)
+								if (!user.two_factor_authentication_is_set) {
+									history.push(`/tfa/${user.id}/setup`)
+									return
+								}
+								try {
+									const resp = await send<User>(HubKey.UserTFACancel)
+									if (!resp.id) {
+										throw resp
 									}
-									value={user.publicAddress}
-									disabled={!!user.publicAddress || props.isProcessing}
-									loading={props.isProcessing}
-								/>
-							)}
-						/>
-					)}
-
-					{user.twitterID ? (
-						<ConnectionButton
-							onClick={async () => {
-								await removeTwitter(user.id, user.username)
-							}}
-							title="Remove Twitter"
-							icon={TwitterIcon}
-							value={user.twitterID}
-							remove
-						/>
-					) : (
-						<TwitterLogin
-							callback={async (response) => {
-								try {
-									await addTwitter(response.token, response.verifier)
-								} catch (e) {
-									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again", "error")
+									setUser(resp)
+								} catch (err) {
+									console.error(err)
+									displayMessage("Failed to remove Two-Factor authentication.", "error")
+								} finally {
+									setLoadingSetupBtn(false)
+									setSuccessful(true)
+									setDisplayResult(true)
 								}
 							}}
-							onFailure={(error) => {
-								displayMessage(error.status || "Failed to connect account to Twitter.", "error")
+						>
+							{user.two_factor_authentication_is_set ? "Remove Two-Factor Authentication" : "Setup Two-Factor Authentication"}
+						</FancyButton>
+						<FancyButton
+							filled
+							borderColor={colors.skyBlue}
+							disabled={!user.two_factor_authentication_is_set}
+							sx={{
+								width: "calc(50% - .25rem)",
+								fontSize: "105%",
 							}}
-							render={(props) => (
-								<ConnectionButton
-									onClick={props.onClick}
-									icon={TwitterIcon}
-									value={user.twitterID}
-									disabled={!!user.twitterID || props.isProcessing}
-									loading={props.isProcessing}
-								/>
-							)}
-						/>
-					)}
-
-					{user.discordID ? (
-						<ConnectionButton
-							onClick={async () => {
-								await removeDiscord(user.id, user.username)
+							size="small"
+							onClick={() => {
+								history.push(`/tfa/${user.id}/recovery-code`)
 							}}
-							title="Remove Discord"
-							icon={DiscordIcon}
-							value={user.discordID}
-							remove
-						/>
-					) : (
-						<DiscordLogin
-							callback={async (response) => {
-								try {
-									await addDiscord(response.code)
-								} catch (e) {
-									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again", "error")
-								}
-							}}
-							onFailure={(error) => {
-								displayMessage(error.status || "Failed to connect account to Discord.", "error")
-							}}
-							render={(props) => (
-								<ConnectionButton
-									onClick={props.onClick}
-									icon={DiscordIcon}
-									value={user.discordID}
-									disabled={!!user.discordID || props.isProcessing}
-									loading={props.isProcessing}
-								/>
-							)}
-						/>
-					)}
-
-					{user.facebookID ? (
-						<ConnectionButton
-							onClick={async () => {
-								await removeFacebook(user.id, user.username)
-							}}
-							title="Remove Facebook"
-							icon={FacebookIcon}
-							value={user.facebookID}
-							remove
-						/>
-					) : (
-						<FacebookLogin
-							callback={async (response: any) => {
-								try {
-									if (!!response && !!response.status) {
-										displayMessage(`Couldn't connect to Facebook: ${response.status}`, "error")
-										return
-									}
-									await addFacebook(response.accessToken)
-								} catch (e) {
-									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-								}
-							}}
-							onFailure={(error) => {
-								displayMessage(error.status || "Failed to connect account to Facebook.", "error")
-							}}
-							render={(props) => (
-								<ConnectionButton
-									onClick={props.onClick}
-									icon={FacebookIcon}
-									value={user.facebookID}
-									disabled={!!user.facebookID || props.isProcessing || !props.isSdkLoaded}
-									loading={props.isProcessing || !props.isSdkLoaded}
-								/>
-							)}
-						/>
-					)}
-
-					{user.googleID ? (
-						<ConnectionButton
-							onClick={async () => {
-								await removeGoogle(user.id, user.username)
-							}}
-							title="Remove Google"
-							icon={GoogleIcon}
-							value={user.googleID}
-							remove
-						/>
-					) : (
-						<GoogleLogin
-							clientId="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
-							buttonText="Login"
-							onSuccess={async (response) => {
-								try {
-									if (!!response.code) {
-										displayMessage(`Couldn't connect to Google: ${response.code}`, "error")
-										return
-									}
-									const r = response as GoogleLoginResponse
-									await addGoogle(r.tokenId)
-								} catch (e) {
-									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again.", "error")
-								}
-							}}
-							onFailure={(error) => {
-								displayMessage(error.message, "error")
-							}}
-							cookiePolicy={"single_host_origin"}
-							render={(props) => (
-								<ConnectionButton
-									onClick={props.onClick}
-									icon={GoogleIcon}
-									value={user.googleID}
-									disabled={!!user.googleID || props.disabled}
-									loading={props.disabled}
-								/>
-							)}
-						/>
-					)}
-
-					{user.twitchID ? (
-						<ConnectionButton
-							onClick={async () => {
-								await removeTwitch(user.id, user.username)
-							}}
-							title="Remove Twitch"
-							icon={TwitchIcon}
-							value={user.twitchID}
-							remove
-						/>
-					) : (
-						<TwitchLogin
-							callback={async (response) => {
-								try {
-									await addTwitch(response.token)
-								} catch (e) {
-									displayMessage(typeof e === "string" ? e : "Something went wrong, please try again", "error")
-								}
-							}}
-							onFailure={(error) => {
-								displayMessage(error.status || "Failed to connect account to Twitch.", "error")
-							}}
-							render={(props) => (
-								<ConnectionButton
-									onClick={props.onClick}
-									icon={TwitchIcon}
-									value={user.twitchID}
-									disabled={!!user.twitchID || props.isProcessing}
-									loading={props.isProcessing}
-								/>
-							)}
-						/>
-					)}
-				</Box>
-			</Box> */}
+						>
+							Get Recovery Code
+						</FancyButton>
+					</Box>
+				</Stack>
 
 				{/* -------------------------- Account admin --------------------------------- */}
 				<Stack spacing=".5rem">
-					<Typography variant="h6">Account</Typography>
+					<Typography variant="h6">Security</Typography>
 
 					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
 						<Tooltip title="Change your password">

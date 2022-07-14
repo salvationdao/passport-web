@@ -31,6 +31,8 @@ import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/As
 import { ProfilePage } from "./pages/Profile/ProfilePage"
 import { StorePage } from "./pages/Store/StorePage"
 import { TransactionsPage } from "./pages/transactions/transactions"
+import { TwoFactorAuthenticationRecoveryCode } from "./pages/twoFactorAuthentication/recoveryCode"
+import { TwoFactorAuthenticationSetup } from "./pages/twoFactorAuthentication/setup"
 import VerifyEmail from "./pages/verify"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 
@@ -151,6 +153,12 @@ export const Routes = () => {
 							</Route>
 							<Route path="/verify">
 								<VerifyEmail />
+							</Route>
+							<Route path="/tfa/:id/setup">
+								<TwoFactorAuthenticationSetup />
+							</Route>
+							<Route path="/tfa/:id/recovery-code">
+								<TwoFactorAuthenticationRecoveryCode />
 							</Route>
 							<Route path="/signup">
 								<SignUpPage />

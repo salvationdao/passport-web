@@ -17,8 +17,8 @@ enum HubKey {
 	UserTFAGenerate = "USER:TFA:GENERATE",
 	UserTFACancel = "USER:TFA:CANCEL",
 	UserTFAVerification = "USER:TFA:VERIFICATION",
-	UserTFARecoveryCodeGet = "AUTH:TFA:RECOVERY:GET",
-	UserTFARecoveryCodeSet = "AUTH:TFA:RECOVERY:VERIFY",
+	UserTFARecoveryCodeGet = "USER:TFA:RECOVERY:GET",
+	UserTFARecoveryCodeSet = "USER:TFA:RECOVERY:VERIFY",
 
 	/** Tracks user changes */
 	UserUsernameUpdate = "USER:USERNAME:UPDATE",
