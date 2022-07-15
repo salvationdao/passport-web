@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, Stack, Typography } from "@mui/material"
+import {Box, Stack, Tooltip, Typography} from "@mui/material"
 import { useHistory } from "react-router-dom"
 import { getStringFromShoutingSnakeCase } from "../../../../helpers"
 import { rarityTextStyles } from "../../../../helpers/items"
@@ -7,6 +7,8 @@ import { colors, fonts } from "../../../../theme"
 import { Rarity } from "../../../../types/enums"
 import { UserAsset } from "../../../../types/purchased_item"
 import { ViewButton } from "../Common/ViewButton"
+import LockRoundedIcon from "@mui/icons-material/LockRounded";
+import React from "react";
 
 export interface Asset721ItemCardProps {
 	userAsset: UserAsset
@@ -16,7 +18,7 @@ export interface Asset721ItemCardProps {
 export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps> = ({ userAsset, username }) => {
 	const history = useHistory()
 
-	const { tier, name, hash, image_url, card_animation_url, asset_type } = userAsset
+	const { tier, name, hash, image_url, card_animation_url, asset_type, locked_to_service } = userAsset
 	const rarityStyles = rarityTextStyles[tier as Rarity]
 
 	const renderAssetTypeText = (assetType: string) => {
@@ -24,9 +26,15 @@ export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps
 			case "mech":
 				return "War Machine"
 			case "weapon":
-				return "Weapon"
+				return "War Machine Weapon"
 			case "mystery_crate":
 				return "Crate"
+			case "mech_skin":
+				return "War Machine Submodel"
+			case "power_core":
+				return "Powercore"
+			case "weapon_skin":
+				return "Weapon Submodel"
 		}
 	}
 
@@ -120,6 +128,26 @@ export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps
 					>
 						<source src={card_animation_url} type="video/webm"></source>
 					</Box>
+				)}
+				{locked_to_service && (
+					<Stack
+						sx={{
+							position: "absolute",
+							bottom: "0.7rem",
+							left: "0.2rem",
+							borderRadius: "50%",
+							backgroundColor: "#000000",
+							width: "2rem",
+							height: "2rem",
+							boxShadow: 1.5,
+						}}
+						justifyContent="center"
+						alignItems="center"
+					>
+						<Tooltip title="Item locked in service">
+							<LockRoundedIcon sx={{ fontSize: "1rem" }} />
+						</Tooltip>
+					</Stack>
 				)}
 			</Box>
 

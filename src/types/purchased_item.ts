@@ -29,6 +29,7 @@ export interface UserAsset {
 	on_chain_status: string
 	xsyn_locked?: boolean
 	locked_to_service_name?: string
+	locked_to_service?: string
 	deleted_at?: Date
 	data_refreshed_at: Date
 	updated_at: Date

@@ -47,6 +47,10 @@ watch:
 lb:
 	sudo ./bin/caddy run
 
+.PHONY: lb-windows
+lb-windows:
+	./bin/caddy run
+
 .PHONY: lb-disown
 lb-disown:
 	./bin/caddy run & disown
