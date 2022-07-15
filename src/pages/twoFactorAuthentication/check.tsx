@@ -18,15 +18,18 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 	const [isRecovery, setIsRecovery] = useState(false)
 	const [error, setError] = useState<string>()
 
-	const token = useMemo(() => {
-		return location.search.replace("?token=", "")
+	const tokenGroup = useMemo(() => {
+		const group = location.search.split("&redirectURL=")
+		const token = group[0].replace("?token=", "")
+		const redirectURL = group[1] || undefined
+		return { redirectURL, token }
 	}, [location.search])
 
 	useEffect(() => {
-		if (!token || token.length === 0) {
+		if (!tokenGroup.token || tokenGroup.token.length === 0) {
 			!setVerified && window.location.replace("/")
 		}
-	}, [token, setVerified])
+	}, [tokenGroup.token, setVerified])
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
@@ -39,7 +42,9 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 				return
 			}
 			try {
-				await twoFactorAuthLogin.action(!!setVerified ? undefined : token, code, isRecovery, !!setVerified, errorCallback)
+				const token = !!setVerified ? undefined : tokenGroup.token
+				const redirectURL = !tokenGroup.redirectURL ? undefined : tokenGroup.redirectURL
+				await twoFactorAuthLogin.action(token, code, isRecovery, redirectURL, !!setVerified, errorCallback)
 				if (setVerified) {
 					setVerified(true)
 				}
@@ -51,7 +56,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 				}
 			}
 		},
-		[token, errorCallback, twoFactorAuthLogin, code, isRecovery, setVerified],
+		[tokenGroup, errorCallback, twoFactorAuthLogin, code, isRecovery, setVerified],
 	)
 
 	// get 2fa secret
@@ -66,6 +71,9 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 				flexDirection: "column",
 				gap: "2rem",
 				p: "10%",
+				"@media (max-width:600px)": {
+					p: "1em",
+				},
 			}}
 		>
 			<Button
@@ -100,7 +108,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 			>
 				<Typography variant="h1">Two Factor Authentication</Typography>
 
-				<Typography sx={{ maxWidth: "600px", textAlign: "center" }}>
+				<Typography sx={{ maxWidth: "600px" }}>
 					To proceed, please enter the passcode from your authenticator app.
 					<br />
 					<br />

@@ -1,6 +1,6 @@
-import { useHistory } from "react-router-dom"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Action, useMutation, useQuery } from "react-fetching-library"
+import { useHistory } from "react-router-dom"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
@@ -195,7 +195,7 @@ export const AuthContainer = createContainer(() => {
 			})
 
 			document.body.appendChild(form)
-			form.submit()
+			form.requestSubmit()
 		},
 		[],
 	)
@@ -481,7 +481,10 @@ export const AuthContainer = createContainer(() => {
 					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.Google,
 				}
-
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
 				const resp = await google({
 					...args,
 				})
@@ -511,7 +514,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[google, redirectURL, sessionId, fingerprint, history],
+		[google, redirectURL, sessionId, fingerprint, history, externalAuth],
 	)
 	/**
 	 * Facebook login use oauth to give access to user
@@ -533,9 +536,8 @@ export const AuthContainer = createContainer(() => {
 					return
 				}
 				const resp = await facebook(args)
-
 				if (resp.error) {
-					throw resp.payload
+					throw resp.error
 				}
 
 				// Check if payload contains user or jwt
@@ -566,10 +568,17 @@ export const AuthContainer = createContainer(() => {
 	 * Facebook login use oauth to give access to user
 	 */
 	const twoFactorAuthLogin = useCallback(
-		async (token: string | undefined, code: string, isRecovery: boolean, isVerified?: boolean, errorCallback?: (msg: string) => void) => {
+		async (
+			token: string | undefined,
+			code: string,
+			isRecovery: boolean,
+			rURL?: string,
+			isVerified?: boolean,
+			errorCallback?: (msg: string) => void,
+		) => {
 			try {
 				const args = {
-					redirectURL,
+					redirectURL: rURL,
 					token,
 					user_id: isVerified ? user?.id : undefined,
 					passcode: isRecovery ? undefined : code,

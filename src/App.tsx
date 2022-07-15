@@ -11,7 +11,7 @@ import "./fonts.css"
 import { loadIcons } from "./helpers/loadicons"
 import ForgotPassword from "./pages/forgotPassword"
 import { LoginPage } from "./pages/login"
-import { LoginRedirect } from "./pages/login/redirect"
+import { LoginRedirect } from "./pages/login/twitterRedirect"
 import ResetPassword from "./pages/resetPassword"
 import { TwoFactorAuthenticationCheck } from "./pages/twoFactorAuthentication/check"
 import VerifyEmail from "./pages/verify"
@@ -50,7 +50,7 @@ const AppInner = () => {
 				<Route path="/verify">
 					<VerifyEmail />
 				</Route>
-				<Route path="/redirect">
+				<Route path="/twitter-redirect">
 					<LoginRedirect />
 				</Route>
 				<Route path="/tfa/check">

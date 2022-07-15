@@ -26,7 +26,7 @@ import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { LoginPage } from "./pages/login"
-import { LoginRedirect } from "./pages/login/redirect"
+import { LoginRedirect } from "./pages/login/twitterRedirect"
 import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/AssetRedirectPage"
 import { ProfilePage } from "./pages/Profile/ProfilePage"
 import { StorePage } from "./pages/Store/StorePage"
@@ -135,7 +135,7 @@ export const Routes = () => {
 				</Snackbar>
 
 				<Switch>
-					<Route path="/redirect">
+					<Route path="/twitter-redirect">
 						<LoginRedirect />
 					</Route>
 					<Redirect from="/farms" to="/staking" exact />
