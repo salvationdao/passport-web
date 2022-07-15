@@ -82,7 +82,7 @@ const ForgotPassword: React.FC = () => {
 						component="span"
 						sx={{
 							position: "absolute",
-							bottom: "1rem",
+							bottom: 0,
 							left: "1rem",
 							color: theme.palette.secondary.main,
 							display: "flex",

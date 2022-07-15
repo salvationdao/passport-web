@@ -140,7 +140,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 							"Email confirmation email sent! Please check your email."
 						) : (
 							<>
-								Please verify your email: {user.email}. <br />
+								Please verify your email: {user.email} <br />
 								Click{" "}
 								{sentVerify === null ? (
 									<CircularProgress size="15px" sx={{ mx: ".5rem", mt: ".5rem" }} />

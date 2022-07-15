@@ -1,9 +1,10 @@
-import { Box, Typography } from "@mui/material"
+import { Alert, Box, Typography } from "@mui/material"
 import { styled } from "@mui/system"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Redirect } from "react-router-dom"
 import { XSYNLogo } from "../../assets"
 import { useAuth } from "../../containers/auth"
+import { useSnackbar } from "../../containers/snackbar"
 import { colors } from "../../theme"
 import { Loading } from "../loading"
 
@@ -42,6 +43,7 @@ const ContentBox = styled(Box)({
 	width: "100%",
 	boxSizing: "border-box",
 	flexDirection: "column",
+	justifyContent: "center",
 	padding: "1rem",
 	gap: "1rem",
 	alignItems: "center",
@@ -54,8 +56,25 @@ const wallpapers = ["/img/rm.png", "/img/bc.png", "/img/zai.png"]
 
 export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title }) => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
+	const { displayMessage } = useSnackbar()
 	const { userID, loginCookieExternal } = useAuth()
 	const isFromExternal = window.location.pathname === "/external/login"
+	const [error, setError] = useState<string | undefined>()
+
+	const err = useMemo(() => {
+		const queryString = window.location.search
+		const urlParams = new URLSearchParams(queryString)
+		return urlParams.get("err") || undefined
+	}, [])
+
+	console.log(err)
+
+	useEffect(() => {
+		if (err) {
+			setError(err)
+		}
+	}, [displayMessage, err])
+
 	if (userID) {
 		// if it is not from external, redirect user to profile page
 		if (!isFromExternal) return <Redirect to={"/profile"} />
@@ -93,7 +112,8 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 						src={"/img/sups_logo.svg"}
 						alt={"Login to Supremacy"}
 					/>
-					<Box sx={{ position: "relative", zIndex: 2 }}>{children}</Box>
+					<Box sx={{ position: "relative", zIndex: 2 }}>{children}</Box>{" "}
+					{error && <Alert severity="error">{error.charAt(0).toUpperCase() + error.slice(1)}</Alert>}
 				</ContentBox>
 			</Box>
 			<a href="https://xsyn.io" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>

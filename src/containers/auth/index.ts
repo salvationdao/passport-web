@@ -237,7 +237,7 @@ export const AuthContainer = createContainer(() => {
 	const loginPassword = useCallback(
 		async (email: string, password: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const formValues = {
+				const args = {
 					redirectURL,
 					email,
 					password,
@@ -245,7 +245,12 @@ export const AuthContainer = createContainer(() => {
 					fingerprint,
 					authType: AuthTypes.Email,
 				}
-				const resp = await login(formValues)
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await login(args)
+
 				if (resp.error) {
 					clear()
 					throw resp.payload
@@ -271,7 +276,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[login, redirectURL, sessionId, fingerprint, clear, history],
+		[login, redirectURL, sessionId, fingerprint, clear, history, externalAuth],
 	)
 
 	/**
@@ -280,7 +285,7 @@ export const AuthContainer = createContainer(() => {
 	const signupPassword = useCallback(
 		async (username: string, email: string, password: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await login({
+				const args = {
 					redirectURL,
 					username,
 					email,
@@ -288,7 +293,12 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint,
 					authType: AuthTypes.Signup,
-				})
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await login(args)
 				if (resp.error) {
 					clear()
 					throw resp.payload
@@ -307,7 +317,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[login, redirectURL, sessionId, fingerprint, clear],
+		[login, redirectURL, sessionId, fingerprint, clear, externalAuth],
 	)
 
 	/**

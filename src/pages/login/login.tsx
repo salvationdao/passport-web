@@ -4,6 +4,7 @@ import { LoginForm } from "./form"
 // hard coding Supremacy logo
 
 export const LoginPage = () => {
+	
 	let Wrapper = SupremacyAuth
 	useEffect(() => {
 		window.localStorage.removeItem("walletconnect")

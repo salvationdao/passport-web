@@ -4,6 +4,7 @@ import * as React from "react"
 import { Link } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { useAuth } from "../../containers/auth"
+import { useSnackbar } from "../../containers/snackbar"
 import { colors } from "../../theme"
 
 interface IEmailLoginProps {
@@ -13,6 +14,7 @@ interface IEmailLoginProps {
 export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const theme = useTheme()
 	const { loginPassword, signupPassword } = useAuth()
+	const { displayMessage } = useSnackbar()
 	const [error, setError] = React.useState<string | null>(null)
 
 	const errorCallback = (msg: string) => {
@@ -38,6 +40,7 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 		if (signup) {
 			const username = data.get("username")?.toString()
 			username && (await signupPassword.action(username, email, password, errorCallback))
+			displayMessage("A confirmation email was sent to your address. Please verify your email account.")
 		} else {
 			await loginPassword.action(email, password, errorCallback)
 		}

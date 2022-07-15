@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { MetaMaskIcon, WalletConnectIcon } from "../../../../assets"
 import { useAuth } from "../../../../containers/auth"
 import { useSnackbar } from "../../../../containers/snackbar"
@@ -13,6 +13,7 @@ export const Wallet: React.FC = () => {
 	const { user, setUser } = useAuth()
 	const { displayMessage } = useSnackbar()
 	const { send } = usePassportCommandsUser("/commander")
+	const [loading, setLoading] = useState(false)
 
 	if (!user) {
 		return null
@@ -20,8 +21,10 @@ export const Wallet: React.FC = () => {
 
 	return (
 		<ConnectionButton
+			loading={loading}
 			handleClick={async () => {
 				try {
+					setLoading(true)
 					setDisableWalletModal(true)
 					let acc: string | undefined, signature: string | undefined
 					if (typeof (window as any).ethereum === "undefined" || typeof (window as any).web3 === "undefined") {
@@ -53,6 +56,7 @@ export const Wallet: React.FC = () => {
 					displayMessage(err.message ? err.message : err, "error")
 				} finally {
 					setDisableWalletModal(false)
+					setLoading(false)
 				}
 			}}
 			title="Connect Wallet"
