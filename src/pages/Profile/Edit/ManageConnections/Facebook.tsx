@@ -21,15 +21,7 @@ export const Facebook: React.FC = () => {
 		<FacebookLogin
 			callback={async (res) => {
 				window.FB.logout()
-				if (user.facebook_id) {
-					try {
-						const resp = await send<User>(HubKey.UserRemoveFacebook)
-						setUser(resp)
-					} catch (err: any) {
-						console.error(err)
-						displayMessage(err, "error")
-					}
-				} else {
+				if (!user.facebook_id) {
 					try {
 						const u = res as ReactFacebookLoginInfo
 						const resp = await send<User>(HubKey.UserAddFacebook, {
@@ -47,7 +39,19 @@ export const Facebook: React.FC = () => {
 			}}
 			render={(props) => (
 				<ConnectionButton
-					handleClick={props.onClick}
+					handleClick={async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+						if (user.facebook_id) {
+							try {
+								const resp = await send<User>(HubKey.UserRemoveFacebook)
+								setUser(resp)
+							} catch (err: any) {
+								console.error(err)
+								displayMessage(err, "error")
+							}
+						} else {
+							props.onClick(e)
+						}
+					}}
 					loading={props.isProcessing}
 					icon={MetaIcon}
 					title="Add Meta"

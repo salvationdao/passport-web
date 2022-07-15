@@ -7,12 +7,10 @@ interface ITwitterLoginWrapperProps {
 }
 
 const TwitterLoginWrapper: React.FC<ITwitterLoginWrapperProps> = ({ onFailure, render }) => {
-	// const { twitterLogin } = useAuth()
-
 	return (
 		<TwitterLogin
 			onFailure={(err) => {
-				console.log(err)
+				console.error(err)
 				if (err.status) onFailure(err.status)
 			}}
 			render={(props) => render(props)}

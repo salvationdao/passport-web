@@ -134,7 +134,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 						)}
 					</Stack>
 				</Box>
-				{!user.verified && (
+				{!user.verified && user.email && (
 					<Alert severity={sentVerify ? "info" : "error"} sx={{ maxWidth: "600px", my: "1rem" }}>
 						{sentVerify ? (
 							"Email confirmation email sent! Please check your email."

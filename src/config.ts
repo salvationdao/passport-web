@@ -47,5 +47,5 @@ export const PANCAKE_SWAP_ADDRESS = process.env.REACT_APP_PANCAKE_SWAP_ADDRESS |
 export const AVANT_API_ENDPOINT = process.env.REACT_APP_AVANT_API_ENDPOINT || "v3-staging.supremacy-api.avantdata.com:3001"
 
 // oauth
-export const GOOGLE_CLIENT_ID = process.env.REACT_APP_PASSPORT_GOOGLE_CLIENT_ID
-export const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID
+export const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_ID || ""
+export const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID || ""

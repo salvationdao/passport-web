@@ -26,12 +26,14 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 		const data = new FormData(event.currentTarget)
 		const password = data.get("password")?.toString()
 		const password2 = data.get(isNew ? "confirmPassword" : "newPassword")?.toString()
-		if (!password || !newPassword) {
+		if (!password || !password2) {
 			return
 		}
 		if (password2 !== password) {
-			setError("Password does not match")
-			return
+			if (isNew) {
+				setError("Password does not match")
+				return
+			}
 		}
 
 		if (isNew) {
@@ -92,7 +94,7 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 							required
 							fullWidth
 							name="password"
-							label="Password"
+							label={isNew ? "Password" : "Current Password"}
 							type="password"
 							id="password"
 							autoComplete="current-password"
