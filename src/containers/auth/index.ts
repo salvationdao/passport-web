@@ -939,7 +939,7 @@ export const UserUpdater = () => {
 		},
 	)
 
-	usePassportSubscriptionUser({ URI: `/init`, key: keys.UserInit }, (payload) => {
+	usePassportSubscriptionUser({ URI: "", key: keys.UserInit }, (payload) => {
 		if (!payload) {
 			window.location.reload()
 		}

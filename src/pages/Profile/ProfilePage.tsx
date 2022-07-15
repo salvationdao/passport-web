@@ -227,10 +227,10 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 						},
 					}}
 				>
-					<Link to={TermsAndConditions} target="_blank">
+					<Link to={PrivacyPolicy} target="_blank">
 						Privacy Policy
 					</Link>
-					<Link to={PrivacyPolicy} target="_blank">
+					<Link to={TermsAndConditions} target="_blank">
 						Terms And Conditions
 					</Link>
 				</Box>

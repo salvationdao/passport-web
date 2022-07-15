@@ -14,7 +14,7 @@ export const Twitter: React.FC = () => {
 	const { send } = usePassportCommandsUser("/commander")
 	const [loading, setLoading] = useState(false)
 
-	usePassportSubscriptionUser({ URI: `/twitter`, key: HubKey.UserAddTwitter }, (payload: { user: User; error: string }) => {
+	usePassportSubscriptionUser({ URI: "", key: HubKey.UserAddTwitter }, (payload: { user: User; error: string }) => {
 		if (payload.user) {
 			setLoading(true)
 			setUser(payload.user)
