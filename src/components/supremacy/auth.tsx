@@ -45,8 +45,9 @@ const ContentBox = styled(Box)({
 	padding: "1rem",
 	gap: "1rem",
 	alignItems: "center",
-	background: "rgba(0, 0, 0, 0.7)",
+	background: "rgba(0, 0, 0, 0.8)",
 	position: "relative",
+	zIndex: 2,
 })
 
 const wallpapers = ["/img/rm.png", "/img/bc.png", "/img/zai.png"]
@@ -70,6 +71,7 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 					padding: "50px 50px 20px 50px",
 					flex: 1,
 					display: "flex",
+
 					"@media (max-width:600px)": {
 						p: "2em 1em",
 					},
@@ -77,8 +79,21 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 			>
 				<ContentBox>
 					<Typography component="h1">{title ? title : "Connect"}</Typography>
-					<Box component="img" sx={{ width: "50px" }} src={"/img/sups_logo.svg"} alt={"Login to Supremacy"} />
-					{children}
+					<Box
+						component="img"
+						sx={{
+							width: "100%",
+							height: "100%",
+							position: "absolute",
+							top: "1rem",
+							left: "50%",
+							transform: "translateX(-50%)",
+							opacity: 0.08,
+						}}
+						src={"/img/sups_logo.svg"}
+						alt={"Login to Supremacy"}
+					/>
+					<Box sx={{ position: "relative", zIndex: 2 }}>{children}</Box>
 				</ContentBox>
 			</Box>
 			<a href="https://xsyn.io" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
