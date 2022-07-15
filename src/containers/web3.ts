@@ -355,13 +355,13 @@ export const Web3Container = createContainer(() => {
 				setCurrentChainId(chainId)
 			})
 			// // Subscribe to session disconnection
-			// walletConnectProvider.on("disconnect", (code: number, reason: string) => {
-			// 	setAccount(undefined)
-			// 	setProvider(undefined)
-			// 	setWcProvider(undefined)
-			// 	setMetaMaskState(MetaMaskState.NotInstalled)
-			// 	localStorage.removeItem("token")
-			// })
+			walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+				setAccount(undefined)
+				setProvider(undefined)
+				setWcProvider(undefined)
+				setMetaMaskState(MetaMaskState.NotInstalled)
+				localStorage.removeItem("token")
+			})
 			return walletConnectProvider
 		},
 		[getNonce],

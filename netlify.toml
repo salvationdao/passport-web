@@ -25,6 +25,8 @@
   REACT_APP_LP_TOKEN_ADDRESS = "0x3d4a5844e19dbe4bb5c77eaee06e56289a0d83b1"
   REACT_APP_WRAPPED_BNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
   REACT_APP_PANCAKE_SWAP_ADDRESS = "pancakeswap.finance"
+  REACT_APP_FACEBOOK_APP_ID="558079075693199"
+  REACT_APP_GOOGLE_ID="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
   
 
 
@@ -38,3 +40,5 @@
   REACT_APP_BYPASS_WHITELIST = "false"
   REACT_APP_BATTLE_ARENA_LINK = "https://staging.supremacygame.dev"
   REACT_APP_AVANT_API_ENDPOINT = "v3-staging.supremacy-api.avantdata.com:3001"
+  REACT_APP_FACEBOOK_APP_ID="558079075693199"
+  REACT_APP_GOOGLE_ID="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"

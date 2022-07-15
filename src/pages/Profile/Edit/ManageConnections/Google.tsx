@@ -37,10 +37,9 @@ export const Google: React.FC = () => {
 					const resp = await send<User>(HubKey.UserAddGoogle, {
 						google_id: r.googleId,
 					})
-					console.log(resp)
 					setUser(resp)
 				} catch (err: any) {
-					console.log(err)
+					console.error(err)
 					displayMessage(err, "error")
 				}
 

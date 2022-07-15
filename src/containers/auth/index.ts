@@ -324,7 +324,6 @@ export const AuthContainer = createContainer(() => {
 				})
 				if (resp.error) {
 					clear()
-					console.log(resp)
 					throw resp.payload
 				}
 				return resp.payload
