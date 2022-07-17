@@ -1,3 +1,4 @@
+import { SxProps } from "@mui/material"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
@@ -8,7 +9,13 @@ import { colors } from "../theme"
 import { User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 
-export const ConnectWallet = () => {
+interface IConnectWalletProps {
+	replaceText?: string
+	setCancelAddWallet?: React.Dispatch<React.SetStateAction<boolean>>
+	sx?: SxProps
+}
+
+export const ConnectWallet: React.FC<IConnectWalletProps> = ({ replaceText, sx, setCancelAddWallet }) => {
 	const { connect, wcConnect, sign, setDisableWalletModal, wcSignature, signWalletConnect, metaMaskState } = useWeb3()
 	const { user, setUser } = useAuth()
 	const { displayMessage } = useSnackbar()
@@ -22,6 +29,7 @@ export const ConnectWallet = () => {
 		<FancyButton
 			sx={{
 				background: colors.darkNavyBackground,
+				...sx,
 			}}
 			onClick={async () => {
 				try {
@@ -51,15 +59,16 @@ export const ConnectWallet = () => {
 				} catch (err: any) {
 					console.error(err)
 					displayMessage(err.message ? err.message : err, "error")
+					setCancelAddWallet && setCancelAddWallet(true)
 				} finally {
 					setDisableWalletModal(false)
 				}
 			}}
 			title="Connect Wallet to account"
-			startIcon={metaMaskState === MetaMaskState.NotInstalled ? <WalletConnectIcon /> : <MetaMaskIcon />}
+			startIcon={replaceText ? null : metaMaskState === MetaMaskState.NotInstalled ? <WalletConnectIcon /> : <MetaMaskIcon />}
 			fullWidth
 		>
-			Connect Wallet to account
+			{replaceText ? replaceText : "	Connect Wallet to account"}
 		</FancyButton>
 	)
 }
