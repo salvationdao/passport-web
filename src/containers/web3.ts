@@ -539,20 +539,25 @@ export const Web3Container = createContainer(() => {
 	// Returns an empty string if user does not exist
 	const sign = useCallback(
 		async (userID?: string): Promise<string> => {
-			if (!provider) return ""
-			await provider.send("eth_requestAccounts", [])
-			const signer = provider.getSigner()
-			const acc = await signer.getAddress()
-			setAccount(acc)
-			let nonce: string
-			if (userID) {
-				nonce = await getNonceFromID(userID)
-			} else {
-				nonce = await getNonce(acc)
+			try {
+				if (!provider) return ""
+				await provider.send("eth_requestAccounts", [])
+				const signer = provider.getSigner()
+				const acc = await signer.getAddress()
+				setAccount(acc)
+				let nonce: string
+				if (userID) {
+					nonce = await getNonceFromID(userID)
+				} else {
+					nonce = await getNonce(acc)
+				}
+				if (nonce === "") return ""
+				const signedMessage = await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
+				return signedMessage
+			} catch (err) {
+				console.error(err)
+				return ""
 			}
-			if (nonce === "") return ""
-			const signedMessage = await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
-			return signedMessage
 		},
 		[provider, getNonce, getNonceFromID],
 	)

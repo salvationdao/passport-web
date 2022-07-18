@@ -1,12 +1,12 @@
-import { Box, LinearProgress, Modal, Stack, Typography } from "@mui/material"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
+import { Box, LinearProgress, Modal, Stack, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
+import { ConnectWallet } from "../../components/connectWallet"
 import { FancyButton } from "../../components/fancyButton"
 import { useAuth } from "../../containers/auth"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
 import { colors } from "../../theme"
-import { ConnectWallet } from "../../components/connectWallet"
 
 export const CorrectWalletConnected = () => {
 	const { logout, user } = useAuth()

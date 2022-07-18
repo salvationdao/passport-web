@@ -238,7 +238,7 @@ export const AuthContainer = createContainer(() => {
 		async (email: string, password: string, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
-					redirectURL,
+					redirect_url: redirectURL,
 					email,
 					password,
 					session_id: sessionId,
@@ -286,7 +286,7 @@ export const AuthContainer = createContainer(() => {
 		async (username: string, email: string, password: string, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
-					redirectURL,
+					redirect_url: redirectURL,
 					username,
 					email,
 					password,
@@ -327,7 +327,7 @@ export const AuthContainer = createContainer(() => {
 		async (email: string, errorCallback?: (msg: string) => void): Promise<string> => {
 			try {
 				const resp = await forgot({
-					redirectURL,
+					redirect_url: redirectURL,
 					email,
 					session_id: sessionId,
 					fingerprint,
@@ -366,7 +366,7 @@ export const AuthContainer = createContainer(() => {
 		) => {
 			try {
 				const resp = await reset({
-					redirectURL,
+					redirect_url: redirectURL,
 					new_password: password,
 					id: tokenGroup.id,
 					token: tokenGroup.token,
@@ -409,7 +409,7 @@ export const AuthContainer = createContainer(() => {
 
 			try {
 				const resp = await change({
-					redirectURL,
+					redirect_url: redirectURL,
 					user_id: user?.id,
 					password,
 					new_password: newPassword,
@@ -450,7 +450,7 @@ export const AuthContainer = createContainer(() => {
 
 			try {
 				const resp = await newPass({
-					redirectURL,
+					redirect_url: redirectURL,
 					user_id: user?.id,
 					new_password: password,
 					session_id: sessionId,
@@ -482,7 +482,7 @@ export const AuthContainer = createContainer(() => {
 		async (id: string, username: string, email: string, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
-					redirectURL,
+					redirect_url: redirectURL,
 					username,
 					email,
 					google_id: id,
@@ -532,7 +532,7 @@ export const AuthContainer = createContainer(() => {
 		async (id: string, name: string, email: string, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
-					redirectURL,
+					redirect_url: redirectURL,
 					email,
 					facebook_id: id,
 					name,
@@ -587,7 +587,7 @@ export const AuthContainer = createContainer(() => {
 		) => {
 			try {
 				const args = {
-					redirectURL: rURL,
+					redirect_url: rURL,
 					token,
 					user_id: isVerified ? user?.id : undefined,
 					passcode: isRecovery ? undefined : code,
@@ -632,7 +632,7 @@ export const AuthContainer = createContainer(() => {
 	const loginToken = useCallback(
 		async (token: string) => {
 			const args = {
-				redirectURL,
+				redirect_url: redirectURL,
 				token,
 				session_id: sessionId,
 				fingerprint: redirectURL ? undefined : fingerprint,
@@ -673,7 +673,7 @@ export const AuthContainer = createContainer(() => {
 				const signature = await sign(user ? user.id : undefined)
 				if (acc) {
 					const args = {
-						redirectURL,
+						redirect_url: redirectURL,
 						public_address: acc,
 						signature: signature,
 						session_id: sessionId,
@@ -727,7 +727,7 @@ export const AuthContainer = createContainer(() => {
 				await signWalletConnect()
 			} else {
 				const resp = await login({
-					redirectURL,
+					redirect_url: redirectURL,
 					public_address: account as string,
 					signature: wcSignature || "",
 					session_id: sessionId,
@@ -766,7 +766,7 @@ export const AuthContainer = createContainer(() => {
 	 */
 	const loginCookieExternal = useCallback(() => {
 		const args = {
-			redirectURL,
+			redirect_url: redirectURL,
 			authType: AuthTypes.Cookie,
 		}
 		if (redirectURL) {
