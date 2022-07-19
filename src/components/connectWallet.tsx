@@ -52,8 +52,8 @@ export const ConnectWallet: React.FC<IConnectWalletProps> = ({ replaceText, sx, 
 					const resp = await send<User>(HubKey.UserAddWallet, {
 						id: user.id,
 						username: user.username,
-						public_address: acc,
 						signature,
+						public_address: acc,
 					})
 					if (!resp.id) {
 						throw resp
