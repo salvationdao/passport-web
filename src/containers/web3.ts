@@ -1,6 +1,7 @@
-import WalletConnectProvider from "@walletconnect/web3-provider"
 import { MultiCall } from "@indexed-finance/multicall"
+import WalletConnectProvider from "@walletconnect/web3-provider"
 
+import { TransactionResponse } from "@ethersproject/abstract-provider"
 import { BigNumber, constants, ethers } from "ethers"
 import { formatUnits, hexlify, Interface, parseUnits } from "ethers/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -14,8 +15,8 @@ import {
 	BINANCE_CHAIN_ID,
 	BSC_SCAN_SITE,
 	BUSD_CONTRACT_ADDRESS,
-	ETH_SCAN_SITE,
 	ETHEREUM_CHAIN_ID,
+	ETH_SCAN_SITE,
 	LP_TOKEN_ADDRESS,
 	PURCHASE_ADDRESS,
 	SIGN_MESSAGE,
@@ -28,7 +29,6 @@ import { GetNonceResponse } from "../types/auth"
 import { tokenSelect } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { genericABI } from "./web3GenericABI"
-import { TransactionResponse } from "@ethersproject/abstract-provider"
 
 export interface FarmData {
 	earned: BigNumber
@@ -137,6 +137,7 @@ export const Web3Container = createContainer(() => {
 	const [loadingAmountRemaining, setLoadingAmountRemaining] = useState<boolean>(true)
 	const [wcSignature, setWcSignature] = useState<string | undefined>()
 	const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>()
+	const [disableWalletModal, setDisableWalletModal] = useState(false)
 
 	useEffect(() => {
 		if (!provider) return
@@ -280,7 +281,9 @@ export const Web3Container = createContainer(() => {
 	}, [])
 
 	const getNonceFromID = useCallback(async (userId: string): Promise<string> => {
-		const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/get-nonce?user-id=${userId}`)
+		let endpoint = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/get-nonce?user-id=${userId}`
+
+		const resp = await fetch(endpoint)
 		if (resp.status !== 200) {
 			const err = await resp.json()
 			throw (err as any).message
@@ -334,6 +337,10 @@ export const Web3Container = createContainer(() => {
 				const signMsg = ethers.utils.keccak256(convertMsg)
 				const signature = await connector.signMessage([acc, signMsg])
 				setWcSignature(signature)
+
+				// Disconnect after connecting
+				// Auth is through cookies
+				await walletConnectProvider.disconnect()
 			})
 
 			// Subscribe to accounts change
@@ -347,7 +354,7 @@ export const Web3Container = createContainer(() => {
 			walletConnectProvider.on("chainChanged", (chainId: number) => {
 				setCurrentChainId(chainId)
 			})
-			// Subscribe to session disconnection
+			// // Subscribe to session disconnection
 			walletConnectProvider.on("disconnect", (code: number, reason: string) => {
 				setAccount(undefined)
 				setProvider(undefined)
@@ -455,7 +462,7 @@ export const Web3Container = createContainer(() => {
 		return ""
 	}, [displayMessage, provider, handleAccountChange])
 
-	const wcConnect = useCallback(async (): Promise<WalletConnectProvider | undefined> => {
+	const wcConnect = useCallback(async (): Promise<string | undefined> => {
 		let walletConnectProvider
 		try {
 			walletConnectProvider = await createWcProvider()
@@ -463,7 +470,7 @@ export const Web3Container = createContainer(() => {
 			await walletConnectProvider.enable()
 			const acc = connector.accounts[0]
 			setAccount(acc)
-			return walletConnectProvider
+			return acc
 		} catch (error) {
 			await walletConnectProvider?.disconnect()
 		}
@@ -532,20 +539,25 @@ export const Web3Container = createContainer(() => {
 	// Returns an empty string if user does not exist
 	const sign = useCallback(
 		async (userID?: string): Promise<string> => {
-			if (!provider) return ""
-			await provider.send("eth_requestAccounts", [])
-			const signer = provider.getSigner()
-			const acc = await signer.getAddress()
-			setAccount(acc)
-			let nonce: string
-			if (userID) {
-				nonce = await getNonceFromID(userID)
-			} else {
-				nonce = await getNonce(acc)
+			try {
+				if (!provider) return ""
+				await provider.send("eth_requestAccounts", [])
+				const signer = provider.getSigner()
+				const acc = await signer.getAddress()
+				setAccount(acc)
+				let nonce: string
+				if (userID) {
+					nonce = await getNonceFromID(userID)
+				} else {
+					nonce = await getNonce(acc)
+				}
+				if (nonce === "") return ""
+				const signedMessage = await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
+				return signedMessage
+			} catch (err) {
+				console.error(err)
+				return ""
 			}
-			if (nonce === "") return ""
-			const signedMessage = await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
-			return signedMessage
 		},
 		[provider, getNonce, getNonceFromID],
 	)
@@ -1018,6 +1030,8 @@ export const Web3Container = createContainer(() => {
 		wcSignature,
 		signEarlyContributors,
 		signer,
+		setDisableWalletModal,
+		disableWalletModal,
 	}
 })
 

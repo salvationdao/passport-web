@@ -9,9 +9,10 @@ export interface FancyButtonProps extends LoadingButtonProps {
 	borderColor?: string | undefined
 	filled?: boolean
 	size?: ButtonSize
+	submit?: boolean
 }
 
-export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, filled, size = "medium", sx, children, ...props }) => {
+export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, filled, size = "medium", sx, children, submit, ...props }) => {
 	const theme = useTheme()
 
 	const mainColor = borderColor || theme.palette.primary.main
@@ -31,19 +32,21 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 
 	return (
 		<LoadingButton
+			type={submit ? "submit" : "button"}
+			variant="contained"
 			sx={{
 				boxSizing: "border-box",
 				position: "relative",
 				borderRadius: 0,
 				border: `2px solid ${mainColor}`,
 				textTransform: "uppercase",
-				background: filled ? borderColor : "transparent",
+				background: filled ? mainColor : "transparent",
 				color: filled ? theme.palette.background.default : "inherit",
 				a: {
-					color: theme.palette.primary.main,
+					color: mainColor,
 					textDecoration: "none",
 					"&:visited": {
-						color: theme.palette.primary.main,
+						color: mainColor,
 					},
 				},
 				"&:disabled": {
@@ -58,6 +61,7 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 					},
 				},
 				"&:hover": {
+					background: filled ? mainColor : "transparent",
 					boxShadow: `inset 0px 0px 10px ${mainColor},0px 0px 10px ${mainColor}`,
 					"& .Button-Border1": {
 						opacity: 0.4,
@@ -83,7 +87,7 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 							left: "3px",
 							width: "100%",
 							height: "100%",
-							border: `2px solid ${mainColor}`,
+							border: `2px solid ${borderColor}`,
 							opacity: 0,
 							transition: "opacity .3s ease-in",
 							pointerEvents: "none",
@@ -99,7 +103,7 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 							left: "8px",
 							width: "100%",
 							height: "100%",
-							border: `2px solid ${mainColor}`,
+							border: `2px solid ${borderColor}`,
 							opacity: 0,
 							transition: "opacity .3s ease-in",
 							pointerEvents: "none",

@@ -1,16 +1,21 @@
 import { useEffect } from "react"
-import SupremacyLogin from "./supremacy"
+import { SupremacyAuth } from "../../components/supremacy/auth"
+import { LoginForm } from "./form"
 // hard coding Supremacy logo
 
-const LoginPage = () => {
+export const LoginPage = () => {
+	
+	let Wrapper = SupremacyAuth
 	useEffect(() => {
 		window.localStorage.removeItem("walletconnect")
 	}, [])
 
 	if (window.location.search.includes("supremacy")) {
-		return <SupremacyLogin />
+		Wrapper = SupremacyAuth
 	}
-	return <SupremacyLogin />
+	return (
+		<Wrapper>
+			<LoginForm />
+		</Wrapper>
+	)
 }
-
-export default LoginPage

@@ -34,19 +34,18 @@ export const BSC_SCAN_SITE = process.env.REACT_APP_BSC_SCAN_SITE || "testnet.bsc
 
 export const ETHEREUM_CHAIN_ID = process.env.REACT_APP_ETHEREUM_CHAIN_ID || "5"
 export const BINANCE_CHAIN_ID = process.env.REACT_APP_BINANCE_CHAIN_ID || "97"
-
 export const PURCHASE_ADDRESS = process.env.REACT_APP_PURCHASE_ADDRESS || "0x7D6439fDF9B096b29b77afa28b3083c0a329c7fE"
 export const WITHDRAW_ADDRESS = process.env.REACT_APP_WITHDRAW_ADDRESS || "0x9DAcEA338E4DDd856B152Ce553C7540DF920Bb15"
 export const REDEEM_ADDRESS = process.env.REACT_APP_REDEEM_ADDRESS || "0xc01c2f6DD7cCd2B9F8DB9aa1Da9933edaBc5079E"
-
 export const WALLET_CONNECT_RPC = process.env.REACT_APP_WALLET_CONNECT_RPC || "1375aa321ac8ac6cfba6aa9c"
-
 export const SAFT_AGREEMENT_PDF = process.env.SAFT_AGREEMENT_PDF || "/09_03_22_Token_Subscription_Agreement_Wallet_Address_Signature_Sups.pdf"
-
 export const FARM_CONTRACT_ADDRESS = process.env.REACT_APP_FARM_CONTRACT_ADDRESS || "0x20034d860bf43ef6d6dded79a8d73e857e10960c"
 export const PANCAKE_POOL_ADDRESS = process.env.REACT_APP_PANCAKE_POOL_ADDRESS || "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
 export const LP_TOKEN_ADDRESS = process.env.REACT_APP_LP_TOKEN_ADDRESS || "0xd96e4e2e0b1b41cad0627431a8cda64aaa5acd01"
 export const WRAPPED_BNB_ADDRESS = process.env.REACT_APP_WRAPPED_BNB_ADDRESS || "0xae13d989dac2f0debff460ac112a837c89baa7cd"
 export const PANCAKE_SWAP_ADDRESS = process.env.REACT_APP_PANCAKE_SWAP_ADDRESS || "pancake.kiemtienonline360.com/#"
-
 export const AVANT_API_ENDPOINT = process.env.REACT_APP_AVANT_API_ENDPOINT || "v3-staging.supremacy-api.avantdata.com:3001"
+
+// oauth
+export const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_ID || ""
+export const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID || ""
