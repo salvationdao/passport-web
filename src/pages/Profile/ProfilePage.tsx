@@ -1,6 +1,6 @@
-import { Box, Paper, Stack, Tabs, Typography, Tab } from "@mui/material"
-import { useEffect, useState } from "react"
-import { Link as RouterLink, Redirect, Route, Switch, useHistory, useLocation, useParams } from "react-router-dom"
+import { Alert, Box, CircularProgress, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
+import { Link, Redirect, Route, Switch, useHistory, useLocation, useParams } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
@@ -11,10 +11,12 @@ import HubKey from "../../keys"
 import { User } from "../../types/types"
 import { Assets721 } from "./Assets/721/Assets721"
 
+import { PrivacyPolicy, TermsAndConditions } from "../../assets"
+import { colors } from "../../theme"
 import { Assets1155 } from "./Assets/1155/Assets1155"
-import { ProfileEditPage } from "./Edit/ProfileEditPage"
-import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
 import { SingleAsset1155View } from "./Assets/1155/SingleAssetView/SingleAsset1155View"
+import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
+import { ProfileEditPage } from "./Edit/ProfileEditPage"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -32,6 +34,24 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
+	const [sentVerify, setSentVerify] = useState<boolean | null>(false)
+
+	const handleSendVerify = useCallback(async () => {
+		try {
+			setSentVerify(null)
+			const resp = await send<User>(HubKey.UserVerifySend, {
+				user_agent: window.navigator.userAgent,
+			})
+
+			if (!resp.id) {
+				throw resp
+			}
+			setSentVerify(true)
+		} catch (err) {
+			console.error(err)
+			setSentVerify(false)
+		}
+	}, [send])
 
 	useEffect(() => {
 		;(async () => {
@@ -100,12 +120,49 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 							</Typography>
 						)}
 						{loggedInUser?.id === user.id && (
-							<FancyButton size="small" sx={{ width: "100%" }}>
-								<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
-							</FancyButton>
+							<Link to={`/profile/${user.username}/edit`} style={{ textDecoration: "none", color: colors.neonPink }}>
+								<FancyButton
+									size="small"
+									sx={{
+										width: "100%",
+										position: "relative",
+									}}
+								>
+									Edit Profile
+								</FancyButton>
+							</Link>
 						)}
 					</Stack>
 				</Box>
+				{!user.verified && user.email && (
+					<Alert severity={sentVerify ? "info" : "error"} sx={{ maxWidth: "600px", my: "1rem" }}>
+						{sentVerify ? (
+							"Email confirmation email sent! Please check your email."
+						) : (
+							<>
+								Please verify your email: {user.email} <br />
+								Click{" "}
+								{sentVerify === null ? (
+									<CircularProgress size="15px" sx={{ mx: ".5rem", mt: ".5rem" }} />
+								) : (
+									<Typography
+										component="span"
+										onClick={handleSendVerify}
+										sx={{
+											cursor: "pointer",
+											color: colors.darkerNeonBlue,
+											fontWeight: "bold",
+											textDecoration: "underline",
+										}}
+									>
+										here
+									</Typography>
+								)}{" "}
+								to resend a confirmation link to your email.
+							</>
+						)}
+					</Alert>
+				)}
 
 				<Paper
 					sx={{
@@ -157,6 +214,26 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 						</Route>
 					</Switch>
 				</Paper>
+				<Box
+					sx={{
+						display: "flex",
+						justifyContent: "space-between",
+						width: "100%",
+						maxWidth: "600px",
+						marginTop: "2rem",
+						"& >*": {
+							color: colors.neonPink,
+							textDecoration: "none",
+						},
+					}}
+				>
+					<Link to={PrivacyPolicy} target="_blank">
+						Privacy Policy
+					</Link>
+					<Link to={TermsAndConditions} target="_blank">
+						Terms And Conditions
+					</Link>
+				</Box>
 			</Box>
 		</Box>
 	)

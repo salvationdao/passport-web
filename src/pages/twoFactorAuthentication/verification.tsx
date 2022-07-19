@@ -1,9 +1,8 @@
 import { Box, Button, Paper, TextField, Typography } from "@mui/material"
 import { red } from "@mui/material/colors"
 import { useState } from "react"
-import HubKey from "../../keys"
-import { Logo } from "../logo"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
+import HubKey from "../../keys"
 
 export const TwoFactorAuthenticationVerification = () => {
 	const { send } = usePassportCommandsUser("/commander")
@@ -32,7 +31,6 @@ export const TwoFactorAuthenticationVerification = () => {
 				flexDirection: "column",
 			}}
 		>
-			<Logo />
 			<Paper
 				sx={{
 					padding: "1.5rem",
