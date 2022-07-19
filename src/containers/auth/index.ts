@@ -30,7 +30,6 @@ export enum AuthTypes {
 	Website = "website",
 	Cookie = "cookie",
 	Token = "token",
-	Signup = "signup",
 	Forgot = "forgot",
 	Reset = "reset",
 	ChangePassword = "change_password",
@@ -292,7 +291,7 @@ export const AuthContainer = createContainer(() => {
 					password,
 					session_id: sessionId,
 					fingerprint,
-					authType: AuthTypes.Signup,
+					authType: AuthTypes.Email,
 				}
 				if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
