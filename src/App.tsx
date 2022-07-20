@@ -41,28 +41,37 @@ const AppInner = () => {
 				<Route path="/login">
 					<LoginPage />
 				</Route>
+
 				{ENVIRONMENT === "develop" && (
-					<>
-						<Route path="/forgot-password">
-							<ForgotPassword />
-						</Route>
-						<Route path="/reset-password">
-							<ResetPassword />
-						</Route>
-						<Route path="/verify">
-							<VerifyEmail />
-						</Route>
-						<Route path="/twitter-redirect">
-							<LoginRedirect />
-						</Route>
-						<Route path="/tfa/check">
-							<TwoFactorAuthenticationCheck />
-						</Route>
-					</>
+					<Route path="/forgot-password">
+						<ForgotPassword />
+					</Route>
 				)}
-				<Route path="/">
-					<Redirect to={"/login"} />
-				</Route>
+				{ENVIRONMENT === "develop" && (
+					<Route path="/reset-password">
+						<ResetPassword />
+					</Route>
+				)}
+				{ENVIRONMENT === "develop" && (
+					<Route path="/verify">
+						<VerifyEmail />
+					</Route>
+				)}
+				{ENVIRONMENT === "develop" && (
+					<Route path="/twitter-redirect">
+						<LoginRedirect />
+					</Route>
+				)}
+				{ENVIRONMENT === "develop" && (
+					<Route path="/tfa/check">
+						<TwoFactorAuthenticationCheck />
+					</Route>
+				)}
+				{ENVIRONMENT === "develop" && (
+					<Route path="/">
+						<Redirect to={"/login"} />
+					</Route>
+				)}
 			</Switch>
 		)
 	}
