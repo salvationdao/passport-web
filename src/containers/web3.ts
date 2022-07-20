@@ -338,9 +338,8 @@ export const Web3Container = createContainer(() => {
 				const signature = await connector.signMessage([acc, signMsg])
 				setWcSignature(signature)
 
-				// Disconnect after connecting
-				// Auth is through cookies
-				await walletConnectProvider.disconnect()
+				// Delete wallet connect token
+				localStorage.removeItem("walletconnect")
 			})
 
 			// Subscribe to accounts change
