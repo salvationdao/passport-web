@@ -151,15 +151,16 @@ export const Routes = () => {
 								<VerifyEmail />
 							</Route>
 							{ENVIRONMENT === "develop" && (
-								<>
-									<Route path="/tfa/:username/setup">
-										<TwoFactorAuthenticationSetup />
-									</Route>
-									<Route path="/tfa/:username/recovery-code">
-										<TwoFactorAuthenticationRecoveryCode />
-									</Route>
-								</>
+								<Route path="/tfa/:username/setup">
+									<TwoFactorAuthenticationSetup />
+								</Route>
 							)}
+							{ENVIRONMENT === "develop" && (
+								<Route path="/tfa/:username/recovery-code">
+									<TwoFactorAuthenticationRecoveryCode />
+								</Route>
+							)}
+
 							<Route path="/signup">
 								<SignUpPage />
 							</Route>
