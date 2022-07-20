@@ -33,6 +33,7 @@ enum HubKey {
 
 	AssetList721 = "ASSET:LIST:721",
 	AssetGet721 = "ASSET:GET:721",
+	AssetRefreshMetadata721 = "ASSET:REFRESH:METADATA:721",
 	AssetList1155 = "ASSET:LIST:1155",
 	AssetGet1155 = "ASSET:GET:1155",
 
