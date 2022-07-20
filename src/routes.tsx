@@ -6,7 +6,7 @@ import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { Loading } from "./components/loading"
 import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
-import { API_ENDPOINT_HOSTNAME } from "./config"
+import { API_ENDPOINT_HOSTNAME, ENVIRONMENT } from "./config"
 import { useAuth } from "./containers/auth"
 import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
@@ -26,7 +26,6 @@ import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { LoginPage } from "./pages/login"
-import { LoginRedirect } from "./pages/login/twitterRedirect"
 import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/AssetRedirectPage"
 import { ProfilePage } from "./pages/Profile/ProfilePage"
 import { StorePage } from "./pages/Store/StorePage"
@@ -135,9 +134,6 @@ export const Routes = () => {
 				</Snackbar>
 
 				<Switch>
-					<Route path="/twitter-redirect">
-						<LoginRedirect />
-					</Route>
 					<Redirect from="/farms" to="/staking" exact />
 					<Route path="/external/login">
 						<LoginPage />
@@ -154,12 +150,16 @@ export const Routes = () => {
 							<Route path="/verify">
 								<VerifyEmail />
 							</Route>
-							<Route path="/tfa/:username/setup">
-								<TwoFactorAuthenticationSetup />
-							</Route>
-							<Route path="/tfa/:username/recovery-code">
-								<TwoFactorAuthenticationRecoveryCode />
-							</Route>
+							{ENVIRONMENT === "develop" && (
+								<>
+									<Route path="/tfa/:username/setup">
+										<TwoFactorAuthenticationSetup />
+									</Route>
+									<Route path="/tfa/:username/recovery-code">
+										<TwoFactorAuthenticationRecoveryCode />
+									</Route>
+								</>
+							)}
 							<Route path="/signup">
 								<SignUpPage />
 							</Route>
