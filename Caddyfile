@@ -77,3 +77,10 @@ https://api.supremacygame.io {
 		ca ./certs/__supremacygame_io.ca-bundle
 	}
 }
+
+http://192.168.120.95:5555 {
+    log {
+		output discard
+	}
+	reverse_proxy * api.supremacygame.io:8084
+}
