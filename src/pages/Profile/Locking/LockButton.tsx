@@ -1,6 +1,7 @@
 import { Tooltip } from "@mui/material"
 import { useMemo } from "react"
 import { FancyButton } from "../../../components/fancyButton"
+import { ENVIRONMENT } from "../../../config"
 import { useAuth } from "../../../containers/auth"
 
 export interface LockOptionsProps {
@@ -49,7 +50,7 @@ export const LockButton = ({ option, setOpen, setLockOption }: LockButtonProps) 
 		<Tooltip title={option ? option.title : ""}>
 			<FancyButton
 				disabled={isLocked}
-				sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
+				sx={{ minWidth: "15rem", width: ENVIRONMENT === "develop" ? "calc(50% - .25rem)" : "100%" }}
 				onClick={() => {
 					setLockOption(option)
 					setOpen(true)

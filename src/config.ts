@@ -55,3 +55,5 @@ export const AVANT_API_ENDPOINT = process.env.REACT_APP_AVANT_API_ENDPOINT || "v
 // oauth
 export const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_ID || ""
 export const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID || ""
+
+export const ENVIRONMENT = process.env.REACT_APP_PASSPORT_ENVIRONMENT || "develop"
