@@ -163,7 +163,7 @@ export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps
 						...rarityStyles,
 					}}
 				>
-					{getStringFromShoutingSnakeCase(tier)}
+					{getStringFromShoutingSnakeCase(tier)}{"\u00a0"}
 				</Typography>
 			</Box>
 
