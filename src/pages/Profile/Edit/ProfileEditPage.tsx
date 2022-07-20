@@ -8,6 +8,7 @@ import { useHistory, useParams } from "react-router-dom"
 import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
+import { ENVIRONMENT } from "../../../config"
 import { useAuth } from "../../../containers/auth"
 import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import HubKey from "../../../keys"
@@ -388,22 +389,24 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 							disabled={submitting}
 							sx={{ minWidth: "180px", flex: "1 0 48%" }}
 						/>
-						<InputField
-							name="email"
-							label="Email"
-							type="email"
-							fullWidth
-							control={control}
-							rules={{
-								required: changePassword && "Email must be provided if you are changing your password.",
-								pattern: {
-									value: /.+@.+\..+/,
-									message: "Invalid email address",
-								},
-							}}
-							disabled={submitting}
-							sx={{ minWidth: "180px", flex: "1 0 48%" }}
-						/>
+						{ENVIRONMENT === "develop" && (
+							<InputField
+								name="email"
+								label="Email"
+								type="email"
+								fullWidth
+								control={control}
+								rules={{
+									required: changePassword && "Email must be provided if you are changing your password.",
+									pattern: {
+										value: /.+@.+\..+/,
+										message: "Invalid email address",
+									},
+								}}
+								disabled={submitting}
+								sx={{ minWidth: "180px", flex: "1 0 48%" }}
+							/>
+						)}
 					</Box>
 					<Button
 						sx={{
@@ -421,71 +424,77 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				</Section>
 
 				{/* ------------- Manage Connections ------------------ */}
-				<Stack spacing=".5rem">
-					<Typography variant="h6">Manage Connections</Typography>
-					<Box sx={{ display: "flex", gap: "1rem" }}>
-						<Wallet />
-						<Facebook />
-						<Google />
-						<Twitter />
-					</Box>
-				</Stack>
-				{/* -------------------------- Two Factor Authentication--------------------------------- */}
-				<Stack spacing=".5rem">
-					<Typography variant="h6">Two-Factor Authentication</Typography>
+				{ENVIRONMENT === "develop" && (
+					<>
+						<Stack spacing=".5rem">
+							<Typography variant="h6">Manage Connections</Typography>
+							<Box sx={{ display: "flex", gap: "1rem" }}>
+								<Wallet />
+								<Facebook />
+								<Google />
+								<Twitter />
+							</Box>
+						</Stack>
+						{/* -------------------------- Two Factor Authentication--------------------------------- */}
+						<Stack spacing=".5rem">
+							<Typography variant="h6">Two-Factor Authentication</Typography>
 
-					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
-						<FancyButton
-							loading={loadingSetupBtn}
-							filled
-							borderColor={user.two_factor_authentication_is_set ? colors.darkGrey : undefined}
-							sx={{
-								width: "calc(50% - .25rem)",
-								fontSize: "105%",
-							}}
-							size="small"
-							onClick={async () => {
-								setLoadingSetupBtn(true)
-								if (!user.two_factor_authentication_is_set) {
-									history.push(`/tfa/${user.username}/setup`)
-									return
-								}
-							}}
-						>
-							{user.two_factor_authentication_is_set ? "Remove Two-Factor Authentication" : "Setup Two-Factor Authentication"}
-						</FancyButton>
-						<FancyButton
-							filled
-							borderColor={colors.skyBlue}
-							disabled={!user.two_factor_authentication_is_set}
-							sx={{
-								width: "calc(50% - .25rem)",
-								fontSize: "105%",
-							}}
-							size="small"
-							onClick={() => {
-								history.push(`/tfa/${user.username}/recovery-code`)
-							}}
-						>
-							Get Recovery Code
-						</FancyButton>
-					</Box>
-				</Stack>
+							<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
+								<FancyButton
+									loading={loadingSetupBtn}
+									filled
+									borderColor={user.two_factor_authentication_is_set ? colors.darkGrey : undefined}
+									sx={{
+										width: "calc(50% - .25rem)",
+										fontSize: "105%",
+									}}
+									size="small"
+									onClick={async () => {
+										setLoadingSetupBtn(true)
+										if (!user.two_factor_authentication_is_set) {
+											history.push(`/tfa/${user.username}/setup`)
+											return
+										}
+									}}
+								>
+									{user.two_factor_authentication_is_set ? "Remove Two-Factor Authentication" : "Setup Two-Factor Authentication"}
+								</FancyButton>
+								<FancyButton
+									filled
+									borderColor={colors.skyBlue}
+									disabled={!user.two_factor_authentication_is_set}
+									sx={{
+										width: "calc(50% - .25rem)",
+										fontSize: "105%",
+									}}
+									size="small"
+									onClick={() => {
+										history.push(`/tfa/${user.username}/recovery-code`)
+									}}
+								>
+									Get Recovery Code
+								</FancyButton>
+							</Box>
+						</Stack>
+					</>
+				)}
 
 				{/* -------------------------- Account admin --------------------------------- */}
 				<Stack spacing=".5rem">
 					<Typography variant="h6">Security</Typography>
 
 					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
-						<Tooltip title="Change your password">
-							<FancyButton
-								sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
-								size="small"
-								onClick={() => setOpenChangePassword(true)}
-							>
-								{user.has_password ? "Change Password" : "Set Password"}
-							</FancyButton>
-						</Tooltip>
+						{ENVIRONMENT === "develop" && (
+							<Tooltip title="Change your password">
+								<FancyButton
+									sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
+									size="small"
+									onClick={() => setOpenChangePassword(true)}
+								>
+									{user.has_password ? "Change Password" : "Set Password"}
+								</FancyButton>
+							</Tooltip>
+						)}
 						{lockOptions.map((option) => (
 							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
 						))}
