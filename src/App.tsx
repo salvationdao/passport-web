@@ -67,11 +67,9 @@ const AppInner = () => {
 						<TwoFactorAuthenticationCheck />
 					</Route>
 				)}
-				{ENVIRONMENT === "develop" && (
-					<Route path="/">
-						<Redirect to={"/login"} />
-					</Route>
-				)}
+				<Route path="/">
+					<Redirect to={"/login"} />
+				</Route>
 			</Switch>
 		)
 	}
