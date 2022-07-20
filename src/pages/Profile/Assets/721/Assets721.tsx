@@ -23,21 +23,12 @@ import {UserAsset} from "../../../../types/purchased_item"
 import {User} from "../../../../types/types"
 import WarMachine from "../../../../assets/images/WarMachine.png"
 import {Asset721ItemCard} from "./Asset721ItemCard"
-import {Autocomplete} from "@mui/lab";
-import TextField from "@mui/material/TextField";
 
 export interface FilterSortOptions {
 	sort: { column: string; direction: string }
 	showOffWorldOnly?: boolean
 	rarities: Set<string>
 }
-
-enum AssetsOn {
-	All = "ALL",
-	XSYN = "XSYN",
-	Supremacy = "SUPREMACY"
-}
-
 
 export const Assets721 = ({user, loggedInUser}: { user: User; loggedInUser: User }) => {
 	const [loading, setLoading] = useState(true)
