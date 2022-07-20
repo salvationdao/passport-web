@@ -134,6 +134,12 @@ export const AuthContainer = createContainer(() => {
 		return urlParams.get("redirectURL") || undefined
 	}, [])
 
+	const tenant = useMemo(() => {
+		const queryString = window.location.search
+		const urlParams = new URLSearchParams(queryString)
+		return urlParams.get("tenant") || undefined
+	}, [])
+
 	const [sessionId, setSessionID] = useState("")
 	const isLogoutPage = window.location.pathname.startsWith("/external/logout")
 
@@ -243,6 +249,7 @@ export const AuthContainer = createContainer(() => {
 					password,
 					session_id: sessionId,
 					fingerprint,
+					tenant,
 					authType: AuthTypes.Email,
 				}
 				if (redirectURL) {
@@ -276,7 +283,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[login, redirectURL, sessionId, fingerprint, clear, history, externalAuth],
+		[login, tenant, redirectURL, sessionId, fingerprint, clear, history, externalAuth],
 	)
 
 	/**
@@ -292,6 +299,7 @@ export const AuthContainer = createContainer(() => {
 					password,
 					session_id: sessionId,
 					fingerprint,
+					tenant,
 					authType: AuthTypes.Signup,
 				}
 				if (redirectURL) {
@@ -317,7 +325,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[login, redirectURL, sessionId, fingerprint, clear, externalAuth],
+		[login, tenant, redirectURL, sessionId, fingerprint, clear, externalAuth],
 	)
 
 	/**
@@ -489,6 +497,7 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.Google,
+					tenant,
 				}
 				if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -523,7 +532,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[google, redirectURL, sessionId, fingerprint, history, externalAuth],
+		[google, tenant, redirectURL, sessionId, fingerprint, history, externalAuth],
 	)
 	/**
 	 * Facebook login use oauth to give access to user
@@ -539,6 +548,7 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.Facebook,
+					tenant,
 				}
 				if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -570,21 +580,14 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[facebook, redirectURL, sessionId, fingerprint, externalAuth, history],
+		[facebook, tenant, redirectURL, sessionId, fingerprint, externalAuth, history],
 	)
 
 	/**
 	 * Facebook login use oauth to give access to user
 	 */
 	const twoFactorAuthLogin = useCallback(
-		async (
-			token: string | undefined,
-			code: string,
-			isRecovery: boolean,
-			rURL?: string,
-			isVerified?: boolean,
-			errorCallback?: (msg: string) => void,
-		) => {
+		async (code: string, isRecovery: boolean, token?: string, rURL?: string, isVerified?: boolean, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
 					redirect_url: rURL,
@@ -595,6 +598,7 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.TFA,
+					tenant,
 				}
 				if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -621,7 +625,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[twoFactorAuth, redirectURL, sessionId, fingerprint, externalAuth, user],
+		[twoFactorAuth, tenant, redirectURL, sessionId, fingerprint, externalAuth, user],
 	)
 
 	/**
@@ -637,6 +641,7 @@ export const AuthContainer = createContainer(() => {
 				session_id: sessionId,
 				fingerprint: redirectURL ? undefined : fingerprint,
 				authType: AuthTypes.Token,
+				tenant,
 			}
 
 			setLoading(true)
@@ -658,7 +663,7 @@ export const AuthContainer = createContainer(() => {
 				setLoading(false)
 			}
 		},
-		[redirectURL, sessionId, fingerprint, login, clear],
+		[redirectURL, tenant, sessionId, fingerprint, login, clear],
 	)
 
 	/**
@@ -679,6 +684,7 @@ export const AuthContainer = createContainer(() => {
 						session_id: sessionId,
 						fingerprint: redirectURL ? undefined : fingerprint,
 						authType: AuthTypes.Wallet,
+						tenant,
 					}
 
 					if (redirectURL) {
@@ -714,7 +720,7 @@ export const AuthContainer = createContainer(() => {
 				throw e
 			}
 		},
-		[connect, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth, history],
+		[connect, tenant, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth, history],
 	)
 	/**
 	 * Logs a User in using a Wallet Connect public address
@@ -733,6 +739,7 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.Wallet,
+					tenant,
 				})
 
 				if (!resp || resp.error || !resp.payload) {
@@ -749,7 +756,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, clear])
+	}, [wcSignature, tenant, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, clear])
 
 	// Effect
 	useEffect(() => {

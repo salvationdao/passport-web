@@ -18,6 +18,7 @@ export interface RegisterResponse {
 interface BasicLoginRequest {
 	fingerprint?: Fingerprint
 	redirect_url?: string
+	tenant?: string
 }
 
 export interface PasswordLoginRequest {

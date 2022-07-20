@@ -10,20 +10,24 @@ interface ITwoFactorAuthenticationCheckProps {
 	setVerified?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
+const searchParams = new URLSearchParams(window.location.search)
 export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationCheckProps> = ({ setVerified }) => {
 	const location = useLocation()
 	const history = useHistory()
 	const { twoFactorAuthLogin } = useAuth()
 	const [code, setCode] = useState("")
 	const [isRecovery, setIsRecovery] = useState(false)
-	const [error, setError] = useState<string>()
+	const [error, setError] = useState(searchParams.get("err"))
 
 	const tokenGroup = useMemo(() => {
-		const group = location.search.split("&redirectURL=")
-		const token = group[0].replace("?token=", "")
-		const redirectURL = group[1] || undefined
+		let token = location.search.replace("?", "").split("&redirectURL")[0].replace("token=", "")
+		const redirectURL = searchParams.get("redirectURL") || undefined
+
+		if (token) {
+			token = decodeURI(token)
+		}
 		return { redirectURL, token }
-	}, [location.search])
+	}, [location])
 
 	useEffect(() => {
 		if (!tokenGroup.token || tokenGroup.token.length === 0) {
@@ -44,7 +48,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 			try {
 				const token = !!setVerified ? undefined : tokenGroup.token
 				const redirectURL = !tokenGroup.redirectURL ? undefined : tokenGroup.redirectURL
-				await twoFactorAuthLogin.action(token, code, isRecovery, redirectURL, !!setVerified, errorCallback)
+				await twoFactorAuthLogin.action(code, isRecovery, token, redirectURL, !!setVerified, errorCallback)
 				if (setVerified) {
 					setVerified(true)
 				}
