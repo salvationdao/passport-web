@@ -110,13 +110,9 @@ export const TransferModal = ({ open, onClose, onSuccess, userAsset }: ServiceTr
 						gap: "1rem",
 					}}
 				>
-						<FancyButton
-							tooltip={"XSYN currently unavailable"}
-							borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
-							loading={loading}
-						>
-							Pay with XSYN (coming soon)
-						</FancyButton>
+					<FancyButton tooltip={"XSYN currently unavailable"} borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"} loading={loading}>
+						Pay with XSYN (coming soon)
+					</FancyButton>
 
 					<FancyButton
 						id="pay_with_sups"
@@ -137,34 +133,34 @@ export const TransferModal = ({ open, onClose, onSuccess, userAsset }: ServiceTr
 						Pay with SUPS
 					</FancyButton>
 				</Box>
-					<FancyButton
-						tooltip={feeType ? "" : "Select a payment method"}
-						fullWidth
-						borderColor={!!feeType ? undefined : "#6b6b6b"}
-						loading={loading}
-						sx={{
-							span: {
-								color: colors.neonBlue,
-							},
-						}}
-						onClick={async () => {
-							if (!feeType) return
-							if (userAsset.locked_to_service_name) {
-								await transferFromSupremacy()
-								return
-							}
-							await transferToSupremacy()
-						}}
-					>
-						Confirm transfer{" "}
-						{feeType === "SUPS" ? (
-							<>
-								&nbsp;<span>5</span>&nbsp; sups gas
-							</>
-						) : (
-							<></>
-						)}
-					</FancyButton>
+				<FancyButton
+					tooltip={feeType ? "" : "Select a payment method"}
+					fullWidth
+					borderColor={!!feeType ? undefined : "#6b6b6b"}
+					loading={loading}
+					sx={{
+						span: {
+							color: colors.neonBlue,
+						},
+					}}
+					onClick={async () => {
+						if (!feeType) return
+						if (userAsset.locked_to_service_name) {
+							await transferFromSupremacy()
+							return
+						}
+						await transferToSupremacy()
+					}}
+				>
+					Confirm transfer{" "}
+					{feeType === "SUPS" ? (
+						<>
+							&nbsp;<span>5</span>&nbsp; sups gas
+						</>
+					) : (
+						<></>
+					)}
+				</FancyButton>
 
 				{error && <Typography sx={{ mt: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
 			</DialogActions>

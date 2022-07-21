@@ -139,16 +139,15 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 							/>
 						</Stack>
 					</Stack>
-
 					<Stack direction="row" justifyContent="center" alignItems="center" spacing="1rem" sx={{ pt: "1rem" }}>
-							<FancyButton
-								tooltip={"XSYN currently unavailable"}
-								borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
-								loading={loading}
-								sx={{ flex: 1 }}
-							>
-								Pay with XSYN (Coming soon)
-							</FancyButton>
+						<FancyButton
+							tooltip={"XSYN currently unavailable"}
+							borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
+							loading={loading}
+							sx={{ flex: 1 }}
+						>
+							Pay with XSYN (Coming soon)
+						</FancyButton>
 						<FancyButton
 							borderColor={feeType === "SUPS" ? undefined : "#6b6b6b"}
 							loading={loading}
@@ -168,37 +167,36 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 							Pay with SUPS
 						</FancyButton>
 					</Stack>
-
-\						<FancyButton
-							tooltip={feeType ? "" : "Select a payment method"}
-							disabled={!!error && !!formError}
-							borderColor={!!feeType && !error && !formError ? undefined : "#6b6b6b"}
-							loading={loading}
-							sx={{
-								py: "1rem",
-								span: {
-									color: colors.neonBlue,
-								},
-							}}
-							onClick={async () => {
-								if (!feeType && !error && !formError) return
-								if (userAsset.service_name_locked_in) {
-									await transferFromSupremacy()
-									return
-								}
-								await transferToSupremacy()
-							}}
-						>
-							Confirm transfer{" "}
-							{feeType === "SUPS" ? (
-								<>
-									&nbsp;<span>5</span>&nbsp; sups gas
-								</>
-							) : (
-								<></>
-							)}
-						</FancyButton>
-
+					\{" "}
+					<FancyButton
+						tooltip={feeType ? "" : "Select a payment method"}
+						disabled={!!error && !!formError}
+						borderColor={!!feeType && !error && !formError ? undefined : "#6b6b6b"}
+						loading={loading}
+						sx={{
+							py: "1rem",
+							span: {
+								color: colors.neonBlue,
+							},
+						}}
+						onClick={async () => {
+							if (!feeType && !error && !formError) return
+							if (userAsset.service_name_locked_in) {
+								await transferFromSupremacy()
+								return
+							}
+							await transferToSupremacy()
+						}}
+					>
+						Confirm transfer{" "}
+						{feeType === "SUPS" ? (
+							<>
+								&nbsp;<span>5</span>&nbsp; sups gas
+							</>
+						) : (
+							<></>
+						)}
+					</FancyButton>
 					{error && <Typography sx={{ mt: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
 				</Stack>
 			</DialogActions>

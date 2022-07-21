@@ -1,27 +1,18 @@
-import {
-	Box,
-	FormControl,
-	InputLabel,
-	MenuItem,
-	Pagination,
-	Select,
-	Stack,
-	Typography
-} from "@mui/material"
-import {useEffect, useState} from "react"
-import {useHistory} from "react-router-dom"
-import {FancyButton} from "../../../../components/fancyButton"
-import {PageSizeSelectionInput} from "../../../../components/pageSizeSelectionInput"
-import {SearchBar} from "../../../../components/searchBar"
-import {useDebounce} from "../../../../hooks/useDebounce"
-import {usePagination} from "../../../../hooks/usePagination"
-import {usePassportCommandsUser} from "../../../../hooks/usePassport"
+import { Box, FormControl, InputLabel, MenuItem, Pagination, Select, Stack, Typography } from "@mui/material"
+import { useEffect, useState } from "react"
+import { useHistory } from "react-router-dom"
+import { FancyButton } from "../../../../components/fancyButton"
+import { PageSizeSelectionInput } from "../../../../components/pageSizeSelectionInput"
+import { SearchBar } from "../../../../components/searchBar"
+import { useDebounce } from "../../../../hooks/useDebounce"
+import { usePagination } from "../../../../hooks/usePagination"
+import { usePassportCommandsUser } from "../../../../hooks/usePassport"
 import HubKey from "../../../../keys"
-import {colors} from "../../../../theme"
-import {UserAsset} from "../../../../types/purchased_item"
-import {User} from "../../../../types/types"
+import { colors } from "../../../../theme"
+import { UserAsset } from "../../../../types/purchased_item"
+import { User } from "../../../../types/types"
 import WarMachine from "../../../../assets/images/WarMachine.png"
-import {Asset721ItemCard} from "./Asset721ItemCard"
+import { Asset721ItemCard } from "./Asset721ItemCard"
 
 export interface FilterSortOptions {
 	sort: { column: string; direction: string }
@@ -29,25 +20,17 @@ export interface FilterSortOptions {
 	rarities: Set<string>
 }
 
-export const Assets721 = ({user, loggedInUser}: { user: User; loggedInUser: User }) => {
+export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: User }) => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string>()
-	const {send} = usePassportCommandsUser("/commander")
+	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 
 	// Collection data
 	const [search, setSearch] = useDebounce("", 300)
 	const [assetsOn, setAssetsOn] = useState<string>("ALL")
 	const [assetType, setAssetType] = useState<string>("all")
-	const {
-		page,
-		changePage,
-		totalItems,
-		setTotalItems,
-		totalPages,
-		pageSize,
-		setPageSize,
-	} = usePagination({pageSize: 20, page: 1})
+	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({ pageSize: 20, page: 1 })
 	const [userAssets, setUserAssets] = useState<UserAsset[]>([])
 
 	useEffect(() => {
@@ -76,20 +59,22 @@ export const Assets721 = ({user, loggedInUser}: { user: User; loggedInUser: User
 	}, [user, search, page, pageSize, setLoading, send, setUserAssets, setTotalItems, setError, assetsOn, assetType])
 
 	return (
-		<Box sx={{
-			display: "flex",
-			flexDirection: "column",
-			flex: 1,
-			gap: "1rem",
-			padding: "1rem",
-			overflow: "auto",
-		}}>
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				flex: 1,
+				gap: "1rem",
+				padding: "1rem",
+				overflow: "auto",
+			}}
+		>
 			<Box
 				sx={{
 					display: "flex",
 					flexDirection: "row",
 					flexWrap: "wrap",
-					gap:'1rem'
+					gap: "1rem",
 				}}
 			>
 				<SearchBar
@@ -100,41 +85,59 @@ export const Assets721 = ({user, loggedInUser}: { user: User; loggedInUser: User
 					onChange={(value: string) => setSearch(value)}
 					sx={{
 						flex: 1,
-						minWidth: '400px'
+						minWidth: "400px",
 					}}
 				/>
-				<FormControl size="small" variant="filled" sx={{ minWidth: "200px", flex: 1}}>
+				<FormControl size="small" variant="filled" sx={{ minWidth: "200px", flex: 1 }}>
 					<InputLabel>Asset Type</InputLabel>
 					<Select
 						value={assetType}
-						onChange={( e)=> {
+						onChange={(e) => {
 							setAssetType(e.target.value)
-						}
-						}
+						}}
 						label="Assets On"
 					>
-						<MenuItem key={"all"} value={"all"}>All</MenuItem>
-						<MenuItem key={"mech"} value={"mech"}>War Machine</MenuItem>
-						<MenuItem key={"mech_skin"} value={"mech_skin"}>War Machine Submodel</MenuItem>
-						<MenuItem key={"mystery_crate"} value={"mystery_crate"}>Crate</MenuItem>
-						<MenuItem key={"power_core"} value={"power_core"}>Energy Core</MenuItem>
-						<MenuItem key={"weapon"} value={"weapon"}>Weapon</MenuItem>
-						<MenuItem key={"weapon_skin"} value={"weapon_skin"}>Weapon Submodel</MenuItem>
+						<MenuItem key={"all"} value={"all"}>
+							All
+						</MenuItem>
+						<MenuItem key={"mech"} value={"mech"}>
+							War Machine
+						</MenuItem>
+						<MenuItem key={"mech_skin"} value={"mech_skin"}>
+							War Machine Submodel
+						</MenuItem>
+						<MenuItem key={"mystery_crate"} value={"mystery_crate"}>
+							Crate
+						</MenuItem>
+						<MenuItem key={"power_core"} value={"power_core"}>
+							Energy Core
+						</MenuItem>
+						<MenuItem key={"weapon"} value={"weapon"}>
+							Weapon
+						</MenuItem>
+						<MenuItem key={"weapon_skin"} value={"weapon_skin"}>
+							Weapon Submodel
+						</MenuItem>
 					</Select>
 				</FormControl>
-				<FormControl size="small" variant="filled" sx={{ minWidth: "200px", flex: 1}}>
+				<FormControl size="small" variant="filled" sx={{ minWidth: "200px", flex: 1 }}>
 					<InputLabel>Assets On</InputLabel>
 					<Select
 						value={assetsOn}
-						onChange={( e)=> {
+						onChange={(e) => {
 							setAssetsOn(e.target.value)
-						}
-					}
+						}}
 						label="Assets On"
 					>
-						<MenuItem key={"ALL"} value={"ALL"}>ALL</MenuItem>
-						<MenuItem key={"XSYN"} value={"XSYN"}>XSYN</MenuItem>
-						<MenuItem key={"SUPREMACY"} value={"SUPREMACY"}>SUPREMACY</MenuItem>
+						<MenuItem key={"ALL"} value={"ALL"}>
+							ALL
+						</MenuItem>
+						<MenuItem key={"XSYN"} value={"XSYN"}>
+							XSYN
+						</MenuItem>
+						<MenuItem key={"SUPREMACY"} value={"SUPREMACY"}>
+							SUPREMACY
+						</MenuItem>
 					</Select>
 				</FormControl>
 			</Box>
@@ -148,7 +151,7 @@ export const Assets721 = ({user, loggedInUser}: { user: User; loggedInUser: User
 					}}
 				>
 					{userAssets.map((a) => {
-						return <Asset721ItemCard key={a.id} userAsset={a} username={user.username}/>
+						return <Asset721ItemCard key={a.id} userAsset={a} username={user.username} />
 					})}
 				</Box>
 			) : (
@@ -196,18 +199,22 @@ export const Assets721 = ({user, loggedInUser}: { user: User; loggedInUser: User
 									zIndex: 1,
 								}}
 							/>
-							<Stack alignItems="center" sx={{zIndex: 2}}>
-								<Typography variant="body1" sx={{
-									textTransform: "uppercase",
-									fontSize: "1.3rem",
-									textAlign: "center",
-								}}>
+							<Stack alignItems="center" sx={{ zIndex: 2 }}>
+								<Typography
+									variant="body1"
+									sx={{
+										textTransform: "uppercase",
+										fontSize: "1.3rem",
+										textAlign: "center",
+									}}
+								>
 									Inventory Is Empty
 								</Typography>
-								{loggedInUser.id === user.id && <FancyButton size="small" sx={{p: "0.5rem 2rem"}}
-																			 onClick={() => history.push("/store")}>
-									Go To Store
-								</FancyButton>}
+								{loggedInUser.id === user.id && (
+									<FancyButton size="small" sx={{ p: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
+										Go To Store
+									</FancyButton>
+								)}
 							</Stack>
 						</Stack>
 					)}
@@ -222,10 +229,10 @@ export const Assets721 = ({user, loggedInUser}: { user: User; loggedInUser: User
 					justifyContent: "space-between",
 					alignItems: "center",
 					marginTop: "auto",
-
-				}}>
+				}}
+			>
 				<Stack>
-					<Typography sx={{ml: ".2rem"}}>
+					<Typography sx={{ ml: ".2rem" }}>
 						Showing {userAssets ? userAssets.length : 0} of {totalItems}
 					</Typography>
 					<Select
@@ -234,7 +241,7 @@ export const Assets721 = ({user, loggedInUser}: { user: User; loggedInUser: User
 							setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
 							changePage(1)
 						}}
-						input={<PageSizeSelectionInput/>}
+						input={<PageSizeSelectionInput />}
 					>
 						<MenuItem value={5}>Display 5 results per page</MenuItem>
 						<MenuItem value={10}>Display 10 results per page</MenuItem>

@@ -4,10 +4,10 @@ import { ethers } from "ethers"
 import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { SwitchNetworkButton } from "../../../../../../components/switchNetwortButton"
-import {API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID} from "../../../../../../config"
+import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../../../../../config"
 import { useWeb3 } from "../../../../../../containers/web3"
 import { metamaskErrorHandling } from "../../../../../../helpers/web3"
-import {OnChainStatus, UserAsset} from "../../../../../../types/purchased_item"
+import { OnChainStatus, UserAsset } from "../../../../../../types/purchased_item"
 import { Collection } from "../../../../../../types/types"
 import { lock_endpoint } from "../SingleAsset721View"
 
@@ -23,7 +23,6 @@ interface GetSignatureResponse {
 	messageSignature: string
 	expiry: number
 }
-
 
 export const UnstakeModal = ({ open, onClose, asset, collection, reloadAsset }: UnstakeModalProps) => {
 	const { account, provider, currentChainId, changeChain } = useWeb3()
@@ -56,7 +55,7 @@ export const UnstakeModal = ({ open, onClose, asset, collection, reloadAsset }: 
 					return
 				}
 
-				const respJson = await resp.json() as GetSignatureResponse
+				const respJson = (await resp.json()) as GetSignatureResponse
 				const tx = await unstakeContract.signedUnstake(collection.mint_contract, asset.token_id, respJson.messageSignature, respJson.expiry)
 				await tx.wait()
 			}
@@ -79,7 +78,6 @@ export const UnstakeModal = ({ open, onClose, asset, collection, reloadAsset }: 
 			setUnstakingLoading(false)
 		}
 	}, [provider, asset, account, collection, reloadAsset])
-
 
 	return (
 		<Dialog

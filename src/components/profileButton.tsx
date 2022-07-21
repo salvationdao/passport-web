@@ -41,17 +41,17 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({ size = "3rem", sx,
 				},
 				"&:disabled": {
 					"&:hover .Avatar": {
-                        transform: "none"
-                    },
+						transform: "none",
+					},
 					"&:hover .Avatar-border": {
-                        transform: "translate(-50%, -50%)"
-                    },
+						transform: "translate(-50%, -50%)",
+					},
 					"&:active .Avatar": {
-                        transform: "none"
-                    },
+						transform: "none",
+					},
 					"&:active .Avatar-border": {
-                        transform: "translate(-50%, -50%)"
-                    },
+						transform: "translate(-50%, -50%)",
+					},
 				},
 				...sx,
 			}}

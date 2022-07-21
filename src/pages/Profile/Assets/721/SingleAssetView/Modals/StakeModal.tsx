@@ -17,7 +17,7 @@ interface StakeModelProps {
 	open: boolean
 	onClose: () => void
 	asset: UserAsset
-	reloadAsset: ()=> void
+	reloadAsset: () => void
 }
 
 export const StakeModal = ({ open, onClose, asset, collection, reloadAsset }: StakeModelProps) => {

@@ -1,33 +1,33 @@
-import {Alert, Box, CircularProgress, Paper, Stack, Tab, Tabs, Typography} from "@mui/material"
-import {useCallback, useEffect, useState} from "react"
-import {Link, Redirect, Route, Switch, useHistory, useLocation, useParams} from "react-router-dom"
-import {FancyButton} from "../../components/fancyButton"
-import {Navbar} from "../../components/home/navbar"
-import {Loading} from "../../components/loading"
-import {ProfileButton} from "../../components/profileButton"
-import {useAuth} from "../../containers/auth"
-import {usePassportCommandsUser} from "../../hooks/usePassport"
+import { Alert, Box, CircularProgress, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
+import { Link, Redirect, Route, Switch, useHistory, useLocation, useParams } from "react-router-dom"
+import { FancyButton } from "../../components/fancyButton"
+import { Navbar } from "../../components/home/navbar"
+import { Loading } from "../../components/loading"
+import { ProfileButton } from "../../components/profileButton"
+import { useAuth } from "../../containers/auth"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
-import {User} from "../../types/types"
-import {Assets721} from "./Assets/721/Assets721"
-import {colors} from "../../theme"
-import {Assets1155} from "./Assets/1155/Assets1155"
-import {SingleAsset1155View} from "./Assets/1155/SingleAssetView/SingleAsset1155View"
-import {SingleAsset721View} from "./Assets/721/SingleAssetView/SingleAsset721View"
-import {ProfileEditPage} from "./Edit/ProfileEditPage"
+import { User } from "../../types/types"
+import { Assets721 } from "./Assets/721/Assets721"
+import { colors } from "../../theme"
+import { Assets1155 } from "./Assets/1155/Assets1155"
+import { SingleAsset1155View } from "./Assets/1155/SingleAssetView/SingleAsset1155View"
+import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
+import { ProfileEditPage } from "./Edit/ProfileEditPage"
 
 export const ProfilePage = () => {
-	const {user} = useAuth()
-	if (!user) return <Loading/>
-	return <ProfilePageInner loggedInUser={user}/>
+	const { user } = useAuth()
+	if (!user) return <Loading />
+	return <ProfilePageInner loggedInUser={user} />
 }
 
-const ProfilePageInner = ({loggedInUser}: { loggedInUser: User }) => {
+const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const location = useLocation()
 	const history = useHistory()
 
-	const {send} = usePassportCommandsUser("/commander")
-	const {username} = useParams<{ username: string }>()
+	const { send } = usePassportCommandsUser("/commander")
+	const { username } = useParams<{ username: string }>()
 	// User
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
@@ -77,7 +77,7 @@ const ProfilePageInner = ({loggedInUser}: { loggedInUser: User }) => {
 
 	if (error) return <Box>{error}</Box>
 
-	if (!user) return <Loading text={loadingText}/>
+	if (!user) return <Loading text={loadingText} />
 
 	return (
 		<Box
@@ -88,41 +88,44 @@ const ProfilePageInner = ({loggedInUser}: { loggedInUser: User }) => {
 				height: "100%",
 			}}
 		>
-			<Navbar header={<Box
-				sx={{
-					// p: "2rem",
-					display: "flex",
-					gap: "1rem",
-					flexDirection: "row",
-					marginBottom: "0.5rem",
-				}}
-			>
-				<Box>{loggedInUser?.id === user.id && <ProfileButton size="5rem" disabled sx={{mb: "1rem"}}/>}</Box>
-				<Stack gap={"1rem"}>
-					<Typography variant="h3" marginBottom={"0.5rem"}>
-						{user.username}
-					</Typography>
-					{loggedInUser?.username === user.username && (user.first_name || user.last_name) && (
-						<Typography variant="subtitle2">
-							{user.first_name} {user.last_name}
-						</Typography>
-					)}
-					{loggedInUser?.id === user.id && (
-						<Link to={`/profile/${user.username}/edit`}
-							  style={{textDecoration: "none", color: colors.neonPink}}>
-							<FancyButton
-								size="small"
-								sx={{
-									width: "100%",
-									position: "relative",
-								}}
-							>
-								Edit Profile
-							</FancyButton>
-						</Link>
-					)}
-				</Stack>
-			</Box>}/>
+			<Navbar
+				header={
+					<Box
+						sx={{
+							// p: "2rem",
+							display: "flex",
+							gap: "1rem",
+							flexDirection: "row",
+							marginBottom: "0.5rem",
+						}}
+					>
+						<Box>{loggedInUser?.id === user.id && <ProfileButton size="5rem" disabled sx={{ mb: "1rem" }} />}</Box>
+						<Stack gap={"1rem"}>
+							<Typography variant="h3" marginBottom={"0.5rem"}>
+								{user.username}
+							</Typography>
+							{loggedInUser?.username === user.username && (user.first_name || user.last_name) && (
+								<Typography variant="subtitle2">
+									{user.first_name} {user.last_name}
+								</Typography>
+							)}
+							{loggedInUser?.id === user.id && (
+								<Link to={`/profile/${user.username}/edit`} style={{ textDecoration: "none", color: colors.neonPink }}>
+									<FancyButton
+										size="small"
+										sx={{
+											width: "100%",
+											position: "relative",
+										}}
+									>
+										Edit Profile
+									</FancyButton>
+								</Link>
+							)}
+						</Stack>
+					</Box>
+				}
+			/>
 			<Box
 				sx={{
 					display: "flex",
@@ -132,17 +135,16 @@ const ProfilePageInner = ({loggedInUser}: { loggedInUser: User }) => {
 					alignItems: "center",
 				}}
 			>
-
 				{!user.verified && user.email && (
-					<Alert severity={sentVerify ? "info" : "error"} sx={{maxWidth: "600px", my: "1rem"}}>
+					<Alert severity={sentVerify ? "info" : "error"} sx={{ maxWidth: "600px", my: "1rem" }}>
 						{sentVerify ? (
 							"Email confirmation email sent! Please check your email."
 						) : (
 							<>
-								Please verify your email: {user.email} <br/>
+								Please verify your email: {user.email} <br />
 								Click{" "}
 								{sentVerify === null ? (
-									<CircularProgress size="15px" sx={{mx: ".5rem", mt: ".5rem"}}/>
+									<CircularProgress size="15px" sx={{ mx: ".5rem", mt: ".5rem" }} />
 								) : (
 									<Typography
 										component="span"
@@ -176,16 +178,16 @@ const ProfilePageInner = ({loggedInUser}: { loggedInUser: User }) => {
 				>
 					<Switch>
 						<Route exact path="/profile/:username/asset/:asset_hash">
-							<SingleAsset721View edit={loggedInUser?.id === user.id}/>
+							<SingleAsset721View edit={loggedInUser?.id === user.id} />
 						</Route>
 						<Route exact path="/profile/:username/asset1155/:collection_slug/:token_id/:locked">
-							<SingleAsset1155ViewPage edit={loggedInUser?.id === user.id} ownerID={user.id}/>
+							<SingleAsset1155ViewPage edit={loggedInUser?.id === user.id} ownerID={user.id} />
 						</Route>
 						<Route>
 							<Tabs
 								value={location.pathname}
 								sx={{
-									".MuiTab-root": {px: "2rem", py: "1.2rem"},
+									".MuiTab-root": { px: "2rem", py: "1.2rem" },
 									borderBottom: 1,
 									borderColor: "divider",
 								}}
@@ -193,21 +195,21 @@ const ProfilePageInner = ({loggedInUser}: { loggedInUser: User }) => {
 									history.push(newValue)
 								}}
 							>
-								<Tab label="GAME ASSETS" value={`/profile/${username}/game-assets`}/>
-								<Tab label="ACHIEVEMENTS" value={`/profile/${username}/achievements`}/>
+								<Tab label="GAME ASSETS" value={`/profile/${username}/game-assets`} />
+								<Tab label="ACHIEVEMENTS" value={`/profile/${username}/achievements`} />
 							</Tabs>
 							<Switch>
 								<Route path={`/profile/${username}/game-assets`}>
-									<Assets721 user={user} loggedInUser={loggedInUser}/>
+									<Assets721 user={user} loggedInUser={loggedInUser} />
 								</Route>
 								<Route path={`/profile/${username}/achievements`}>
-									<Assets1155 user={user} loggedInUser={loggedInUser}/>
+									<Assets1155 user={user} loggedInUser={loggedInUser} />
 								</Route>
 								<Route path={`/profile/${username}/edit`}>
-									<ProfileEditPage/>
+									<ProfileEditPage />
 								</Route>
 								<Route>
-									<Redirect to={`/profile/${username || user.username}/game-assets`}/>
+									<Redirect to={`/profile/${username || user.username}/game-assets`} />
 								</Route>
 							</Switch>
 						</Route>
@@ -223,12 +225,8 @@ interface SingleAsset1155ViewPageProps {
 	ownerID: string
 }
 
-const SingleAsset1155ViewPage = ({edit, ownerID}: SingleAsset1155ViewPageProps) => {
-	const {
-		collection_slug,
-		token_id,
-		locked
-	} = useParams<{ collection_slug: string; token_id: string; locked: string }>()
+const SingleAsset1155ViewPage = ({ edit, ownerID }: SingleAsset1155ViewPageProps) => {
+	const { collection_slug, token_id, locked } = useParams<{ collection_slug: string; token_id: string; locked: string }>()
 
 	return (
 		<SingleAsset1155View

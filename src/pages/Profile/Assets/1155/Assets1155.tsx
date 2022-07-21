@@ -1,45 +1,33 @@
-import {Box, MenuItem, Pagination, Select, Stack, Typography} from "@mui/material"
-import {useEffect, useState} from "react"
-import {useHistory, useParams} from "react-router-dom"
-import {FancyButton} from "../../../../components/fancyButton"
-import {PageSizeSelectionInput} from "../../../../components/pageSizeSelectionInput"
-import {usePagination} from "../../../../hooks/usePagination"
-import {usePassportCommandsUser} from "../../../../hooks/usePassport"
+import { Box, MenuItem, Pagination, Select, Stack, Typography } from "@mui/material"
+import { useEffect, useState } from "react"
+import { useHistory, useParams } from "react-router-dom"
+import { FancyButton } from "../../../../components/fancyButton"
+import { PageSizeSelectionInput } from "../../../../components/pageSizeSelectionInput"
+import { usePagination } from "../../../../hooks/usePagination"
+import { usePassportCommandsUser } from "../../../../hooks/usePassport"
 import HubKey from "../../../../keys"
-import {colors} from "../../../../theme"
-import {User1155Asset} from "../../../../types/purchased_item"
-import {User} from "../../../../types/types"
+import { colors } from "../../../../theme"
+import { User1155Asset } from "../../../../types/purchased_item"
+import { User } from "../../../../types/types"
 import WarMachine from "../../../../assets/images/WarMachine.png"
-import {Asset1155ItemCard} from "./Asset1155ItemCard"
-import {SingleAsset1155View} from "./SingleAssetView/SingleAsset1155View"
+import { Asset1155ItemCard } from "./Asset1155ItemCard"
+import { SingleAsset1155View } from "./SingleAssetView/SingleAsset1155View"
 
 export interface FilterSortOptions {
 	sort: { column: string; direction: string }
 }
 
-export const Assets1155 = ({user, loggedInUser}: { user: User; loggedInUser: User }) => {
+export const Assets1155 = ({ user, loggedInUser }: { user: User; loggedInUser: User }) => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string>()
-	const {send} = usePassportCommandsUser("/commander")
+	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 
 	// // Collection data
 	// const [search, setSearch] = useDebounce("", 300)
-	const {
-		page,
-		changePage,
-		totalItems,
-		setTotalItems,
-		totalPages,
-		pageSize,
-		setPageSize,
-	} = usePagination({pageSize: 20, page: 1})
+	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({ pageSize: 20, page: 1 })
 	const [userAssets, setUserAssets] = useState<User1155Asset[]>([])
-	const {
-		collection_slug,
-		token_id,
-		locked,
-	} = useParams<{ collection_slug: string; token_id: string; locked: string }>()
+	const { collection_slug, token_id, locked } = useParams<{ collection_slug: string; token_id: string; locked: string }>()
 	// Filter/Sort
 	// const [filterSortDrawerOpen, setFilterSortDrawerOpen] = useState(false)
 	// const [filterSortOptions, setFilterSortOptions] = useState<FilterSortOptions>(initialFilterSort)
@@ -81,14 +69,16 @@ export const Assets1155 = ({user, loggedInUser}: { user: User; loggedInUser: Use
 	}
 
 	return (
-		<Box sx={{
-			display: "flex",
-			flexDirection: "column",
-			flex: 1,
-			gap: "1rem",
-			padding: "1rem",
-			overflow: "auto",
-		}}>
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				flex: 1,
+				gap: "1rem",
+				padding: "1rem",
+				overflow: "auto",
+			}}
+		>
 			{userAssets && userAssets.length > 0 ? (
 				<Box
 					sx={{
@@ -98,7 +88,7 @@ export const Assets1155 = ({user, loggedInUser}: { user: User; loggedInUser: Use
 					}}
 				>
 					{userAssets.map((a) => {
-						return <Asset1155ItemCard key={a.id} userAsset={a} username={user.username}/>
+						return <Asset1155ItemCard key={a.id} userAsset={a} username={user.username} />
 					})}
 				</Box>
 			) : (
@@ -146,27 +136,30 @@ export const Assets1155 = ({user, loggedInUser}: { user: User; loggedInUser: Use
 									zIndex: 1,
 								}}
 							/>
-							<Stack alignItems="center" sx={{zIndex: 2}}>
-								<Typography variant="body1" sx={{
-									textTransform: "uppercase",
-									fontSize: "1.3rem",
-									textAlign: "center",
-								}}>
+							<Stack alignItems="center" sx={{ zIndex: 2 }}>
+								<Typography
+									variant="body1"
+									sx={{
+										textTransform: "uppercase",
+										fontSize: "1.3rem",
+										textAlign: "center",
+									}}
+								>
 									Inventory Is Empty
 								</Typography>
-								{loggedInUser.id === user.id && <FancyButton size="small" sx={{p: "0.5rem 2rem"}}
-																			 onClick={() => history.push("/store")}>
-									Go To Store
-								</FancyButton>}
+								{loggedInUser.id === user.id && (
+									<FancyButton size="small" sx={{ p: "0.5rem 2rem" }} onClick={() => history.push("/store")}>
+										Go To Store
+									</FancyButton>
+								)}
 							</Stack>
 						</Stack>
 					)}
 				</Stack>
 			)}
-			<Stack direction="row" justifyContent="space-between" alignItems="center"
-				   sx={{mt: "auto", pt: "1.5rem"}}>
+			<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: "auto", pt: "1.5rem" }}>
 				<Stack>
-					<Typography sx={{ml: ".2rem"}}>
+					<Typography sx={{ ml: ".2rem" }}>
 						Showing {userAssets ? userAssets.length : 0} of {totalItems}
 					</Typography>
 					<Select
@@ -175,7 +168,7 @@ export const Assets1155 = ({user, loggedInUser}: { user: User; loggedInUser: Use
 							setPageSize(typeof e.target.value === "number" ? e.target.value : parseInt(e.target.value))
 							changePage(1)
 						}}
-						input={<PageSizeSelectionInput/>}
+						input={<PageSizeSelectionInput />}
 					>
 						<MenuItem value={5}>Display 5 results per page</MenuItem>
 						<MenuItem value={10}>Display 10 results per page</MenuItem>

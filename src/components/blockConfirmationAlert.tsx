@@ -44,7 +44,11 @@ export const BlockConfirmationSnackbar = ({ currentConfirmation, handleFilter }:
 				<Typography color="white">
 					{`Transaction: `}
 					<Link
-						href={currentConfirmation ? `https://${currentToken.scanSite}/tx/${currentConfirmation.tx}` : `https://${currentToken.scanSite}/tx/`}
+						href={
+							currentConfirmation
+								? `https://${currentToken.scanSite}/tx/${currentConfirmation.tx}`
+								: `https://${currentToken.scanSite}/tx/`
+						}
 						target="_blank"
 					>
 						{currentConfirmation?.tx.substring(0, 12)}...

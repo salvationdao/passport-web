@@ -269,7 +269,6 @@ export const WithdrawSupsForm = ({
 
 	return (
 		<>
-
 			<Box
 				component="img"
 				src={Safe}

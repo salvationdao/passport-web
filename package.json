@@ -60,6 +60,7 @@
 		"build": "BUILD_PATH='./build/' react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
+		"format": "prettier --write src/",
 		"translate": "i18next 'src/**/*.{js,ts,tsx}'"
 	},
 	"eslintConfig": {

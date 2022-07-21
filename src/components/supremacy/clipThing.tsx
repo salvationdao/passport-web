@@ -37,9 +37,9 @@ export const ClipThing = React.forwardRef(({ children, clipSize = "1rem", border
 		} else {
 			borderStyles.padding = border.borderThickness || "1px"
 			if (border.isFancy) {
-				borderStyles.background = `transparent linear-gradient(59deg, ${border.borderColor || colors.supremacy.neonBlue} 0%, rgba(0, 0, 0, 0) 51%, ${
+				borderStyles.background = `transparent linear-gradient(59deg, ${
 					border.borderColor || colors.supremacy.neonBlue
-				} 100%) 0% 0% no-repeat padding-box`
+				} 0%, rgba(0, 0, 0, 0) 51%, ${border.borderColor || colors.supremacy.neonBlue} 100%) 0% 0% no-repeat padding-box`
 			} else {
 				borderStyles.backgroundColor = border.borderColor || colors.supremacy.neonBlue
 			}

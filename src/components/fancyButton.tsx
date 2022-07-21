@@ -1,6 +1,6 @@
-import {LoadingButton, LoadingButtonProps} from "@mui/lab"
-import {Box, Tooltip, useTheme} from "@mui/material"
-import {colors} from "../theme"
+import { LoadingButton, LoadingButtonProps } from "@mui/lab"
+import { Box, Tooltip, useTheme } from "@mui/material"
+import { colors } from "../theme"
 
 type ButtonSize = "small" | "medium" | "large"
 
@@ -13,17 +13,7 @@ export interface FancyButtonProps extends LoadingButtonProps {
 	tooltip?: string
 }
 
-export const FancyButton: React.FC<FancyButtonProps> = ({
-															fancy,
-															borderColor,
-															filled,
-															size = "medium",
-															sx,
-															children,
-															submit,
-															tooltip,
-															...props
-														}) => {
+export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, filled, size = "medium", sx, children, submit, tooltip, ...props }) => {
 	const theme = useTheme()
 
 	const mainColor = borderColor || theme.palette.primary.main

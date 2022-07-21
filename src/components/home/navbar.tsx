@@ -28,8 +28,8 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 			<Box
 				sx={{
 					flex: 1,
-					display: 'flex',
-					justifyContent: 'center'
+					display: "flex",
+					justifyContent: "center",
 				}}
 			>
 				{props.header}
