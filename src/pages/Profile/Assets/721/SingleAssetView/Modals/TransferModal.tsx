@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close"
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, Typography } from "@mui/material"
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from "@mui/material"
 import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { usePassportCommandsUser } from "../../../../../../hooks/usePassport"
@@ -110,23 +110,13 @@ export const TransferModal = ({ open, onClose, onSuccess, userAsset }: ServiceTr
 						gap: "1rem",
 					}}
 				>
-					<Tooltip title={"XSYN currently unavailable"}>
 						<FancyButton
-							disabled
+							tooltip={"XSYN currently unavailable"}
 							borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
 							loading={loading}
-							onClick={() =>
-								setFeeType((prev) => {
-									return undefined
-									// cant currently select XSYN
-									// if (prev ==="XSYN") return undefined
-									// return "XSYN"
-								})
-							}
 						>
-							Pay with XSYN (coming sooN)
+							Pay with XSYN (coming soon)
 						</FancyButton>
-					</Tooltip>
 
 					<FancyButton
 						id="pay_with_sups"
@@ -147,8 +137,8 @@ export const TransferModal = ({ open, onClose, onSuccess, userAsset }: ServiceTr
 						Pay with SUPS
 					</FancyButton>
 				</Box>
-				<Tooltip title={!feeType && "Select a payment method"}>
 					<FancyButton
+						tooltip={feeType ? "" : "Select a payment method"}
 						fullWidth
 						borderColor={!!feeType ? undefined : "#6b6b6b"}
 						loading={loading}
@@ -175,7 +165,6 @@ export const TransferModal = ({ open, onClose, onSuccess, userAsset }: ServiceTr
 							<></>
 						)}
 					</FancyButton>
-				</Tooltip>
 
 				{error && <Typography sx={{ mt: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
 			</DialogActions>

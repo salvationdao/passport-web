@@ -121,6 +121,7 @@ export const TwoFactorAuthenticationRecoveryCode: React.FC<ITwoFactorAuthenticat
 					>
 						{recoveryCode.map((rc, i) => (
 							<Typography
+								key={`recove-code-${i}`}
 								sx={{
 									background: rc.used_at ? colors.darkerGrey : colors.white,
 									p: "1em",

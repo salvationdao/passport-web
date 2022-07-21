@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close"
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, Stack, TextField, Tooltip, Typography } from "@mui/material"
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, Stack, TextField, Typography } from "@mui/material"
 import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { usePassportCommandsUser } from "../../../../../../hooks/usePassport"
@@ -141,24 +141,14 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 					</Stack>
 
 					<Stack direction="row" justifyContent="center" alignItems="center" spacing="1rem" sx={{ pt: "1rem" }}>
-						<Tooltip title={"XSYN currently unavailable"}>
 							<FancyButton
-								disabled
+								tooltip={"XSYN currently unavailable"}
 								borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
 								loading={loading}
 								sx={{ flex: 1 }}
-								onClick={() =>
-									setFeeType((prev) => {
-										return undefined
-										// cant currently select XSYN
-										// if (prev ==="XSYN") return undefined
-										// return "XSYN"
-									})
-								}
 							>
 								Pay with XSYN (Coming soon)
 							</FancyButton>
-						</Tooltip>
 						<FancyButton
 							borderColor={feeType === "SUPS" ? undefined : "#6b6b6b"}
 							loading={loading}
@@ -179,8 +169,8 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 						</FancyButton>
 					</Stack>
 
-					<Tooltip title={!feeType && "Select a payment method"}>
-						<FancyButton
+\						<FancyButton
+							tooltip={feeType ? "" : "Select a payment method"}
 							disabled={!!error && !!formError}
 							borderColor={!!feeType && !error && !formError ? undefined : "#6b6b6b"}
 							loading={loading}
@@ -208,7 +198,6 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 								<></>
 							)}
 						</FancyButton>
-					</Tooltip>
 
 					{error && <Typography sx={{ mt: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
 				</Stack>

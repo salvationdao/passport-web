@@ -5,7 +5,6 @@ import {
 	MenuItem,
 	Pagination,
 	Select,
-	SelectChangeEvent,
 	Stack,
 	Typography
 } from "@mui/material"

@@ -22,6 +22,7 @@ export const Attributes = ({ userAsset }: { userAsset: UserAsset }) => {
 							if (typeof attr.value === "string" || attr.trait_type === "date") {
 								return (
 									<Stack
+										key={`stack-${attr.trait_type}-${attr.value}%`}
 										sx={{
 											m: ".3rem",
 											px: "1.2rem",
@@ -53,6 +54,7 @@ export const Attributes = ({ userAsset }: { userAsset: UserAsset }) => {
 							if ((!attr.display_type || attr.display_type === "number") && typeof attr.value === "number") {
 								return (
 									<PercentageDisplay
+										key={`${attr.trait_type}-${attr.value}%`}
 										displayValue={`${attr.value}`}
 										percentage={0}
 										size={100}
@@ -78,6 +80,7 @@ export const Attributes = ({ userAsset }: { userAsset: UserAsset }) => {
 							if (attr.display_type === "boost_number" && typeof attr.value === "number") {
 								return (
 									<PercentageDisplay
+										key={`${attr.trait_type}-${attr.value}%`}
 										displayValue={`${attr.value}`}
 										percentage={100}
 										size={100}
@@ -95,6 +98,7 @@ export const Attributes = ({ userAsset }: { userAsset: UserAsset }) => {
 							if (attr.display_type === "boost_percentage" && typeof attr.value === "number") {
 								return (
 									<PercentageDisplay
+										key={`${attr.trait_type}-${attr.value}%`}
 										displayValue={`${attr.value}%`}
 										percentage={attr.value}
 										size={100}

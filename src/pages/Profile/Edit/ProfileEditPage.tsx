@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, styled, Tooltip, Typography } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, styled, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useHistory, useParams } from "react-router-dom"
@@ -451,8 +451,8 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 									size="small"
 									onClick={async () => {
 										setLoadingSetupBtn(true)
-										if (!user.two_factor_authentication_is_set) {
-											history.push(`/tfa/${user.username}/setup`)
+										if (!user?.two_factor_authentication_is_set) {
+											history.push(`/tfa/${user?.username}/setup`)
 											return
 										}
 									}}
@@ -469,7 +469,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 									}}
 									size="small"
 									onClick={() => {
-										history.push(`/tfa/${user.username}/recovery-code`)
+										history.push(`/tfa/${user?.username}/recovery-code`)
 									}}
 								>
 									Get Recovery Code
@@ -485,15 +485,14 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 
 					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
 						{ENVIRONMENT === "develop" && (
-							<Tooltip title="Change your password">
 								<FancyButton
+									tooltip={"Change your password"}
 									sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
 									size="small"
 									onClick={() => setOpenChangePassword(true)}
 								>
 									{user.has_password ? "Change Password" : "Set Password"}
 								</FancyButton>
-							</Tooltip>
 						)}
 						{lockOptions.map((option) => (
 							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />

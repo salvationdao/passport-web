@@ -1,7 +1,7 @@
 import { Box, CircularProgress, Typography } from "@mui/material"
 
 interface LoadingProps {
-	text?: string
+	text?: string | undefined
 }
 
 export const Loading: React.FC<LoadingProps> = ({ text }) => {
