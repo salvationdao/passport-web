@@ -16,6 +16,7 @@ interface UnstakeModalProps {
 	open: boolean
 	onClose: () => void
 	asset: UserAsset
+	reloadAsset: () => void
 }
 
 interface GetSignatureResponse {
@@ -24,7 +25,7 @@ interface GetSignatureResponse {
 }
 
 
-export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalProps) => {
+export const UnstakeModal = ({ open, onClose, asset, collection, reloadAsset }: UnstakeModalProps) => {
 	const { account, provider, currentChainId, changeChain } = useWeb3()
 	const [error, setError] = useState<string>()
 	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
@@ -46,12 +47,6 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				const signer = provider.getSigner()
 				const unstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
 				const nonce = await unstakeContract.nonces(account)
-				console.log()
-				console.log(account)
-				console.log(nonce)
-				console.log(collection.slug)
-				console.log(asset.token_id)
-				console.log()
 
 				const unstake_endpoint = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/unstake/owner_address/${account}/nonce/${nonce}/collection_slug/${collection.slug}/token_id/${asset.token_id}`
 				const resp = await fetch(unstake_endpoint)
@@ -62,7 +57,6 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				}
 
 				const respJson = await resp.json() as GetSignatureResponse
-				console.log(respJson)
 				const tx = await unstakeContract.signedUnstake(collection.mint_contract, asset.token_id, respJson.messageSignature, respJson.expiry)
 				await tx.wait()
 			}
@@ -77,13 +71,14 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				await tx.wait()
 			}
 			setUnstakingSuccess(true)
+			reloadAsset()
 		} catch (e: any) {
 			const err = metamaskErrorHandling(e)
 			err ? setError(err) : setError("Something went wrong, please try again")
 		} finally {
 			setUnstakingLoading(false)
 		}
-	}, [provider, asset, account, collection])
+	}, [provider, asset, account, collection, reloadAsset])
 
 
 	return (

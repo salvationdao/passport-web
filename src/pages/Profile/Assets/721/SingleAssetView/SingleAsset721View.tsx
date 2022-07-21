@@ -507,17 +507,18 @@ export const AssetView = ({
                     mintContract={collection.mint_contract}
                     assetExternalTokenID={userAsset.token_id}
                     collectionSlug={collection.slug}
+					reloadAsset={loadAsset}
                 />
             )}
 
             {provider && userAsset && (
-                <StakeModal collection={collection} open={stakeModalOpen} asset={userAsset}
-                            onClose={() => setStakeModalOpen(false)}/>
+                <StakeModal collection={collection} open={stakeModalOpen} asset={userAsset}  reloadAsset={loadAsset}
+							onClose={() => setStakeModalOpen(false)}/>
             )}
 
             {provider && userAsset && (
-                <UnstakeModal collection={collection} open={unstakeModalOpen} asset={userAsset}
-                              onClose={() => setUnstakeModalOpen(false)}/>
+                <UnstakeModal collection={collection} open={unstakeModalOpen} asset={userAsset}  reloadAsset={loadAsset}
+							  onClose={() => setUnstakeModalOpen(false)}/>
             )}
 
             <TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} onSuccess={loadAsset}
