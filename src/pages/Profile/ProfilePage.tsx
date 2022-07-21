@@ -5,14 +5,15 @@ import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { ProfileButton } from "../../components/profileButton"
+import { ENVIRONMENT } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
-import { User } from "../../types/types"
-import { Assets721 } from "./Assets/721/Assets721"
 import { colors } from "../../theme"
+import { User } from "../../types/types"
 import { Assets1155 } from "./Assets/1155/Assets1155"
 import { SingleAsset1155View } from "./Assets/1155/SingleAssetView/SingleAsset1155View"
+import { Assets721 } from "./Assets/721/Assets721"
 import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
 import { ProfileEditPage } from "./Edit/ProfileEditPage"
 
@@ -135,10 +136,10 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 					alignItems: "center",
 				}}
 			>
-				{!user.verified && user.email && (
+				{!user.verified && user.email && ENVIRONMENT === "develop" && (
 					<Alert severity={sentVerify ? "info" : "error"} sx={{ maxWidth: "600px", my: "1rem" }}>
 						{sentVerify ? (
-							"Email confirmation email sent! Please check your email."
+							"Email confirmation sent! Please check your email."
 						) : (
 							<>
 								Please verify your email: {user.email} <br />
