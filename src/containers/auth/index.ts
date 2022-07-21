@@ -1,27 +1,48 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Action, useMutation, useQuery } from "react-fetching-library"
+import { useHistory } from "react-router-dom"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
+import { usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
-import { LoginRequest, VerifyAccountResponse } from "../../types/auth"
+import {
+	ChangePasswordRequest,
+	FacebookLoginRequest,
+	ForgotPasswordRequest,
+	GoogleLoginRequest,
+	LoginRequest,
+	NewPasswordRequest,
+	TwoFactorAuthLoginRequest,
+	VerifyAccountResponse,
+} from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 import { useSubscription } from "../ws/useSubscription"
-import useSignup from "./signup"
+import { ResetPasswordRequest } from "./../../types/auth"
+
+export enum AuthTypes {
+	Wallet = "wallet",
+	Email = "email",
+	Hangar = "hangar",
+	Website = "website",
+	Cookie = "cookie",
+	Token = "token",
+	Signup = "signup",
+	Forgot = "forgot",
+	Reset = "reset",
+	ChangePassword = "change_password",
+	NewPassword = "new_password",
+	Google = "google",
+	Facebook = "facebook",
+	TFA = "tfa",
+}
 
 export enum VerificationType {
 	EmailVerification,
 	ForgotPassword,
-}
-
-export enum Source {
-	Hangar = "hangar",
-	Website = "website",
-	Admin = "admin",
-	Null = "",
 }
 
 const loginAction = (formValues: LoginRequest & { authType: string }): Action<User> => ({
@@ -32,10 +53,67 @@ const loginAction = (formValues: LoginRequest & { authType: string }): Action<Us
 	body: formValues,
 })
 
+const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.Forgot}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.Reset}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const changePasswordAction = (formValues: ChangePasswordRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.ChangePassword}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const newPasswordAction = (formValues: NewPasswordRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.NewPassword}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const googleLoginAction = (formValues: GoogleLoginRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.Google}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const facebookLoginAction = (formValues: FacebookLoginRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.Facebook}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const twoFactorAuthLoginAction = (formValues: TwoFactorAuthLoginRequest): Action => ({
+	method: "POST",
+	endpoint: `/auth/${AuthTypes.TFA}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
 /**
  * A Container that handles Authorisation
  */
+
 export const AuthContainer = createContainer(() => {
+	const history = useHistory()
 	const { fingerprint } = useFingerprint()
 	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
 	const [user, _setUser] = useState<User>()
@@ -44,22 +122,24 @@ export const AuthContainer = createContainer(() => {
 		_setUser(user)
 	}
 
-	const [authType, setAuthType] = useState<string>("wallet")
-
 	const [recheckAuth, setRecheckAuth] = useState(false)
 	const [authorised, setAuthorised] = useState(false)
 	const [loading, setLoading] = useState(true) // wait for loading current login state to complete first
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const [showSimulation, setShowSimulation] = useState(false)
-	const [source, setSource] = useState<Source>(Source.Null)
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
 		return urlParams.get("redirectURL") || undefined
 	}, [])
 
-	const { signUpMetamask, setSignupType, signupType } = useSignup()
+	const tenant = useMemo(() => {
+		const queryString = window.location.search
+		const urlParams = new URLSearchParams(queryString)
+		return urlParams.get("tenant") || undefined
+	}, [])
+
 	const [sessionId, setSessionID] = useState("")
 	const isLogoutPage = window.location.pathname.startsWith("/external/logout")
 
@@ -69,7 +149,17 @@ export const AuthContainer = createContainer(() => {
 		setUser(undefined)
 	}, [])
 
+	// Mutated actions
 	const { loading: loginLoading, mutate: login, error: loginError } = useMutation(loginAction)
+	const { loading: forgotPasswordLoading, mutate: forgot } = useMutation(forgotPasswordAction)
+	const { loading: resetPasswordLoading, mutate: reset } = useMutation(resetPasswordAction)
+	const { loading: changePasswordLoading, mutate: change } = useMutation(changePasswordAction)
+	const { loading: newPasswordLoading, mutate: newPass } = useMutation(newPasswordAction)
+	const { loading: googleLoginLoading, mutate: google } = useMutation(googleLoginAction)
+	const { loading: facebookLoginLoading, mutate: facebook } = useMutation(facebookLoginAction)
+	const { loading: twoFactorLoginLoading, mutate: twoFactorAuth } = useMutation(twoFactorAuthLoginAction)
+
+	// useQueries
 	const { query: logoutQuery } = useQuery(
 		{
 			method: "GET",
@@ -85,7 +175,6 @@ export const AuthContainer = createContainer(() => {
 		responseType: "json",
 		credentials: "include",
 	})
-
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
@@ -102,20 +191,6 @@ export const AuthContainer = createContainer(() => {
 			form.method = "post"
 			form.action = `https://${host || API_ENDPOINT_HOSTNAME}/api/auth/external`
 
-			switch (source) {
-				case Source.Website:
-					form.action += `?${Source.Website}=true`
-					break
-				case Source.Hangar:
-					form.action += "?isHangar=true"
-					break
-				case Source.Admin:
-					form.action += `?${Source.Admin}=true`
-					break
-				default:
-					break
-			}
-
 			Object.keys(args).forEach((key) => {
 				const hiddenField = document.createElement("input")
 				hiddenField.type = "hidden"
@@ -126,9 +201,9 @@ export const AuthContainer = createContainer(() => {
 			})
 
 			document.body.appendChild(form)
-			form.submit()
+			form.requestSubmit()
 		},
-		[source],
+		[],
 	)
 
 	/////////////////
@@ -166,29 +241,391 @@ export const AuthContainer = createContainer(() => {
 	 * Logs a User in using their email and password.
 	 */
 	const loginPassword = useCallback(
-		async (email: string, password: string) => {
+		async (email: string, password: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await login({
-					redirectURL,
+				const args = {
+					redirect_url: redirectURL,
 					email,
 					password,
 					session_id: sessionId,
 					fingerprint,
-					authType,
-				})
+					tenant,
+					authType: AuthTypes.Email,
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await login(args)
 
-				if (!resp || resp.error || !resp.payload) {
+				if (resp.error) {
 					clear()
+					throw resp.payload
+				}
+
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
 					return
 				}
 				setUser(resp.payload)
 				setAuthorised(true)
-				setLoading(false)
-			} catch (e) {
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[login, redirectURL, sessionId, fingerprint, authType, clear],
+		[login, tenant, redirectURL, sessionId, fingerprint, clear, history, externalAuth],
+	)
+
+	/**
+	 * Registers a User in using their email and password.
+	 */
+	const signupPassword = useCallback(
+		async (username: string, email: string, password: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const args = {
+					redirect_url: redirectURL,
+					username,
+					email,
+					password,
+					session_id: sessionId,
+					fingerprint,
+					tenant,
+					authType: AuthTypes.Signup,
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await login(args)
+				if (resp.error) {
+					clear()
+					throw resp.payload
+				}
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[login, tenant, redirectURL, sessionId, fingerprint, clear, externalAuth],
+	)
+
+	/**
+	 * Forgot Password sends email to the user with jwt token to reset password
+	 */
+	const forgotPassword = useCallback(
+		async (email: string, errorCallback?: (msg: string) => void): Promise<string> => {
+			try {
+				const resp = await forgot({
+					redirect_url: redirectURL,
+					email,
+					session_id: sessionId,
+					fingerprint,
+				})
+				if (resp.error) {
+					clear()
+					throw resp.payload
+				}
+				return resp.payload
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[forgot, redirectURL, sessionId, fingerprint, clear],
+	)
+
+	/**
+	 * Reset Password sends email to the user with jwt token to reset password
+	 */
+	const resetPassword = useCallback(
+		async (
+			password: string,
+			tokenGroup: {
+				id: string
+				token: string
+			},
+			errorCallback?: (msg: string) => void,
+		) => {
+			try {
+				const resp = await reset({
+					redirect_url: redirectURL,
+					new_password: password,
+					id: tokenGroup.id,
+					token: tokenGroup.token,
+					session_id: sessionId,
+					fingerprint,
+				})
+				if (resp.error) {
+					clear()
+					throw resp.payload
+				}
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[reset, redirectURL, sessionId, fingerprint, clear],
+	)
+
+	/**
+	 * Change Password resets a users password
+	 */
+	const changePassword = useCallback(
+		async (password: string, newPassword: string, errorCallback?: (msg: string) => void) => {
+			if (user && !user.id && errorCallback) {
+				errorCallback("User not authenticated.")
+				return
+			}
+
+			if (!user) return
+			if (!user.id) return
+
+			try {
+				const resp = await change({
+					redirect_url: redirectURL,
+					user_id: user?.id,
+					password,
+					new_password: newPassword,
+					session_id: sessionId,
+					fingerprint,
+				})
+
+				if (resp.error) {
+					throw resp.payload
+				}
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[change, redirectURL, sessionId, fingerprint, user],
+	)
+
+	/**
+	 * New Password sets a new password if user never set it before
+	 */
+	const newPassword = useCallback(
+		async (password: string, errorCallback?: (msg: string) => void) => {
+			if (user && !user.id && errorCallback) {
+				errorCallback("User not authenticated.")
+				return
+			}
+
+			if (!user) return
+			if (!user.id) return
+
+			try {
+				const resp = await newPass({
+					redirect_url: redirectURL,
+					user_id: user?.id,
+					new_password: password,
+					session_id: sessionId,
+					fingerprint,
+				})
+
+				if (resp.error) {
+					throw resp.payload
+				}
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[newPass, redirectURL, sessionId, fingerprint, user],
+	)
+
+	/**
+	 * Google login use oauth to give access to user
+	 */
+	const googleLogin = useCallback(
+		async (id: string, username: string, email: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const args = {
+					redirect_url: redirectURL,
+					username,
+					email,
+					google_id: id,
+					session_id: sessionId,
+					fingerprint: redirectURL ? undefined : fingerprint,
+					authType: AuthTypes.Google,
+					tenant,
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await google({
+					...args,
+				})
+
+				if (resp.error) {
+					throw resp.payload
+				}
+
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				}
+
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[google, tenant, redirectURL, sessionId, fingerprint, history, externalAuth],
+	)
+	/**
+	 * Facebook login use oauth to give access to user
+	 */
+	const facebookLogin = useCallback(
+		async (id: string, name: string, email: string, errorCallback?: (msg: string) => void) => {
+			try {
+				const args = {
+					redirect_url: redirectURL,
+					email,
+					facebook_id: id,
+					name,
+					session_id: sessionId,
+					fingerprint: redirectURL ? undefined : fingerprint,
+					authType: AuthTypes.Facebook,
+					tenant,
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await facebook(args)
+				if (resp.error) {
+					throw resp.error
+				}
+
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				}
+
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[facebook, tenant, redirectURL, sessionId, fingerprint, externalAuth, history],
+	)
+
+	/**
+	 * Facebook login use oauth to give access to user
+	 */
+	const twoFactorAuthLogin = useCallback(
+		async (code: string, isRecovery: boolean, token?: string, rURL?: string, isVerified?: boolean, errorCallback?: (msg: string) => void) => {
+			try {
+				const args = {
+					redirect_url: rURL,
+					token,
+					user_id: isVerified ? user?.id : undefined,
+					passcode: isRecovery ? undefined : code,
+					recovery_code: isRecovery ? code : undefined,
+					session_id: sessionId,
+					fingerprint: redirectURL ? undefined : fingerprint,
+					authType: AuthTypes.TFA,
+					tenant,
+				}
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+
+				const resp = await twoFactorAuth(args)
+
+				if (resp.error) {
+					throw resp.payload
+				}
+
+				setUser(resp.payload)
+				setAuthorised(true)
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[twoFactorAuth, tenant, redirectURL, sessionId, fingerprint, externalAuth, user],
 	)
 
 	/**
@@ -199,25 +636,21 @@ export const AuthContainer = createContainer(() => {
 	const loginToken = useCallback(
 		async (token: string) => {
 			const args = {
-				redirectURL,
+				redirect_url: redirectURL,
 				token,
 				session_id: sessionId,
-				fingerprint,
-				authType: "token",
-			}
-			if (redirectURL) {
-				externalAuth({ ...args, fingerprint: undefined })
-				return
+				fingerprint: redirectURL ? undefined : fingerprint,
+				authType: AuthTypes.Token,
+				tenant,
 			}
 
 			setLoading(true)
 			try {
 				const resp = await login(args)
 
-				if (!resp || resp.error || !resp.payload) {
-					console.log(resp)
+				if (resp.error) {
 					clear()
-					return
+					throw resp.payload
 				}
 				setUser(resp.payload)
 				setAuthorised(true)
@@ -230,39 +663,8 @@ export const AuthContainer = createContainer(() => {
 				setLoading(false)
 			}
 		},
-		[redirectURL, sessionId, fingerprint, externalAuth, login, clear],
+		[redirectURL, tenant, sessionId, fingerprint, login, clear],
 	)
-
-	/**
-	 * External login User with passport cookie
-	 *
-	 */
-	const loginCookieExternal = useCallback(() => {
-		let authType = ""
-		switch (source) {
-			case Source.Hangar:
-				authType = Source.Hangar
-				break
-			case Source.Website:
-				authType = Source.Website
-				break
-			case Source.Admin:
-				authType = Source.Admin
-				break
-			default:
-				authType = "cookie"
-				break
-		}
-
-		const args = {
-			redirectURL,
-			authType,
-		}
-		if (redirectURL) {
-			externalAuth({ ...args, fingerprint: undefined })
-			return
-		}
-	}, [externalAuth, redirectURL, source])
 
 	/**
 	 * Logs a User in using a Metamask public address
@@ -270,41 +672,38 @@ export const AuthContainer = createContainer(() => {
 	 * @param token Metamask public address
 	 */
 	const loginMetamask = useCallback(
-		async (source: string, host: string) => {
+		async (host: string) => {
 			try {
 				const acc = await connect()
-				const signature = await sign()
+				const signature = await sign(user ? user.id : undefined)
 				if (acc) {
 					const args = {
-						redirectURL,
+						redirect_url: redirectURL,
 						public_address: acc,
 						signature: signature,
 						session_id: sessionId,
-						fingerprint,
-						authType: "wallet",
-						source,
-						host,
+						fingerprint: redirectURL ? undefined : fingerprint,
+						authType: AuthTypes.Wallet,
+						tenant,
 					}
+
 					if (redirectURL) {
-						externalAuth({ ...args, fingerprint: undefined })
+						externalAuth({ ...args, host, fingerprint: undefined })
+						return
+					}
+					const resp = await login(args)
+
+					if (resp.error) {
+						throw resp.payload
+					}
+
+					// Check if payload contains user or jwt
+					// Check if 2FA is set
+					if (!resp.payload?.id) {
+						history.push(`/tfa/check?token=${resp.payload}`)
 						return
 					}
 
-					const resp = await login({
-						redirectURL,
-						public_address: acc,
-						signature: signature,
-						session_id: sessionId,
-						fingerprint,
-						authType: "wallet",
-					})
-
-					console.log(resp.payload)
-
-					if (!resp || resp.error || !resp.payload) {
-						clear()
-						return
-					}
 					setUser(resp.payload)
 					setAuthorised(true)
 					setLoading(false)
@@ -313,8 +712,6 @@ export const AuthContainer = createContainer(() => {
 				}
 			} catch (e: any) {
 				console.error(e)
-				clear()
-				setUser(undefined)
 				//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
 				const err = metamaskErrorHandling(e)
 				if (err) {
@@ -323,7 +720,7 @@ export const AuthContainer = createContainer(() => {
 				throw e
 			}
 		},
-		[connect, sign, redirectURL, sessionId, fingerprint, login, externalAuth, clear],
+		[connect, tenant, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth, history],
 	)
 	/**
 	 * Logs a User in using a Wallet Connect public address
@@ -336,12 +733,13 @@ export const AuthContainer = createContainer(() => {
 				await signWalletConnect()
 			} else {
 				const resp = await login({
-					redirectURL,
+					redirect_url: redirectURL,
 					public_address: account as string,
 					signature: wcSignature || "",
 					session_id: sessionId,
-					fingerprint,
-					authType,
+					fingerprint: redirectURL ? undefined : fingerprint,
+					authType: AuthTypes.Wallet,
+					tenant,
 				})
 
 				if (!resp || resp.error || !resp.payload) {
@@ -358,7 +756,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, authType, clear])
+	}, [wcSignature, tenant, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, clear])
 
 	// Effect
 	useEffect(() => {
@@ -369,6 +767,20 @@ export const AuthContainer = createContainer(() => {
 		}
 	}, [wcSignature, loginWalletConnect])
 
+	/**
+	 * External login User with passport cookie
+	 *
+	 */
+	const loginCookieExternal = useCallback(() => {
+		const args = {
+			redirect_url: redirectURL,
+			authType: AuthTypes.Cookie,
+		}
+		if (redirectURL) {
+			externalAuth({ ...args, fingerprint: undefined })
+			return
+		}
+	}, [externalAuth, redirectURL])
 	/**
 	 * Verifies a User and takes them to the next page.
 	 */
@@ -408,6 +820,32 @@ export const AuthContainer = createContainer(() => {
 		return user.role.permissions.includes(perm)
 	}
 
+	// Auth check handler
+	const handleAuthCheck = useCallback(
+		async (isTwitter?: boolean) => {
+			const resp = await authCheck()
+			if (resp.error || !resp.payload) {
+				clear()
+				setLoading(false)
+				return
+			}
+
+			if (isTwitter) {
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				}
+			}
+			// else set up user
+			setUser(resp.payload)
+			setAuthorised(true)
+			setLoading(false)
+		},
+		[authCheck, clear, history],
+	)
+
 	///////////////////
 	//  Use Effects  //
 	///////////////////
@@ -416,33 +854,12 @@ export const AuthContainer = createContainer(() => {
 	useEffect(() => {
 		try {
 			;(async () => {
-				const resp = await authCheck()
-				if (resp.error || !resp.payload) {
-					clear()
-					setLoading(false)
-					return
-				}
-				// else set up user
-				setUser(resp.payload)
-				setAuthorised(true)
-				setLoading(false)
+				await handleAuthCheck()
 			})()
 		} catch (error) {
 			console.log(error)
 		}
-	}, [authCheck, clear])
-
-	useEffect(() => {
-		const URLParam = new URLSearchParams(window.location.search)
-		let source = Source.Null
-		if (URLParam.get(Source.Hangar)) source = Source.Hangar
-		else if (URLParam.get(Source.Website)) {
-			source = Source.Website
-		} else if (URLParam.get(Source.Admin)) {
-			source = Source.Admin
-		}
-		setSource(source)
-	}, [])
+	}, [handleAuthCheck])
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
@@ -455,7 +872,8 @@ export const AuthContainer = createContainer(() => {
 	//  Container  //
 	/////////////////
 	return {
-		loginPassword,
+		loginCookieExternal,
+		handleAuthCheck,
 		loginToken,
 		loginMetamask,
 		loginWalletConnect,
@@ -465,11 +883,7 @@ export const AuthContainer = createContainer(() => {
 			loading: loginLoading,
 			error: loginError,
 		},
-		signup: {
-			signUpMetamask,
-			setSignupType,
-			signupType,
-		},
+
 		hasPermission,
 		recheckAuth,
 		user: user,
@@ -481,14 +895,45 @@ export const AuthContainer = createContainer(() => {
 		verifying,
 		verifyCompleteType,
 		setSessionID,
-		signUpMetamask,
 		sessionId,
 		showSimulation,
 		setShowSimulation,
-		authType,
-		setAuthType,
-		loginCookieExternal,
-		source,
+		signupPassword: {
+			action: signupPassword,
+			loading: loginLoading,
+		},
+		loginPassword: {
+			action: loginPassword,
+			loading: loginLoading,
+		},
+		forgotPassword: {
+			action: forgotPassword,
+			loading: forgotPasswordLoading,
+		},
+		resetPassword: {
+			action: resetPassword,
+			loading: resetPasswordLoading,
+		},
+		changePassword: {
+			action: changePassword,
+			loading: changePasswordLoading,
+		},
+		newPassword: {
+			action: newPassword,
+			loading: newPasswordLoading,
+		},
+		googleLogin: {
+			action: googleLogin,
+			loading: googleLoginLoading,
+		},
+		facebookLogin: {
+			action: facebookLogin,
+			loading: facebookLoginLoading,
+		},
+		twoFactorAuthLogin: {
+			action: twoFactorAuthLogin,
+			loading: twoFactorLoginLoading,
+		},
 	}
 })
 
@@ -510,6 +955,12 @@ export const UserUpdater = () => {
 			setUser(payload)
 		},
 	)
+
+	usePassportSubscriptionUser({ URI: "", key: keys.UserInit }, (payload) => {
+		if (!payload) {
+			window.location.reload()
+		}
+	})
 
 	return null
 }

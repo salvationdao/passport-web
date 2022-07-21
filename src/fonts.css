@@ -35,13 +35,15 @@
 }
 @font-face {
 	font-family: "bizmoextra_bold";
-	src: url("./assets/fonts/Bizmo/bizmo-extrabold-webfont.woff2") format("woff2"), url("./assets/fonts/Bizmo/bizmo-extrabold-webfont.woff") format("woff");
+	src: url("./assets/fonts/Bizmo/bizmo-extrabold-webfont.woff2") format("woff2"),
+		url("./assets/fonts/Bizmo/bizmo-extrabold-webfont.woff") format("woff");
 	font-weight: normal;
 	font-style: normal;
 }
 @font-face {
 	font-family: "bizmoextra_light";
-	src: url("./assets/fonts/Bizmo/bizmo-extralight-webfont.woff2") format("woff2"), url("./assets/fonts/Bizmo/bizmo-extralight-webfont.woff") format("woff");
+	src: url("./assets/fonts/Bizmo/bizmo-extralight-webfont.woff2") format("woff2"),
+		url("./assets/fonts/Bizmo/bizmo-extralight-webfont.woff") format("woff");
 	font-weight: normal;
 	font-style: normal;
 }
@@ -61,7 +63,8 @@
 
 @font-face {
 	font-family: "bizmosemi_bold";
-	src: url("./assets/fonts/Bizmo/bizmo-semibold-webfont.woff2") format("woff2"), url("./assets/fonts/Bizmo/bizmo-semibold-webfont.woff") format("woff");
+	src: url("./assets/fonts/Bizmo/bizmo-semibold-webfont.woff2") format("woff2"),
+		url("./assets/fonts/Bizmo/bizmo-semibold-webfont.woff") format("woff");
 	font-weight: normal;
 	font-style: normal;
 }
@@ -75,7 +78,8 @@
 
 @font-face {
 	font-family: "bizmoregular";
-	src: url("./assets/fonts/Bizmo/bizmo-regular-webfont.woff2") format("woff2"), url("./assets/fonts/Bizmo/bizmo-regular-webfont.woff") format("woff");
+	src: url("./assets/fonts/Bizmo/bizmo-regular-webfont.woff2") format("woff2"),
+		url("./assets/fonts/Bizmo/bizmo-regular-webfont.woff") format("woff");
 	font-weight: normal;
 	font-style: normal;
 }

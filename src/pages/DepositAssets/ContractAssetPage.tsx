@@ -82,7 +82,7 @@ export const ContractAssetPage = () => {
 		<Stack spacing="2rem" sx={{ height: "100%", overflowX: "hidden" }}>
 			<Navbar />
 
-			<Box sx={{ flex: 1, position: "relative", px: "3rem", py: "2rem", overflowX: "hidden"  }}>
+			<Box sx={{ flex: 1, position: "relative", px: "3rem", py: "2rem", overflowX: "hidden" }}>
 				<Stack
 					spacing=".8rem"
 					sx={{
@@ -92,7 +92,7 @@ export const ContractAssetPage = () => {
 						backgroundColor: colors.darkNavyBlue,
 						boxShadow: 3,
 						width: "100%",
-						overflow: 'auto'
+						overflow: "auto",
 					}}
 				>
 					{currentChainId && currentChainId.toString() !== ETHEREUM_CHAIN_ID && (

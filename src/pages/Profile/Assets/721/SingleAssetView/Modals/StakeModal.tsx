@@ -17,9 +17,10 @@ interface StakeModelProps {
 	open: boolean
 	onClose: () => void
 	asset: UserAsset
+	reloadAsset: () => void
 }
 
-export const StakeModal = ({ open, onClose, asset, collection }: StakeModelProps) => {
+export const StakeModal = ({ open, onClose, asset, collection, reloadAsset }: StakeModelProps) => {
 	const { account, provider, currentChainId, changeChain } = useWeb3()
 	const [error, setError] = useState<string>()
 	const [approvalLoading, setApprovalLoading] = useState<boolean>(false)
@@ -81,13 +82,14 @@ export const StakeModal = ({ open, onClose, asset, collection }: StakeModelProps
 			const tx = await nftstakeContract.stake(collection.mint_contract, asset.token_id)
 			await tx.wait()
 			setStakingSuccess(true)
+			reloadAsset()
 		} catch (e: any) {
 			const err = metamaskErrorHandling(e)
 			err ? setError(err) : setError("Something went wrong, please try again")
 		} finally {
 			setStakingLoading(false)
 		}
-	}, [provider, account, asset, collection])
+	}, [provider, account, asset, collection, reloadAsset])
 
 	return (
 		<Dialog

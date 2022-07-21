@@ -83,7 +83,7 @@ export const WithdrawSups = ({
 	return (
 		<Box
 			component="div"
-			sx={{  display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "3em", width: "100%" }}
+			sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "3em", width: "100%" }}
 		>
 			{showAgreement && <EarlySaftAgreement setReadAgreement={setReadAgreement} />}
 
@@ -102,19 +102,18 @@ export const WithdrawSups = ({
 			)}
 
 			{showWithdrawSupsForm && (
-					<WithdrawSupsForm
-						currentTransferState={currentTransferState}
-						withdrawAmount={withdrawAmount}
-						setWithdrawAmount={setWithdrawAmount}
-						setLoading={setLoading}
-						setCurrentTransferHash={setCurrentTransferHash}
-						setCurrentTransferState={setCurrentTransferState}
-						setError={setError}
-						user={user}
-						state={state}
-						send={send}
-					/>
-
+				<WithdrawSupsForm
+					currentTransferState={currentTransferState}
+					withdrawAmount={withdrawAmount}
+					setWithdrawAmount={setWithdrawAmount}
+					setLoading={setLoading}
+					setCurrentTransferHash={setCurrentTransferHash}
+					setCurrentTransferState={setCurrentTransferState}
+					setError={setError}
+					user={user}
+					state={state}
+					send={send}
+				/>
 			)}
 		</Box>
 	)

@@ -57,7 +57,7 @@ export const DepositPage = () => {
 				sx={{
 					display: "flex",
 					flex: 1,
-					m: '0 2rem 2rem 2rem',
+					m: "0 2rem 2rem 2rem",
 				}}
 			>
 				<Paper
@@ -67,11 +67,11 @@ export const DepositPage = () => {
 						flexDirection: "column",
 						alignItems: "center",
 						padding: "1rem",
-						overflow: 'auto',
+						overflow: "auto",
 						borderRadius: 1.5,
-						gap: '1rem',
-						justifyContent: 'center',
-						position: 'relative'
+						gap: "1rem",
+						justifyContent: "center",
+						position: "relative",
 					}}
 				>
 					<Box
@@ -120,7 +120,6 @@ export const DepositPage = () => {
 						/>
 					</Box>
 				</Paper>
-
 			</Box>
 		</Box>
 	)

@@ -23,6 +23,11 @@ import { LockedModal } from "./Modals/LockedModal"
 import { MintModal } from "./Modals/MintModal"
 import { TransferModal } from "./Modals/TransferModal"
 import { Attributes } from "./Attributes"
+import CachedIcon from "@mui/icons-material/Cached"
+import ArrowBackSharpIcon from "@mui/icons-material/ArrowBackSharp"
+import ArrowForwardSharpIcon from "@mui/icons-material/ArrowForwardSharp"
+import ArrowDownwardSharpIcon from "@mui/icons-material/ArrowDownwardSharp"
+import ArrowUpwardSharpIcon from "@mui/icons-material/ArrowUpwardSharp"
 
 export const lock_endpoint = (account: string, collection_slug: string, token_id: number) => {
 	return `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/owner_address/${account}/collection_slug/${collection_slug}/token_id/${token_id}`
@@ -68,6 +73,23 @@ export const SingleAsset721View = ({ edit }: SingleAsset721ViewProps) => {
 		})()
 	}, [assetHash, send])
 
+	const refreshMetadata = useCallback(() => {
+		;(async () => {
+			try {
+				setLoading(true)
+				await send(HubKey.AssetRefreshMetadata721, {
+					asset_hash: assetHash,
+				})
+				loadAsset()
+			} catch (e) {
+				console.error(e)
+				setError(typeof e === "string" ? e : "Something went wrong while fetching the item's data. Please try again later.")
+			} finally {
+				setLoading(false)
+			}
+		})()
+	}, [assetHash, send, loadAsset])
+
 	useEffect(() => {
 		loadAsset()
 	}, [loadAsset])
@@ -106,6 +128,7 @@ export const SingleAsset721View = ({ edit }: SingleAsset721ViewProps) => {
 			error={error}
 			edit={edit}
 			loadAsset={loadAsset}
+			refreshMetaData={refreshMetadata}
 		/>
 	)
 }
@@ -124,6 +147,7 @@ interface AssetViewProps {
 	onWorld: boolean
 	edit: boolean
 	loadAsset: () => void
+	refreshMetaData: () => void
 }
 
 export const AssetView = ({
@@ -140,6 +164,7 @@ export const AssetView = ({
 	showOpenseaURL,
 	edit,
 	loadAsset,
+	refreshMetaData,
 }: AssetViewProps) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	useInterval(() => setRemainingTime(formatDistanceToNow(userAsset.unlocked_at)), 1000)
@@ -156,16 +181,16 @@ export const AssetView = ({
 	useEffect(() => {
 		if (!videoDiv || !videoDiv.current) return
 		if (enlarge) {
-			videoDiv.current.pause()
+			videoDiv.current?.pause()
 		} else {
-			videoDiv.current.play()
+			videoDiv.current?.play()
 		}
 	}, [enlarge])
 
 	const Buttons = useMemo(() => {
 		if (userAsset.locked_to_service_name && !showStake) {
 			return (
-				<FancyButton size="small" onClick={() => setTransferModalOpen(true)}>
+				<FancyButton size="small" onClick={() => setTransferModalOpen(true)} startIcon={<ArrowBackSharpIcon />}>
 					Transition from {userAsset.locked_to_service_name} to XSYN
 				</FancyButton>
 			)
@@ -174,25 +199,25 @@ export const AssetView = ({
 		return (
 			<>
 				{!showStake && (
-					<FancyButton disabled={locked} size="small" onClick={() => setTransferModalOpen(true)}>
+					<FancyButton startIcon={<ArrowForwardSharpIcon />} disabled={locked} size="small" onClick={() => setTransferModalOpen(true)}>
 						Transition from XSYN to Supremacy
 					</FancyButton>
 				)}
 
 				{showStake && (
-					<FancyButton disabled={locked} size="small" onClick={() => setStakeModalOpen(true)}>
+					<FancyButton startIcon={<ArrowDownwardSharpIcon />} disabled={locked} size="small" onClick={() => setStakeModalOpen(true)}>
 						Transition On-world {locked && "(Locked)"}
 					</FancyButton>
 				)}
 
 				{showUnstake && (
-					<FancyButton disabled={locked} size="small" onClick={() => setUnstakeModalOpen(true)}>
+					<FancyButton startIcon={<ArrowUpwardSharpIcon />} disabled={locked} size="small" onClick={() => setUnstakeModalOpen(true)}>
 						Transition Off-world {locked && "(Locked)"}
 					</FancyButton>
 				)}
 
 				{showMint && (
-					<FancyButton disabled={locked} size="small" onClick={() => setMintWindowOpen(true)}>
+					<FancyButton startIcon={<ArrowUpwardSharpIcon />} disabled={locked} size="small" onClick={() => setMintWindowOpen(true)}>
 						Transition Off-world {locked && "(Locked)"}
 					</FancyButton>
 				)}
@@ -327,6 +352,10 @@ export const AssetView = ({
 							<Divider sx={{ mt: ".6rem", mb: "1rem" }} />
 
 							<Stack spacing=".5rem" alignItems="flex-start">
+								<FancyButton size="small" onClick={refreshMetaData} startIcon={<CachedIcon fontSize={"small"} />}>
+									Refresh Metadata
+								</FancyButton>
+
 								{edit && Buttons}
 							</Stack>
 						</Box>
@@ -391,13 +420,7 @@ export const AssetView = ({
 									}}
 								>
 									{showOpenseaURL && (
-										<Button
-											component={"a"}
-											href={openseaURL}
-											target="_blank"
-											rel="noopener noreferrer"
-											endIcon={<OpenInNewIcon />}
-										>
+										<Button href={openseaURL} target="_blank" rel="noopener noreferrer" startIcon={<OpenInNewIcon />}>
 											View on OpenSea
 										</Button>
 									)}
@@ -469,15 +492,28 @@ export const AssetView = ({
 					mintContract={collection.mint_contract}
 					assetExternalTokenID={userAsset.token_id}
 					collectionSlug={collection.slug}
+					reloadAsset={loadAsset}
 				/>
 			)}
 
 			{provider && userAsset && (
-				<StakeModal collection={collection} open={stakeModalOpen} asset={userAsset} onClose={() => setStakeModalOpen(false)} />
+				<StakeModal
+					collection={collection}
+					open={stakeModalOpen}
+					asset={userAsset}
+					reloadAsset={loadAsset}
+					onClose={() => setStakeModalOpen(false)}
+				/>
 			)}
 
 			{provider && userAsset && (
-				<UnstakeModal collection={collection} open={unstakeModalOpen} asset={userAsset} onClose={() => setUnstakeModalOpen(false)} />
+				<UnstakeModal
+					collection={collection}
+					open={unstakeModalOpen}
+					asset={userAsset}
+					reloadAsset={loadAsset}
+					onClose={() => setUnstakeModalOpen(false)}
+				/>
 			)}
 
 			<TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} onSuccess={loadAsset} userAsset={userAsset} />

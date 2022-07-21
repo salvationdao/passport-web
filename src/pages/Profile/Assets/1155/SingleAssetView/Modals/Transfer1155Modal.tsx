@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close"
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, Stack, TextField, Tooltip, Typography } from "@mui/material"
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, Stack, TextField, Typography } from "@mui/material"
 import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { usePassportCommandsUser } from "../../../../../../hooks/usePassport"
@@ -139,26 +139,15 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 							/>
 						</Stack>
 					</Stack>
-
 					<Stack direction="row" justifyContent="center" alignItems="center" spacing="1rem" sx={{ pt: "1rem" }}>
-						<Tooltip title={"XSYN currently unavailable"}>
-							<FancyButton
-								disabled
-								borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
-								loading={loading}
-								sx={{ flex: 1 }}
-								onClick={() =>
-									setFeeType((prev) => {
-										return undefined
-										// cant currently select XSYN
-										// if (prev ==="XSYN") return undefined
-										// return "XSYN"
-									})
-								}
-							>
-								Pay with XSYN (Coming soon)
-							</FancyButton>
-						</Tooltip>
+						<FancyButton
+							tooltip={"XSYN currently unavailable"}
+							borderColor={feeType === "XSYN" ? undefined : "#6b6b6b"}
+							loading={loading}
+							sx={{ flex: 1 }}
+						>
+							Pay with XSYN (Coming soon)
+						</FancyButton>
 						<FancyButton
 							borderColor={feeType === "SUPS" ? undefined : "#6b6b6b"}
 							loading={loading}
@@ -178,38 +167,36 @@ export const Transfer1155Modal = ({ open, onClose, onSuccess, userAsset, collect
 							Pay with SUPS
 						</FancyButton>
 					</Stack>
-
-					<Tooltip title={!feeType && "Select a payment method"}>
-						<FancyButton
-							disabled={!!error && !!formError}
-							borderColor={!!feeType && !error && !formError ? undefined : "#6b6b6b"}
-							loading={loading}
-							sx={{
-								py: "1rem",
-								span: {
-									color: colors.neonBlue,
-								},
-							}}
-							onClick={async () => {
-								if (!feeType && !error && !formError) return
-								if (userAsset.service_name_locked_in) {
-									await transferFromSupremacy()
-									return
-								}
-								await transferToSupremacy()
-							}}
-						>
-							Confirm transfer{" "}
-							{feeType === "SUPS" ? (
-								<>
-									&nbsp;<span>5</span>&nbsp; sups gas
-								</>
-							) : (
-								<></>
-							)}
-						</FancyButton>
-					</Tooltip>
-
+					\{" "}
+					<FancyButton
+						tooltip={feeType ? "" : "Select a payment method"}
+						disabled={!!error && !!formError}
+						borderColor={!!feeType && !error && !formError ? undefined : "#6b6b6b"}
+						loading={loading}
+						sx={{
+							py: "1rem",
+							span: {
+								color: colors.neonBlue,
+							},
+						}}
+						onClick={async () => {
+							if (!feeType && !error && !formError) return
+							if (userAsset.service_name_locked_in) {
+								await transferFromSupremacy()
+								return
+							}
+							await transferToSupremacy()
+						}}
+					>
+						Confirm transfer{" "}
+						{feeType === "SUPS" ? (
+							<>
+								&nbsp;<span>5</span>&nbsp; sups gas
+							</>
+						) : (
+							<></>
+						)}
+					</FancyButton>
 					{error && <Typography sx={{ mt: "1rem", color: colors.supremacy.red }}>{error}</Typography>}
 				</Stack>
 			</DialogActions>

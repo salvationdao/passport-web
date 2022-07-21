@@ -22,6 +22,7 @@ export interface User {
 	two_factor_authentication_activated: boolean
 	two_factor_authentication_is_set: boolean
 	has_recovery_code: boolean
+	has_password: boolean
 	pass_2_fa: boolean
 	public_address?: string
 	facebook_id?: string

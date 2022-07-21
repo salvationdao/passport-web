@@ -1,7 +1,8 @@
-import { Box, Tooltip } from "@mui/material"
+import { Tooltip } from "@mui/material"
 import { useMemo } from "react"
-import { useAuth } from "../../../containers/auth"
 import { FancyButton } from "../../../components/fancyButton"
+import { ENVIRONMENT } from "../../../config"
+import { useAuth } from "../../../containers/auth"
 
 export interface LockOptionsProps {
 	type: string
@@ -47,19 +48,17 @@ export const LockButton = ({ option, setOpen, setLockOption }: LockButtonProps) 
 
 	return (
 		<Tooltip title={option ? option.title : ""}>
-			<Box>
-				<FancyButton
-					disabled={isLocked}
-					sx={{ width: "100%" }}
-					onClick={() => {
-						setLockOption(option)
-						setOpen(true)
-					}}
-					size="small"
-				>
-					{`Lock ${option?.type}`}
-				</FancyButton>
-			</Box>
+			<FancyButton
+				disabled={isLocked}
+				sx={{ minWidth: "15rem", width: ENVIRONMENT === "develop" ? "calc(50% - .25rem)" : "100%" }}
+				onClick={() => {
+					setLockOption(option)
+					setOpen(true)
+				}}
+				size="small"
+			>
+				{`Lock ${option?.type}`}
+			</FancyButton>
 		</Tooltip>
 	)
 }

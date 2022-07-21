@@ -16,7 +16,6 @@ export const DepositHistoryPage = () => {
 	const history = useHistory()
 	const location = useLocation()
 
-
 	return (
 		<Box
 			sx={{
@@ -31,7 +30,8 @@ export const DepositHistoryPage = () => {
 					display: "flex",
 					flex: 1,
 					m: "0 2rem 2rem 2rem",
-				}}>
+				}}
+			>
 				<Paper
 					sx={{
 						display: "flex",
@@ -98,41 +98,42 @@ const SupDepositHistory = () => {
 		fetchDepositTransactions()
 	}, [user, state, send, fetchDepositTransactions])
 
-	return (<Box
-		sx={{ padding: "1rem" }}>
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				width: "100%",
-				margin: "0 auto",
-				paddingTop: "2rem",
-			}}
-		>
-			<DesktopDepositTransactionTable transactions={depositTransactions} />
+	return (
+		<Box sx={{ padding: "1rem" }}>
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					width: "100%",
+					margin: "0 auto",
+					paddingTop: "2rem",
+				}}
+			>
+				<DesktopDepositTransactionTable transactions={depositTransactions} />
 
-			{depositTransactions.length === 0 && (
-				<Box
-					sx={{
-						flex: 1,
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						padding: "1rem",
-						minHeight: "200px",
-					}}
-				>
-					{dtLoading ? (
-						<CircularProgress />
-					) : (
-						<Typography variant="subtitle2" color={colors.darkerGrey}>
-							{dtError ? dtError : `No recent deposit history.`}
-						</Typography>
-					)}
-				</Box>
-			)}
+				{depositTransactions.length === 0 && (
+					<Box
+						sx={{
+							flex: 1,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							padding: "1rem",
+							minHeight: "200px",
+						}}
+					>
+						{dtLoading ? (
+							<CircularProgress />
+						) : (
+							<Typography variant="subtitle2" color={colors.darkerGrey}>
+								{dtError ? dtError : `No recent deposit history.`}
+							</Typography>
+						)}
+					</Box>
+				)}
+			</Box>
 		</Box>
-	</Box>)
+	)
 }
 
 const AssetDepositHistory = () => {
@@ -165,61 +166,59 @@ const AssetDepositHistory = () => {
 
 	useEffect(() => {
 		if (state !== WebSocket.OPEN || !send || !user) return
-			;
-		(async () => {
+		;(async () => {
 			await fetchDepositTransactions()
 		})()
 	}, [user, state, send, fetchDepositTransactions])
 
-	return (<Box
-		sx={{ padding: "1rem" }}>
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				width: "100%",
-				margin: "0 auto",
-				paddingTop: "2rem",
-			}}
-		>
-
+	return (
+		<Box sx={{ padding: "1rem" }}>
 			<Box
 				sx={{
-					flex: "1",
-					overflowX: "auto",
 					display: "flex",
-					alignSelf: "stretch",
 					flexDirection: "column",
-					minWidth: 0,
-					"&:not(:last-child)": {
-						marginBottom: "2rem",
-					},
+					width: "100%",
+					margin: "0 auto",
+					paddingTop: "2rem",
 				}}
 			>
+				<Box
+					sx={{
+						flex: "1",
+						overflowX: "auto",
+						display: "flex",
+						alignSelf: "stretch",
+						flexDirection: "column",
+						minWidth: 0,
+						"&:not(:last-child)": {
+							marginBottom: "2rem",
+						},
+					}}
+				>
+					<AssetDepositDesktopTransactionTable transactions={depositTransactions} />
 
-				<AssetDepositDesktopTransactionTable transactions={depositTransactions} />
-
-				{depositTransactions.length === 0 && (
-					<Box
-						sx={{
-							flex: 1,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							padding: "1rem",
-							minHeight: "200px",
-						}}
-					>
-						{dtLoading ? (
-							<CircularProgress />
-						) : (
-							<Typography variant="subtitle2" color={colors.darkerGrey}>
-								{dtError ? dtError : `No recent deposit history.`}
-							</Typography>
-						)}
-					</Box>
-				)}
+					{depositTransactions.length === 0 && (
+						<Box
+							sx={{
+								flex: 1,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								padding: "1rem",
+								minHeight: "200px",
+							}}
+						>
+							{dtLoading ? (
+								<CircularProgress />
+							) : (
+								<Typography variant="subtitle2" color={colors.darkerGrey}>
+									{dtError ? dtError : `No recent deposit history.`}
+								</Typography>
+							)}
+						</Box>
+					)}
+				</Box>
 			</Box>
 		</Box>
-	</Box>)
+	)
 }

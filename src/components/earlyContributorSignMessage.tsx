@@ -173,7 +173,10 @@ export const EarlyContributorSignMessage: React.FC<EarlyContributorProps> = ({ s
 						</Box>
 					</Box>
 
-					<FancyButton disabled={email && name && phone && checked && canSign ? false : true} onClick={() => signMessage(name, phone, email)}>
+					<FancyButton
+						disabled={email && name && phone && checked && canSign ? false : true}
+						onClick={() => signMessage(name, phone, email)}
+					>
 						Sign Message
 					</FancyButton>
 				</Box>

@@ -16,6 +16,7 @@ interface MintModalProps {
 	assetExternalTokenID: number
 	mintContract: string
 	collectionSlug: string
+	reloadAsset: () => void
 }
 
 interface GetSignatureResponse {
@@ -23,7 +24,7 @@ interface GetSignatureResponse {
 	expiry: number
 }
 
-export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug, mintContract }: MintModalProps) => {
+export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug, mintContract, reloadAsset }: MintModalProps) => {
 	const { account, provider, currentChainId, changeChain, metaMaskState } = useWeb3()
 	const [loadingMint, setLoadingMint] = useState<boolean>(false)
 	const [errorMinting, setErrorMinting] = useState<string>()
@@ -68,6 +69,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				await tx.wait()
 				setErrorMinting(undefined)
 				onClose()
+				reloadAsset()
 			} catch (e: any) {
 				const err = metamaskErrorHandling(e)
 				err ? setErrorMinting(err) : setErrorMinting("Issue minting, please try again or contact support.")
@@ -75,7 +77,7 @@ export const MintModal = ({ open, onClose, assetExternalTokenID, collectionSlug,
 				setLoadingMint(false)
 			}
 		},
-		[provider, account, currentChainId, onClose],
+		[provider, account, currentChainId, onClose, reloadAsset],
 	)
 
 	return (
