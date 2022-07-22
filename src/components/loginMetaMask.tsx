@@ -1,4 +1,3 @@
-import MetaMaskOnboarding from "@metamask/onboarding"
 import { useCallback, useMemo, useState } from "react"
 import { useAuth } from "../containers/auth"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -24,8 +23,8 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 
 	const click = useCallback(async () => {
 		if (metaMaskState === MetaMaskState.NotInstalled) {
-			const onboarding = new MetaMaskOnboarding()
-			onboarding.startOnboarding()
+			window.open(`https://metamask.app.link/dapp/${window.location.href.replace(`${window.location.protocol}//`, "")}`)
+			setIsProcessing(false)
 			return
 		}
 		setIsProcessing(true)
@@ -33,9 +32,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 			onClick()
 		}
 		try {
-			const URLParam = new URLSearchParams(window.location.search)
-			const host = URLParam.get("host") || ""
-			const resp = await loginMetamask(host)
+			const resp = await loginMetamask()
 			if (!resp || !resp.payload) {
 				setErrorMessage(
 					"There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.",
