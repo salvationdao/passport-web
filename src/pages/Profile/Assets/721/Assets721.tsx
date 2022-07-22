@@ -154,6 +154,9 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 						<MenuItem key={"SUPREMACY"} value={"SUPREMACY"}>
 							SUPREMACY
 						</MenuItem>
+						<MenuItem key={"ON_CHAIN"} value={"ON_CHAIN"}>
+							ON CHAIN
+						</MenuItem>
 					</Select>
 				</FormControl>
 			</Box>
