@@ -671,57 +671,54 @@ export const AuthContainer = createContainer(() => {
 	 *
 	 * @param token Metamask public address
 	 */
-	const loginMetamask = useCallback(
-		async (host: string) => {
-			try {
-				const acc = await connect()
-				const signature = await sign(user ? user.id : undefined)
-				if (acc) {
-					const args = {
-						redirect_url: redirectURL,
-						public_address: acc,
-						signature: signature,
-						session_id: sessionId,
-						fingerprint: redirectURL ? undefined : fingerprint,
-						authType: AuthTypes.Wallet,
-						tenant,
-					}
-
-					if (redirectURL) {
-						externalAuth({ ...args, host, fingerprint: undefined })
-						return
-					}
-					const resp = await login(args)
-
-					if (resp.error) {
-						throw resp.payload
-					}
-
-					// Check if payload contains user or jwt
-					// Check if 2FA is set
-					if (!resp.payload?.id) {
-						history.push(`/tfa/check?token=${resp.payload}`)
-						return
-					}
-
-					setUser(resp.payload)
-					setAuthorised(true)
-					setLoading(false)
-
-					return resp
+	const loginMetamask = useCallback(async () => {
+		try {
+			const acc = await connect()
+			const signature = await sign(user ? user.id : undefined)
+			if (acc) {
+				const args = {
+					redirect_url: redirectURL,
+					public_address: acc,
+					signature: signature,
+					session_id: sessionId,
+					fingerprint: redirectURL ? undefined : fingerprint,
+					authType: AuthTypes.Wallet,
+					tenant,
 				}
-			} catch (e: any) {
-				console.error(e)
-				//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
-				const err = metamaskErrorHandling(e)
-				if (err) {
-					throw err
+
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
 				}
-				throw e
+				const resp = await login(args)
+
+				if (resp.error) {
+					throw resp.payload
+				}
+
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				}
+
+				setUser(resp.payload)
+				setAuthorised(true)
+				setLoading(false)
+
+				return resp
 			}
-		},
-		[connect, tenant, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth, history],
-	)
+		} catch (e: any) {
+			console.error(e)
+			//checking metamask error signature and throwing error to be caught and handled at a higher level... tried setting displayMessage here and did not work:/
+			const err = metamaskErrorHandling(e)
+			if (err) {
+				throw err
+			}
+			throw e
+		}
+	}, [connect, tenant, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth, history])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -732,7 +729,7 @@ export const AuthContainer = createContainer(() => {
 			if (!wcSignature) {
 				await signWalletConnect()
 			} else {
-				const resp = await login({
+				const args = {
 					redirect_url: redirectURL,
 					public_address: account as string,
 					signature: wcSignature || "",
@@ -740,10 +737,22 @@ export const AuthContainer = createContainer(() => {
 					fingerprint: redirectURL ? undefined : fingerprint,
 					authType: AuthTypes.Wallet,
 					tenant,
-				})
+				}
 
-				if (!resp || resp.error || !resp.payload) {
-					clear()
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+				const resp = await login(args)
+
+				if (resp.error) {
+					throw resp.payload
+				}
+
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload?.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
 					return
 				}
 				setUser(resp.payload)
@@ -756,7 +765,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, tenant, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, clear])
+	}, [wcSignature, tenant, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, clear, externalAuth, history])
 
 	// Effect
 	useEffect(() => {
