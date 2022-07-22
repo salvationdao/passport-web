@@ -94,3 +94,9 @@ export const countDecimals = (value: string) => {
 	if (parseFloat(value) % 1 !== 0) return value.split(".")[1].length
 	return 0
 }
+
+export const parseString = (val: string | null, defaultVal: number): number => {
+	if (!val) return defaultVal
+
+	return parseFloat(val)
+}

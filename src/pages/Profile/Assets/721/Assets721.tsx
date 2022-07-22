@@ -13,6 +13,8 @@ import { UserAsset } from "../../../../types/purchased_item"
 import { User } from "../../../../types/types"
 import WarMachine from "../../../../assets/images/WarMachine.png"
 import { Asset721ItemCard } from "./Asset721ItemCard"
+import { useUrlQuery } from "../../../../hooks/useURLQuery"
+import { parseString } from "../../../../helpers"
 
 export interface FilterSortOptions {
 	sort: { column: string; direction: string }
@@ -26,11 +28,17 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 
+	// url params
+	const [query, updateQuery] = useUrlQuery()
+
 	// Collection data
-	const [search, setSearch] = useDebounce("", 300)
-	const [assetsOn, setAssetsOn] = useState<string>("ALL")
-	const [assetType, setAssetType] = useState<string>("all")
-	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({ pageSize: 20, page: 1 })
+	const [search, setSearch] = useDebounce(query.get("search") || "", 300)
+	const [assetsOn, setAssetsOn] = useState<string>(query.get("assets_on") || "ALL")
+	const [assetType, setAssetType] = useState<string>(query.get("asset_type") || "all")
+	const { page, changePage, totalItems, setTotalItems, totalPages, pageSize, setPageSize } = usePagination({
+		pageSize: parseString(query.get("pageSize"), 10),
+		page: parseString(query.get("page"), 1),
+	})
 	const [userAssets, setUserAssets] = useState<UserAsset[]>([])
 
 	useEffect(() => {
@@ -46,6 +54,14 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 					asset_type: assetType,
 				})
 
+				updateQuery({
+					page: page.toString(),
+					pageSize: pageSize.toString(),
+					search: search,
+					assets_on: assetsOn,
+					asset_type: assetType,
+				})
+
 				if (!resp) return
 				setUserAssets(resp.assets)
 				setTotalItems(resp.total)
@@ -56,7 +72,7 @@ export const Assets721 = ({ user, loggedInUser }: { user: User; loggedInUser: Us
 				setLoading(false)
 			}
 		})()
-	}, [user, search, page, pageSize, setLoading, send, setUserAssets, setTotalItems, setError, assetsOn, assetType])
+	}, [user, search, page, pageSize, setLoading, send, setUserAssets, setTotalItems, setError, assetsOn, assetType, updateQuery])
 
 	return (
 		<Box
