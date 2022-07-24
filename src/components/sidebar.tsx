@@ -239,7 +239,14 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 								<CurrencyExchangeIcon sx={{ maxWidth: "1.1rem" }} />
 							</Tooltip>
 							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: "0 .5rem" }} />
-							<Typography variant="body1">{pendingRefund ? supFormatter(pendingRefund.toString()) : "--"}</Typography>
+							<Typography
+								variant="body1"
+								sx={{
+									span: { opacity: 0.7, ":hover": { opacity: 1 } },
+								}}
+							>
+								{pendingRefund ? supFormatter(pendingRefund.toString()) : "--"} {pendingRefund.gt(0) && <span>(PENDING)</span>}
+							</Typography>
 						</Box>
 					</Box>
 				</Box>
