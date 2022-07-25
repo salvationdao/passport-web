@@ -50,7 +50,7 @@ export const LockButton = ({ option, setOpen, setLockOption }: LockButtonProps) 
 		<Tooltip title={option ? option.title : ""}>
 			<FancyButton
 				disabled={isLocked}
-				sx={{ minWidth: "15rem", width: ENVIRONMENT === "develop" ? "calc(50% - .25rem)" : "100%" }}
+				sx={{ minWidth: "15rem", width: ENVIRONMENT !== "production" ? "calc(50% - .25rem)" : "100%" }}
 				onClick={() => {
 					setLockOption(option)
 					setOpen(true)

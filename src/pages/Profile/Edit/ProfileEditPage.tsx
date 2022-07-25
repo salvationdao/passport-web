@@ -389,7 +389,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 							disabled={submitting}
 							sx={{ minWidth: "180px", flex: "1 0 48%" }}
 						/>
-						{ENVIRONMENT === "develop" && (
+						{ENVIRONMENT !== "production" && (
 							<InputField
 								name="email"
 								label="Email"
@@ -424,7 +424,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				</Section>
 
 				{/* ------------- Manage Connections ------------------ */}
-				{ENVIRONMENT === "develop" && (
+				{ENVIRONMENT !== "production" && (
 					<>
 						<Stack spacing=".5rem">
 							<Typography variant="h6">Manage Connections</Typography>
@@ -484,7 +484,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 					<Typography variant="h6">Security</Typography>
 
 					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
-						{ENVIRONMENT === "develop" && (
+						{ENVIRONMENT !== "production" && (
 							<FancyButton
 								tooltip={"Change your password"}
 								sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}

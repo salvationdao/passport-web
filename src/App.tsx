@@ -42,27 +42,27 @@ const AppInner = () => {
 					<LoginPage />
 				</Route>
 
-				{ENVIRONMENT === "develop" && (
+				{ENVIRONMENT !== "production" && (
 					<Route path="/forgot-password">
 						<ForgotPassword />
 					</Route>
 				)}
-				{ENVIRONMENT === "develop" && (
+				{ENVIRONMENT !== "production" && (
 					<Route path="/reset-password">
 						<ResetPassword />
 					</Route>
 				)}
-				{ENVIRONMENT === "develop" && (
+				{ENVIRONMENT !== "production" && (
 					<Route path="/verify">
 						<VerifyEmail />
 					</Route>
 				)}
-				{ENVIRONMENT === "develop" && (
+				{ENVIRONMENT !== "production" && (
 					<Route path="/twitter-redirect">
 						<LoginRedirect />
 					</Route>
 				)}
-				{ENVIRONMENT === "develop" && (
+				{ENVIRONMENT !== "production" && (
 					<Route path="/tfa/check">
 						<TwoFactorAuthenticationCheck />
 					</Route>

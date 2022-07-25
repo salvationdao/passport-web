@@ -14,5 +14,5 @@ export const LoginPage = () => {
 	if (window.location.search.includes("supremacy")) {
 		Wrapper = SupremacyAuth
 	}
-	return <Wrapper>{ENVIRONMENT !== "develop" ? <Web3 /> : <LoginForm />}</Wrapper>
+	return <Wrapper>{ENVIRONMENT === "production" ? <Web3 /> : <LoginForm />}</Wrapper>
 }

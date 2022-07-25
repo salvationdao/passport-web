@@ -136,7 +136,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 					alignItems: "center",
 				}}
 			>
-				{!user.verified && user.email && ENVIRONMENT === "develop" && (
+				{!user.verified && user.email && ENVIRONMENT !== "production" && (
 					<Alert severity={sentVerify ? "info" : "error"} sx={{ maxWidth: "600px", my: "1rem" }}>
 						{sentVerify ? (
 							"Email confirmation sent! Please check your email."
