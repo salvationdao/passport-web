@@ -334,17 +334,17 @@ export const AssetView = ({ owner, userAsset, collection, error, openseaURL, edi
 				</Stack>
 			</Stack>
 
-				<Transfer1155Modal
-					open={transferModalOpen}
-					onClose={() => {
-						setTransferModalOpen(false)
-					}}
-					onSuccess={()=>{
-							history.push(`/profile/${owner.username}/achievements`)
-					}}
-					userAsset={userAsset}
-					collectionSlug={collection.slug}
-				/>
+			<Transfer1155Modal
+				open={transferModalOpen}
+				onClose={() => {
+					setTransferModalOpen(false)
+				}}
+				onSuccess={() => {
+					history.push(`/profile/${owner.username}/achievements`)
+				}}
+				userAsset={userAsset}
+				collectionSlug={collection.slug}
+			/>
 
 			{userAsset.count > 0 && (
 				<Withdraw1155AssetModal

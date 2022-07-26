@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search"
-import {Box, Stack, Tooltip, Typography} from "@mui/material"
+import { Box, Stack, Tooltip, Typography } from "@mui/material"
 import { useHistory } from "react-router-dom"
 import { getStringFromShoutingSnakeCase } from "../../../../helpers"
 import { rarityTextStyles } from "../../../../helpers/items"
@@ -7,8 +7,8 @@ import { colors, fonts } from "../../../../theme"
 import { Rarity } from "../../../../types/enums"
 import { UserAsset } from "../../../../types/purchased_item"
 import { ViewButton } from "../Common/ViewButton"
-import LockRoundedIcon from "@mui/icons-material/LockRounded";
-import React from "react";
+import LockRoundedIcon from "@mui/icons-material/LockRounded"
+import React from "react"
 
 export interface Asset721ItemCardProps {
 	userAsset: UserAsset
@@ -164,6 +164,7 @@ export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps
 					}}
 				>
 					{getStringFromShoutingSnakeCase(tier)}
+					{"\u00a0"}
 				</Typography>
 			</Box>
 

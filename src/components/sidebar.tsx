@@ -3,15 +3,15 @@ import AgricultureIcon from "@mui/icons-material/Agriculture"
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FaceIcon from "@mui/icons-material/Face"
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded"
 import LoginIcon from "@mui/icons-material/Login"
 import LogoutIcon from "@mui/icons-material/Logout"
+import MoveDownRoundedIcon from "@mui/icons-material/MoveDownRounded"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import SavingsIcon from "@mui/icons-material/Savings"
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import StorefrontIcon from "@mui/icons-material/Storefront"
-import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded"
-import MoveDownRoundedIcon from "@mui/icons-material/MoveDownRounded"
 import { Box, Button, Divider, Drawer, SxProps, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { BigNumber } from "ethers"
 import React, { useEffect, useState } from "react"
@@ -23,6 +23,7 @@ import { API_ENDPOINT_HOSTNAME, BATTLE_ARENA_LINK } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSidebarState } from "../containers/sidebar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { useSubscription } from "../containers/ws/useSubscription"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { colors } from "../theme"
@@ -30,7 +31,6 @@ import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
 import { WithdrawSupsModal } from "./withdrawSupsModal"
-import { useSubscription } from "../containers/ws/useSubscription"
 
 const drawerWidth = 280
 
@@ -77,16 +77,19 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 		}
 
 		// no wallet connected
-		if (!user.public_address) {
+		if (!userPublicAddress) {
 			setWalletMsg("Wallet not connected")
 			setWalletSups(undefined)
 			return
+		} else {
+			setWalletMsg(undefined)
 		}
 
 		if (supBalance) setWalletSups(supBalance.toString())
 	}, [supBalance, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
+		if (!user?.public_address) return
 		;(async () => {
 			try {
 				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/holding/${user?.public_address}`)
@@ -236,7 +239,14 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 								<CurrencyExchangeIcon sx={{ maxWidth: "1.1rem" }} />
 							</Tooltip>
 							<Box component="img" src={SupsToken} alt="token image" sx={{ height: "1rem", padding: "0 .5rem" }} />
-							<Typography variant="body1">{pendingRefund ? supFormatter(pendingRefund.toString()) : "--"}</Typography>
+							<Typography
+								variant="body1"
+								sx={{
+									span: { opacity: 0.7, ":hover": { opacity: 1 } },
+								}}
+							>
+								{pendingRefund ? supFormatter(pendingRefund.toString()) : "--"} {pendingRefund.gt(0) && <span>(PENDING)</span>}
+							</Typography>
 						</Box>
 					</Box>
 				</Box>

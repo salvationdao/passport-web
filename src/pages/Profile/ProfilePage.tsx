@@ -1,20 +1,21 @@
-import { Box, Paper, Stack, Tabs, Typography, Tab } from "@mui/material"
-import { useEffect, useState } from "react"
-import { Link as RouterLink, Redirect, Route, Switch, useHistory, useLocation, useParams } from "react-router-dom"
+import { Alert, Box, CircularProgress, Paper, Stack, Tab, Tabs, Typography } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
+import { Link, Redirect, Route, Switch, useHistory, useLocation, useParams } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { ProfileButton } from "../../components/profileButton"
+import { ENVIRONMENT } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
+import { colors } from "../../theme"
 import { User } from "../../types/types"
-import { Assets721 } from "./Assets/721/Assets721"
-
 import { Assets1155 } from "./Assets/1155/Assets1155"
-import { ProfileEditPage } from "./Edit/ProfileEditPage"
-import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
 import { SingleAsset1155View } from "./Assets/1155/SingleAssetView/SingleAsset1155View"
+import { Assets721 } from "./Assets/721/Assets721"
+import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
+import { ProfileEditPage } from "./Edit/ProfileEditPage"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -32,6 +33,24 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
+	const [sentVerify, setSentVerify] = useState<boolean | null>(false)
+
+	const handleSendVerify = useCallback(async () => {
+		try {
+			setSentVerify(null)
+			const resp = await send<User>(HubKey.UserVerifySend, {
+				user_agent: window.navigator.userAgent,
+			})
+
+			if (!resp.id) {
+				throw resp
+			}
+			setSentVerify(true)
+		} catch (err) {
+			console.error(err)
+			setSentVerify(false)
+		}
+	}, [send])
 
 	useEffect(() => {
 		;(async () => {
@@ -70,7 +89,44 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 				height: "100%",
 			}}
 		>
-			<Navbar />
+			<Navbar
+				header={
+					<Box
+						sx={{
+							// p: "2rem",
+							display: "flex",
+							gap: "1rem",
+							flexDirection: "row",
+							marginBottom: "0.5rem",
+						}}
+					>
+						<Box>{loggedInUser?.id === user.id && <ProfileButton size="5rem" disabled sx={{ mb: "1rem" }} />}</Box>
+						<Stack gap={"1rem"}>
+							<Typography variant="h3" marginBottom={"0.5rem"}>
+								{user.username}
+							</Typography>
+							{loggedInUser?.username === user.username && (user.first_name || user.last_name) && (
+								<Typography variant="subtitle2">
+									{user.first_name} {user.last_name}
+								</Typography>
+							)}
+							{loggedInUser?.id === user.id && (
+								<Link to={`/profile/${user.username}/edit`} style={{ textDecoration: "none", color: colors.neonPink }}>
+									<FancyButton
+										size="small"
+										sx={{
+											width: "100%",
+											position: "relative",
+										}}
+									>
+										Edit Profile
+									</FancyButton>
+								</Link>
+							)}
+						</Stack>
+					</Box>
+				}
+			/>
 			<Box
 				sx={{
 					display: "flex",
@@ -80,32 +136,35 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 					alignItems: "center",
 				}}
 			>
-				<Box
-					sx={{
-						// p: "2rem",
-						display: "flex",
-						gap: "1rem",
-						flexDirection: "row",
-						marginBottom: "0.5rem",
-					}}
-				>
-					<Box>{loggedInUser?.id === user.id && <ProfileButton size="5rem" disabled sx={{ mb: "1rem" }} />}</Box>
-					<Stack gap={"1rem"}>
-						<Typography variant="h3" marginBottom={"0.5rem"}>
-							{user.username}
-						</Typography>
-						{loggedInUser?.username === user.username && (user.first_name || user.last_name) && (
-							<Typography variant="subtitle2">
-								{user.first_name} {user.last_name}
-							</Typography>
+				{!user.verified && user.email && ENVIRONMENT !== "production" && (
+					<Alert severity={sentVerify ? "info" : "error"} sx={{ maxWidth: "600px", my: "1rem" }}>
+						{sentVerify ? (
+							"Email confirmation sent! Please check your email."
+						) : (
+							<>
+								Please verify your email: {user.email} <br />
+								Click{" "}
+								{sentVerify === null ? (
+									<CircularProgress size="15px" sx={{ mx: ".5rem", mt: ".5rem" }} />
+								) : (
+									<Typography
+										component="span"
+										onClick={handleSendVerify}
+										sx={{
+											cursor: "pointer",
+											color: colors.darkerNeonBlue,
+											fontWeight: "bold",
+											textDecoration: "underline",
+										}}
+									>
+										here
+									</Typography>
+								)}{" "}
+								to resend a confirmation link to your email.
+							</>
 						)}
-						{loggedInUser?.id === user.id && (
-							<FancyButton size="small" sx={{ width: "100%" }}>
-								<RouterLink to={`/profile/${user.username}/edit`}>Edit Profile</RouterLink>
-							</FancyButton>
-						)}
-					</Stack>
-				</Box>
+					</Alert>
+				)}
 
 				<Paper
 					sx={{

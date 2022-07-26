@@ -1,5 +1,5 @@
-import { User } from "./types"
 import { QueryResponse } from "react-fetching-library"
+import { User } from "./types"
 
 export interface Fingerprint {
 	visitor_id: string
@@ -15,12 +15,64 @@ export interface RegisterResponse {
 	token: string
 }
 
+interface BasicLoginRequest {
+	fingerprint?: Fingerprint
+	redirect_url?: string
+	tenant?: string
+}
+
 export interface PasswordLoginRequest {
 	email: string
 	password: string
 	admin?: boolean
 	session_id?: string
-	fingerprint?: Fingerprint
+}
+
+export interface ForgotPasswordRequest extends BasicLoginRequest {
+	email: string
+	session_id?: string
+}
+
+export interface ResetPasswordRequest extends BasicLoginRequest {
+	id: string
+	token: string
+	new_password: string
+	session_id?: string
+}
+
+export interface ChangePasswordRequest extends BasicLoginRequest {
+	user_id: string
+	new_password: string
+	password: string
+	session_id?: string
+}
+
+export interface NewPasswordRequest extends BasicLoginRequest {
+	user_id: string
+	new_password: string
+	session_id?: string
+}
+
+export interface GoogleLoginRequest extends BasicLoginRequest {
+	google_id: string
+	email: string
+	username: string
+	session_id?: string
+}
+
+export interface FacebookLoginRequest extends BasicLoginRequest {
+	facebook_id: string
+	email: string
+	name: string
+	session_id?: string
+}
+
+export interface TwoFactorAuthLoginRequest extends BasicLoginRequest {
+	token?: string
+	passcode?: string
+	user_id?: string
+	recovery_code?: string
+	session_id?: string
 }
 
 export interface BasicLoginResponse {
@@ -31,11 +83,6 @@ export interface BasicLoginResponse {
 }
 
 export interface PasswordLoginResponse extends BasicLoginResponse {}
-
-interface BasicLoginRequest {
-	fingerprint?: Fingerprint
-	redirectURL?: string
-}
 
 export interface TokenLoginRequest extends BasicLoginRequest {
 	token: string
@@ -76,25 +123,13 @@ export interface SocialLoginRequest extends BasicLoginRequest {
 	token: string
 	session_id?: string
 	username?: string
-	service: string
-	fingerprint?: Fingerprint
-}
-
-export interface GoogleLoginRequest extends BasicLoginRequest {
-	token: string
-	session_id?: string
+	service?: string
 	fingerprint?: Fingerprint
 }
 
 export interface FacebookSignUpRequest {
 	token: string
 	username: string
-	session_id?: string
-	fingerprint?: Fingerprint
-}
-
-export interface FacebookLoginRequest extends BasicLoginRequest {
-	token: string
 	session_id?: string
 	fingerprint?: Fingerprint
 }

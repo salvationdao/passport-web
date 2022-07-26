@@ -4,10 +4,10 @@ import { ethers } from "ethers"
 import { useCallback, useState } from "react"
 import { FancyButton } from "../../../../../../components/fancyButton"
 import { SwitchNetworkButton } from "../../../../../../components/switchNetwortButton"
-import {API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID} from "../../../../../../config"
+import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../../../../../config"
 import { useWeb3 } from "../../../../../../containers/web3"
 import { metamaskErrorHandling } from "../../../../../../helpers/web3"
-import {OnChainStatus, UserAsset} from "../../../../../../types/purchased_item"
+import { OnChainStatus, UserAsset } from "../../../../../../types/purchased_item"
 import { Collection } from "../../../../../../types/types"
 import { lock_endpoint } from "../SingleAsset721View"
 
@@ -16,6 +16,7 @@ interface UnstakeModalProps {
 	open: boolean
 	onClose: () => void
 	asset: UserAsset
+	reloadAsset: () => void
 }
 
 interface GetSignatureResponse {
@@ -23,8 +24,7 @@ interface GetSignatureResponse {
 	expiry: number
 }
 
-
-export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalProps) => {
+export const UnstakeModal = ({ open, onClose, asset, collection, reloadAsset }: UnstakeModalProps) => {
 	const { account, provider, currentChainId, changeChain } = useWeb3()
 	const [error, setError] = useState<string>()
 	const [unstakingLoading, setUnstakingLoading] = useState<boolean>(false)
@@ -46,12 +46,6 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				const signer = provider.getSigner()
 				const unstakeContract = new ethers.Contract(collection.stake_contract, abi, signer)
 				const nonce = await unstakeContract.nonces(account)
-				console.log()
-				console.log(account)
-				console.log(nonce)
-				console.log(collection.slug)
-				console.log(asset.token_id)
-				console.log()
 
 				const unstake_endpoint = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/nfts/unstake/owner_address/${account}/nonce/${nonce}/collection_slug/${collection.slug}/token_id/${asset.token_id}`
 				const resp = await fetch(unstake_endpoint)
@@ -61,8 +55,7 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 					return
 				}
 
-				const respJson = await resp.json() as GetSignatureResponse
-				console.log(respJson)
+				const respJson = (await resp.json()) as GetSignatureResponse
 				const tx = await unstakeContract.signedUnstake(collection.mint_contract, asset.token_id, respJson.messageSignature, respJson.expiry)
 				await tx.wait()
 			}
@@ -77,14 +70,14 @@ export const UnstakeModal = ({ open, onClose, asset, collection }: UnstakeModalP
 				await tx.wait()
 			}
 			setUnstakingSuccess(true)
+			reloadAsset()
 		} catch (e: any) {
 			const err = metamaskErrorHandling(e)
 			err ? setError(err) : setError("Something went wrong, please try again")
 		} finally {
 			setUnstakingLoading(false)
 		}
-	}, [provider, asset, account, collection])
-
+	}, [provider, asset, account, collection, reloadAsset])
 
 	return (
 		<Dialog

@@ -5,7 +5,9 @@ import { Link } from "react-router-dom"
 import { XSYNLogoImagePath } from "../../assets"
 import { useSidebarState } from "../../containers/sidebar"
 
-interface NavbarProps extends BoxProps {}
+interface NavbarProps extends BoxProps {
+	header?: JSX.Element
+}
 
 export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 	return (
@@ -26,8 +28,12 @@ export const Navbar: React.FC<NavbarProps> = ({ sx, ...props }) => {
 			<Box
 				sx={{
 					flex: 1,
+					display: "flex",
+					justifyContent: "center",
 				}}
-			/>
+			>
+				{props.header}
+			</Box>
 			<Link to="/">
 				<Box
 					component="img"

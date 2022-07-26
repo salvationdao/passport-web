@@ -129,8 +129,8 @@ export const TransactionResultOverlay = ({
 					Transaction has been submitted.
 				</Typography>
 				<Typography variant="body1" sx={{ margin: "1rem 0" }}>
-					The deposit will take around five minutes to appear in your account. If no activity has been recorded after 24 hours please create a ticket
-					on Discord.
+					The deposit will take around five minutes to appear in your account. If no activity has been recorded after 24 hours please create
+					a ticket on Discord.
 				</Typography>
 				<Typography variant="body1">
 					<Link href={`https://${BSC_SCAN_SITE}/tx/${currentTransferHash}`} target="_blank">

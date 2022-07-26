@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { API_ENDPOINT_HOSTNAME, ETHEREUM_CHAIN_ID } from "../../config"
-import {Box, Paper, Typography} from "@mui/material"
+import { Box, Paper, Typography } from "@mui/material"
 import { Navbar } from "../../components/home/navbar"
 import { colors } from "../../theme"
 import { Collections1155 } from "../../types/types"
@@ -50,7 +50,7 @@ export const DepositAssetsPage = () => {
 			sx={{
 				display: "flex",
 				flexDirection: "column",
-				height: '100%',
+				height: "100%",
 			}}
 		>
 			<Navbar />
@@ -58,8 +58,9 @@ export const DepositAssetsPage = () => {
 				sx={{
 					display: "flex",
 					flex: 1,
-					m: '0 2rem 2rem 2rem',
-				}}>
+					m: "0 2rem 2rem 2rem",
+				}}
+			>
 				<Paper
 					sx={{
 						display: "flex",
@@ -67,11 +68,11 @@ export const DepositAssetsPage = () => {
 						flexDirection: "column",
 						alignItems: "center",
 						padding: "1rem",
-						overflow: 'auto',
+						overflow: "auto",
 						borderRadius: 1.5,
-						gap: '1rem',
-						justifyContent: 'center',
-						position: 'relative'
+						gap: "1rem",
+						justifyContent: "center",
+						position: "relative",
 					}}
 				>
 					{!isCorrectChain && (
