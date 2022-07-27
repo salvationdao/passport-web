@@ -369,7 +369,7 @@ export const AssetView = ({
 							justifyContent: "center",
 						}}
 					>
-						<Attributes userAsset={userAsset} />
+						<Attributes userAsset={userAsset} username={owner.username} />
 
 						<Box
 							sx={{
