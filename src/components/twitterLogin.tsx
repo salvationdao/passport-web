@@ -26,6 +26,8 @@ interface TwitterLoginProps {
 	add?: string
 	render?: (props: TwitterLoginButtonRenderProps) => JSX.Element
 }
+const searchParams = new URLSearchParams(window.location.search)
+const tenant = searchParams.get("tenant")
 
 export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, render, add }) => {
 	const [twitterPopup, setTwitterPopup] = useState<Window | undefined>()
@@ -39,7 +41,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 		const twitterParams = {
 			oauth_callback: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter?${add ? `add=${add}&` : ""}redirect=${
 				window.location.origin
-			}/twitter-redirect`,
+			}/twitter-redirect${tenant ? `&tenant=${tenant}` : ""}`,
 		}
 
 		const href = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter${getParamsFromObject(twitterParams)}`
