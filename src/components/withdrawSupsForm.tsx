@@ -8,19 +8,19 @@ import Arrow from "../assets/images/arrow.png"
 import Safe from "../assets/images/gradient/safeLarge.png"
 import SupsToken from "../assets/images/sup-token.svg"
 import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { SendFunc } from "../containers/ws/useCommands"
+import { useSubscription } from "../containers/ws/useSubscription"
 import { supFormatter } from "../helpers/items"
 import { AddressDisplay, metamaskErrorHandling } from "../helpers/web3"
-import { useSubscription } from "../containers/ws/useSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { transferStateType, User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ConnectWalletOverlay } from "./transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "./transferStatesOverlay/switchNetworkOverlay"
-import { useAuth } from "../containers/auth"
-import { SendFunc } from "../containers/ws/useCommands"
 
 interface WithdrawSupsFormProps {
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
@@ -124,7 +124,7 @@ export const WithdrawSupsForm = ({
 	useEffect(() => {
 		if (userSups) {
 			setXsynSups(BigNumber.from(userSups))
-			if (!isInfinite) {
+			if (isInfinite) {
 				setMaxLimit(BigNumber.from(userSups))
 			}
 		}
