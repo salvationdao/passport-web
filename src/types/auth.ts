@@ -1,4 +1,5 @@
 import { QueryResponse } from "react-fetching-library"
+import { AuthTypes } from "../containers/auth"
 import { User } from "./types"
 
 export interface Fingerprint {
@@ -15,17 +16,33 @@ export interface RegisterResponse {
 	token: string
 }
 
+export interface ExternalCookieRequest {
+	redirect_url?: string
+}
 interface BasicLoginRequest {
 	fingerprint?: Fingerprint
 	redirect_url?: string
 	tenant?: string
 }
 
-export interface PasswordLoginRequest {
+export interface PasswordLoginRequest extends BasicLoginRequest {
 	email: string
 	password: string
 	admin?: boolean
 	session_id?: string
+	auth_type: AuthTypes.Email
+}
+
+export interface EmailSignupRequest extends BasicLoginRequest {
+	email: string
+	password?: string
+	session_id?: string
+	auth_type: AuthTypes.Email
+}
+
+export interface EmailSignupVerifyRequest extends BasicLoginRequest {
+	email: string
+	code: string
 }
 
 export interface ForgotPasswordRequest extends BasicLoginRequest {
@@ -56,15 +73,19 @@ export interface NewPasswordRequest extends BasicLoginRequest {
 export interface GoogleLoginRequest extends BasicLoginRequest {
 	google_id: string
 	email: string
-	username: string
+	username?: string
 	session_id?: string
+	new_user?: boolean
+	auth_type: AuthTypes.Google
 }
 
 export interface FacebookLoginRequest extends BasicLoginRequest {
 	facebook_id: string
 	email: string
-	name: string
+	username?: string
 	session_id?: string
+	new_user?: boolean
+	auth_type: AuthTypes.Facebook
 }
 
 export interface TwoFactorAuthLoginRequest extends BasicLoginRequest {
@@ -110,6 +131,9 @@ export interface WalletLoginRequest extends BasicLoginRequest {
 	signature: string
 	session_id?: string
 	fingerprint?: Fingerprint
+	username?: string
+	new_user?: boolean
+	auth_type: AuthTypes.Wallet
 }
 
 export interface GoogleSignUpRequest {
@@ -149,19 +173,18 @@ export interface TwitchLoginRequest extends BasicLoginRequest {
 	fingerprint?: Fingerprint
 }
 
-export interface TwitterSignUpRequest {
-	oauth_token: string
-	oauth_verifier: string
-	username: string
-	session_id?: string
-	fingerprint?: Fingerprint
-}
-
 export interface TwitterLoginRequest extends BasicLoginRequest {
 	oauth_token: string
 	oauth_verifier: string
 	session_id?: string
 	fingerprint?: Fingerprint
+}
+
+export interface TwitterSignUpRequest extends BasicLoginRequest {
+	twitter_id: string
+	session_id?: string
+	fingerprint?: Fingerprint
+	auth_type: AuthTypes.Twitter
 }
 
 export interface DiscordSignUpRequest {
@@ -263,6 +286,27 @@ export type LoginRequest =
 	| TwitterLoginRequest
 	| DiscordLoginRequest
 	| SocialLoginRequest
+
+export type LoginNewUserResponse = WalletLoginRequest | GoogleLoginRequest | FacebookLoginRequest | EmailSignupRequest | TwitterSignUpRequest
+
+export enum SignupRequestTypes {
+	Wallet = "wallet_request",
+	Google = "google_request",
+	Facebook = "facebook_request",
+	Email = "email_request",
+	Twitter = "twitter_request",
+}
+export interface SignupNewUser {
+	[SignupRequestTypes.Wallet]?: WalletLoginRequest
+	[SignupRequestTypes.Google]?: GoogleLoginRequest
+	[SignupRequestTypes.Facebook]?: FacebookLoginRequest
+	[SignupRequestTypes.Email]?: EmailSignupRequest
+	[SignupRequestTypes.Twitter]?: TwitterSignUpRequest
+
+	username: string
+	auth_type: AuthTypes
+	fingerprint?: Fingerprint
+}
 
 export type SignUpRequest =
 	| WalletSignUpRequest

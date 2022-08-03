@@ -14,7 +14,8 @@ const FacebookLoginWrapper: React.FC<IFacebookLoginWrapperProps> = ({ onFailure,
 		<FacebookLogin
 			callback={async (user) => {
 				const u = user as ReactFacebookLoginInfo
-				await facebookLogin.action(u.id, u.first_name, u.email, onFailure)
+				console.log("TESTESTS")
+				await facebookLogin.action(u.id, u.email, onFailure)
 				window.FB.logout()
 			}}
 			onFailure={onFailure}

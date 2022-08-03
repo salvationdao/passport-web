@@ -1,6 +1,7 @@
 import { Alert, Stack, useTheme } from "@mui/material"
 import TextField from "@mui/material/TextField"
 import * as React from "react"
+import { useHistory } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
@@ -11,7 +12,8 @@ interface IEmailLoginProps {
 
 export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const theme = useTheme()
-	const { loginPassword, signupPassword } = useAuth()
+	const history = useHistory()
+	const { loginPassword, emailSignup } = useAuth()
 	const { displayMessage } = useSnackbar()
 	const [error, setError] = React.useState<string | null>(null)
 
@@ -25,19 +27,14 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 		const data = new FormData(event.currentTarget)
 		const email = data.get("email")?.toString()
 		const password = data.get("password")?.toString()
-		// const confirmPassword = data.get("confirmPassword")?.toString()
 
-		// if (confirmPassword !== password && signup) {
-		// 	setError("Password does not match")
-		// 	return
-		// }
 		if (!email) {
-			setError("No email has been set.")
+			setError("No email has been provided")
 			return
 		}
 		if (signup) {
 			// Insert send verify email handler
-			displayMessage("A confirmation email was sent to your address. Please verify your email account.")
+			await emailSignup.action(email, errorCallback)
 		} else if (password) {
 			await loginPassword.action(email, password, errorCallback)
 		}
@@ -84,9 +81,9 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 				filled
 				borderColor={signup ? theme.palette.secondary.main : theme.palette.primary.main}
 				sx={{ mt: 1, mb: 2 }}
-				loading={loginPassword.loading}
+				loading={signup ? emailSignup.loading : loginPassword.loading}
 			>
-				{loginPassword.loading ? "Loading..." : signup ? "Sign up with email" : "Sign In"}
+				{loginPassword.loading || emailSignup.loading ? "Loading..." : signup ? "Sign up with email" : "Sign In"}
 			</FancyButton>
 		</Stack>
 	)

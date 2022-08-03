@@ -31,7 +31,7 @@ const GoogleLoginWrapper: React.FC<IGoogleLoginWrapperProps> = ({ onFailure, ren
 					return
 				}
 				const r = response as GoogleLoginResponse
-				await googleLogin.action(r.googleId, r.profileObj.givenName, r.profileObj.email, onFailure)
+				await googleLogin.action(r.googleId, r.profileObj.email, onFailure)
 				setLoading(false)
 			}}
 			onFailure={() => {

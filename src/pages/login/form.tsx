@@ -1,10 +1,11 @@
 import { Alert, Box, Stack, styled, Tab, Tabs, Typography } from "@mui/material"
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { useCallback, useEffect, useState } from "react"
+import { Link, useHistory } from "react-router-dom"
 import { GoogleIcon, MetaIcon, MetaMaskIcon, TwitterIcon, WalletConnectIcon, XSYNWordmarkImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { MetaMaskLogin } from "../../components/loginMetaMask"
 import { WalletConnectLogin } from "../../components/loginWalletConnect"
+import { AuthTypes, useAuth } from "../../containers/auth"
 import { colors } from "../../theme"
 import { EmailLogin } from "./email"
 import FacebookLoginWrapper from "./oauth/facebook"
@@ -16,9 +17,28 @@ enum FormTabs {
 	Signup = "signup",
 }
 
+const searchParams = new URLSearchParams(window.location.search)
+const signup = searchParams.get("signup")
+
 export const LoginForm = () => {
+	const { setSignupRequest } = useAuth()
+	const history = useHistory()
 	const [error, setError] = useState<string | null>(null)
-	const [tab, setTab] = useState(FormTabs.Login)
+	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
+	const [twitterPopup, setTwitterPopup] = useState<Window | null>(null)
+
+	const twitterAuthCallback = useCallback(
+		async (event?: MessageEvent) => {
+			if (event && !("twitter_id" in event.data)) return
+			const twitterID = event?.data.twitter_id as string
+			setSignupRequest({
+				auth_type: AuthTypes.Twitter,
+				twitter_id: twitterID,
+			})
+			history.push("/signup")
+		},
+		[setSignupRequest, history],
+	)
 
 	useEffect(() => {
 		if (error) {
@@ -31,6 +51,15 @@ export const LoginForm = () => {
 			}
 		}
 	}, [error])
+
+	useEffect(() => {
+		if (!twitterPopup) return
+		window.addEventListener("message", twitterAuthCallback, false)
+
+		return () => {
+			window.removeEventListener("message", twitterAuthCallback)
+		}
+	}, [twitterAuthCallback, twitterPopup])
 
 	return (
 		<Stack>
@@ -66,21 +95,16 @@ export const LoginForm = () => {
 						<MetaMaskLogin
 							onFailure={setError}
 							render={(props) => (
-								<ConnectButton
-									onClick={props.onClick}
-									loading={props.isProcessing}
-									title="Connect Wallet to account"
-									startIcon={<MetaMaskIcon />}
-								/>
+								<ConnectButton tooltip="Metamask" onClick={props.onClick} loading={props.isProcessing} startIcon={<MetaMaskIcon />} />
 							)}
 						/>
 						<WalletConnectLogin
 							onFailure={setError}
 							render={(props) => (
 								<ConnectButton
+									tooltip="Wallet Connect"
 									onClick={props.onClick}
 									loading={props.isProcessing}
-									title="Connect Wallet to account"
 									startIcon={<WalletConnectIcon />}
 								/>
 							)}
@@ -89,9 +113,9 @@ export const LoginForm = () => {
 							onFailure={setError}
 							render={(props, loading) => (
 								<ConnectButton
+									tooltip="Meta"
 									onClick={props.onClick}
 									loading={loading ? loading : props.isProcessing}
-									title="Connect Wallet to account"
 									startIcon={<MetaIcon />}
 								/>
 							)}
@@ -100,6 +124,7 @@ export const LoginForm = () => {
 							onFailure={setError}
 							render={(props) => (
 								<ConnectButton
+									tooltip="Google"
 									sx={{
 										"& svg": {
 											height: "1.5rem !important",
@@ -108,15 +133,18 @@ export const LoginForm = () => {
 									}}
 									loading={props.loading}
 									onClick={props.onClick}
-									title="Connect Wallet to account"
 									startIcon={<GoogleIcon />}
 								/>
 							)}
 						/>
 						<TwitterLoginWrapper
 							onFailure={setError}
+							onClick={async (popup) => {
+								if (popup) setTwitterPopup(popup)
+							}}
 							render={(props) => (
 								<ConnectButton
+									tooltip="Twitter"
 									sx={{
 										"& svg": {
 											height: "1.5rem !important",
@@ -124,7 +152,6 @@ export const LoginForm = () => {
 										},
 									}}
 									onClick={props.onClick}
-									title="Connect Wallet to account"
 									startIcon={<TwitterIcon />}
 								/>
 							)}
