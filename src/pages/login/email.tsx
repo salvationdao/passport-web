@@ -1,11 +1,9 @@
-import { Alert, Stack, Typography, useTheme } from "@mui/material"
+import { Alert, Stack, useTheme } from "@mui/material"
 import TextField from "@mui/material/TextField"
 import * as React from "react"
-import { Link } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
-import { colors } from "../../theme"
 
 interface IEmailLoginProps {
 	signup?: boolean
@@ -27,21 +25,20 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 		const data = new FormData(event.currentTarget)
 		const email = data.get("email")?.toString()
 		const password = data.get("password")?.toString()
-		const confirmPassword = data.get("confirmPassword")?.toString()
+		// const confirmPassword = data.get("confirmPassword")?.toString()
 
-		if (confirmPassword !== password && signup) {
-			setError("Password does not match")
-			return
-		}
-		if (!email || !password) {
-			setError("No email or password has been set.")
+		// if (confirmPassword !== password && signup) {
+		// 	setError("Password does not match")
+		// 	return
+		// }
+		if (!email) {
+			setError("No email has been set.")
 			return
 		}
 		if (signup) {
-			const username = data.get("username")?.toString()
-			username && (await signupPassword.action(username, email, password, errorCallback))
+			// Insert send verify email handler
 			displayMessage("A confirmation email was sent to your address. Please verify your email account.")
-		} else {
+		} else if (password) {
 			await loginPassword.action(email, password, errorCallback)
 		}
 	}
@@ -58,89 +55,39 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	}, [signup])
 
 	return (
-		<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "25rem" }}>
-			{signup && (
-				<TextField
-					margin="normal"
-					required
-					fullWidth
-					name="username"
-					label="Username"
-					type="text"
-					id="username"
-					inputProps={{ maxLength: 30 }}
-					onChange={() => {
-						if (error) {
-							setError(null)
-						}
-					}}
-				/>
-			)}
+		<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "200px" }}>
 			<TextField margin="normal" required fullWidth id="email" label="Email Address" name="email" type="email" autoComplete="email" />
-			<TextField
-				margin="normal"
-				required
-				fullWidth
-				name="password"
-				label="Password"
-				type="password"
-				id="password"
-				autoComplete="current-password"
-				inputProps={{ minLength: signup ? 8 : 0 }}
-			/>
-			{signup && (
+			{!signup && (
 				<TextField
 					margin="normal"
 					required
 					fullWidth
-					name="confirmPassword"
-					label="Confirm Password"
+					name="password"
+					label="Password"
 					type="password"
-					id="confirmPassword"
-					inputProps={{ minLength: 8 }}
-					onChange={() => {
-						if (error) {
-							setError(null)
-						}
-					}}
+					id="password"
+					autoComplete="current-password"
+					inputProps={{ minLength: signup ? 8 : 0 }}
 				/>
 			)}
+
 			{formatError && (
 				<Alert severity="error">
 					<span style={{ textTransform: "capitalize" }}>{firstWordError}</span>&nbsp;
 					{formatError.join(" ")}
 				</Alert>
 			)}
-			{/* <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" /> */}
 
 			<FancyButton
 				submit
 				fullWidth
 				filled
 				borderColor={signup ? theme.palette.secondary.main : theme.palette.primary.main}
-				sx={{ mt: 3, mb: 2 }}
+				sx={{ mt: 1, mb: 2 }}
 				loading={loginPassword.loading}
 			>
-				{loginPassword.loading ? "Loading..." : signup ? "Sign up" : "Sign In"}
+				{loginPassword.loading ? "Loading..." : signup ? "Sign up with email" : "Sign In"}
 			</FancyButton>
-			{!signup && (
-				<Link to="/forgot-password">
-					<Typography
-						component="span"
-						sx={{
-							display: "inline-block",
-							textDecoration: "underline",
-							color: colors.white,
-							cursor: "pointer",
-							"&:hover": {
-								color: theme.palette.secondary.main,
-							},
-						}}
-					>
-						Forgot your password?
-					</Typography>
-				</Link>
-			)}
 		</Stack>
 	)
 }
