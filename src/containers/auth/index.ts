@@ -287,7 +287,7 @@ export const AuthContainer = createContainer(() => {
 	)
 
 	/**
-	 * Registers a User in using their email and password.
+	 * Sends an email to User to start signup process.
 	 */
 	const signupPassword = useCallback(
 		async (username: string, email: string, password: string, errorCallback?: (msg: string) => void) => {

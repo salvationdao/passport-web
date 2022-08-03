@@ -42,8 +42,9 @@ const ContentBox = styled(Box)({
 	alignSelf: "flex-end",
 	display: "flex",
 	height: "100%",
-	maxWidth: "90vw",
-	width: "fit-content",
+	maxWidth: "40rem",
+	minWidth: "fit-content",
+	width: "35vw",
 	boxSizing: "border-box",
 	flexDirection: "column",
 	justifyContent: "center",
@@ -56,7 +57,7 @@ const ContentBox = styled(Box)({
 	"@media (max-width:600px)": {
 		height: "auto",
 		alignSelf: "center",
-		width: "100%",
+		width: "90%",
 		minHeight: "50rem",
 	},
 	"@media (max-width:400px)": {

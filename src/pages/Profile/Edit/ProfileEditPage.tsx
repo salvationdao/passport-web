@@ -486,7 +486,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
 						{ENVIRONMENT !== "production" && (
 							<FancyButton
-								tooltip={"Change your password"}
+								tooltip={user.has_password ? "Change your password" : "Setup a password"}
 								sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
 								size="small"
 								onClick={() => setOpenChangePassword(true)}
