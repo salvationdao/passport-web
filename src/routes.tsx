@@ -41,7 +41,7 @@ export const Routes = () => {
 	const { send } = usePassportCommandsUser("/commander")
 	const { setSidebarOpen } = useSidebarState()
 	const { fingerprint } = useFingerprint()
-	const { setSessionID, user, loading: authLoading } = useAuth()
+	const { setSessionID, user, loading: authLoading, redirectURL } = useAuth()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
 	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
 	const [loadingText, setLoadingText] = useState<string>()
@@ -229,7 +229,7 @@ export const Routes = () => {
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
-			{user && account && <CorrectWalletConnected />}
+			{user && account && !redirectURL && <CorrectWalletConnected />}
 		</Box>
 	)
 }

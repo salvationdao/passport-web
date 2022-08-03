@@ -21,7 +21,7 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { setSignupRequest } = useAuth()
+	const { setSignupRequest, handleAuthCheck } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(null)
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
@@ -29,15 +29,18 @@ export const LoginForm = () => {
 
 	const twitterAuthCallback = useCallback(
 		async (event?: MessageEvent) => {
-			if (event && !("twitter_id" in event.data)) return
-			const twitterID = event?.data.twitter_id as string
-			setSignupRequest({
-				auth_type: AuthTypes.Twitter,
-				twitter_id: twitterID,
-			})
-			history.push("/signup")
+			if (event && "twitter_id" in event.data) {
+				const twitterID = event?.data.twitter_id as string
+				setSignupRequest({
+					auth_type: AuthTypes.Twitter,
+					twitter_id: twitterID,
+				})
+				history.push("/signup")
+			} else if (event && "login" in event.data) {
+				await handleAuthCheck()
+			}
 		},
-		[setSignupRequest, history],
+		[setSignupRequest, history, handleAuthCheck],
 	)
 
 	useEffect(() => {

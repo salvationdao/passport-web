@@ -235,6 +235,10 @@ export const AuthContainer = createContainer(() => {
 				}
 
 				// Handle external auth
+				if (redirectURL) {
+					window.location.replace(redirectURL)
+				}
+
 				if (!resp.payload.auth_type) {
 					setUser(resp.payload)
 					setAuthorised(true)
@@ -645,13 +649,20 @@ export const AuthContainer = createContainer(() => {
 	 *
 	 */
 	const loginCookieExternal = useCallback(async () => {
-		try {
-			await cookie({})
-			return
-		} catch (error) {
-			console.error(error)
-		}
-	}, [cookie])
+		const form = document.createElement("form")
+		form.method = "post"
+		form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/cookie`
+
+		const hiddenField = document.createElement("input")
+		hiddenField.type = "hidden"
+		hiddenField.name = "redirect_url"
+		hiddenField.value = redirectURL || ""
+
+		form.appendChild(hiddenField)
+
+		document.body.appendChild(form)
+		form.requestSubmit()
+	}, [redirectURL])
 
 	/**
 	 * TwoFactor login after confirming auth to give access to user
@@ -720,8 +731,6 @@ export const AuthContainer = createContainer(() => {
 				if (!resp.payload) {
 					throw new Error("No response was received")
 				}
-
-				// Handle external auth
 
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Wallet) {
@@ -911,6 +920,7 @@ export const AuthContainer = createContainer(() => {
 	//  Container  //
 	/////////////////
 	return {
+		redirectURL,
 		handleAuthCheck,
 		loginMetamask,
 		loginWalletConnect,
