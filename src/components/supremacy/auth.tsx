@@ -1,9 +1,8 @@
-import { Alert, Box, Typography } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 import { styled } from "@mui/system"
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import { Redirect } from "react-router-dom"
 import { useAuth } from "../../containers/auth"
-import { useSnackbar } from "../../containers/snackbar"
 import { Loading } from "../loading"
 
 interface LoginBoxProps {
@@ -71,22 +70,8 @@ const wallpapers = ["/img/rm.jpeg", "/img/bc.png", "/img/zai.png"]
 
 export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title }) => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
-	const { displayMessage } = useSnackbar()
 	const { userID, loginCookieExternal } = useAuth()
 	const isFromExternal = window.location.pathname === "/external/login"
-	const [error, setError] = useState<string | undefined>()
-
-	const err = useMemo(() => {
-		const queryString = window.location.search
-		const urlParams = new URLSearchParams(queryString)
-		return urlParams.get("err") || undefined
-	}, [])
-
-	useEffect(() => {
-		if (err) {
-			setError(err)
-		}
-	}, [displayMessage, err])
 
 	if (userID) {
 		// if it is not from external, redirect user to profile page
@@ -100,8 +85,7 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 		<LoginBox wp={wp}>
 			<ContentBox>
 				{title && <Typography component="h1">{title}</Typography>}
-				<Box sx={{ position: "relative", zIndex: 2 }}>{children}</Box>{" "}
-				{error && <Alert severity="error">{error.charAt(0).toUpperCase() + error.slice(1)}</Alert>}
+				<Box sx={{ position: "relative", zIndex: 2 }}>{children}</Box>
 			</ContentBox>
 		</LoginBox>
 	)

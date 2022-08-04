@@ -23,7 +23,7 @@ const signup = searchParams.get("signup")
 export const LoginForm = () => {
 	const { setSignupRequest, handleAuthCheck } = useAuth()
 	const history = useHistory()
-	const [error, setError] = useState<string | null>(null)
+	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
 	const [twitterPopup, setTwitterPopup] = useState<Window | null>(null)
 
@@ -63,16 +63,16 @@ export const LoginForm = () => {
 	}, [twitterAuthCallback, twitterPopup])
 
 	useEffect(() => {
-		if (error) {
-			const timer = setTimeout(() => {
-				setError(null)
-			}, 2000)
+		const removeError = setTimeout(() => {
+			if (!error) return
+			setError(null)
+		}, 3000)
+		if (!error) clearTimeout(removeError)
 
-			return () => {
-				clearTimeout(timer)
-			}
+		return () => {
+			clearTimeout(removeError)
 		}
-	}, [error])
+	}, [error, setError])
 
 	return (
 		<Stack>

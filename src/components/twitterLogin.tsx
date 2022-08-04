@@ -52,8 +52,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 			`width=${width},height=${height},left=${left},top=${top},popup=1`,
 		) as Window
 		if (onClick) {
-			await onClick(popup)
-			return
+			await onClick(twitterPopup)
 		}
 		if (!popup) {
 			if (onFailure) {
@@ -65,7 +64,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 		} else {
 			setTwitterPopup(popup)
 		}
-	}, [add, redirectURL, onClick, onFailure])
+	}, [add, redirectURL, onClick, onFailure, twitterPopup])
 
 	const propsForRender = useMemo(
 		() => ({

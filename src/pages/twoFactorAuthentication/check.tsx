@@ -63,6 +63,18 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 		[tokenGroup, errorCallback, twoFactorAuthLogin, code, isRecovery, setVerified],
 	)
 
+	useEffect(() => {
+		const removeError = setTimeout(() => {
+			if (!error) return
+			setError(null)
+		}, 3000)
+		if (!error) clearTimeout(removeError)
+
+		return () => {
+			clearTimeout(removeError)
+		}
+	}, [error, setError])
+
 	// get 2fa secret
 	return (
 		<Box

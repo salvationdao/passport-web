@@ -740,7 +740,7 @@ export const AuthContainer = createContainer(() => {
 	const twoFactorAuthLogin = useCallback(
 		async (code: string, isRecovery: boolean, token?: string, rURL?: string, isVerified?: boolean, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await twoFactorAuth({
+				const args = {
 					redirect_url: rURL,
 					token,
 					user_id: isVerified ? user?.id : undefined,
@@ -749,8 +749,15 @@ export const AuthContainer = createContainer(() => {
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					tenant,
-				})
+					auth_type: AuthTypes.TFA,
+				}
 
+				if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
+					return
+				}
+
+				const resp = await twoFactorAuth(args)
 				if (resp.error) {
 					throw resp.payload
 				}
@@ -773,7 +780,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[twoFactorAuth, tenant, redirectURL, sessionId, fingerprint, user],
+		[user?.id, sessionId, redirectURL, fingerprint, tenant, twoFactorAuth, externalAuth],
 	)
 	/**
 	 * Logs a User in using a Metamask public address
