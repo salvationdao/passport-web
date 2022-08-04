@@ -89,10 +89,10 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 	}, [displayMessage, err])
 
 	useEffect(() => {
-		if (isFromExternal) {
+		if (isFromExternal && userID) {
 			loginCookieExternal()
 		}
-	}, [isFromExternal, loginCookieExternal])
+	}, [isFromExternal, loginCookieExternal, userID])
 
 	if (userID) {
 		// if it is not from external, redirect user to profile page
