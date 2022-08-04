@@ -16,7 +16,6 @@ export const Signup: React.FC = () => {
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
 	}, [])
-
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent<HTMLFormElement>) => {
 			try {
@@ -27,7 +26,6 @@ export const Signup: React.FC = () => {
 				const confirmPassword = data.get("confirmPassword")?.toString()
 
 				if (!signupRequest) {
-					window.location.replace("/")
 				} else {
 					let userRequest: SignupRequestTypes | null = null
 					switch (signupRequest.auth_type) {

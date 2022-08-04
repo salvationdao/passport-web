@@ -11,6 +11,14 @@ export interface Fingerprint {
 	user_agent: string
 }
 
+export interface CheckUserExist {
+	public_address?: string
+	email?: string
+	facebook_id?: string
+	google_id?: string
+	twitter_id?: string
+}
+
 export interface RegisterResponse {
 	user: User
 	token: string

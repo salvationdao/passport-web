@@ -12,18 +12,21 @@ const searchParams = new URLSearchParams(window.location.search)
 export const LoginRedirect = () => {
 	const id = searchParams.get("id")
 	const login = searchParams.get("login")
+	const redirectURL = searchParams.get("redirectURL")
 	// Receives token from the url param and passes it to the parent via postMessage
 	useEffect(() => {
 		if (id) {
-			window.opener.postMessage({ twitter_id: id })
-		} else if (login) {
+			window.opener.postMessage({ twitter_id: id, redirectURL })
+		}
+
+		if (login) {
 			window.opener.postMessage({ login })
 		}
 		// Close the window
 		setTimeout(() => {
 			window.close()
 		}, 1200)
-	}, [id, login])
+	}, [id, login, redirectURL])
 
 	return (
 		<Stack alignItems="center" justifyContent="center" sx={{ height: "100vh", p: "3.8rem", backgroundColor: colors.darkNavyBackground }}>

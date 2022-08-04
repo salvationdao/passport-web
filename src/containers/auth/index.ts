@@ -8,6 +8,7 @@ import { usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
 import {
 	ChangePasswordRequest,
+	CheckUserExist,
 	EmailSignupVerifyRequest,
 	FacebookLoginRequest,
 	ForgotPasswordRequest,
@@ -131,6 +132,14 @@ const emailSignupVerifyAction = (formValues: EmailSignupVerifyRequest): Action =
 	credentials: "include",
 	body: formValues,
 })
+
+const checkUserExistAction = (formValues: CheckUserExist): Action => ({
+	method: "POST",
+	endpoint: "/auth/user_exist",
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
 /**
  * A Container that handles Authorisation
  */
@@ -186,6 +195,7 @@ export const AuthContainer = createContainer(() => {
 	const { loading: googleLoginLoading, mutate: google } = useMutation(googleLoginAction)
 	const { loading: facebookLoginLoading, mutate: facebook } = useMutation(facebookLoginAction)
 	const { loading: twoFactorLoginLoading, mutate: twoFactorAuth } = useMutation(twoFactorAuthLoginAction)
+	const { mutate: checkUserExist } = useMutation(checkUserExistAction)
 
 	// useQueries
 	const { query: logoutQuery } = useQuery(
@@ -280,11 +290,6 @@ export const AuthContainer = createContainer(() => {
 				}
 				if (!resp.payload) {
 					throw new Error("No response was received")
-				}
-
-				// Handle external auth
-				if (redirectURL) {
-					window.location.replace(redirectURL)
 				}
 
 				if (!resp.payload.auth_type) {
@@ -598,7 +603,10 @@ export const AuthContainer = createContainer(() => {
 					auth_type: AuthTypes.Google,
 					tenant,
 				}
-				if (redirectURL) {
+				const checkResp = await checkUserExist({
+					google_id: id,
+				})
+				if (checkResp.payload.ok && redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
 					return
 				}
@@ -644,7 +652,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[redirectURL, sessionId, fingerprint, tenant, google, externalAuth, history],
+		[redirectURL, sessionId, fingerprint, tenant, checkUserExist, google, externalAuth, history],
 	)
 	/**
 	 * Facebook login use oauth to give access to user
@@ -661,7 +669,10 @@ export const AuthContainer = createContainer(() => {
 					auth_type: AuthTypes.Facebook,
 					tenant,
 				}
-				if (redirectURL) {
+				const checkResp = await checkUserExist({
+					facebook_id: id,
+				})
+				if (checkResp.payload.ok && redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
 					return
 				}
@@ -705,7 +716,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[redirectURL, sessionId, fingerprint, tenant, facebook, externalAuth, history],
+		[redirectURL, sessionId, fingerprint, tenant, checkUserExist, facebook, externalAuth, history],
 	)
 
 	/**
@@ -784,7 +795,10 @@ export const AuthContainer = createContainer(() => {
 					tenant,
 				}
 
-				if (redirectURL) {
+				const checkResp = await checkUserExist({
+					public_address: acc,
+				})
+				if (checkResp.payload.ok && redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
 					return
 				}
@@ -799,8 +813,10 @@ export const AuthContainer = createContainer(() => {
 
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Wallet) {
+					let uri = "/signup"
+					if (redirectURL) uri = uri + `?redirectURL=${redirectURL}&tenant=${tenant}`
 					setSignupRequest(resp.payload)
-					history.push("/signup")
+					history.push(uri)
 					return
 				}
 
@@ -827,7 +843,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			throw e
 		}
-	}, [connect, sign, user, redirectURL, sessionId, fingerprint, tenant, login, externalAuth, history])
+	}, [connect, sign, user, redirectURL, sessionId, fingerprint, tenant, checkUserExist, login, externalAuth, history])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -848,7 +864,10 @@ export const AuthContainer = createContainer(() => {
 					tenant,
 				}
 
-				if (redirectURL) {
+				const checkResp = await checkUserExist({
+					public_address: account,
+				})
+				if (checkResp.payload.ok && redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
 					return
 				}
@@ -887,7 +906,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, signWalletConnect, redirectURL, account, sessionId, fingerprint, tenant, login, externalAuth, history, clear])
+	}, [wcSignature, signWalletConnect, redirectURL, account, sessionId, fingerprint, tenant, checkUserExist, login, externalAuth, history, clear])
 
 	// Effect
 	useEffect(() => {

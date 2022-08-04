@@ -29,7 +29,17 @@ export const LoginForm = () => {
 
 	const twitterAuthCallback = useCallback(
 		async (event?: MessageEvent) => {
-			if (event && "twitter_id" in event.data) {
+			if (!!event?.data["redirectURL"] && !!event?.data["twitter_id"]) {
+				const redirectURL = event?.data.redirectURL as string
+				const twitterID = event?.data.twitter_id as string
+
+				setSignupRequest({
+					auth_type: AuthTypes.Twitter,
+					twitter_id: twitterID,
+					redirect_url: redirectURL,
+				})
+				history.push(`/signup`)
+			} else if (event && "twitter_id" in event.data) {
 				const twitterID = event?.data.twitter_id as string
 				setSignupRequest({
 					auth_type: AuthTypes.Twitter,
