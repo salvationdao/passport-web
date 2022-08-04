@@ -17,7 +17,7 @@ const LoginBox = styled(Box, {
 	width: "100%",
 	border: "1px solid rgba(255,255,255,0.5)",
 	textAlign: "center",
-	backgroundImage: `url(${wp})`,
+	backgroundImage: `url(https://afiles.ninja-cdn.com/passport/background_images/${wp})`,
 	backgroundSize: "cover",
 	backgroundPosition: "center center",
 	display: "flex",
@@ -67,7 +67,7 @@ const ContentBox = styled(Box)({
 	},
 })
 
-const wallpapers = ["/img/rm.jpeg", "/img/bc.png", "/img/zai.png"]
+const wallpapers = ["rm.jpeg", "bc.png", "zai.png"]
 
 export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title }) => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
