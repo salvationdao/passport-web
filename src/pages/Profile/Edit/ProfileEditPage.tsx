@@ -2,14 +2,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, styled, Typography } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useHistory, useParams } from "react-router-dom"
 import { FancyButton } from "../../../components/fancyButton"
 import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
-import { ENVIRONMENT } from "../../../config"
 import { useAuth } from "../../../containers/auth"
+import { useSnackbar } from "../../../containers/snackbar"
+import { makeid } from "../../../helpers/index"
 import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
@@ -22,6 +23,7 @@ import { Google } from "./ManageConnections/Google"
 import { Twitter } from "./ManageConnections/Twitter"
 import { Wallet } from "./ManageConnections/Wallet"
 import { RemoveTFAModal } from "./RemoveTFAModal"
+import { VerifyEmailModal } from "./VerifyEmailModal"
 
 export const ProfileEditPage: React.FC = () => {
 	const { username } = useParams<{ username: string }>()
@@ -184,80 +186,85 @@ interface ProfileEditProps {
 const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerifyMessage }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
 	const { user } = useAuth()
+	const { displayMessage } = useSnackbar()
 	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
 	const [lockOption, setLockOption] = useState<LockOptionsProps>()
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
 	const [openChangePassword, setOpenChangePassword] = useState(false)
+	const [showVerifyEmailModal, setShowVerifyEmailModal] = useState(false)
+	const [verifyCode, setVerifyCode] = useState("")
 
 	// TFA
 	const [loadingSetupBtn, setLoadingSetupBtn] = useState(false)
 
 	// Setup form
-	const { control, handleSubmit, reset, formState } = useForm<UserInput>()
-	const { isDirty } = formState
-
-	//const { mutate: upload } = useMutation(fetching.mutation.fileUpload)
+	const { control, handleSubmit, reset, getValues } = useForm<UserInput>()
 	const [submitting, setSubmitting] = useState(false)
-	const [changePassword, setChangePassword] = useState(false)
 
-	//const [avatar, setAvatar] = useState<File>()
-	//const [avatarChanged, setAvatarChanged] = useState(false)
+	const updateUserHandler = useCallback(
+		async (errCallback?: (err: any) => void) => {
+			try {
+				if (!user) return
+				const data = getValues()
+				const { new_username } = data
+				// Update user
+				const resp = await send<User>(HubKey.UserUpdate, {
+					id: user.id,
+					...data,
+				})
+
+				if (resp) {
+					setDisplayResult(true)
+					setSuccessful(true)
+					setNewUsername(new_username)
+				}
+			} catch (err) {
+				errCallback && errCallback(err)
+				setVerifyMessage(undefined)
+			} finally {
+				setSubmitting(false)
+			}
+		},
+		[getValues, send, setDisplayResult, setNewUsername, setSuccessful, setVerifyMessage, user],
+	)
 
 	const onSaveForm = handleSubmit(async (data) => {
 		if (!user) return
-		const { new_username, new_password, ...input } = data
+		const { new_username, new_password, email, ...input } = data
 		setSubmitting(true)
 		try {
-			// let avatarID: string | undefined = user.avatar_id
-			// if (avatarChanged) {
-			// 	if (!!avatar) {
-			// 		// Upload avatar
-			// 		const r = await upload({ file: avatar, public: true })
-			// 		if (r.error || !r.payload) {
-			// 			displayMessage("Failed to upload image, please try again.", "error")
-			// 			setSubmitting(false)
-			// 			return
-			// 		}
-			// 		avatarID = r.payload.id
-			// 	} else {
-			// 		// Remove avatar
-			// 		avatarID = undefined
-			// 	}
-			// }
-
 			const payload = {
 				...input,
 				user_agent: window.navigator.userAgent,
 				new_username: user.username !== new_username ? new_username : undefined,
-				new_password: changePassword ? new_password : undefined,
-				//avatar_id: avatarID,
 			}
 
-			const resp = await send<User>(HubKey.UserUpdate, {
-				id: user.id,
-				...payload,
-			})
+			if (email && email !== user.email) {
+				// Send verification email
+				const c = makeid(5).toUpperCase()
+				setVerifyCode(c)
+				await send<User>(HubKey.UserVerifySend, {
+					code: c,
+					email,
+				})
+				setShowVerifyEmailModal(true)
+			} else {
+				// Update user
+				const resp = await send<User>(HubKey.UserUpdate, {
+					id: user.id,
+					...payload,
+				})
 
-			if (resp) {
-				setDisplayResult(true)
-				setSuccessful(true)
-				setChangePassword(false)
-				setDisplayResult(true)
-				setNewUsername(new_username)
-
-				if (payload.email !== user.email) {
-					setVerifyMessage(`An email was sent to ${payload.email}, please verify this email to change your current email.`)
-				} else {
-					setTimeout(() => {
-						history.push(`/profile`)
-					}, 3000)
+				if (resp) {
+					setDisplayResult(true)
+					setSuccessful(true)
+					setNewUsername(new_username)
 				}
 			}
-		} catch (e) {
-			setDisplayResult(true)
-			setSuccessful(false)
-			setVerifyMessage(undefined)
+		} catch (e: any) {
+			console.error(e)
+			displayMessage(e, "error")
 		} finally {
 			setSubmitting(false)
 		}
@@ -326,7 +333,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				<Typography id="profile" variant="h1" component="h2">
 					Edit Profile
 				</Typography>
-
 				{/* Temporarily removed for public sale */}
 				{/* <Section>
 					<Typography variant="subtitle1">Avatar</Typography>
@@ -344,7 +350,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 						}}
 					/>
 				</Section> */}
-
 				<Section>
 					<Typography variant="subtitle1">User Details</Typography>
 					<Box
@@ -389,24 +394,22 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 							disabled={submitting}
 							sx={{ minWidth: "180px", flex: "1 0 48%" }}
 						/>
-						{ENVIRONMENT !== "production" && (
-							<InputField
-								name="email"
-								label="Email"
-								type="email"
-								fullWidth
-								control={control}
-								rules={{
-									required: changePassword && "Email must be provided if you are changing your password.",
-									pattern: {
-										value: /.+@.+\..+/,
-										message: "Invalid email address",
-									},
-								}}
-								disabled={submitting}
-								sx={{ minWidth: "180px", flex: "1 0 48%" }}
-							/>
-						)}
+
+						<InputField
+							name="email"
+							label="Email"
+							type="email"
+							fullWidth
+							control={control}
+							rules={{
+								pattern: {
+									value: /.+@.+\..+/,
+									message: "Invalid email address",
+								},
+							}}
+							disabled={submitting}
+							sx={{ minWidth: "180px", flex: "1 0 48%" }}
+						/>
 					</Box>
 					<Button
 						sx={{
@@ -414,7 +417,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 						}}
 						type="submit"
 						//add this to disabled when avatar change is ready: && !avatarChanged
-						disabled={(!isDirty && !changePassword) || submitting}
+						disabled={submitting}
 						variant="contained"
 						color="primary"
 						startIcon={<FontAwesomeIcon icon={["fas", "save"]} />}
@@ -422,84 +425,80 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 						Save
 					</Button>
 				</Section>
-
 				{/* ------------- Manage Connections ------------------ */}
-				{ENVIRONMENT !== "production" && (
-					<>
-						<Stack spacing=".5rem">
-							<Typography variant="h6">Manage Connections</Typography>
-							<Box sx={{ display: "flex", gap: "1rem" }}>
-								<Wallet />
-								<Facebook />
-								<Google />
-								<Twitter />
-							</Box>
-						</Stack>
-						{/* -------------------------- Two Factor Authentication--------------------------------- */}
-						<Stack spacing=".5rem">
-							<Typography variant="h6">Two-Factor Authentication</Typography>
+				<>
+					<Stack spacing=".5rem">
+						<Typography variant="h6">Manage Connections</Typography>
+						<Box sx={{ display: "flex", gap: "1rem" }}>
+							<Wallet />
+							<Facebook />
+							<Google />
+							<Twitter />
+						</Box>
+					</Stack>
+					{/* -------------------------- Two Factor Authentication--------------------------------- */}
+					<Stack spacing=".5rem">
+						<Typography variant="h6">Two-Factor Authentication</Typography>
 
-							<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
-								<FancyButton
-									loading={loadingSetupBtn}
-									filled
-									borderColor={user.two_factor_authentication_is_set ? colors.darkGrey : undefined}
-									sx={{
-										width: "calc(50% - .25rem)",
-										fontSize: "105%",
-									}}
-									size="small"
-									onClick={async () => {
-										setLoadingSetupBtn(true)
-										if (!user?.two_factor_authentication_is_set) {
-											history.push(`/tfa/${user?.username}/setup`)
-											return
-										}
-									}}
-								>
-									{user.two_factor_authentication_is_set ? "Remove Two-Factor Authentication" : "Setup Two-Factor Authentication"}
-								</FancyButton>
-								<FancyButton
-									filled
-									borderColor={colors.skyBlue}
-									disabled={!user.two_factor_authentication_is_set}
-									sx={{
-										width: "calc(50% - .25rem)",
-										fontSize: "105%",
-									}}
-									size="small"
-									onClick={() => {
-										history.push(`/tfa/${user?.username}/recovery-code`)
-									}}
-								>
-									Get Recovery Code
-								</FancyButton>
-							</Box>
-						</Stack>
-					</>
-				)}
-
+						<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
+							<FancyButton
+								loading={loadingSetupBtn}
+								filled
+								borderColor={user.two_factor_authentication_is_set ? colors.darkGrey : undefined}
+								sx={{
+									width: "calc(50% - .25rem)",
+									fontSize: "105%",
+								}}
+								size="small"
+								onClick={async () => {
+									setLoadingSetupBtn(true)
+									if (!user?.two_factor_authentication_is_set) {
+										history.push(`/tfa/${user?.username}/setup`)
+										return
+									}
+								}}
+							>
+								{user.two_factor_authentication_is_set ? "Remove Two-Factor Authentication" : "Setup Two-Factor Authentication"}
+							</FancyButton>
+							<FancyButton
+								filled
+								borderColor={colors.skyBlue}
+								disabled={!user.two_factor_authentication_is_set}
+								sx={{
+									width: "calc(50% - .25rem)",
+									fontSize: "105%",
+								}}
+								size="small"
+								onClick={() => {
+									history.push(`/tfa/${user?.username}/recovery-code`)
+								}}
+							>
+								Get Recovery Code
+							</FancyButton>
+						</Box>
+					</Stack>
+				</>
 				{/* -------------------------- Account admin --------------------------------- */}
 				<Stack spacing=".5rem">
 					<Typography variant="h6">Security</Typography>
-
 					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
-						{ENVIRONMENT !== "production" && (
-							<FancyButton
-								tooltip={"Change your password"}
-								sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
-								size="small"
-								onClick={() => setOpenChangePassword(true)}
-							>
-								{user.has_password ? "Change Password" : "Set Password"}
-							</FancyButton>
-						)}
+						<FancyButton
+							disabled={!user.email}
+							tooltip={user.has_password ? "Change your password" : "Setup a password"}
+							sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
+							size="small"
+							onClick={() => setOpenChangePassword(true)}
+						>
+							{user.has_password ? "Change Password" : !user.email ? "Email required to set password" : "Set Password"}
+						</FancyButton>
 						{lockOptions.map((option) => (
 							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
 						))}
 					</Box>
 				</Stack>
 			</Box>
+
+			<VerifyEmailModal open={showVerifyEmailModal} setOpen={setShowVerifyEmailModal} code={verifyCode} updateUserHandler={updateUserHandler} />
 
 			<ChangePasswordModal
 				open={openChangePassword}

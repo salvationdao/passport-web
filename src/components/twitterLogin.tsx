@@ -21,7 +21,7 @@ export interface TwitterLoginButtonRenderProps {
 }
 
 interface TwitterLoginProps {
-	onClick?: () => Promise<void>
+	onClick?: (popup?: Window | null) => Promise<void>
 	onFailure?: (response: ReactTwitterFailureResponse) => void
 	add?: string
 	render?: (props: TwitterLoginButtonRenderProps) => JSX.Element
@@ -34,10 +34,6 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 	const { handleAuthCheck } = useAuth()
 
 	const click = useCallback(async () => {
-		if (onClick) {
-			await onClick()
-			return
-		}
 		const twitterParams = {
 			oauth_callback: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter?${add ? `add=${add}&` : ""}redirect=${
 				window.location.origin
@@ -55,7 +51,10 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 			"Connect Twitter to XSYN Passport",
 			`width=${width},height=${height},left=${left},top=${top},popup=1`,
 		) as Window
-
+		if (onClick) {
+			await onClick(popup)
+			return
+		}
 		if (!popup) {
 			if (onFailure) {
 				onFailure({

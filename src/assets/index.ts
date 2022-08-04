@@ -43,4 +43,5 @@ export { default as SupTokenIconPath, ReactComponent as SupTokenIcon } from "./i
 export { default as SupremacyLogoImagePath } from "./images/supremacy-logo.svg"
 export { default as XSYNLogoImagePath, ReactComponent as XSYNLogo } from "./images/XSYN Stack White.svg"
 export { default as XSYNWordmarkImagePath } from "./images/XSYN Wordmark White.png"
+export { default as XsynLogoIcon } from "./images/xsyn_logo.svg"
 export { default as ZaibatsuLogoImagePath } from "./images/Zaibatsu_Logo.svg"

@@ -8,19 +8,24 @@ import { usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
 import {
 	ChangePasswordRequest,
+	EmailSignupVerifyRequest,
 	FacebookLoginRequest,
 	ForgotPasswordRequest,
 	GoogleLoginRequest,
-	LoginRequest,
+	LoginNewUserResponse,
 	NewPasswordRequest,
+	PasswordLoginRequest,
+	SignupNewUser,
 	TwoFactorAuthLoginRequest,
 	VerifyAccountResponse,
+	WalletLoginRequest,
 } from "../../types/auth"
 import { Perm } from "../../types/enums"
 import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 import { useSubscription } from "../ws/useSubscription"
+import { makeid } from "./../../helpers/index"
 import { ResetPasswordRequest } from "./../../types/auth"
 
 export enum AuthTypes {
@@ -37,6 +42,7 @@ export enum AuthTypes {
 	NewPassword = "new_password",
 	Google = "google",
 	Facebook = "facebook",
+	Twitter = "twitter",
 	TFA = "tfa",
 }
 
@@ -45,15 +51,23 @@ export enum VerificationType {
 	ForgotPassword,
 }
 
-const loginAction = (formValues: LoginRequest & { authType: string }): Action<User> => ({
+const signupAction = (formValues: SignupNewUser): Action<User> => ({
 	method: "POST",
-	endpoint: `/auth/${formValues.authType}`,
+	endpoint: "/auth/signup",
 	responseType: "json",
 	credentials: "include",
 	body: formValues,
 })
 
-const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
+const loginAction = (formValues: WalletLoginRequest | PasswordLoginRequest): Action<User | LoginNewUserResponse> => ({
+	method: "POST",
+	endpoint: `/auth/${formValues.auth_type}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action<string> => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.Forgot}`,
 	responseType: "json",
@@ -61,7 +75,7 @@ const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action => ({
 	body: formValues,
 })
 
-const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
+const resetPasswordAction = (formValues: ResetPasswordRequest): Action<User> => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.Reset}`,
 	responseType: "json",
@@ -69,7 +83,7 @@ const resetPasswordAction = (formValues: ResetPasswordRequest): Action => ({
 	body: formValues,
 })
 
-const changePasswordAction = (formValues: ChangePasswordRequest): Action => ({
+const changePasswordAction = (formValues: ChangePasswordRequest): Action<User> => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.ChangePassword}`,
 	responseType: "json",
@@ -77,7 +91,7 @@ const changePasswordAction = (formValues: ChangePasswordRequest): Action => ({
 	body: formValues,
 })
 
-const newPasswordAction = (formValues: NewPasswordRequest): Action => ({
+const newPasswordAction = (formValues: NewPasswordRequest): Action<User> => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.NewPassword}`,
 	responseType: "json",
@@ -85,7 +99,7 @@ const newPasswordAction = (formValues: NewPasswordRequest): Action => ({
 	body: formValues,
 })
 
-const googleLoginAction = (formValues: GoogleLoginRequest): Action => ({
+const googleLoginAction = (formValues: GoogleLoginRequest): Action<User | LoginNewUserResponse> => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.Google}`,
 	responseType: "json",
@@ -93,7 +107,7 @@ const googleLoginAction = (formValues: GoogleLoginRequest): Action => ({
 	body: formValues,
 })
 
-const facebookLoginAction = (formValues: FacebookLoginRequest): Action => ({
+const facebookLoginAction = (formValues: FacebookLoginRequest): Action<User | LoginNewUserResponse> => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.Facebook}`,
 	responseType: "json",
@@ -101,9 +115,17 @@ const facebookLoginAction = (formValues: FacebookLoginRequest): Action => ({
 	body: formValues,
 })
 
-const twoFactorAuthLoginAction = (formValues: TwoFactorAuthLoginRequest): Action => ({
+const twoFactorAuthLoginAction = (formValues: TwoFactorAuthLoginRequest): Action<User> => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.TFA}`,
+	responseType: "json",
+	credentials: "include",
+	body: formValues,
+})
+
+const emailSignupVerifyAction = (formValues: EmailSignupVerifyRequest): Action => ({
+	method: "POST",
+	endpoint: "/auth/email_signup",
 	responseType: "json",
 	credentials: "include",
 	body: formValues,
@@ -128,6 +150,11 @@ export const AuthContainer = createContainer(() => {
 	const [verifying, setVerifying] = useState(false)
 	const [verifyCompleteType, setVerifyCompleteType] = useState<VerificationType>()
 	const [showSimulation, setShowSimulation] = useState(false)
+
+	// Signup
+	const [signupRequest, setSignupRequest] = useState<LoginNewUserResponse | undefined>()
+	const [emailCode, setEmailCode] = useState<{ code: string; email: string } | undefined>()
+
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
@@ -148,9 +175,9 @@ export const AuthContainer = createContainer(() => {
 		console.trace()
 		setUser(undefined)
 	}, [])
-
-	// Mutated actions
+	const { loading: emailSignupLoading, mutate: emailSignup } = useMutation(emailSignupVerifyAction)
 	const { loading: loginLoading, mutate: login, error: loginError } = useMutation(loginAction)
+	const { loading: signupLoading, mutate: signup } = useMutation(signupAction)
 	const { loading: forgotPasswordLoading, mutate: forgot } = useMutation(forgotPasswordAction)
 	const { loading: resetPasswordLoading, mutate: reset } = useMutation(resetPasswordAction)
 	const { loading: changePasswordLoading, mutate: change } = useMutation(changePasswordAction)
@@ -175,40 +202,54 @@ export const AuthContainer = createContainer(() => {
 		responseType: "json",
 		credentials: "include",
 	})
-	const externalAuth = useMemo(
-		() => (args: { [key: string]: string | null | undefined }) => {
-			const cleanArgs: { [key: string]: string } = {}
-			const host = args["host"]
-
-			Object.keys(args).forEach((key) => {
-				if (args[key] === "" || args[key] === "null" || !args[key]) {
-					return
-				}
-				cleanArgs[key] = args[key] || ""
-			})
-
-			const form = document.createElement("form")
-			form.method = "post"
-			form.action = `https://${host || API_ENDPOINT_HOSTNAME}/api/auth/external`
-
-			Object.keys(args).forEach((key) => {
-				const hiddenField = document.createElement("input")
-				hiddenField.type = "hidden"
-				hiddenField.name = key
-				hiddenField.value = args[key] || ""
-
-				form.appendChild(hiddenField)
-			})
-
-			document.body.appendChild(form)
-			form.requestSubmit()
-		},
-		[],
-	)
 
 	/////////////////
 	//  Functions  //
 	/////////////////
+
+	/**
+	 * Signup a User  after setting up username and maybe password if email signup
+	 *
+	 * @param token Metamask public address
+	 */
+	const signupUser = useCallback(
+		async (args: SignupNewUser, errorCallback?: (msg: string) => void) => {
+			try {
+				const resp = await signup({ ...args, fingerprint })
+
+				if (resp.error) {
+					throw resp.payload
+				}
+				if (!resp.payload) {
+					throw new Error("No response was received")
+				}
+
+				// Handle external auth
+				if (redirectURL) {
+					window.location.replace(redirectURL)
+				}
+
+				if (!resp.payload.auth_type) {
+					setUser(resp.payload)
+					setAuthorised(true)
+					setLoading(false)
+					return resp
+				}
+				throw new Error("No response was received")
+			} catch (e: any) {
+				let errMsg = "Something went wrong, please try again."
+				if (e.message) {
+					errMsg = e.message
+				}
+				if (errorCallback) {
+					errorCallback(errMsg)
+				}
+				console.error(e)
+				throw typeof e === "string" ? e : errMsg
+			}
+		},
+		[fingerprint, signup, redirectURL],
+	)
 
 	/**
 	 * Logs user out by removing the stored login token and reloading the page.
@@ -243,34 +284,36 @@ export const AuthContainer = createContainer(() => {
 	const loginPassword = useCallback(
 		async (email: string, password: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const args = {
-					redirect_url: redirectURL,
+				const resp = await login({
 					email,
 					password,
 					session_id: sessionId,
 					fingerprint,
 					tenant,
-					authType: AuthTypes.Email,
-				}
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-				const resp = await login(args)
+					auth_type: AuthTypes.Email,
+				})
 
 				if (resp.error) {
-					clear()
 					throw resp.payload
 				}
+				if (!resp.payload) {
+					throw new Error("No response was received")
+				}
+
+				// Handle external auth
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
-				if (!resp.payload?.id) {
+				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
 					return
+				} else if (!resp.payload.auth_type) {
+					setUser(resp.payload)
+					setAuthorised(true)
+					setLoading(false)
+
+					return resp
 				}
-				setUser(resp.payload)
-				setAuthorised(true)
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
 				if (e.message) {
@@ -283,36 +326,26 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[login, tenant, redirectURL, sessionId, fingerprint, clear, history, externalAuth],
+		[login, tenant, sessionId, fingerprint, history],
 	)
 
 	/**
-	 * Registers a User in using their email and password.
+	 * Sends an email to User to start signup process.
 	 */
-	const signupPassword = useCallback(
-		async (username: string, email: string, password: string, errorCallback?: (msg: string) => void) => {
+	const emailSignupVerify = useCallback(
+		async (email: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const args = {
-					redirect_url: redirectURL,
-					username,
+				const c = makeid(5).toUpperCase()
+				setEmailCode({
 					email,
-					password,
-					session_id: sessionId,
-					fingerprint,
-					tenant,
-					authType: AuthTypes.Signup,
-				}
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-				const resp = await login(args)
-				if (resp.error) {
+					code: c,
+				})
+				const resp = await emailSignup({ email, code: c })
+				if (resp.error && resp.payload) {
 					clear()
 					throw resp.payload
 				}
-				setUser(resp.payload)
-				setAuthorised(true)
+				history.push("/email-verify")
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
 				if (e.message) {
@@ -325,7 +358,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[login, tenant, redirectURL, sessionId, fingerprint, clear, externalAuth],
+		[clear, emailSignup, setEmailCode, history],
 	)
 
 	/**
@@ -343,6 +376,9 @@ export const AuthContainer = createContainer(() => {
 				if (resp.error) {
 					clear()
 					throw resp.payload
+				}
+				if (!resp.payload) {
+					throw new Error("No response was received")
 				}
 				return resp.payload
 			} catch (e: any) {
@@ -487,39 +523,46 @@ export const AuthContainer = createContainer(() => {
 	 * Google login use oauth to give access to user
 	 */
 	const googleLogin = useCallback(
-		async (id: string, username: string, email: string, errorCallback?: (msg: string) => void) => {
+		async (id: string, email: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const args = {
+				const resp = await google({
 					redirect_url: redirectURL,
-					username,
 					email,
 					google_id: id,
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
-					authType: AuthTypes.Google,
+					auth_type: AuthTypes.Google,
 					tenant,
-				}
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-				const resp = await google({
-					...args,
 				})
-
 				if (resp.error) {
 					throw resp.payload
+				}
+				if (!resp.payload) {
+					throw new Error("No response was received")
+				}
+
+				// Handle external auth
+
+				// Handle new user
+				if (resp.payload.auth_type === AuthTypes.Google) {
+					setSignupRequest(resp.payload)
+					history.push("/signup")
+					return
 				}
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
-				if (!resp.payload?.id) {
+				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
 					return
-				}
+				} else if (!resp.payload.auth_type) {
+					setUser(resp.payload)
+					setAuthorised(true)
+					setLoading(false)
+					setSignupRequest(undefined)
 
-				setUser(resp.payload)
-				setAuthorised(true)
+					return resp
+				}
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
 				if (e.message) {
@@ -532,42 +575,50 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[google, tenant, redirectURL, sessionId, fingerprint, history, externalAuth],
+		[google, tenant, redirectURL, sessionId, fingerprint, history],
 	)
 	/**
 	 * Facebook login use oauth to give access to user
 	 */
 	const facebookLogin = useCallback(
-		async (id: string, name: string, email: string, errorCallback?: (msg: string) => void) => {
+		async (id: string, email: string, errorCallback?: (msg: string) => void) => {
 			try {
-				const args = {
-					redirect_url: redirectURL,
+				const resp = await facebook({
 					email,
 					facebook_id: id,
-					name,
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
-					authType: AuthTypes.Facebook,
-					tenant,
-				}
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-				const resp = await facebook(args)
+					auth_type: AuthTypes.Facebook,
+				})
 				if (resp.error) {
-					throw resp.error
+					throw resp.payload
+				}
+				if (!resp.payload) {
+					throw new Error("No response was received")
+				}
+
+				// Handle external auth
+
+				// Handle new user
+				if (resp.payload.auth_type === AuthTypes.Facebook) {
+					setSignupRequest(resp.payload)
+					history.push("/signup")
+					return
 				}
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
-				if (!resp.payload?.id) {
+				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
 					return
-				}
+				} else if (!resp.payload.auth_type) {
+					setUser(resp.payload)
+					setAuthorised(true)
+					setLoading(false)
+					setSignupRequest(undefined)
 
-				setUser(resp.payload)
-				setAuthorised(true)
+					return resp
+				}
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
 				if (e.message) {
@@ -580,16 +631,36 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[facebook, tenant, redirectURL, sessionId, fingerprint, externalAuth, history],
+		[facebook, redirectURL, sessionId, fingerprint, history],
 	)
 
 	/**
-	 * Facebook login use oauth to give access to user
+	 * External login User with passport cookie
+	 *
+	 */
+	const loginCookieExternal = useCallback(() => {
+		const form = document.createElement("form")
+		form.method = "post"
+		form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/cookie`
+
+		const hiddenField = document.createElement("input")
+		hiddenField.type = "hidden"
+		hiddenField.name = "redirect_url"
+		hiddenField.value = redirectURL || ""
+
+		form.appendChild(hiddenField)
+
+		document.body.appendChild(form)
+		form.requestSubmit()
+	}, [redirectURL])
+
+	/**
+	 * TwoFactor login after confirming auth to give access to user
 	 */
 	const twoFactorAuthLogin = useCallback(
 		async (code: string, isRecovery: boolean, token?: string, rURL?: string, isVerified?: boolean, errorCallback?: (msg: string) => void) => {
 			try {
-				const args = {
+				const resp = await twoFactorAuth({
 					redirect_url: rURL,
 					token,
 					user_id: isVerified ? user?.id : undefined,
@@ -597,18 +668,15 @@ export const AuthContainer = createContainer(() => {
 					recovery_code: isRecovery ? code : undefined,
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
-					authType: AuthTypes.TFA,
 					tenant,
-				}
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-
-				const resp = await twoFactorAuth(args)
+				})
 
 				if (resp.error) {
 					throw resp.payload
+				}
+
+				if (!resp.payload) {
+					throw new Error("No response was received")
 				}
 
 				setUser(resp.payload)
@@ -625,47 +693,8 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[twoFactorAuth, tenant, redirectURL, sessionId, fingerprint, externalAuth, user],
+		[twoFactorAuth, tenant, redirectURL, sessionId, fingerprint, user],
 	)
-
-	/**
-	 * Logs a User in using their saved login token.
-	 *
-	 * @param token login token usually from local storage
-	 */
-	const loginToken = useCallback(
-		async (token: string) => {
-			const args = {
-				redirect_url: redirectURL,
-				token,
-				session_id: sessionId,
-				fingerprint: redirectURL ? undefined : fingerprint,
-				authType: AuthTypes.Token,
-				tenant,
-			}
-
-			setLoading(true)
-			try {
-				const resp = await login(args)
-
-				if (resp.error) {
-					clear()
-					throw resp.payload
-				}
-				setUser(resp.payload)
-				setAuthorised(true)
-				setLoading(false)
-			} catch (e) {
-				clear()
-				setUser(undefined)
-				throw typeof e === "string" ? e : "Something went wrong, please try again."
-			} finally {
-				setLoading(false)
-			}
-		},
-		[redirectURL, tenant, sessionId, fingerprint, login, clear],
-	)
-
 	/**
 	 * Logs a User in using a Metamask public address
 	 *
@@ -676,38 +705,43 @@ export const AuthContainer = createContainer(() => {
 			const acc = await connect()
 			const signature = await sign(user ? user.id : undefined)
 			if (acc) {
-				const args = {
+				const resp = await login({
 					redirect_url: redirectURL,
 					public_address: acc,
 					signature: signature,
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
-					authType: AuthTypes.Wallet,
+					auth_type: AuthTypes.Wallet,
 					tenant,
-				}
-
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-				const resp = await login(args)
+				})
 
 				if (resp.error) {
 					throw resp.payload
 				}
+				if (!resp.payload) {
+					throw new Error("No response was received")
+				}
 
-				// Check if payload contains user or jwt
-				// Check if 2FA is set
-				if (!resp.payload?.id) {
-					history.push(`/tfa/check?token=${resp.payload}`)
+				// Handle new user
+				if (resp.payload.auth_type === AuthTypes.Wallet) {
+					setSignupRequest(resp.payload)
+					history.push("/signup")
 					return
 				}
 
-				setUser(resp.payload)
-				setAuthorised(true)
-				setLoading(false)
+				// Check if payload contains user or jwt
+				// Check if 2FA is set
+				if (!resp.payload.auth_type && !resp.payload.id) {
+					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				} else if (!resp.payload.auth_type) {
+					setUser(resp.payload)
+					setAuthorised(true)
+					setLoading(false)
+					setSignupRequest(undefined)
 
-				return resp
+					return resp
+				}
 			}
 		} catch (e: any) {
 			console.error(e)
@@ -718,7 +752,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			throw e
 		}
-	}, [connect, tenant, sign, redirectURL, sessionId, fingerprint, login, user, externalAuth, history])
+	}, [connect, tenant, sign, redirectURL, sessionId, fingerprint, login, user, history])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -729,43 +763,52 @@ export const AuthContainer = createContainer(() => {
 			if (!wcSignature) {
 				await signWalletConnect()
 			} else {
-				const args = {
+				const resp = await login({
 					redirect_url: redirectURL,
 					public_address: account as string,
 					signature: wcSignature || "",
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
-					authType: AuthTypes.Wallet,
+					auth_type: AuthTypes.Wallet,
 					tenant,
-				}
-
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-				const resp = await login(args)
+				})
 
 				if (resp.error) {
 					throw resp.payload
 				}
+				if (!resp.payload) {
+					throw new Error("No response was received")
+				}
+
+				// Handle external auth
+
+				// Handle new user
+				if (resp.payload.auth_type === AuthTypes.Wallet) {
+					setSignupRequest(resp.payload)
+					history.push("/signup")
+					return
+				}
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
-				if (!resp.payload?.id) {
+				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
 					return
+				} else if (!resp.payload.auth_type) {
+					setUser(resp.payload)
+					setAuthorised(true)
+					setLoading(false)
+					setSignupRequest(undefined)
+
+					return resp
 				}
-				setUser(resp.payload)
-				setAuthorised(true)
-				setLoading(false)
-				return resp
 			}
 		} catch (e) {
 			clear()
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, tenant, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, clear, externalAuth, history])
+	}, [wcSignature, tenant, signWalletConnect, login, redirectURL, account, sessionId, fingerprint, clear, history])
 
 	// Effect
 	useEffect(() => {
@@ -776,20 +819,6 @@ export const AuthContainer = createContainer(() => {
 		}
 	}, [wcSignature, loginWalletConnect])
 
-	/**
-	 * External login User with passport cookie
-	 *
-	 */
-	const loginCookieExternal = useCallback(() => {
-		const args = {
-			redirect_url: redirectURL,
-			authType: AuthTypes.Cookie,
-		}
-		if (redirectURL) {
-			externalAuth({ ...args, fingerprint: undefined })
-			return
-		}
-	}, [externalAuth, redirectURL])
 	/**
 	 * Verifies a User and takes them to the next page.
 	 */
@@ -881,9 +910,8 @@ export const AuthContainer = createContainer(() => {
 	//  Container  //
 	/////////////////
 	return {
-		loginCookieExternal,
+		redirectURL,
 		handleAuthCheck,
-		loginToken,
 		loginMetamask,
 		loginWalletConnect,
 		logout,
@@ -907,9 +935,9 @@ export const AuthContainer = createContainer(() => {
 		sessionId,
 		showSimulation,
 		setShowSimulation,
-		signupPassword: {
-			action: signupPassword,
-			loading: loginLoading,
+		emailSignup: {
+			action: emailSignupVerify,
+			loading: emailSignupLoading,
 		},
 		loginPassword: {
 			action: loginPassword,
@@ -943,6 +971,15 @@ export const AuthContainer = createContainer(() => {
 			action: twoFactorAuthLogin,
 			loading: twoFactorLoginLoading,
 		},
+		loginCookieExternal,
+		signupUser: {
+			action: signupUser,
+			loading: signupLoading,
+		},
+		signupRequest,
+		setSignupRequest,
+		emailCode,
+		setEmailCode,
 	}
 })
 

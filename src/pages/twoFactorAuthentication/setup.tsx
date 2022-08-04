@@ -95,7 +95,7 @@ export const TwoFactorAuthenticationSetup = () => {
 				alignItems: "center",
 				flexDirection: "column",
 				gap: "2rem",
-				p: "10%",
+				p: "2rem ",
 			}}
 		>
 			<Button
@@ -117,7 +117,7 @@ export const TwoFactorAuthenticationSetup = () => {
 			</Button>
 			<Paper
 				sx={{
-					padding: "1.5rem",
+					padding: "3rem 1.5rem",
 					height: "100%",
 					width: "calc(100% - 10%)",
 					boxShadow: 2,

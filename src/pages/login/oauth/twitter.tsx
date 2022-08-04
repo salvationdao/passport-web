@@ -4,9 +4,10 @@ import { TwitterLogin, TwitterLoginButtonRenderProps } from "../../../components
 interface ITwitterLoginWrapperProps {
 	onFailure: (err: string) => void
 	render: (props: TwitterLoginButtonRenderProps) => JSX.Element
+	onClick?: (popup?: Window | null) => Promise<void>
 }
 
-const TwitterLoginWrapper: React.FC<ITwitterLoginWrapperProps> = ({ onFailure, render }) => {
+const TwitterLoginWrapper: React.FC<ITwitterLoginWrapperProps> = ({ onFailure, render, onClick }) => {
 	return (
 		<TwitterLogin
 			onFailure={(err) => {
@@ -14,6 +15,7 @@ const TwitterLoginWrapper: React.FC<ITwitterLoginWrapperProps> = ({ onFailure, r
 				if (err.status) onFailure(err.status)
 			}}
 			render={(props) => render(props)}
+			onClick={onClick}
 		/>
 	)
 }
