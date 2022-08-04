@@ -247,7 +247,7 @@ export const AuthContainer = createContainer(() => {
 	const signupUser = useCallback(
 		async (args: SignupNewUser, errorCallback?: (msg: string) => void) => {
 			try {
-				if (redirectURL) {
+				if (redirectURL || args.redirect_url) {
 					switch (args.auth_type) {
 						case AuthTypes.Wallet:
 							const walletReq = args[SignupRequestTypes.Wallet]

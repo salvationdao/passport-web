@@ -303,6 +303,7 @@ export interface SignupNewUser {
 	username: string
 	auth_type: AuthTypes
 	fingerprint?: Fingerprint
+	redirect_url?: string
 }
 
 export type SignUpRequest =

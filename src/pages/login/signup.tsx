@@ -11,6 +11,7 @@ export const Signup: React.FC = () => {
 	const { signupUser, signupRequest, emailCode } = useAuth()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const tenant = searchParams.get("tenant")
+	const redirectURL = searchParams.get("redirectURL")
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
@@ -68,6 +69,7 @@ export const Signup: React.FC = () => {
 												password,
 												auth_type: AuthTypes.Email,
 												tenant,
+												redirect_url: redirectURL,
 										  }
 										: signupRequest,
 								username,
@@ -82,7 +84,7 @@ export const Signup: React.FC = () => {
 				setError(err)
 			}
 		},
-		[signupRequest, signupUser, emailCode?.email, tenant, errorCallback],
+		[signupRequest, signupUser, emailCode?.email, tenant, errorCallback, redirectURL],
 	)
 
 	if (!signupRequest) {
