@@ -72,7 +72,7 @@ const wallpapers = ["/img/rm.jpeg", "/img/bc.png", "/img/zai.png"]
 export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title }) => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
 	const { displayMessage } = useSnackbar()
-	const { userID, cookieCheck } = useAuth()
+	const { userID, loginCookieExternal } = useAuth()
 	const isFromExternal = window.location.pathname === "/external/login"
 	const [error, setError] = useState<string | undefined>()
 
@@ -89,18 +89,15 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 	}, [displayMessage, err])
 
 	useEffect(() => {
-		if (userID)
-			(async () => {
-				await cookieCheck.action()
-			})()
-	}, [userID, cookieCheck])
+		if (isFromExternal) {
+			loginCookieExternal()
+		}
+	}, [isFromExternal, loginCookieExternal])
 
 	if (userID) {
 		// if it is not from external, redirect user to profile page
 		if (!isFromExternal) return <Redirect to={"/profile"} />
 
-		// else sign user
-		cookieCheck.action()
 		return <Loading />
 	}
 

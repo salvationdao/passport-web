@@ -1,10 +1,8 @@
 import { Alert, Stack, useTheme } from "@mui/material"
 import TextField from "@mui/material/TextField"
 import * as React from "react"
-import { useHistory } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { useAuth } from "../../containers/auth"
-import { useSnackbar } from "../../containers/snackbar"
 
 interface IEmailLoginProps {
 	signup?: boolean
@@ -12,9 +10,7 @@ interface IEmailLoginProps {
 
 export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const theme = useTheme()
-	const history = useHistory()
 	const { loginPassword, emailSignup } = useAuth()
-	const { displayMessage } = useSnackbar()
 	const [error, setError] = React.useState<string | null>(null)
 
 	const errorCallback = (msg: string) => {

@@ -51,13 +51,6 @@ export enum VerificationType {
 	ForgotPassword,
 }
 
-const externalCookieCheck = (): Action<User> => ({
-	method: "POST",
-	endpoint: `/auth/cookie`,
-	responseType: "json",
-	credentials: "include",
-})
-
 const signupAction = (formValues: SignupNewUser): Action<User> => ({
 	method: "POST",
 	endpoint: "/auth/signup",
@@ -182,9 +175,6 @@ export const AuthContainer = createContainer(() => {
 		console.trace()
 		setUser(undefined)
 	}, [])
-
-	// Mutated actions
-	const { loading: cookieLoading, mutate: cookie } = useMutation(externalCookieCheck)
 	const { loading: emailSignupLoading, mutate: emailSignup } = useMutation(emailSignupVerifyAction)
 	const { loading: loginLoading, mutate: login, error: loginError } = useMutation(loginAction)
 	const { loading: signupLoading, mutate: signup } = useMutation(signupAction)
@@ -258,7 +248,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[fingerprint, signup],
+		[fingerprint, signup, redirectURL],
 	)
 
 	/**
@@ -648,7 +638,7 @@ export const AuthContainer = createContainer(() => {
 	 * External login User with passport cookie
 	 *
 	 */
-	const loginCookieExternal = useCallback(async () => {
+	const loginCookieExternal = useCallback(() => {
 		const form = document.createElement("form")
 		form.method = "post"
 		form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/cookie`
@@ -981,10 +971,7 @@ export const AuthContainer = createContainer(() => {
 			action: twoFactorAuthLogin,
 			loading: twoFactorLoginLoading,
 		},
-		cookieCheck: {
-			action: loginCookieExternal,
-			loading: cookieLoading,
-		},
+		loginCookieExternal,
 		signupUser: {
 			action: signupUser,
 			loading: signupLoading,
