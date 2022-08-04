@@ -6,7 +6,7 @@ import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { Loading } from "./components/loading"
 import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
-import { API_ENDPOINT_HOSTNAME, ENVIRONMENT } from "./config"
+import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
 import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
@@ -144,28 +144,24 @@ export const Routes = () => {
 							<Route exact path="/">
 								<LoginPage />
 							</Route>
-
 							<Route exact path="/login">
 								<LoginPage />
 							</Route>
 							<Route path="/verify">
 								<VerifyEmail />
 							</Route>
-							{ENVIRONMENT !== "production" && (
-								<Route path="/twitter-redirect">
-									<LoginRedirect />
-								</Route>
-							)}
-							{ENVIRONMENT !== "production" && (
-								<Route path="/tfa/:username/setup">
-									<TwoFactorAuthenticationSetup />
-								</Route>
-							)}
-							{ENVIRONMENT !== "production" && (
-								<Route path="/tfa/:username/recovery-code">
-									<TwoFactorAuthenticationRecoveryCode />
-								</Route>
-							)}
+
+							<Route path="/twitter-redirect">
+								<LoginRedirect />
+							</Route>
+
+							<Route path="/tfa/:username/setup">
+								<TwoFactorAuthenticationSetup />
+							</Route>
+
+							<Route path="/tfa/:username/recovery-code">
+								<TwoFactorAuthenticationRecoveryCode />
+							</Route>
 
 							<Route path="/signup">
 								<SignUpPage />
@@ -173,7 +169,6 @@ export const Routes = () => {
 							<Route path="/onboarding">
 								<PassportReady />
 							</Route>
-
 							<Route path="/privacy-policy">
 								<Home />
 							</Route>
@@ -183,7 +178,6 @@ export const Routes = () => {
 							<Route path="/transactions">
 								<TransactionsPage />
 							</Route>
-
 							<Route path="/staking">
 								<FarmsPage />
 							</Route>
@@ -202,20 +196,17 @@ export const Routes = () => {
 							<Route path="/external/buy">
 								<IFrameBuyPage />
 							</Route>
-
 							<Route path="/deposit-assets/:collection_slug">
 								<ContractAssetPage />
 							</Route>
 							<Route path="/deposit-assets">
 								<DepositAssetsPage />
 							</Route>
-
 							{/* User-authenticated routes */}
 							{/* profile */}
 							<Route path={"/profile/:username?"}>
 								<ProfilePage />
 							</Route>
-
 							<Route path="/asset/:asset_hash">
 								<AssetRedirectPage />
 							</Route>

@@ -129,7 +129,7 @@ export const LoginForm = () => {
 								<ConnectButton
 									tooltip="Google"
 									sx={{
-										"& svg": {
+										"&>span svg": {
 											height: "1.5rem !important",
 											width: "1.5rem !important",
 										},
@@ -149,7 +149,7 @@ export const LoginForm = () => {
 								<ConnectButton
 									tooltip="Twitter"
 									sx={{
-										"& svg": {
+										"&>svg": {
 											height: "1.5rem !important",
 											width: "1.5rem !important",
 										},

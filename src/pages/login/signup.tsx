@@ -102,7 +102,7 @@ export const Signup: React.FC = () => {
 					<Typography>
 						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}
 					</Typography>
-					<TextField variant="outlined" name="username" label="username" fullWidth />
+					<TextField variant="outlined" name="username" label="Username" fullWidth />
 					{signupRequest?.auth_type === AuthTypes.Email && (
 						<>
 							<Box
@@ -119,8 +119,8 @@ export const Signup: React.FC = () => {
 								<li>At least 1 lowercase letter</li>
 								<li>At least 1 uppercase letter</li>
 							</Box>
-							<TextField variant="outlined" name="password" label="password" type="password" fullWidth />
-							<TextField variant="outlined" name="confirmPassword" label="confirmPassword" type="password" fullWidth />
+							<TextField variant="outlined" name="password" label="Password" type="password" fullWidth />
+							<TextField variant="outlined" name="confirmPassword" label="Confirm Password" type="password" fullWidth />
 						</>
 					)}
 					{error && (
