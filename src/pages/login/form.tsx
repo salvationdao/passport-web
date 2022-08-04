@@ -44,6 +44,15 @@ export const LoginForm = () => {
 	)
 
 	useEffect(() => {
+		if (!twitterPopup) return
+		window.addEventListener("message", twitterAuthCallback, false)
+
+		return () => {
+			window.removeEventListener("message", twitterAuthCallback)
+		}
+	}, [twitterAuthCallback, twitterPopup])
+
+	useEffect(() => {
 		if (error) {
 			const timer = setTimeout(() => {
 				setError(null)
@@ -54,15 +63,6 @@ export const LoginForm = () => {
 			}
 		}
 	}, [error])
-
-	useEffect(() => {
-		if (!twitterPopup) return
-		window.addEventListener("message", twitterAuthCallback, false)
-
-		return () => {
-			window.removeEventListener("message", twitterAuthCallback)
-		}
-	}, [twitterAuthCallback, twitterPopup])
 
 	return (
 		<Stack>
