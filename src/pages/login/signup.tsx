@@ -6,9 +6,11 @@ import { SupremacyAuth } from "../../components/supremacy/auth"
 import { AuthTypes, useAuth } from "../../containers/auth"
 import { SignupRequestTypes } from "../../types/auth"
 
+const searchParams = new URLSearchParams(window.location.search)
 export const Signup: React.FC = () => {
 	const { signupUser, signupRequest, emailCode } = useAuth()
-	const [error, setError] = useState<string | undefined>()
+	const [error, setError] = useState<string | null>(searchParams.get("err"))
+	const tenant = searchParams.get("tenant")
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
@@ -65,6 +67,7 @@ export const Signup: React.FC = () => {
 												email: emailCode?.email,
 												password,
 												auth_type: AuthTypes.Email,
+												tenant,
 										  }
 										: signupRequest,
 								username,
@@ -79,7 +82,7 @@ export const Signup: React.FC = () => {
 				setError(err)
 			}
 		},
-		[errorCallback, signupRequest, signupUser, emailCode],
+		[signupRequest, signupUser, emailCode?.email, tenant, errorCallback],
 	)
 
 	if (!signupRequest) {

@@ -75,7 +75,6 @@ export interface GoogleLoginRequest extends BasicLoginRequest {
 	email: string
 	username?: string
 	session_id?: string
-	new_user?: boolean
 	auth_type: AuthTypes.Google
 }
 
@@ -84,7 +83,6 @@ export interface FacebookLoginRequest extends BasicLoginRequest {
 	email: string
 	username?: string
 	session_id?: string
-	new_user?: boolean
 	auth_type: AuthTypes.Facebook
 }
 
@@ -132,7 +130,6 @@ export interface WalletLoginRequest extends BasicLoginRequest {
 	session_id?: string
 	fingerprint?: Fingerprint
 	username?: string
-	new_user?: boolean
 	auth_type: AuthTypes.Wallet
 }
 
