@@ -3,7 +3,7 @@ import { Alert, Slide, Stack, TextField, Typography, useTheme } from "@mui/mater
 import React from "react"
 import { Link } from "react-router-dom"
 import { FancyButton } from "../components/fancyButton"
-import { SupremacyAuth } from "../components/supremacy/auth"
+import { SpamEmailWarning, SupremacyAuth } from "../components/supremacy/auth"
 import { useAuth } from "../containers/auth"
 
 const ForgotPassword: React.FC = () => {
@@ -77,6 +77,7 @@ const ForgotPassword: React.FC = () => {
 						>
 							Send email
 						</FancyButton>
+						<SpamEmailWarning />
 					</Stack>
 					<Link to="/login">
 						<Typography
