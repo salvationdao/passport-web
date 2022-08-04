@@ -639,6 +639,7 @@ export const AuthContainer = createContainer(() => {
 	 *
 	 */
 	const loginCookieExternal = useCallback(() => {
+		if (!redirectURL) return
 		const form = document.createElement("form")
 		form.method = "post"
 		form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/cookie`
@@ -651,7 +652,7 @@ export const AuthContainer = createContainer(() => {
 		form.appendChild(hiddenField)
 
 		document.body.appendChild(form)
-		form.requestSubmit()
+		// form.requestSubmit()
 	}, [redirectURL])
 
 	/**
