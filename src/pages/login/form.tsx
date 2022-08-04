@@ -73,40 +73,40 @@ export const LoginForm = () => {
 								</ConnectButton>
 							)}
 						/>
-						<FacebookLoginWrapper
-							onFailure={setError}
-							render={(props, loading) => (
-								<OAuthButton
-									onClick={props.onClick}
-									loading={loading ? loading : props.isProcessing}
-									title="Connect Wallet to account"
-									startIcon={<MetaIcon />}
-								>
-									Meta
-								</OAuthButton>
-							)}
-						/>
-						<GoogleLoginWrapper
-							onFailure={setError}
-							render={(props) => (
-								<OAuthButton
-									loading={props.loading}
-									onClick={props.onClick}
-									title="Connect Wallet to account"
-									startIcon={<GoogleIcon />}
-								>
-									Google
-								</OAuthButton>
-							)}
-						/>
-						<TwitterLoginWrapper
-							onFailure={setError}
-							render={(props) => (
-								<OAuthButton onClick={props.onClick} title="Connect Wallet to account" startIcon={<TwitterIcon />}>
-									Twitter
-								</OAuthButton>
-							)}
-						/>
+						{/*<FacebookLoginWrapper*/}
+						{/*	onFailure={setError}*/}
+						{/*	render={(props, loading) => (*/}
+						{/*		<OAuthButton*/}
+						{/*			onClick={props.onClick}*/}
+						{/*			loading={loading ? loading : props.isProcessing}*/}
+						{/*			title="Connect Wallet to account"*/}
+						{/*			startIcon={<MetaIcon />}*/}
+						{/*		>*/}
+						{/*			Meta*/}
+						{/*		</OAuthButton>*/}
+						{/*	)}*/}
+						{/*/>*/}
+						{/*<GoogleLoginWrapper*/}
+						{/*	onFailure={setError}*/}
+						{/*	render={(props) => (*/}
+						{/*		<OAuthButton*/}
+						{/*			loading={props.loading}*/}
+						{/*			onClick={props.onClick}*/}
+						{/*			title="Connect Wallet to account"*/}
+						{/*			startIcon={<GoogleIcon />}*/}
+						{/*		>*/}
+						{/*			Google*/}
+						{/*		</OAuthButton>*/}
+						{/*	)}*/}
+						{/*/>*/}
+						{/*<TwitterLoginWrapper*/}
+						{/*	onFailure={setError}*/}
+						{/*	render={(props) => (*/}
+						{/*		<OAuthButton onClick={props.onClick} title="Connect Wallet to account" startIcon={<TwitterIcon />}>*/}
+						{/*			Twitter*/}
+						{/*		</OAuthButton>*/}
+						{/*	)}*/}
+						{/*/>*/}
 					</Box>
 				</Stack>
 			</Box>

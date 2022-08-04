@@ -430,9 +430,9 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 							<Typography variant="h6">Manage Connections</Typography>
 							<Box sx={{ display: "flex", gap: "1rem" }}>
 								<Wallet />
-								<Facebook />
-								<Google />
-								<Twitter />
+								{/*<Facebook />*/}
+								{/*<Google />*/}
+								{/*<Twitter />*/}
 							</Box>
 						</Stack>
 						{/* -------------------------- Two Factor Authentication--------------------------------- */}
