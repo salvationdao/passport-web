@@ -17,9 +17,6 @@ import { User } from "../../../types/types"
 import { LockButton, lockOptions, LockOptionsProps } from "../Locking/LockButton"
 import { LockModal } from "../Locking/LockModal"
 import { ChangePasswordModal } from "./ChangePasswordModal"
-import { Facebook } from "./ManageConnections/Facebook"
-import { Google } from "./ManageConnections/Google"
-import { Twitter } from "./ManageConnections/Twitter"
 import { Wallet } from "./ManageConnections/Wallet"
 import { RemoveTFAModal } from "./RemoveTFAModal"
 
@@ -298,6 +295,12 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 		return <Loading />
 	}
 
+	let changePasswordText = "Change Password"
+	if (!user.has_password) changePasswordText = "Setup password"
+	if (!!user.email && !user.has_password) changePasswordText = "Email is required to setup password"
+	if (!user.verified && user.has_password) changePasswordText = "Verify email to change password"
+	if (!user.verified && !user.has_password) changePasswordText = "Verify email to setup password"
+
 	return (
 		<Paper
 			sx={{
@@ -484,16 +487,15 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 					<Typography variant="h6">Security</Typography>
 
 					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
-						{ENVIRONMENT !== "production" && (
-							<FancyButton
-								tooltip={"Change your password"}
-								sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
-								size="small"
-								onClick={() => setOpenChangePassword(true)}
-							>
-								{user.has_password ? "Change Password" : "Set Password"}
-							</FancyButton>
-						)}
+						<FancyButton
+							disabled={!user.verified || !user.email}
+							tooltip={"Change your password"}
+							sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
+							size="small"
+							onClick={() => setOpenChangePassword(true)}
+						>
+							{changePasswordText}
+						</FancyButton>
 						{lockOptions.map((option) => (
 							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />
 						))}
