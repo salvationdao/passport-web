@@ -15,7 +15,7 @@ export interface CheckUserExist {
 	public_address?: string
 	email?: string
 	facebook_id?: string
-	google_id?: string
+	google_token?: string
 	twitter_id?: string
 }
 
@@ -79,7 +79,7 @@ export interface NewPasswordRequest extends BasicLoginRequest {
 }
 
 export interface GoogleLoginRequest extends BasicLoginRequest {
-	google_id: string
+	google_token: string
 	email: string
 	username?: string
 	session_id?: string

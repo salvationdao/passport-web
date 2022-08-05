@@ -221,7 +221,6 @@ export const AuthContainer = createContainer(() => {
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
-			const host = args["host"]
 
 			Object.keys(args).forEach((key) => {
 				if (args[key] === "" || args[key] === "null" || !args[key]) {
@@ -232,7 +231,7 @@ export const AuthContainer = createContainer(() => {
 
 			const form = document.createElement("form")
 			form.method = "post"
-			form.action = `https://${host || API_ENDPOINT_HOSTNAME}/api/auth/external`
+			form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/external`
 
 			Object.keys(args).forEach((key) => {
 				const hiddenField = document.createElement("input")
@@ -592,19 +591,19 @@ export const AuthContainer = createContainer(() => {
 	 * Google login use oauth to give access to user
 	 */
 	const googleLogin = useCallback(
-		async (id: string, email: string, errorCallback?: (msg: string) => void) => {
+		async (accessToken: string, email: string, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
 					redirect_url: redirectURL,
 					email,
-					google_id: id,
+					google_token: accessToken,
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Google,
 					tenant,
 				}
 				const checkResp = await checkUserExist({
-					google_id: id,
+					google_token: accessToken,
 				})
 				if (checkResp.payload.ok && redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
