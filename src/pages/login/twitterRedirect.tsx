@@ -13,6 +13,7 @@ export const LoginRedirect = () => {
 	const id = searchParams.get("id")
 	const login = searchParams.get("login")
 	const redirectURL = searchParams.get("redirectURL")
+	const tfa = searchParams.get("tfa")
 	// Receives token from the url param and passes it to the parent via postMessage
 	useEffect(() => {
 		if (id) {
@@ -22,11 +23,14 @@ export const LoginRedirect = () => {
 		if (login) {
 			window.opener.postMessage({ login })
 		}
+		if (tfa) {
+			window.opener.postMessage({ tfa })
+		}
 		// Close the window
 		setTimeout(() => {
 			window.close()
 		}, 1200)
-	}, [id, login, redirectURL])
+	}, [id, login, redirectURL, tfa])
 
 	return (
 		<Stack alignItems="center" justifyContent="center" sx={{ height: "100vh", p: "3.8rem", backgroundColor: colors.darkNavyBackground }}>

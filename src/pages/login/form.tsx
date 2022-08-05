@@ -21,7 +21,7 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { setSignupRequest, handleAuthCheck } = useAuth()
+	const { setSignupRequest, handleAuthCheck, redirectURL } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
@@ -29,7 +29,10 @@ export const LoginForm = () => {
 
 	const twitterAuthCallback = useCallback(
 		async (event?: MessageEvent) => {
-			if (!!event?.data["redirectURL"] && !!event?.data["twitter_id"]) {
+			if (!twitterPopup || twitterPopup.closed) return
+			if (!!event?.data["tfa"] && redirectURL) {
+				window.location.replace(redirectURL)
+			} else if (!!event?.data["redirectURL"] && !!event?.data["twitter_id"]) {
 				const redirectURL = event?.data.redirectURL as string
 				const twitterID = event?.data.twitter_id as string
 
@@ -39,22 +42,23 @@ export const LoginForm = () => {
 					redirect_url: redirectURL,
 				})
 				history.push(`/signup`)
-			} else if (event && "twitter_id" in event.data) {
+			} else if (!!event?.data["twitter_id"]) {
 				const twitterID = event?.data.twitter_id as string
 				setSignupRequest({
 					auth_type: AuthTypes.Twitter,
 					twitter_id: twitterID,
 				})
 				history.push("/signup")
-			} else if (event && "login" in event.data) {
+			} else if (!!event?.data["login"]) {
 				await handleAuthCheck()
 			}
 		},
-		[setSignupRequest, history, handleAuthCheck],
+		[twitterPopup, redirectURL, setSignupRequest, history, handleAuthCheck],
 	)
 
+	console.log(!!redirectURL)
+
 	useEffect(() => {
-		if (!twitterPopup) return
 		window.addEventListener("message", twitterAuthCallback, false)
 
 		return () => {

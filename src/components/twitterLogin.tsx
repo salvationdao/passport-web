@@ -51,8 +51,9 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 			"Connect Twitter to XSYN Passport",
 			`width=${width},height=${height},left=${left},top=${top},popup=1`,
 		) as Window
+		setTwitterPopup(popup)
 		if (onClick) {
-			await onClick(twitterPopup)
+			await onClick(popup)
 		}
 		if (!popup) {
 			if (onFailure) {
@@ -61,10 +62,8 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 				})
 			}
 			return
-		} else {
-			setTwitterPopup(popup)
 		}
-	}, [add, redirectURL, onClick, onFailure, twitterPopup])
+	}, [add, redirectURL, onClick, onFailure])
 
 	const propsForRender = useMemo(
 		() => ({

@@ -1,7 +1,7 @@
 import ArrowBack from "@mui/icons-material/ArrowBack"
 import { Alert, Slide, Stack, TextField, Typography, useTheme } from "@mui/material"
 import React, { useState } from "react"
-import { Link, Redirect, useHistory } from "react-router-dom"
+import { Redirect, useHistory } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { SupremacyAuth } from "../../components/supremacy/auth"
 import { AuthTypes, useAuth } from "../../containers/auth"
@@ -96,26 +96,26 @@ const EmailSignupVerify: React.FC = () => {
 							Submit
 						</FancyButton>
 					</Stack>
-					<Link to="/login?signup=true">
-						<Typography
-							component="span"
-							sx={{
-								position: "absolute",
-								bottom: 0,
-								left: "1rem",
-								color: theme.palette.secondary.main,
-								display: "flex",
-								alignItems: "center",
-								gap: "1rem",
-								transition: "all .2s",
-								"&:hover": {
-									borderBottom: `1px solid ${theme.palette.secondary.main}`,
-								},
-							}}
-						>
-							<ArrowBack /> Back to login page
-						</Typography>
-					</Link>
+					<Typography
+						component="span"
+						sx={{
+							position: "absolute",
+							bottom: 0,
+							left: "1rem",
+							color: theme.palette.secondary.main,
+							display: "flex",
+							alignItems: "center",
+							cursor: "pointer",
+							gap: "1rem",
+							transition: "all .2s",
+							"&:hover": {
+								borderBottom: `1px solid ${theme.palette.secondary.main}`,
+							},
+						}}
+						onClick={() => history.goBack()}
+					>
+						<ArrowBack /> Back to login page
+					</Typography>
 				</Stack>
 			</Slide>
 		</SupremacyAuth>
