@@ -18,6 +18,7 @@ interface TFASecret {
 }
 
 export const TwoFactorAuthenticationSetup = () => {
+	const history = useHistory()
 	const { send } = usePassportCommandsUser("/commander")
 	const { username } = useParams<{ username: string }>()
 	const { user, setUser } = useAuth()
@@ -27,7 +28,6 @@ export const TwoFactorAuthenticationSetup = () => {
 	const [error, setError] = useState<string>()
 	const [loading, setLoading] = useState(false)
 	const [showRecoveryCode, setShowRecoveryCode] = useState(false)
-	const history = useHistory()
 
 	useEffect(() => {
 		send<TFASecret>(HubKey.UserTFAGenerate)

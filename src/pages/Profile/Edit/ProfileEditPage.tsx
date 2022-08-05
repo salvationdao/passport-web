@@ -305,6 +305,12 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 		return <Loading />
 	}
 
+	let changePasswordText = "Change Password"
+	if (!user.has_password) changePasswordText = "Setup password"
+	if (!!user.email && !user.has_password) changePasswordText = "Email is required to setup password"
+	if (!user.verified && user.has_password) changePasswordText = "Verify email to change password"
+	if (!user.verified && !user.has_password) changePasswordText = "Verify email to setup password"
+
 	return (
 		<Paper
 			sx={{
@@ -483,13 +489,13 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 					<Typography variant="h6">Security</Typography>
 					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
 						<FancyButton
-							disabled={!user.email}
-							tooltip={user.has_password ? "Change your password" : "Setup a password"}
+							disabled={!user.verified || !user.email}
+							tooltip={"Change your password"}
 							sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
 							size="small"
 							onClick={() => setOpenChangePassword(true)}
 						>
-							{user.has_password ? "Change Password" : !user.email ? "Email required to set password" : "Set Password"}
+							{changePasswordText}
 						</FancyButton>
 						{lockOptions.map((option) => (
 							<LockButton key={option.type} option={option} setLockOption={setLockOption} setOpen={setLockOpen} />

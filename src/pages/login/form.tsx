@@ -133,6 +133,11 @@ export const LoginForm = () => {
 									onClick={props.onClick}
 									loading={loading ? loading : props.isProcessing}
 									startIcon={<MetaIcon />}
+									sx={{
+										"&>span svg": {
+											mt: "-5px !important",
+										},
+									}}
 								/>
 							)}
 						/>
@@ -145,6 +150,10 @@ export const LoginForm = () => {
 										"&>span svg": {
 											height: "1.5rem !important",
 											width: "1.5rem !important",
+											"@media (max-width:600px)": {
+												height: "2rem !important",
+												width: "2rem !important",
+											},
 										},
 									}}
 									loading={props.loading}
@@ -162,9 +171,13 @@ export const LoginForm = () => {
 								<ConnectButton
 									tooltip="Twitter"
 									sx={{
-										"&>svg": {
-											height: "1.5rem !important",
-											width: "1.5rem !important",
+										"&>span svg": {
+											height: "1.6rem !important",
+											width: "1.6rem !important",
+											"@media (max-width:600px)": {
+												height: "2rem !important",
+												width: "2rem !important",
+											},
 										},
 									}}
 									onClick={props.onClick}
@@ -217,8 +230,8 @@ const ConnectButton = styled(FancyButton)({
 		transform: "translate(-50%, -50%)",
 		margin: 0,
 		"& svg": {
-			height: "2rem",
-			width: "2rem",
+			height: "3rem",
+			width: "3rem",
 		},
 	},
 	"& *": {
@@ -227,8 +240,17 @@ const ConnectButton = styled(FancyButton)({
 	"& .MuiButton-startIcon>svg": {
 		height: "2rem",
 		width: "2rem",
+		"@media (max-width:600px)": {
+			height: "2.5rem",
+			width: "2.5rem",
+		},
 	},
 	"@media (max-width:600px)": {
+		minWidth: "50px",
+		width: "60px",
+		height: "60px",
+	},
+	"@media (max-width:450px)": {
 		minWidth: "50px",
 		width: "50px",
 		height: "50px",
