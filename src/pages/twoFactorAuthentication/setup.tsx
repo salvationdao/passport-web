@@ -3,7 +3,7 @@ import { LoadingButton } from "@mui/lab"
 import { Alert, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material"
 import { FormEvent, useCallback, useEffect, useState } from "react"
 import QRCode from "react-qr-code"
-import { Link, useParams } from "react-router-dom"
+import { Link, useHistory, useParams } from "react-router-dom"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
@@ -18,6 +18,7 @@ interface TFASecret {
 }
 
 export const TwoFactorAuthenticationSetup = () => {
+	const history = useHistory()
 	const { send } = usePassportCommandsUser("/commander")
 	const { username } = useParams<{ username: string }>()
 	const { user, setUser } = useAuth()
@@ -45,8 +46,8 @@ export const TwoFactorAuthenticationSetup = () => {
 			setError(e)
 		})
 		setTFASecret(undefined)
-		window.location.replace(`/profile/${username}/edit`)
-	}, [send, username])
+		history.push(`/profile/${username}/edit`)
+	}, [history, send, username])
 
 	const onSubmit = useCallback(
 		async (e: FormEvent) => {
