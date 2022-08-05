@@ -28,22 +28,25 @@ export const LoginRedirect = () => {
 
 	// Receives token from the url param and passes it to the parent via postMessage
 	useEffect(() => {
-		if (login) {
-			window.opener.postMessage({ login })
-		}
-		if (tfa) {
-			window.opener.postMessage({ tfa })
-		}
-
-		if (token && verifier) {
-			window.opener.postMessage({ twitter_token: token + `&oauth_verifier=${verifier}`, redirectURL })
-		} else if (jwtToken) {
-			window.opener.postMessage({ twitter_token: decodeURI(jwtToken), redirectURL })
-		}
 		// // Close the window
 		setTimeout(() => {
 			window.close()
 		}, 1200)
+		if (login) {
+			window.opener.postMessage({ login })
+			return
+		}
+		if (tfa) {
+			window.opener.postMessage({ tfa })
+			return
+		}
+		if (token && verifier) {
+			window.opener.postMessage({ twitter_token: token + `&oauth_verifier=${verifier}`, redirectURL })
+			return
+		} else if (jwtToken) {
+			window.opener.postMessage({ twitter_token: decodeURI(jwtToken), redirectURL })
+			return
+		}
 	}, [token, login, redirectURL, tfa, verifier, jwtToken])
 
 	return (

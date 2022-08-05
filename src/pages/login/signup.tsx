@@ -155,6 +155,7 @@ export const Signup: React.FC = () => {
 							severity={"error"}
 							sx={{
 								minWidth: "300px",
+								textAlign: "left",
 							}}
 						>
 							{error.charAt(0).toUpperCase() + error.slice(1)}
