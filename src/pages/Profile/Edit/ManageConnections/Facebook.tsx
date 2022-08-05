@@ -25,7 +25,7 @@ export const Facebook: React.FC = () => {
 					try {
 						const u = res as ReactFacebookLoginInfo
 						const resp = await send<User>(HubKey.UserAddFacebook, {
-							facebook_id: u.id,
+							facebook_token: u.accessToken,
 						})
 						setUser(resp)
 					} catch (err: any) {

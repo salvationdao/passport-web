@@ -657,19 +657,19 @@ export const AuthContainer = createContainer(() => {
 	 * Facebook login use oauth to give access to user
 	 */
 	const facebookLogin = useCallback(
-		async (id: string, email: string, errorCallback?: (msg: string) => void) => {
+		async (token: string, email: string, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
 					redirect_url: redirectURL,
 					email,
-					facebook_id: id,
+					facebook_token: token,
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Facebook,
 					tenant,
 				}
 				const checkResp = await checkUserExist({
-					facebook_id: id,
+					facebook_token: token,
 				})
 				if (checkResp.payload.ok && redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })

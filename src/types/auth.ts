@@ -14,7 +14,7 @@ export interface Fingerprint {
 export interface CheckUserExist {
 	public_address?: string
 	email?: string
-	facebook_id?: string
+	facebook_token?: string
 	google_token?: string
 	twitter_id?: string
 }
@@ -87,7 +87,7 @@ export interface GoogleLoginRequest extends BasicLoginRequest {
 }
 
 export interface FacebookLoginRequest extends BasicLoginRequest {
-	facebook_id: string
+	facebook_token: string
 	email: string
 	username?: string
 	session_id?: string
