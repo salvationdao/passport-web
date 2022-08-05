@@ -3,7 +3,7 @@ import { Alert, Slide, Stack, TextField, Typography, useTheme } from "@mui/mater
 import React, { useState } from "react"
 import { Redirect, useHistory } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
-import { SupremacyAuth } from "../../components/supremacy/auth"
+import { SpamEmailWarning, SupremacyAuth } from "../../components/supremacy/auth"
 import { AuthTypes, useAuth } from "../../containers/auth"
 
 const EmailSignupVerify: React.FC = () => {
@@ -95,6 +95,7 @@ const EmailSignupVerify: React.FC = () => {
 						>
 							Submit
 						</FancyButton>
+						<SpamEmailWarning />
 					</Stack>
 					<Typography
 						component="span"
