@@ -1,5 +1,6 @@
 import { Stack, Typography } from "@mui/material"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
+import { useLocation } from "react-router-dom"
 import { colors } from "../../theme"
 
 /**
@@ -10,14 +11,27 @@ import { colors } from "../../theme"
 const searchParams = new URLSearchParams(window.location.search)
 
 export const LoginRedirect = () => {
-	const id = searchParams.get("id")
+	const location = useLocation()
+	const token = searchParams.get("token")
+	const verifier = searchParams.get("oauth_verifier") // only for initial login or adding connection
 	const login = searchParams.get("login")
 	const redirectURL = searchParams.get("redirectURL")
 	const tfa = searchParams.get("tfa")
+
+	// For signup
+	const jwtToken = useMemo(() => {
+		if (verifier) return
+		const group = location.search.split("&redirectURL")
+		const token = group[0].replace("?token=", "")
+		return token
+	}, [location.search, verifier])
+
 	// Receives token from the url param and passes it to the parent via postMessage
 	useEffect(() => {
-		if (id) {
-			window.opener.postMessage({ twitter_id: id, redirectURL })
+		if (jwtToken) {
+			window.opener.postMessage({ twitter_token: decodeURI(jwtToken), redirectURL })
+		} else if (token && verifier) {
+			window.opener.postMessage({ twitter_token: token + `&oauth_verifier=${verifier}`, redirectURL })
 		}
 
 		if (login) {
@@ -30,7 +44,7 @@ export const LoginRedirect = () => {
 		setTimeout(() => {
 			window.close()
 		}, 1200)
-	}, [id, login, redirectURL, tfa])
+	}, [token, login, redirectURL, tfa, verifier, jwtToken])
 
 	return (
 		<Stack alignItems="center" justifyContent="center" sx={{ height: "100vh", p: "3.8rem", backgroundColor: colors.darkNavyBackground }}>

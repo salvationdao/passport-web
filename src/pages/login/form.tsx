@@ -32,21 +32,21 @@ export const LoginForm = () => {
 			if (!twitterPopup || twitterPopup.closed) return
 			if (!!event?.data["tfa"] && redirectURL) {
 				window.location.replace(redirectURL)
-			} else if (!!event?.data["redirectURL"] && !!event?.data["twitter_id"]) {
+			} else if (!!event?.data["redirectURL"] && !!event?.data["twitter_token"]) {
 				const redirectURL = event?.data.redirectURL as string
-				const twitterID = event?.data.twitter_id as string
+				const twitterToken = event?.data.twitter_token as string
 
 				setSignupRequest({
 					auth_type: AuthTypes.Twitter,
-					twitter_id: twitterID,
+					twitter_token: twitterToken,
 					redirect_url: redirectURL,
 				})
 				history.push(`/signup`)
-			} else if (!!event?.data["twitter_id"]) {
-				const twitterID = event?.data.twitter_id as string
+			} else if (!!event?.data["twitter_token"]) {
+				const twitterToken = event?.data.twitter_token as string
 				setSignupRequest({
 					auth_type: AuthTypes.Twitter,
-					twitter_id: twitterID,
+					twitter_token: twitterToken,
 				})
 				history.push("/signup")
 			} else if (!!event?.data["login"]) {
@@ -55,8 +55,6 @@ export const LoginForm = () => {
 		},
 		[twitterPopup, redirectURL, setSignupRequest, history, handleAuthCheck],
 	)
-
-	console.log(!!redirectURL)
 
 	useEffect(() => {
 		window.addEventListener("message", twitterAuthCallback, false)

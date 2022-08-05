@@ -186,7 +186,7 @@ export interface TwitterLoginRequest extends BasicLoginRequest {
 }
 
 export interface TwitterSignUpRequest extends BasicLoginRequest {
-	twitter_id: string
+	twitter_token: string
 	session_id?: string
 	fingerprint?: Fingerprint
 	auth_type: AuthTypes.Twitter
