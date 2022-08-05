@@ -2,6 +2,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import { Alert, Box, Divider, Modal, Stack, TextField, Typography } from "@mui/material"
 import React, { useState } from "react"
 import { FancyButton } from "../../../components/fancyButton"
+import { useSnackbar } from "../../../containers/snackbar"
 import { colors } from "../../../theme"
 
 interface IChangePasswordModalProps {
@@ -12,6 +13,7 @@ interface IChangePasswordModalProps {
 }
 
 export const VerifyEmailModal: React.FC<IChangePasswordModalProps> = ({ open, setOpen, updateUserHandler, code }) => {
+	const { displayMessage } = useSnackbar()
 	const [error, setError] = useState<string | null>(null)
 	const [verifyCode, setVerifyCode] = useState("")
 	const [loading, setLoading] = useState(false)
@@ -32,6 +34,8 @@ export const VerifyEmailModal: React.FC<IChangePasswordModalProps> = ({ open, se
 			try {
 				setLoading(true)
 				await updateUserHandler(errorCallback)
+				setOpen(false)
+				displayMessage("Success! You have verified your email.", "success")
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
 				if (e.message) {

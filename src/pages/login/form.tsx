@@ -29,6 +29,7 @@ export const LoginForm = () => {
 
 	const twitterAuthCallback = useCallback(
 		async (event?: MessageEvent) => {
+			console.log(event?.data)
 			if (!twitterPopup || twitterPopup.closed) return
 			if (!!event?.data["tfa"] && redirectURL) {
 				window.location.replace(redirectURL)

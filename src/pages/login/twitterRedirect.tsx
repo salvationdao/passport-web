@@ -20,27 +20,27 @@ export const LoginRedirect = () => {
 
 	// For signup
 	const jwtToken = useMemo(() => {
-		if (verifier) return
+		if (verifier && login && tfa) return
 		const group = location.search.split("&redirectURL")
 		const token = group[0].replace("?token=", "")
 		return token
-	}, [location.search, verifier])
+	}, [location.search, login, tfa, verifier])
 
 	// Receives token from the url param and passes it to the parent via postMessage
 	useEffect(() => {
-		if (jwtToken) {
-			window.opener.postMessage({ twitter_token: decodeURI(jwtToken), redirectURL })
-		} else if (token && verifier) {
-			window.opener.postMessage({ twitter_token: token + `&oauth_verifier=${verifier}`, redirectURL })
-		}
-
 		if (login) {
 			window.opener.postMessage({ login })
 		}
 		if (tfa) {
 			window.opener.postMessage({ tfa })
 		}
-		// Close the window
+
+		if (token && verifier) {
+			window.opener.postMessage({ twitter_token: token + `&oauth_verifier=${verifier}`, redirectURL })
+		} else if (jwtToken) {
+			window.opener.postMessage({ twitter_token: decodeURI(jwtToken), redirectURL })
+		}
+		// // Close the window
 		setTimeout(() => {
 			window.close()
 		}, 1200)

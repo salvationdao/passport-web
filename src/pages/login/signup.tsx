@@ -129,7 +129,7 @@ export const Signup: React.FC = () => {
 					<Typography>
 						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}
 					</Typography>
-					<TextField variant="outlined" name="username" label="Username" fullWidth />
+					<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
 					{signupRequest?.auth_type === AuthTypes.Email && (
 						<>
 							<Box
