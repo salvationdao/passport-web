@@ -7,7 +7,6 @@ import { Loading } from "../../components/loading"
 import { ProfileButton } from "../../components/profileButton"
 import { useAuth } from "../../containers/auth"
 import { useSnackbar } from "../../containers/snackbar"
-import { makeid } from "../../helpers"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
@@ -28,7 +27,7 @@ export const ProfilePage = () => {
 const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const location = useLocation()
 	const history = useHistory()
-	const { setUser: setAuthUser } = useAuth()
+	const { setUser: setAuthUser, setEmailCode } = useAuth()
 	const { displayMessage } = useSnackbar()
 
 	const { send } = usePassportCommandsUser("/commander")
@@ -37,7 +36,6 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
-	const [verifyCode, setVerifyCode] = useState("")
 	const [showVerifyEmailModal, setShowVerifyEmailModal] = useState(false)
 	const [loadingVerify, setLoadingVerify] = useState(false)
 
@@ -65,12 +63,12 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 			if (!user) return
 			if (!user.email) return
 
-			const c = makeid(5).toUpperCase()
-			setVerifyCode(c)
-
-			await send<User>(HubKey.UserVerifySend, {
-				code: c,
+			const resp = await send<User>(HubKey.UserVerifySend, {
 				email: user.email,
+			})
+			setEmailCode({
+				email: user.email,
+				token: resp.token,
 			})
 			setShowVerifyEmailModal(true)
 		} catch (err: any) {
@@ -79,7 +77,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 		} finally {
 			setLoadingVerify(false)
 		}
-	}, [displayMessage, send, user])
+	}, [displayMessage, send, setEmailCode, user])
 
 	useEffect(() => {
 		;(async () => {
@@ -191,12 +189,7 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 					</Alert>
 				)}
 
-				<VerifyEmailModal
-					open={showVerifyEmailModal}
-					setOpen={setShowVerifyEmailModal}
-					code={verifyCode}
-					updateUserHandler={handleUpdateUser}
-				/>
+				<VerifyEmailModal open={showVerifyEmailModal} setOpen={setShowVerifyEmailModal} updateUserHandler={handleUpdateUser} />
 				<Paper
 					sx={{
 						display: "flex",

@@ -41,6 +41,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 
 	const handleSubmit = useCallback(
 		async (e: FormEvent) => {
+			setError(null)
 			e.preventDefault()
 			if (code.length === 0) {
 				return
@@ -62,18 +63,6 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 		},
 		[tokenGroup, errorCallback, twoFactorAuthLogin, code, isRecovery, setVerified],
 	)
-
-	useEffect(() => {
-		const removeError = setTimeout(() => {
-			if (!error) return
-			setError(null)
-		}, 3000)
-		if (!error) clearTimeout(removeError)
-
-		return () => {
-			clearTimeout(removeError)
-		}
-	}, [error, setError])
 
 	// get 2fa secret
 	return (
@@ -133,7 +122,6 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 				<Box
 					onSubmit={handleSubmit}
 					component="form"
-					// onSubmit={onSubmit}
 					display="flex"
 					width="90%"
 					maxWidth="400px"
@@ -164,6 +152,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 				<Button
 					onClick={() => {
 						setIsRecovery(!isRecovery)
+						setError(null)
 					}}
 					sx={{ textTransform: "uppercase", color: "secondary.main" }}
 				>

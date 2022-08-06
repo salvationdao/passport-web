@@ -93,7 +93,7 @@ export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title })
 
 export const SpamEmailWarning = () => {
 	return (
-		<Typography sx={{ maxWidth: "25rem", mb: "1rem" }}>
+		<Typography sx={{ maxWidth: "25rem", mb: "1rem", textAlign:"left" }}>
 			If you do not receive an email in a few minutes, please check your email's "junk mail" or "spam" folder.
 		</Typography>
 	)

@@ -2,6 +2,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import { Alert, Box, Divider, Modal, Stack, TextField, Typography } from "@mui/material"
 import React, { useState } from "react"
 import { FancyButton } from "../../../components/fancyButton"
+import { useAuth } from "../../../containers/auth"
 import { useSnackbar } from "../../../containers/snackbar"
 import { colors } from "../../../theme"
 
@@ -9,13 +10,13 @@ interface IChangePasswordModalProps {
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>
 	updateUserHandler: (errCallback?: (err: any) => void) => Promise<void>
 	open: boolean
-	code: string
 }
 
-export const VerifyEmailModal: React.FC<IChangePasswordModalProps> = ({ open, setOpen, updateUserHandler, code }) => {
+export const VerifyEmailModal: React.FC<IChangePasswordModalProps> = ({ open, setOpen, updateUserHandler }) => {
 	const { displayMessage } = useSnackbar()
 	const [error, setError] = useState<string | null>(null)
-	const [verifyCode, setVerifyCode] = useState("")
+	const [code, setCode] = useState("")
+	const { verifyCode, emailCode } = useAuth()
 	const [loading, setLoading] = useState(false)
 
 	const errorCallback = (msg: string) => {
@@ -24,11 +25,20 @@ export const VerifyEmailModal: React.FC<IChangePasswordModalProps> = ({ open, se
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		if (!verifyCode || !code) {
-			setError("No code has been set")
+
+		if (!code || !emailCode) {
+			setError("No code has been set.")
 			return
 		}
-		if (verifyCode.toLowerCase() !== code.toLowerCase()) {
+
+		if (!emailCode.token) {
+			setError("No code has been set.")
+			return
+		}
+		// Validate code
+		const success = await verifyCode.action(emailCode?.token, code.toLowerCase())
+
+		if (!success) {
 			setError("Incorrect code. Please try again.")
 		} else {
 			try {
@@ -89,8 +99,8 @@ export const VerifyEmailModal: React.FC<IChangePasswordModalProps> = ({ open, se
 						<TextField
 							sx={{ mt: "1rem" }}
 							placeholder="Enter code"
-							value={verifyCode}
-							onChange={(e) => setVerifyCode(e.target.value)}
+							value={code}
+							onChange={(e) => setCode(e.target.value)}
 							inputProps={{
 								style: {
 									margin: "1rem auto",

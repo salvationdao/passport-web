@@ -10,7 +10,6 @@ import { InputField } from "../../../components/form/inputField"
 import { Loading } from "../../../components/loading"
 import { useAuth } from "../../../containers/auth"
 import { useSnackbar } from "../../../containers/snackbar"
-import { makeid } from "../../../helpers/index"
 import { usePassportCommandsUser } from "../../../hooks/usePassport"
 import HubKey from "../../../keys"
 import { colors } from "../../../theme"
@@ -185,7 +184,7 @@ interface ProfileEditProps {
 
 const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerifyMessage }: ProfileEditProps) => {
 	const token = localStorage.getItem("token")
-	const { user } = useAuth()
+	const { user, setEmailCode } = useAuth()
 	const { displayMessage } = useSnackbar()
 	const { send } = usePassportCommandsUser("/commander")
 	const history = useHistory()
@@ -193,7 +192,6 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 	const [lockOpen, setLockOpen] = useState<boolean>(false)
 	const [openChangePassword, setOpenChangePassword] = useState(false)
 	const [showVerifyEmailModal, setShowVerifyEmailModal] = useState(false)
-	const [verifyCode, setVerifyCode] = useState("")
 
 	// TFA
 	const [loadingSetupBtn, setLoadingSetupBtn] = useState(false)
@@ -242,13 +240,15 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 
 			if (email && email !== user.email) {
 				// Send verification email
-				const c = makeid(5).toUpperCase()
-				setVerifyCode(c)
-				await send<User>(HubKey.UserVerifySend, {
-					code: c,
+
+				const resp = await send<User>(HubKey.UserVerifySend, {
 					email,
 				})
 				setShowVerifyEmailModal(true)
+				setEmailCode({
+					email,
+					token: resp.token,
+				})
 			} else {
 				// Update user
 				const resp = await send<User>(HubKey.UserUpdate, {
@@ -307,7 +307,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 
 	let changePasswordText = "Change Password"
 	if (!user.has_password) changePasswordText = "Setup password"
-	if (!!user.email && !user.has_password) changePasswordText = "Email is required to setup password"
+	if (!user.email && !user.has_password) changePasswordText = "Email is required to setup password"
 	if (!user.verified && user.has_password) changePasswordText = "Verify email to change password"
 	if (!user.verified && !user.has_password) changePasswordText = "Verify email to setup password"
 
@@ -504,7 +504,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				</Stack>
 			</Box>
 
-			<VerifyEmailModal open={showVerifyEmailModal} setOpen={setShowVerifyEmailModal} code={verifyCode} updateUserHandler={updateUserHandler} />
+			<VerifyEmailModal open={showVerifyEmailModal} setOpen={setShowVerifyEmailModal} updateUserHandler={updateUserHandler} />
 
 			<ChangePasswordModal
 				open={openChangePassword}

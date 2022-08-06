@@ -10,6 +10,7 @@ const searchParams = new URLSearchParams(window.location.search)
 export const Signup: React.FC = () => {
 	const { signupUser, signupRequest, emailCode } = useAuth()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
+	const [signupLoading, setSignupLoading] = useState(false)
 	const tenant = searchParams.get("tenant")
 	const redirectURL = searchParams.get("redirectURL")
 
@@ -31,6 +32,7 @@ export const Signup: React.FC = () => {
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent<HTMLFormElement>) => {
 			try {
+				setSignupLoading(true)
 				e.preventDefault()
 				const data = new FormData(e.currentTarget)
 				const username = data.get("username")?.toString()
@@ -90,6 +92,7 @@ export const Signup: React.FC = () => {
 					}
 				}
 			} catch (err: any) {
+				setSignupLoading(false)
 				console.error(err)
 				setError(err)
 			}
@@ -163,8 +166,8 @@ export const Signup: React.FC = () => {
 					)}
 					<LoadingButton
 						type="submit"
-						loading={signupUser.loading}
-						disabled={signupUser.loading}
+						loading={signupLoading}
+						disabled={signupLoading}
 						variant="contained"
 						sx={{ p: ".5em 2em", fontSize: "1.2rem" }}
 					>

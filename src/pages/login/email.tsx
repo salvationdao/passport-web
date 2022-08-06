@@ -48,39 +48,40 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	}, [signup])
 
 	return (
-		<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "200px" }}>
-			<TextField margin="normal" required fullWidth id="email" label="Email Address" name="email" type="email" autoComplete="email" />
-			{!signup && (
-				<TextField
-					margin="normal"
-					required
-					fullWidth
-					name="password"
-					label="Password"
-					type="password"
-					id="password"
-					autoComplete="current-password"
-					inputProps={{ minLength: signup ? 8 : 0 }}
-				/>
-			)}
+		<>
+			<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "200px" }}>
+				<TextField margin="normal" required fullWidth id="email" label="Email Address" name="email" type="email" autoComplete="email" />
+				{!signup && (
+					<TextField
+						margin="normal"
+						required
+						fullWidth
+						name="password"
+						label="Password"
+						type="password"
+						id="password"
+						autoComplete="current-password"
+						inputProps={{ minLength: signup ? 8 : 0 }}
+					/>
+				)}
 
+				<FancyButton
+					submit
+					fullWidth
+					filled
+					borderColor={signup ? theme.palette.secondary.main : theme.palette.primary.main}
+					sx={{ mt: 1, mb: 2 }}
+					loading={signup ? emailSignup.loading : loginPassword.loading}
+				>
+					{loginPassword.loading || emailSignup.loading ? "Loading..." : signup ? "Sign up with email" : "Sign In"}
+				</FancyButton>
+			</Stack>
 			{formatError && (
 				<Alert severity="error">
 					<span style={{ textTransform: "capitalize" }}>{firstWordError}</span>&nbsp;
 					{formatError.join(" ")}
 				</Alert>
 			)}
-
-			<FancyButton
-				submit
-				fullWidth
-				filled
-				borderColor={signup ? theme.palette.secondary.main : theme.palette.primary.main}
-				sx={{ mt: 1, mb: 2 }}
-				loading={signup ? emailSignup.loading : loginPassword.loading}
-			>
-				{loginPassword.loading || emailSignup.loading ? "Loading..." : signup ? "Sign up with email" : "Sign In"}
-			</FancyButton>
-		</Stack>
+		</>
 	)
 }

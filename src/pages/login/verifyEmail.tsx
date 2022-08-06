@@ -9,19 +9,26 @@ import { AuthTypes, useAuth } from "../../containers/auth"
 const EmailSignupVerify: React.FC = () => {
 	const theme = useTheme()
 	const history = useHistory()
-	const { emailCode, setSignupRequest } = useAuth()
-	const [verifyCode, setVerifyCode] = useState("")
+	const { emailCode, setSignupRequest, verifyCode } = useAuth()
+	const [code, setCode] = useState("")
 	const [error, setError] = React.useState<string | null>(null)
 	const [success, setSuccess] = React.useState<string | null>(null)
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 
-		if (!verifyCode || !emailCode) {
+		if (!code || !emailCode) {
 			setError("No code has been set.")
 			return
 		}
-		if (verifyCode.toLowerCase() !== emailCode.code?.toLowerCase()) {
+		if (!emailCode.token) {
+			setError("No code has been set.")
+			return
+		}
+		// Validate code
+		const success = await verifyCode.action(emailCode?.token, code.toLowerCase())
+
+		if (!success) {
 			setError("Incorrect code. Please try again.")
 		} else {
 			setSignupRequest({ email: emailCode.email, auth_type: AuthTypes.Email })
@@ -51,8 +58,8 @@ const EmailSignupVerify: React.FC = () => {
 						<TextField
 							sx={{ mt: "1rem" }}
 							placeholder="Enter code"
-							value={verifyCode}
-							onChange={(e) => setVerifyCode(e.target.value)}
+							value={code}
+							onChange={(e) => setCode(e.target.value)}
 							inputProps={{
 								style: {
 									margin: "1rem auto",
@@ -86,7 +93,7 @@ const EmailSignupVerify: React.FC = () => {
 						{success && <Alert severity="success">{success}</Alert>}
 						<FancyButton
 							// loading={forgotPassword.loading}
-							disabled={verifyCode.length !== 5}
+							disabled={code.length !== 5}
 							submit
 							fullWidth
 							filled

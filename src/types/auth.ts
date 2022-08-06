@@ -11,14 +11,6 @@ export interface Fingerprint {
 	user_agent: string
 }
 
-export interface CheckUserExist {
-	public_address?: string
-	email?: string
-	facebook_token?: string
-	google_token?: string
-	twitter_id?: string
-}
-
 export interface RegisterResponse {
 	user: User
 	token: string
@@ -50,7 +42,6 @@ export interface EmailSignupRequest extends BasicLoginRequest {
 
 export interface EmailSignupVerifyRequest extends BasicLoginRequest {
 	email: string
-	code: string
 }
 
 export interface ForgotPasswordRequest extends BasicLoginRequest {
@@ -84,6 +75,7 @@ export interface GoogleLoginRequest extends BasicLoginRequest {
 	username?: string
 	session_id?: string
 	auth_type: AuthTypes.Google
+	new_user?: boolean
 }
 
 export interface FacebookLoginRequest extends BasicLoginRequest {
@@ -92,6 +84,7 @@ export interface FacebookLoginRequest extends BasicLoginRequest {
 	username?: string
 	session_id?: string
 	auth_type: AuthTypes.Facebook
+	new_user?: boolean
 }
 
 export interface TwoFactorAuthLoginRequest extends BasicLoginRequest {
@@ -139,6 +132,7 @@ export interface WalletLoginRequest extends BasicLoginRequest {
 	fingerprint?: Fingerprint
 	username?: string
 	auth_type: AuthTypes.Wallet
+	new_user?: boolean
 }
 
 export interface GoogleSignUpRequest {

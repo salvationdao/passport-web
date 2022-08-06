@@ -29,7 +29,6 @@ export const LoginForm = () => {
 
 	const twitterAuthCallback = useCallback(
 		async (event?: MessageEvent) => {
-			console.log(event?.data)
 			if (!twitterPopup || twitterPopup.closed) return
 			if (!!event?.data["tfa"] && redirectURL) {
 				window.location.replace(redirectURL)
@@ -51,7 +50,11 @@ export const LoginForm = () => {
 				})
 				history.push("/signup")
 			} else if (!!event?.data["login"]) {
-				await handleAuthCheck()
+				try {
+					await handleAuthCheck()
+				} catch (err: any) {
+					setError(err.message)
+				}
 			}
 		},
 		[twitterPopup, redirectURL, setSignupRequest, history, handleAuthCheck],
@@ -65,18 +68,6 @@ export const LoginForm = () => {
 		}
 	}, [twitterAuthCallback, twitterPopup])
 
-	useEffect(() => {
-		const removeError = setTimeout(() => {
-			if (!error) return
-			setError(null)
-		}, 3000)
-		if (!error) clearTimeout(removeError)
-
-		return () => {
-			clearTimeout(removeError)
-		}
-	}, [error, setError])
-
 	return (
 		<Stack>
 			<Stack sx={{ height: "100%", justifyContent: "center", alignItems: "center", gap: "1rem", maxWidth: "30rem", px: "2em" }}>
@@ -87,6 +78,7 @@ export const LoginForm = () => {
 					value={tab}
 					onChange={(e, newValue) => {
 						setTab(newValue)
+						setError(null)
 					}}
 					sx={{
 						width: "100%",
@@ -111,7 +103,15 @@ export const LoginForm = () => {
 						<MetaMaskLogin
 							onFailure={setError}
 							render={(props) => (
-								<ConnectButton tooltip="Metamask" onClick={props.onClick} loading={props.isProcessing} startIcon={<MetaMaskIcon />} />
+								<ConnectButton
+									tooltip="Metamask"
+									onClick={(e) => {
+										props.onClick(e)
+										setError(null)
+									}}
+									loading={props.isProcessing}
+									startIcon={<MetaMaskIcon />}
+								/>
 							)}
 						/>
 						<WalletConnectLogin
@@ -119,7 +119,10 @@ export const LoginForm = () => {
 							render={(props) => (
 								<ConnectButton
 									tooltip="Wallet Connect"
-									onClick={props.onClick}
+									onClick={(e) => {
+										props.onClick(e)
+										setError(null)
+									}}
 									loading={props.isProcessing}
 									startIcon={<WalletConnectIcon />}
 								/>
@@ -130,7 +133,10 @@ export const LoginForm = () => {
 							render={(props, loading) => (
 								<ConnectButton
 									tooltip="Meta"
-									onClick={props.onClick}
+									onClick={(e) => {
+										props.onClick(e)
+										setError(null)
+									}}
 									loading={loading ? loading : props.isProcessing}
 									startIcon={<MetaIcon />}
 									sx={{
@@ -157,7 +163,10 @@ export const LoginForm = () => {
 										},
 									}}
 									loading={props.loading}
-									onClick={props.onClick}
+									onClick={(e) => {
+										props.onClick()
+										setError(null)
+									}}
 									startIcon={<GoogleIcon />}
 								/>
 							)}
@@ -166,6 +175,7 @@ export const LoginForm = () => {
 							onFailure={setError}
 							onClick={async (popup) => {
 								if (popup) setTwitterPopup(popup)
+								setError(null)
 							}}
 							render={(props) => (
 								<ConnectButton
