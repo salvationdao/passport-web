@@ -5,8 +5,8 @@ import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { ProfileButton } from "../../components/profileButton"
-import { ENVIRONMENT } from "../../config"
 import { useAuth } from "../../containers/auth"
+import { useSnackbar } from "../../containers/snackbar"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
@@ -16,6 +16,7 @@ import { SingleAsset1155View } from "./Assets/1155/SingleAssetView/SingleAsset11
 import { Assets721 } from "./Assets/721/Assets721"
 import { SingleAsset721View } from "./Assets/721/SingleAssetView/SingleAsset721View"
 import { ProfileEditPage } from "./Edit/ProfileEditPage"
+import { VerifyEmailModal } from "./Edit/VerifyEmailModal"
 
 export const ProfilePage = () => {
 	const { user } = useAuth()
@@ -26,6 +27,8 @@ export const ProfilePage = () => {
 const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const location = useLocation()
 	const history = useHistory()
+	const { setUser: setAuthUser, setEmailCode } = useAuth()
+	const { displayMessage } = useSnackbar()
 
 	const { send } = usePassportCommandsUser("/commander")
 	const { username } = useParams<{ username: string }>()
@@ -33,24 +36,48 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 	const [user, setUser] = useState<User>()
 	const [loadingText, setLoadingText] = useState<string>()
 	const [error, setError] = useState<string>()
-	const [sentVerify, setSentVerify] = useState<boolean | null>(false)
+	const [showVerifyEmailModal, setShowVerifyEmailModal] = useState(false)
+	const [loadingVerify, setLoadingVerify] = useState(false)
+
+	const handleUpdateUser = useCallback(async () => {
+		try {
+			if (!user) return
+			if (!user.email) return
+			// Update user
+			const resp = await send<User>(HubKey.UserUpdate, {
+				id: user.id,
+				email: user?.email,
+			})
+			setAuthUser(resp)
+			setUser(resp)
+			setShowVerifyEmailModal(false)
+		} catch (err: any) {
+			console.error(err)
+			displayMessage(err, "error")
+		}
+	}, [displayMessage, send, setAuthUser, user])
 
 	const handleSendVerify = useCallback(async () => {
 		try {
-			setSentVerify(null)
-			const resp = await send<User>(HubKey.UserVerifySend, {
-				user_agent: window.navigator.userAgent,
-			})
+			setLoadingVerify(true)
+			if (!user) return
+			if (!user.email) return
 
-			if (!resp.id) {
-				throw resp
-			}
-			setSentVerify(true)
-		} catch (err) {
+			const resp = await send<User>(HubKey.UserVerifySend, {
+				email: user.email,
+			})
+			setEmailCode({
+				email: user.email,
+				token: resp.token,
+			})
+			setShowVerifyEmailModal(true)
+		} catch (err: any) {
 			console.error(err)
-			setSentVerify(false)
+			displayMessage(err, "error")
+		} finally {
+			setLoadingVerify(false)
 		}
-	}, [send])
+	}, [displayMessage, send, setEmailCode, user])
 
 	useEffect(() => {
 		;(async () => {
@@ -136,36 +163,33 @@ const ProfilePageInner = ({ loggedInUser }: { loggedInUser: User }) => {
 					alignItems: "center",
 				}}
 			>
-				{!user.verified && user.email && ENVIRONMENT !== "production" && (
-					<Alert severity={sentVerify ? "info" : "error"} sx={{ maxWidth: "600px", my: "1rem" }}>
-						{sentVerify ? (
-							"Email confirmation sent! Please check your email."
-						) : (
-							<>
-								Please verify your email: {user.email} <br />
-								Click{" "}
-								{sentVerify === null ? (
-									<CircularProgress size="15px" sx={{ mx: ".5rem", mt: ".5rem" }} />
-								) : (
-									<Typography
-										component="span"
-										onClick={handleSendVerify}
-										sx={{
-											cursor: "pointer",
-											color: colors.darkerNeonBlue,
-											fontWeight: "bold",
-											textDecoration: "underline",
-										}}
-									>
-										here
-									</Typography>
-								)}{" "}
-								to resend a confirmation link to your email.
-							</>
-						)}
+				{!user.verified && user.email && (
+					<Alert severity={"error"} sx={{ maxWidth: "600px", my: "1rem" }}>
+						<>
+							Please verify your email: {user.email} <br />
+							Click{" "}
+							{loadingVerify ? (
+								<CircularProgress size="15px" sx={{ mx: ".5rem" }} />
+							) : (
+								<Typography
+									component="span"
+									onClick={handleSendVerify}
+									sx={{
+										cursor: "pointer",
+										color: colors.darkerNeonBlue,
+										fontWeight: "bold",
+										textDecoration: "underline",
+									}}
+								>
+									here
+								</Typography>
+							)}
+							&nbsp;to resend a confirmation link to your email.
+						</>
 					</Alert>
 				)}
 
+				<VerifyEmailModal open={showVerifyEmailModal} setOpen={setShowVerifyEmailModal} updateUserHandler={handleUpdateUser} />
 				<Paper
 					sx={{
 						display: "flex",

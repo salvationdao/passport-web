@@ -33,6 +33,8 @@ export interface User {
 	withdraw_lock: boolean
 	mint_lock: boolean
 	total_lock: boolean
+	auth_type: undefined
+	token?: string
 }
 
 export interface FactionTheme {
