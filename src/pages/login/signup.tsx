@@ -124,7 +124,7 @@ export const Signup: React.FC = () => {
 					component="form"
 					display="flex"
 					width="100%"
-					maxWidth="30rem"
+					maxWidth="20rem"
 					marginTop="20px"
 					justifyContent="space-between"
 					gap="1.5rem"
