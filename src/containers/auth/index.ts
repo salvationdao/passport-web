@@ -146,7 +146,7 @@ const emailSignupVerifyAction = (formValues: EmailSignupVerifyRequest): Action<{
 export const AuthContainer = createContainer(() => {
 	const history = useHistory()
 	const { fingerprint } = useFingerprint()
-	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature } = useWeb3()
+	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature, wcNonce } = useWeb3()
 	const [user, _setUser] = useState<User>()
 
 	const setUser = (user?: User) => {
@@ -242,7 +242,7 @@ export const AuthContainer = createContainer(() => {
 			})
 
 			document.body.appendChild(form)
-			form.requestSubmit()
+			form.submit()
 		},
 		[],
 	)
@@ -807,12 +807,15 @@ export const AuthContainer = createContainer(() => {
 	const loginMetamask = useCallback(async () => {
 		try {
 			const acc = await connect()
-			const signature = await sign(user ? user.id : undefined)
+			const resp = await sign(user ? user.id : undefined)
+			const signature = resp?.signature
+			const nonce = resp?.nonce
 			if (acc) {
 				const args = {
 					redirect_url: redirectURL,
 					public_address: acc,
-					signature: signature,
+					signature,
+					nonce,
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Wallet,
@@ -878,6 +881,7 @@ export const AuthContainer = createContainer(() => {
 					redirect_url: redirectURL,
 					public_address: account as string,
 					signature: wcSignature || "",
+					nonce: wcNonce || "",
 					session_id: sessionId,
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Wallet,
@@ -931,7 +935,7 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, signWalletConnect, redirectURL, account, sessionId, fingerprint, tenant, login, externalAuth, history, clear])
+	}, [wcSignature, signWalletConnect, redirectURL, account, wcNonce, sessionId, fingerprint, tenant, login, history, externalAuth, clear])
 
 	// Effect
 	useEffect(() => {

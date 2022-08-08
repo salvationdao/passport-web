@@ -36,7 +36,8 @@ export const Wallet: React.FC = () => {
 						}
 					} else {
 						acc = await connect()
-						signature = await sign(user.id)
+						const resp = await sign(user.id)
+						signature = resp?.signature
 					}
 					if (signature === undefined) {
 						throw Error("No signature was found in process.")

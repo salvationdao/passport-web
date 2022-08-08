@@ -127,7 +127,8 @@ export interface WalletSignUpRequest {
 
 export interface WalletLoginRequest extends BasicLoginRequest {
 	public_address: string
-	signature: string
+	signature?: string
+	nonce?: string
 	session_id?: string
 	fingerprint?: Fingerprint
 	username?: string

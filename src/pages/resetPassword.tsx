@@ -48,7 +48,7 @@ const ResetPassword: React.FC = () => {
 
 	return (
 		<SupremacyAuth title="Reset Password">
-			<Stack sx={{ mt: "2rem", borderTop: 1, borderColor: "divider", p: "2em" }}>
+			<Stack sx={{  borderTop: 1, borderColor: "divider", p: "2em" }}>
 				<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "25rem" }}>
 					<Typography sx={{ textAlign: "left" }}>Enter your new password:</Typography>
 					<TextField
