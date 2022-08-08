@@ -432,7 +432,7 @@ export const AuthContainer = createContainer(() => {
 	 * verifyTokenCode verify jwt
 	 */
 	const verifyTokenCode = useCallback(
-		async (token: string, code: string, errorCallback?: (msg: string) => boolean | undefined) => {
+		async (token: string, code: string, errorCallback?: (msg: string) => void) => {
 			try {
 				const resp = await verifyCode({ token, code })
 

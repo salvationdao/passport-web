@@ -36,7 +36,7 @@ export const VerifyEmailModal: React.FC<IChangePasswordModalProps> = ({ open, se
 			return
 		}
 		// Validate code
-		const success = await verifyCode.action(emailCode?.token, code.toLowerCase())
+		const success = await verifyCode.action(emailCode?.token, code.toLowerCase(), errorCallback)
 
 		if (!success) {
 			setError("Incorrect code. Please try again.")
