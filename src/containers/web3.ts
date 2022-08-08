@@ -157,7 +157,6 @@ export const Web3Container = createContainer(() => {
 
 	const handleAccountChange = useCallback(
 		(accounts: string[]) => {
-			console.log(accounts, provider)
 			if (accounts[0]) {
 				setAccount(accounts[0])
 				setMetaMaskState(MetaMaskState.Active)
@@ -964,7 +963,6 @@ export const Web3Container = createContainer(() => {
 			if (!signer) throw new Error("signer not ready")
 			const erc1155ABI = new Interface(["function signedMint(uint256 tokenID, bytes signature)"])
 			const contract = new ethers.Contract(contractAddr, erc1155ABI, signer)
-			console.log(contract)
 			return await contract.signedMint(tokenID, signature)
 		},
 		[signer],
