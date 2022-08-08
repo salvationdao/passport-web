@@ -181,22 +181,42 @@ export const TwoFactorAuthenticationSetup = () => {
 					<Typography component="h2" sx={{ fontSize: "1.2rem" }}>
 						Enter Passcode from authenticator app:
 					</Typography>
-					<Box
-						component="form"
-						onSubmit={onSubmit}
-						display="flex"
-						width="90%"
-						maxWidth="400px"
-						marginTop="20px"
-						justifyContent="space-between"
-						gap="1rem"
-					>
-						<TextField variant="outlined" label="Passcode" fullWidth onChange={(e) => setPasscode(e.target.value)} />
+					<Stack component="form" onSubmit={onSubmit} display="flex" width="100%" maxWidth="400px" marginTop="20px" gap="1rem">
+						<TextField
+							sx={{
+								"& *": {
+									"@media (max-width:500px)": {
+										font: `4vw Nostromo Regular Medium !important`,
+									},
+								},
+							}}
+							placeholder="Enter code"
+							onChange={(e) => setPasscode(e.target.value)}
+							inputProps={{
+								style: {
+									margin: "1rem auto",
+									padding: "0 1rem",
+									width: `${10 * 1.5}ch`,
+									background: `repeating-linear-gradient(90deg, dimgrey 0, 
+									 "dimgrey"
+									}1ch, transparent 0, transparent 1.6ch) 0 100%/ 10ch 2px no-repeat`,
+									font: `2.4ch Nostromo Regular Medium`,
+									letterSpacing: ".6ch",
+									textAlign: "center",
+								},
+								maxLength: 6,
+								spellCheck: false,
+							}}
+							onFocus={() => {
+								setError(undefined)
+							}}
+							InputProps={{ disableUnderline: true }}
+						/>
 
 						<LoadingButton type="submit" loading={loading} variant="contained" sx={{ px: "2em" }}>
 							Submit
 						</LoadingButton>
-					</Box>
+					</Stack>
 				</Stack>
 				{error && (
 					<Alert
