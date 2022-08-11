@@ -495,20 +495,12 @@ export const AuthContainer = createContainer(() => {
 	 * Reset Password sends email to the user with jwt token to reset password
 	 */
 	const resetPassword = useCallback(
-		async (
-			password: string,
-			tokenGroup: {
-				id: string
-				token: string
-			},
-			errorCallback?: (msg: string) => void,
-		) => {
+		async (password: string, token: string, errorCallback?: (msg: string) => void) => {
 			try {
 				const resp = await reset({
 					redirect_url: redirectURL,
 					new_password: password,
-					id: tokenGroup.id,
-					token: tokenGroup.token,
+					token,
 					session_id: sessionId,
 					fingerprint,
 				})
@@ -744,12 +736,13 @@ export const AuthContainer = createContainer(() => {
 		const args = {
 			redirect_url: redirectURL,
 			authType: AuthTypes.Cookie,
+			tenant,
 		}
 		if (redirectURL) {
 			externalAuth({ ...args, fingerprint: undefined })
 			return
 		}
-	}, [externalAuth, redirectURL])
+	}, [externalAuth, redirectURL, tenant])
 	/**
 	/**
 	 * TwoFactor login after confirming auth to give access to user
@@ -760,7 +753,6 @@ export const AuthContainer = createContainer(() => {
 				const args = {
 					redirect_url: rURL,
 					token,
-					user_id: isVerified ? user?.id : undefined,
 					passcode: isRecovery ? undefined : code,
 					recovery_code: isRecovery ? code : undefined,
 					session_id: sessionId,
@@ -797,7 +789,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[user?.id, sessionId, redirectURL, fingerprint, tenant, twoFactorAuth, externalAuth],
+		[sessionId, redirectURL, fingerprint, tenant, twoFactorAuth, externalAuth],
 	)
 	/**
 	 * Logs a User in using a Metamask public address

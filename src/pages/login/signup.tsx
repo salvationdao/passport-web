@@ -1,6 +1,6 @@
 import { LoadingButton } from "@mui/lab"
 import { Alert, Box, Slide, Stack, TextField, Typography } from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import { Redirect } from "react-router-dom"
 import { SupremacyAuth } from "../../components/supremacy/auth"
 import { AuthTypes, useAuth } from "../../containers/auth"
@@ -18,17 +18,6 @@ export const Signup: React.FC = () => {
 		setError(msg)
 	}, [])
 
-	useEffect(() => {
-		const removeError = setTimeout(() => {
-			if (!error) return
-			setError(null)
-		}, 3000)
-		if (!error) clearTimeout(removeError)
-
-		return () => {
-			clearTimeout(removeError)
-		}
-	}, [error, setError])
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent<HTMLFormElement>) => {
 			try {
@@ -100,18 +89,6 @@ export const Signup: React.FC = () => {
 		[signupRequest, signupUser, emailCode?.email, tenant, errorCallback, redirectURL],
 	)
 
-	useEffect(() => {
-		const removeError = setTimeout(() => {
-			if (!error) return
-			setError(null)
-		}, 3000)
-		if (!error) clearTimeout(removeError)
-
-		return () => {
-			clearTimeout(removeError)
-		}
-	}, [error, setError])
-
 	if (!signupRequest) {
 		return <Redirect to="/" />
 	}
@@ -124,10 +101,11 @@ export const Signup: React.FC = () => {
 					component="form"
 					display="flex"
 					width="100%"
-					maxWidth="30rem"
+					maxWidth="25rem"
 					marginTop="20px"
 					justifyContent="space-between"
 					gap="1.5rem"
+					onChange={() => setError(null)}
 				>
 					<Typography>
 						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}

@@ -50,7 +50,6 @@ export interface ForgotPasswordRequest extends BasicLoginRequest {
 }
 
 export interface ResetPasswordRequest extends BasicLoginRequest {
-	id: string
 	token: string
 	new_password: string
 	session_id?: string
@@ -90,7 +89,6 @@ export interface FacebookLoginRequest extends BasicLoginRequest {
 export interface TwoFactorAuthLoginRequest extends BasicLoginRequest {
 	token?: string
 	passcode?: string
-	user_id?: string
 	recovery_code?: string
 	session_id?: string
 }

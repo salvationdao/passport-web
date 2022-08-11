@@ -309,7 +309,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 	if (!user.has_password) changePasswordText = "Setup password"
 	if (!user.email && !user.has_password) changePasswordText = "Email is required to setup password"
 	if (!user.verified && user.has_password) changePasswordText = "Verify email to change password"
-	if (!user.verified && !user.has_password) changePasswordText = "Verify email to setup password"
+	if (!user.verified && !user.has_password && user.email) changePasswordText = "Verify email to setup password"
 
 	return (
 		<Paper

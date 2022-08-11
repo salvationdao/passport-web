@@ -42,7 +42,7 @@ const ForgotPassword: React.FC = () => {
 		<SupremacyAuth title="Forgot Password">
 			<Slide in={true} direction="left">
 				<Stack sx={{ borderTop: 1, borderColor: "divider", p: "2em" }}>
-					<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "25rem" }}>
+					<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", maxWidth: "25rem" }} onChange={() => setError(null)}>
 						<Typography sx={{ textAlign: "left" }}>Enter your email address to recover your password:</Typography>
 						<TextField
 							margin="normal"
@@ -60,13 +60,14 @@ const ForgotPassword: React.FC = () => {
 								}
 							}}
 						/>
-						{formatError && (
+						{formatError ? (
 							<Alert severity="error">
 								<span style={{ textTransform: "capitalize" }}>{firstWordError}</span>&nbsp;
 								{formatError.join(" ")}
 							</Alert>
+						) : (
+							success && <Alert severity="success">{success}</Alert>
 						)}
-						{success && <Alert severity="success">{success}</Alert>}
 						<FancyButton
 							loading={forgotPassword.loading}
 							submit
