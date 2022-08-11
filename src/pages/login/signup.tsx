@@ -101,13 +101,11 @@ export const Signup: React.FC = () => {
 					component="form"
 					display="flex"
 					width="100%"
-					maxWidth="20rem"
+					maxWidth="25rem"
 					marginTop="20px"
 					justifyContent="space-between"
 					gap="1.5rem"
-					onFocus={() => {
-						setError(null)
-					}}
+					onChange={() => setError(null)}
 				>
 					<Typography>
 						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}
