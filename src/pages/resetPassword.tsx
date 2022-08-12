@@ -12,7 +12,6 @@ const ResetPassword: React.FC = () => {
 
 	const tokenGroup = useMemo(() => {
 		const group = location.search.split("?token=")
-		console.log(group)
 		const token = group[1]
 		return { token }
 	}, [location.search])
