@@ -45,6 +45,8 @@ import { FarmData, useWeb3 } from "../../containers/web3"
 import { countDecimals } from "../../helpers"
 import { colors } from "../../theme"
 
+const showAPR = false
+
 export const FarmsPage = () => {
 	const { changeChain, currentChainId, account } = useWeb3()
 	return (
@@ -151,7 +153,6 @@ const FarmInfo = (props: FarmInfoProps) => {
 		apr = "--- %"
 	}
 
-	const showAPR = true
 	return (
 		<Stack gap=".2rem" justifyContent="center" sx={{ width: "100%" }}>
 			<Stack justifyContent="space-between" sx={{ width: "100%" }}>
@@ -709,52 +710,54 @@ const FarmCard = (props: FarmCardProps) => {
 							>
 								Get SUPS-BNB LP tokens
 							</Button>
-							<ClickAwayListener onClickAway={() => setOpenInfoApr(false)}>
-								<Tooltip
-									open={openInfoApr}
-									title={
-										<Box
-											sx={{
-												whiteSpace: "pre-line",
-												"& p": {
-													mt: 0,
-													ml: "5px",
-												},
-											}}
-										>
-											*
-											<span
-												style={{
-													display: "inline-block",
-													textDecoration: "underline",
-													marginLeft: "5px",
-													marginBottom: "5px",
+							{showAPR && (
+								<ClickAwayListener onClickAway={() => setOpenInfoApr(false)}>
+									<Tooltip
+										open={openInfoApr}
+										title={
+											<Box
+												sx={{
+													whiteSpace: "pre-line",
+													"& p": {
+														mt: 0,
+														ml: "5px",
+													},
 												}}
 											>
-												Dynamic APR
-											</span>
-											<p>
-												The purpose of displaying APR is simply an indicator as to the current APR rewards received at the
-												time you place liquidity.
-											</p>
-											<p>
-												APR represented is not a reflection of the APR you will receive. There is no guarantee you will ever
-												receive the APR displayed to you.
-											</p>
-											<p>
-												By placing liquidity, you acknowledge that you understand the mechanics of the provision of liquidity
-												in a decentralised exchange.
-											</p>
-											<p>
-												You acknowledge and understand the more people that provide liquidity within the pool the lower APR
-												you will receive.
-											</p>
-										</Box>
-									}
-								>
-									<Button onClick={() => setOpenInfoApr(!openInfoApr)}>* Dynamic APR - Info</Button>
-								</Tooltip>
-							</ClickAwayListener>
+												*
+												<span
+													style={{
+														display: "inline-block",
+														textDecoration: "underline",
+														marginLeft: "5px",
+														marginBottom: "5px",
+													}}
+												>
+													Dynamic APR
+												</span>
+												<p>
+													The purpose of displaying APR is simply an indicator as to the current APR rewards received at the
+													time you place liquidity.
+												</p>
+												<p>
+													APR represented is not a reflection of the APR you will receive. There is no guarantee you will
+													ever receive the APR displayed to you.
+												</p>
+												<p>
+													By placing liquidity, you acknowledge that you understand the mechanics of the provision of
+													liquidity in a decentralised exchange.
+												</p>
+												<p>
+													You acknowledge and understand the more people that provide liquidity within the pool the lower
+													APR you will receive.
+												</p>
+											</Box>
+										}
+									>
+										<Button onClick={() => setOpenInfoApr(!openInfoApr)}>* Dynamic APR - Info</Button>
+									</Tooltip>
+								</ClickAwayListener>
+							)}
 						</AccordionDetails>
 					</Accordion>
 				</Stack>
