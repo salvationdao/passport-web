@@ -1,5 +1,5 @@
 import ArrowBack from "@mui/icons-material/ArrowBack"
-import { Alert, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { Alert, Box, Stack, TextField, Typography, useTheme } from "@mui/material"
 import React, { useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { FancyButton } from "../components/fancyButton"
@@ -11,10 +11,9 @@ const ResetPassword: React.FC = () => {
 	const location = useLocation()
 
 	const tokenGroup = useMemo(() => {
-		const group = location.search.split("&token=")
-		const tokenId = group[0].replace("?id=", "")
+		const group = location.search.split("?token=")
 		const token = group[1]
-		return { id: tokenId, token }
+		return { token }
 	}, [location.search])
 
 	const { resetPassword } = useAuth()
@@ -29,7 +28,7 @@ const ResetPassword: React.FC = () => {
 		const data = new FormData(event.currentTarget)
 		const password = data.get("password")?.toString()
 		const confirmPassword = data.get("confirmPassword")?.toString()
-		if (!password || !tokenGroup.token || !tokenGroup.id) {
+		if (!password || !tokenGroup.token) {
 			return
 		}
 		if (confirmPassword !== password) {
@@ -37,7 +36,7 @@ const ResetPassword: React.FC = () => {
 			return
 		}
 
-		await resetPassword.action(password, tokenGroup, errorCallback)
+		await resetPassword.action(password, tokenGroup.token, errorCallback)
 	}
 	const formatError = error?.split(" ")
 	let firstWordError = ""
@@ -48,8 +47,24 @@ const ResetPassword: React.FC = () => {
 
 	return (
 		<SupremacyAuth title="Reset Password">
-			<Stack sx={{ mt: "2rem", borderTop: 1, borderColor: "divider", p: "2em" }}>
+			<Stack sx={{ borderTop: 1, borderColor: "divider", px: "2em" }}>
 				<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "25rem" }}>
+					<Box
+						component="ul"
+						sx={{
+							mb: "2rem",
+							"& li": {
+								ml: "1rem",
+								textAlign: "left",
+							},
+						}}
+					>
+						Password need to contain at least 8 characters and:
+						<li>At least 1 number</li>
+						<li>At least 1 lowercase letter</li>
+						<li>At least 1 uppercase letter</li>
+					</Box>
+
 					<Typography sx={{ textAlign: "left" }}>Enter your new password:</Typography>
 					<TextField
 						margin="normal"
@@ -101,8 +116,8 @@ const ResetPassword: React.FC = () => {
 						component="span"
 						sx={{
 							position: "absolute",
-							bottom: 0,
-							left: "1rem",
+							bottom: "1rem",
+							left: "2rem",
 							color: theme.palette.secondary.main,
 							display: "flex",
 							alignItems: "center",
