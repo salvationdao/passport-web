@@ -3,7 +3,7 @@ import { LoadingButton } from "@mui/lab"
 import { Alert, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material"
 import { FormEvent, useCallback, useEffect, useState } from "react"
 import QRCode from "react-qr-code"
-import { Link, useHistory, useParams } from "react-router-dom"
+import { Link, Redirect, useHistory, useParams } from "react-router-dom"
 import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
@@ -35,10 +35,6 @@ export const TwoFactorAuthenticationSetup = () => {
 			.catch((e) => {
 				setError(e)
 			})
-
-		if (username !== user?.username || user.two_factor_authentication_is_set) {
-			!showRecoveryCode && window.location.replace(`/profile/${username}/edit`)
-		}
 	}, [send, user, username, showRecoveryCode])
 
 	const onCancel = useCallback(() => {
@@ -46,8 +42,8 @@ export const TwoFactorAuthenticationSetup = () => {
 			setError(e)
 		})
 		setTFASecret(undefined)
-		history.push(`/profile/${username}/edit`)
-	}, [history, send, username])
+		history.goBack()
+	}, [history, send])
 
 	const onSubmit = useCallback(
 		async (e: FormEvent) => {
@@ -85,6 +81,8 @@ export const TwoFactorAuthenticationSetup = () => {
 		return <Loading />
 	}
 
+	if (user?.two_factor_authentication_is_set) return <Redirect to={`/profile/${username}/edit`} />
+
 	// get 2fa secret
 	return (
 		<Box
@@ -96,7 +94,7 @@ export const TwoFactorAuthenticationSetup = () => {
 				alignItems: "center",
 				flexDirection: "column",
 				gap: "2rem",
-				p: "10%",
+				p: "2rem ",
 			}}
 		>
 			<Button
@@ -118,7 +116,7 @@ export const TwoFactorAuthenticationSetup = () => {
 			</Button>
 			<Paper
 				sx={{
-					padding: "1.5rem",
+					padding: "3rem 1.5rem",
 					height: "100%",
 					width: "calc(100% - 10%)",
 					boxShadow: 2,
@@ -183,22 +181,42 @@ export const TwoFactorAuthenticationSetup = () => {
 					<Typography component="h2" sx={{ fontSize: "1.2rem" }}>
 						Enter Passcode from authenticator app:
 					</Typography>
-					<Box
-						component="form"
-						onSubmit={onSubmit}
-						display="flex"
-						width="90%"
-						maxWidth="400px"
-						marginTop="20px"
-						justifyContent="space-between"
-						gap="1rem"
-					>
-						<TextField variant="outlined" label="Passcode" fullWidth onChange={(e) => setPasscode(e.target.value)} />
+					<Stack component="form" onSubmit={onSubmit} display="flex" width="100%" maxWidth="400px" marginTop="20px" gap="1rem">
+						<TextField
+							sx={{
+								"& *": {
+									"@media (max-width:500px)": {
+										font: `4vw Nostromo Regular Medium !important`,
+									},
+								},
+							}}
+							placeholder="Enter code"
+							onChange={(e) => setPasscode(e.target.value)}
+							inputProps={{
+								style: {
+									margin: "1rem auto",
+									padding: "0 1rem",
+									width: `${10 * 1.5}ch`,
+									background: `repeating-linear-gradient(90deg, dimgrey 0, 
+									 "dimgrey"
+									}1ch, transparent 0, transparent 1.6ch) 0 100%/ 10ch 2px no-repeat`,
+									font: `2.4ch Nostromo Regular Medium`,
+									letterSpacing: ".6ch",
+									textAlign: "center",
+								},
+								maxLength: 6,
+								spellCheck: false,
+							}}
+							onFocus={() => {
+								setError(undefined)
+							}}
+							InputProps={{ disableUnderline: true }}
+						/>
 
 						<LoadingButton type="submit" loading={loading} variant="contained" sx={{ px: "2em" }}>
 							Submit
 						</LoadingButton>
-					</Box>
+					</Stack>
 				</Stack>
 				{error && (
 					<Alert

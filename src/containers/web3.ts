@@ -136,6 +136,7 @@ export const Web3Container = createContainer(() => {
 	const [currentToken, setCurrentToken] = useState<tokenSelect>(tokenOptions[0])
 	const [loadingAmountRemaining, setLoadingAmountRemaining] = useState<boolean>(true)
 	const [wcSignature, setWcSignature] = useState<string | undefined>()
+	const [wcNonce, setWcNonce] = useState<string | undefined>()
 	const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>()
 	const [disableWalletModal, setDisableWalletModal] = useState(false)
 
@@ -329,6 +330,7 @@ export const Web3Container = createContainer(() => {
 				let nonce: string
 				if (acc) {
 					nonce = await getNonce(acc)
+					setWcNonce(nonce)
 				} else return ""
 				if (nonce === "") return ""
 				const rawMessage = `${SIGN_MESSAGE}:\n ${nonce}`
@@ -382,6 +384,7 @@ export const Web3Container = createContainer(() => {
 			if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
 				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
 				setProvider(provider)
+				setMetaMaskState(MetaMaskState.Active)
 				const accounts = await provider.listAccounts()
 
 				if (accounts.length !== 0) {
@@ -389,7 +392,6 @@ export const Web3Container = createContainer(() => {
 					const acc = await signer.getAddress()
 
 					setAccount(acc)
-					setMetaMaskState(MetaMaskState.Active)
 				} else {
 					setMetaMaskState(MetaMaskState.NotLoggedIn)
 				}
@@ -537,9 +539,9 @@ export const Web3Container = createContainer(() => {
 
 	// Returns an empty string if user does not exist
 	const sign = useCallback(
-		async (userID?: string): Promise<string> => {
+		async (userID?: string): Promise<{ signature: string; nonce: string } | undefined> => {
 			try {
-				if (!provider) return ""
+				if (!provider) return
 				await provider.send("eth_requestAccounts", [])
 				const signer = provider.getSigner()
 				const acc = await signer.getAddress()
@@ -550,12 +552,12 @@ export const Web3Container = createContainer(() => {
 				} else {
 					nonce = await getNonce(acc)
 				}
-				if (nonce === "") return ""
+				if (nonce === "") return
 				const signedMessage = await signer.signMessage(`${SIGN_MESSAGE}:\n ${nonce}`)
-				return signedMessage
+				return { signature: signedMessage, nonce }
 			} catch (err) {
 				console.error(err)
-				return ""
+				return
 			}
 		},
 		[provider, getNonce, getNonceFromID],
@@ -961,7 +963,6 @@ export const Web3Container = createContainer(() => {
 			if (!signer) throw new Error("signer not ready")
 			const erc1155ABI = new Interface(["function signedMint(uint256 tokenID, bytes signature)"])
 			const contract = new ethers.Contract(contractAddr, erc1155ABI, signer)
-			console.log(contract)
 			return await contract.signedMint(tokenID, signature)
 		},
 		[signer],
@@ -1031,6 +1032,7 @@ export const Web3Container = createContainer(() => {
 		signer,
 		setDisableWalletModal,
 		disableWalletModal,
+		wcNonce,
 	}
 })
 

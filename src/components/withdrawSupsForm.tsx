@@ -8,19 +8,19 @@ import Arrow from "../assets/images/arrow.png"
 import Safe from "../assets/images/gradient/safeLarge.png"
 import SupsToken from "../assets/images/sup-token.svg"
 import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
+import { SendFunc } from "../containers/ws/useCommands"
+import { useSubscription } from "../containers/ws/useSubscription"
 import { supFormatter } from "../helpers/items"
 import { AddressDisplay, metamaskErrorHandling } from "../helpers/web3"
-import { useSubscription } from "../containers/ws/useSubscription"
 import HubKey from "../keys"
 import { colors } from "../theme"
 import { transferStateType, User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ConnectWalletOverlay } from "./transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "./transferStatesOverlay/switchNetworkOverlay"
-import { useAuth } from "../containers/auth"
-import { SendFunc } from "../containers/ws/useCommands"
 
 interface WithdrawSupsFormProps {
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
@@ -220,7 +220,7 @@ export const WithdrawSupsForm = ({
 			await tx.wait()
 			setWithdrawAmount(BigNumber.from(0))
 		} catch (err: any) {
-			console.log(err)
+			console.error(err)
 			setCurrentTransferState("error")
 			const message = metamaskErrorHandling(err)
 			!!message ? setError(message) : setError("Issue withdrawing, please try again.")
