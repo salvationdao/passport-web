@@ -112,7 +112,7 @@ export const LoginForm = () => {
 
 				{(captchaToken || tab === FormTabs.Login) && (
 					<>
-						<EmailLogin signup={tab === FormTabs.Signup} />
+						<EmailLogin signup={tab === FormTabs.Signup} captchaToken={captchaToken} />
 						{error && <Alert severity="error">{error}</Alert>}
 						<Stack alignItems="left" gap="1rem">
 							<Typography component="span">

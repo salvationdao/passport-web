@@ -42,6 +42,7 @@ export interface EmailSignupRequest extends BasicLoginRequest {
 
 export interface EmailSignupVerifyRequest extends BasicLoginRequest {
 	email: string
+	captcha_token?: string
 }
 
 export interface ForgotPasswordRequest extends BasicLoginRequest {

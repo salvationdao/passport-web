@@ -401,9 +401,9 @@ export const AuthContainer = createContainer(() => {
 	 * Sends an email to User to start signup process.
 	 */
 	const emailSignupVerify = useCallback(
-		async (email: string, errorCallback?: (msg: string) => void) => {
+		async (email: string, captcha_token: string | undefined, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await emailSignup({ email })
+				const resp = await emailSignup({ email, captcha_token })
 				if (resp.error) {
 					clear()
 					throw resp.payload

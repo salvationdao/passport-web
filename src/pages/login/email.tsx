@@ -6,9 +6,10 @@ import { useAuth } from "../../containers/auth"
 
 interface IEmailLoginProps {
 	signup?: boolean
+	captchaToken?: string
 }
 
-export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
+export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup, captchaToken }) => {
 	const theme = useTheme()
 	const { loginPassword, emailSignup } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
@@ -30,7 +31,7 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 		}
 		if (signup) {
 			// Insert send verify email handler
-			await emailSignup.action(email, errorCallback)
+			await emailSignup.action(email, captchaToken, errorCallback)
 		} else if (password) {
 			await loginPassword.action(email, password, errorCallback)
 		}
