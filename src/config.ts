@@ -56,4 +56,7 @@ export const AVANT_API_ENDPOINT = process.env.REACT_APP_AVANT_API_ENDPOINT || "v
 export const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_ID || ""
 export const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID || ""
 
+// captcha
+export const CAPTCHA_KEY = process.env.REACT_APP_CAPTCHA_SITE_KEY || "87f715ba-98ff-43da-b970-cfc30fd7c5a0"
+
 export const ENVIRONMENT = process.env.REACT_APP_PASSPORT_ENVIRONMENT || "develop"
