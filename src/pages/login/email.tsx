@@ -6,12 +6,11 @@ import { useAuth } from "../../containers/auth"
 
 interface IEmailLoginProps {
 	signup?: boolean
-	captchaToken?: string
 }
 
-export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup, captchaToken }) => {
+export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const theme = useTheme()
-	const { loginPassword, emailSignup } = useAuth()
+	const { loginPassword, emailSignup, captchaToken } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
 
 	const errorCallback = (msg: string) => {

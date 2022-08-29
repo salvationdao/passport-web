@@ -163,6 +163,7 @@ export const AuthContainer = createContainer(() => {
 	// Signup
 	const [signupRequest, setSignupRequest] = useState<LoginNewUserResponse | undefined>()
 	const [emailCode, setEmailCode] = useState<{ token?: string; email: string } | undefined>()
+	const [captchaToken, setCaptchaToken] = useState<string>()
 
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
@@ -268,7 +269,13 @@ export const AuthContainer = createContainer(() => {
 					switch (args.auth_type) {
 						case AuthTypes.Wallet:
 							const walletReq = args[SignupRequestTypes.Wallet]
-							externalAuth({ ...walletReq, fingerprint: undefined, username: args.username, new_user: undefined })
+							externalAuth({
+								...walletReq,
+								fingerprint: undefined,
+								username: args.username,
+								new_user: undefined,
+								requires_captcha: undefined,
+							})
 							return
 						case AuthTypes.Email:
 							const emailReq = args[SignupRequestTypes.Email]
@@ -812,6 +819,7 @@ export const AuthContainer = createContainer(() => {
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Wallet,
 					tenant,
+					captcha_token: captchaToken,
 				}
 
 				const resp = await login({ ...args, auth_type: AuthTypes.Wallet })
@@ -826,7 +834,8 @@ export const AuthContainer = createContainer(() => {
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Wallet && resp.payload.new_user) {
 					let uri = "/signup"
-					if (redirectURL) uri = uri + `?redirectURL=${redirectURL}&tenant=${tenant}`
+					if (redirectURL) uri += `?redirectURL=${redirectURL}&tenant=${tenant}`
+					if (resp.payload.requires_captcha) uri += "&captcha=true"
 					setSignupRequest(resp.payload)
 					history.push(uri)
 					return
@@ -858,7 +867,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			throw e
 		}
-	}, [connect, sign, user, redirectURL, sessionId, fingerprint, tenant, login, externalAuth, history])
+	}, [connect, sign, user, redirectURL, sessionId, fingerprint, tenant, login, externalAuth, history, captchaToken])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -1103,6 +1112,8 @@ export const AuthContainer = createContainer(() => {
 		setSignupRequest,
 		emailCode,
 		setEmailCode,
+		captchaToken,
+		setCaptchaToken,
 	}
 })
 

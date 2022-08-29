@@ -23,12 +23,11 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { setSignupRequest, handleAuthCheck, redirectURL } = useAuth()
+	const { setSignupRequest, handleAuthCheck, redirectURL, captchaToken, setCaptchaToken } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
 	const [twitterPopup, setTwitterPopup] = useState<Window | null>(null)
-	const [captchaToken, setCaptchaToken] = useState<string>()
 
 	const twitterAuthCallback = useCallback(
 		async (event?: MessageEvent) => {
@@ -112,7 +111,7 @@ export const LoginForm = () => {
 
 				{(captchaToken || tab === FormTabs.Login) && (
 					<>
-						<EmailLogin signup={tab === FormTabs.Signup} captchaToken={captchaToken} />
+						<EmailLogin signup={tab === FormTabs.Signup} />
 						{error && <Alert severity="error">{error}</Alert>}
 						<Stack alignItems="left" gap="1rem">
 							<Typography component="span">
