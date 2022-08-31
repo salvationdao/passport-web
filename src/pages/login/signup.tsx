@@ -97,14 +97,28 @@ export const Signup: React.FC = () => {
 	}
 
 	let title = "Setup Account"
-	if (signupRequest?.auth_type !== AuthTypes.Email && (!captchaRequired || captchaToken)) title = "Setup Display Name"
+	if (signupRequest?.auth_type !== AuthTypes.Email) title = "Setup Display Name"
 
 	return (
 		<SupremacyAuth title={title}>
 			<Slide in={true} direction="left">
-				<Box>
+				<Stack
+					onSubmit={handleSubmit}
+					component="form"
+					display="flex"
+					width="100%"
+					maxWidth="25rem"
+					marginTop="20px"
+					justifyContent="space-between"
+					gap="1.5rem"
+					onChange={() => setError(null)}
+				>
+					<Typography>
+						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}
+					</Typography>
+					<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
 					{captchaRequired && !captchaToken && (
-						<Stack display="flex" width="100%" maxWidth="25rem" marginTop="20px" justifyContent="space-between" gap="1.5rem">
+						<>
 							<Typography>Please verify you are human.</Typography>
 							<HCaptcha
 								size="compact"
@@ -113,70 +127,49 @@ export const Signup: React.FC = () => {
 								onVerify={setCaptchaToken}
 								onExpire={() => setCaptchaToken(undefined)}
 							/>
-						</Stack>
+						</>
 					)}
-
-					{(!captchaRequired || captchaToken) && (
-						<Stack
-							onSubmit={handleSubmit}
-							component="form"
-							display="flex"
-							width="100%"
-							maxWidth="25rem"
-							marginTop="20px"
-							justifyContent="space-between"
-							gap="1.5rem"
-							onChange={() => setError(null)}
-						>
-							<Typography>
-								{signupRequest?.auth_type !== AuthTypes.Email
-									? "Please enter your user display name:"
-									: "Please enter your account details:"}
-							</Typography>
-							<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
-							{signupRequest?.auth_type === AuthTypes.Email && (
-								<>
-									<Box
-										component="ul"
-										sx={{
-											"& li": {
-												ml: "1rem",
-												textAlign: "left",
-											},
-										}}
-									>
-										Password need to contain at least 8 characters and:
-										<li>At least 1 number</li>
-										<li>At least 1 lowercase letter</li>
-										<li>At least 1 uppercase letter</li>
-									</Box>
-									<TextField variant="outlined" name="password" label="Password" type="password" fullWidth />
-									<TextField variant="outlined" name="confirmPassword" label="Confirm Password" type="password" fullWidth />
-								</>
-							)}
-							{error && (
-								<Alert
-									severity={"error"}
-									sx={{
-										minWidth: "300px",
+					{signupRequest?.auth_type === AuthTypes.Email && (
+						<>
+							<Box
+								component="ul"
+								sx={{
+									"& li": {
+										ml: "1rem",
 										textAlign: "left",
-									}}
-								>
-									{error.charAt(0).toUpperCase() + error.slice(1)}
-								</Alert>
-							)}
-							<LoadingButton
-								type="submit"
-								loading={signupLoading}
-								disabled={signupLoading}
-								variant="contained"
-								sx={{ p: ".5em 2em", fontSize: "1.2rem" }}
+									},
+								}}
 							>
-								Submit
-							</LoadingButton>
-						</Stack>
+								Password need to contain at least 8 characters and:
+								<li>At least 1 number</li>
+								<li>At least 1 lowercase letter</li>
+								<li>At least 1 uppercase letter</li>
+							</Box>
+							<TextField variant="outlined" name="password" label="Password" type="password" fullWidth />
+							<TextField variant="outlined" name="confirmPassword" label="Confirm Password" type="password" fullWidth />
+						</>
 					)}
-				</Box>
+					{error && (
+						<Alert
+							severity={"error"}
+							sx={{
+								minWidth: "300px",
+								textAlign: "left",
+							}}
+						>
+							{error.charAt(0).toUpperCase() + error.slice(1)}
+						</Alert>
+					)}
+					<LoadingButton
+						type="submit"
+						loading={signupLoading}
+						disabled={signupLoading}
+						variant="contained"
+						sx={{ p: ".5em 2em", fontSize: "1.2rem" }}
+					>
+						Submit
+					</LoadingButton>
+				</Stack>
 			</Slide>
 		</SupremacyAuth>
 	)
