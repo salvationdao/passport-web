@@ -8,11 +8,9 @@ import { WalletConnectLogin } from "../../components/loginWalletConnect"
 import { AuthTypes, useAuth } from "../../containers/auth"
 import { colors } from "../../theme"
 import { EmailLogin } from "./email"
-import HCaptcha from "@hcaptcha/react-hcaptcha"
 import FacebookLoginWrapper from "./oauth/facebook"
 import GoogleLoginWrapper from "./oauth/google"
 import TwitterLoginWrapper from "./oauth/twitter"
-import { CAPTCHA_KEY } from "../../config"
 
 enum FormTabs {
 	Login = "login",
@@ -23,7 +21,7 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { setSignupRequest, handleAuthCheck, redirectURL, captchaToken, setCaptchaToken } = useAuth()
+	const { setSignupRequest, handleAuthCheck, redirectURL } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
@@ -97,146 +95,127 @@ export const LoginForm = () => {
 					<TabStyled label="Signup" value={FormTabs.Signup} />
 				</Tabs>
 
-				{tab === FormTabs.Signup && !captchaToken && (
-					<Stack component={"form"} sx={{ width: "100%", minWidth: "364px" }}>
-						<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
-						<HCaptcha
-							size="compact"
-							theme="dark"
-							sitekey={CAPTCHA_KEY}
-							onVerify={setCaptchaToken}
-							onExpire={() => setCaptchaToken(undefined)}
-						/>
-					</Stack>
-				)}
-
-				{(captchaToken || tab === FormTabs.Login) && (
-					<>
-						<EmailLogin signup={tab === FormTabs.Signup} />
-						{error && <Alert severity="error">{error}</Alert>}
-						<Stack alignItems="left" gap="1rem">
-							<Typography component="span">
-								{tab === FormTabs.Login ? "Or continue sign in with" : "Or create an account with"}
-							</Typography>
-							<Box sx={{ display: "flex", gap: "1rem" }}>
-								<MetaMaskLogin
-									onFailure={setError}
-									render={(props) => (
-										<ConnectButton
-											tooltip="Metamask"
-											onClick={(e) => {
-												props.onClick(e)
-												setError(null)
-											}}
-											loading={props.isProcessing}
-											startIcon={<MetaMaskIcon />}
-										/>
-									)}
-								/>
-								<WalletConnectLogin
-									onFailure={setError}
-									render={(props) => (
-										<ConnectButton
-											tooltip="Wallet Connect"
-											onClick={(e) => {
-												props.onClick(e)
-												setError(null)
-											}}
-											loading={props.isProcessing}
-											startIcon={<WalletConnectIcon />}
-										/>
-									)}
-								/>
-								<FacebookLoginWrapper
-									onFailure={setError}
-									render={(props, loading) => (
-										<ConnectButton
-											tooltip="Meta"
-											onClick={(e) => {
-												props.onClick(e)
-												setError(null)
-											}}
-											loading={loading ? loading : props.isProcessing}
-											startIcon={<MetaIcon />}
-											sx={{
-												"&>span svg": {
-													mt: "-5px !important",
-												},
-											}}
-										/>
-									)}
-								/>
-								<GoogleLoginWrapper
-									onFailure={setError}
-									render={(props) => (
-										<ConnectButton
-											tooltip="Google"
-											sx={{
-												"&>span svg": {
-													height: "1.5rem !important",
-													width: "1.5rem !important",
-													"@media (max-width:600px)": {
-														height: "2rem !important",
-														width: "2rem !important",
-													},
-												},
-											}}
-											loading={props.loading}
-											onClick={(e) => {
-												props.onClick()
-												setError(null)
-											}}
-											startIcon={<GoogleIcon />}
-										/>
-									)}
-								/>
-								<TwitterLoginWrapper
-									onFailure={setError}
-									onClick={async (popup) => {
-										if (popup) setTwitterPopup(popup)
+				<EmailLogin signup={tab === FormTabs.Signup} />
+				{error && <Alert severity="error">{error}</Alert>}
+				<Stack alignItems="left" gap="1rem">
+					<Typography component="span">{tab === FormTabs.Login ? "Or continue sign in with" : "Or create an account with"}</Typography>
+					<Box sx={{ display: "flex", gap: "1rem" }}>
+						<MetaMaskLogin
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									tooltip="Metamask"
+									onClick={(e) => {
+										props.onClick(e)
 										setError(null)
 									}}
-									render={(props) => (
-										<ConnectButton
-											tooltip="Twitter"
-											sx={{
-												"&>span svg": {
-													height: "1.6rem !important",
-													width: "1.6rem !important",
-													"@media (max-width:600px)": {
-														height: "2rem !important",
-														width: "2rem !important",
-													},
-												},
-											}}
-											onClick={props.onClick}
-											startIcon={<TwitterIcon />}
-										/>
-									)}
+									loading={props.isProcessing}
+									startIcon={<MetaMaskIcon />}
 								/>
-							</Box>
-						</Stack>
-						{tab === FormTabs.Login && (
-							<Link to="/forgot-password">
-								<Typography
-									component="span"
+							)}
+						/>
+						<WalletConnectLogin
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									tooltip="Wallet Connect"
+									onClick={(e) => {
+										props.onClick(e)
+										setError(null)
+									}}
+									loading={props.isProcessing}
+									startIcon={<WalletConnectIcon />}
+								/>
+							)}
+						/>
+						<FacebookLoginWrapper
+							onFailure={setError}
+							render={(props, loading) => (
+								<ConnectButton
+									tooltip="Meta"
+									onClick={(e) => {
+										props.onClick(e)
+										setError(null)
+									}}
+									loading={loading ? loading : props.isProcessing}
+									startIcon={<MetaIcon />}
 									sx={{
-										mt: "2rem",
-										display: "inline-block",
-										color: colors.darkGrey,
-										cursor: "pointer",
-										transition: "all .5s",
-										"&:hover": {
-											color: "secondary",
-											textDecoration: "underline",
+										"&>span svg": {
+											mt: "-5px !important",
 										},
 									}}
-								>
-									Forgot your password?
-								</Typography>
-							</Link>
-						)}
-					</>
+								/>
+							)}
+						/>
+						<GoogleLoginWrapper
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									tooltip="Google"
+									sx={{
+										"&>span svg": {
+											height: "1.5rem !important",
+											width: "1.5rem !important",
+											"@media (max-width:600px)": {
+												height: "2rem !important",
+												width: "2rem !important",
+											},
+										},
+									}}
+									loading={props.loading}
+									onClick={(e) => {
+										props.onClick()
+										setError(null)
+									}}
+									startIcon={<GoogleIcon />}
+								/>
+							)}
+						/>
+						<TwitterLoginWrapper
+							onFailure={setError}
+							onClick={async (popup) => {
+								if (popup) setTwitterPopup(popup)
+								setError(null)
+							}}
+							render={(props) => (
+								<ConnectButton
+									tooltip="Twitter"
+									sx={{
+										"&>span svg": {
+											height: "1.6rem !important",
+											width: "1.6rem !important",
+											"@media (max-width:600px)": {
+												height: "2rem !important",
+												width: "2rem !important",
+											},
+										},
+									}}
+									onClick={props.onClick}
+									startIcon={<TwitterIcon />}
+								/>
+							)}
+						/>
+					</Box>
+				</Stack>
+				{tab === FormTabs.Login && (
+					<Link to="/forgot-password">
+						<Typography
+							component="span"
+							sx={{
+								mt: "2rem",
+								display: "inline-block",
+								color: colors.darkGrey,
+								cursor: "pointer",
+								transition: "all .5s",
+								"&:hover": {
+									color: "secondary",
+									textDecoration: "underline",
+								},
+							}}
+						>
+							Forgot your password?
+						</Typography>
+					</Link>
 				)}
 			</Stack>
 		</Stack>
