@@ -133,7 +133,8 @@ export interface WalletLoginRequest extends BasicLoginRequest {
 	username?: string
 	auth_type: AuthTypes.Wallet
 	new_user?: boolean
-	requires_captcha?: boolean
+	captcha_required?: boolean
+	captcha_token?: string
 }
 
 export interface GoogleSignUpRequest {

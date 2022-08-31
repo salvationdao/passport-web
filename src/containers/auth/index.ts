@@ -274,7 +274,7 @@ export const AuthContainer = createContainer(() => {
 								fingerprint: undefined,
 								username: args.username,
 								new_user: undefined,
-								requires_captcha: undefined,
+								captcha_required: undefined,
 							})
 							return
 						case AuthTypes.Email:
@@ -835,7 +835,7 @@ export const AuthContainer = createContainer(() => {
 				if (resp.payload.auth_type === AuthTypes.Wallet && resp.payload.new_user) {
 					let uri = "/signup"
 					if (redirectURL) uri += `?redirectURL=${redirectURL}&tenant=${tenant}`
-					if (resp.payload.requires_captcha) uri += "&captcha=true"
+					if (resp.payload.captcha_required) uri += "&captcha=true"
 					setSignupRequest(resp.payload)
 					history.push(uri)
 					return

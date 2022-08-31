@@ -5,14 +5,18 @@ import { Redirect } from "react-router-dom"
 import { SupremacyAuth } from "../../components/supremacy/auth"
 import { AuthTypes, useAuth } from "../../containers/auth"
 import { SignupRequestTypes } from "../../types/auth"
+import HCaptcha from "@hcaptcha/react-hcaptcha"
+import { CAPTCHA_KEY } from "../../config"
 
-const searchParams = new URLSearchParams(window.location.search)
 export const Signup: React.FC = () => {
-	const { signupUser, signupRequest, emailCode } = useAuth()
+	const searchParams = new URLSearchParams(window.location.search)
+	const { signupUser, signupRequest, emailCode, captchaToken, setCaptchaToken } = useAuth()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [signupLoading, setSignupLoading] = useState(false)
 	const tenant = searchParams.get("tenant")
 	const redirectURL = searchParams.get("redirectURL")
+	const captchaRequired = searchParams.get("captcha") === "true"
+	console.log("Test cakes?", searchParams.get("captcha"))
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
@@ -28,8 +32,7 @@ export const Signup: React.FC = () => {
 				const password = data.get("password")?.toString()
 				const confirmPassword = data.get("confirmPassword")?.toString()
 
-				if (!signupRequest) {
-				} else {
+				if (signupRequest) {
 					let userRequest: SignupRequestTypes | null = null
 					switch (signupRequest.auth_type) {
 						case AuthTypes.Email:
@@ -72,7 +75,10 @@ export const Signup: React.FC = () => {
 												tenant,
 												redirect_url: redirectURL,
 										  }
-										: signupRequest,
+										: {
+												...signupRequest,
+												captcha_token: captchaToken,
+										  },
 								username,
 								auth_type: signupRequest.auth_type,
 							},
@@ -86,72 +92,94 @@ export const Signup: React.FC = () => {
 				setError(err)
 			}
 		},
-		[signupRequest, signupUser, emailCode?.email, tenant, errorCallback, redirectURL],
+		[signupRequest, signupUser, captchaToken, emailCode?.email, tenant, errorCallback, redirectURL],
 	)
 
 	if (!signupRequest) {
 		return <Redirect to="/" />
 	}
 
+	let title = "Setup Account"
+	if (signupRequest?.auth_type !== AuthTypes.Email && (!captchaRequired || captchaToken)) title = "Setup Display Name"
+
 	return (
-		<SupremacyAuth title={signupRequest?.auth_type !== AuthTypes.Email ? "Setup Display Name" : "Setup Account"}>
+		<SupremacyAuth title={title}>
 			<Slide in={true} direction="left">
-				<Stack
-					onSubmit={handleSubmit}
-					component="form"
-					display="flex"
-					width="100%"
-					maxWidth="25rem"
-					marginTop="20px"
-					justifyContent="space-between"
-					gap="1.5rem"
-					onChange={() => setError(null)}
-				>
-					<Typography>
-						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}
-					</Typography>
-					<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
-					{signupRequest?.auth_type === AuthTypes.Email && (
-						<>
-							<Box
-								component="ul"
-								sx={{
-									"& li": {
-										ml: "1rem",
-										textAlign: "left",
-									},
-								}}
-							>
-								Password need to contain at least 8 characters and:
-								<li>At least 1 number</li>
-								<li>At least 1 lowercase letter</li>
-								<li>At least 1 uppercase letter</li>
-							</Box>
-							<TextField variant="outlined" name="password" label="Password" type="password" fullWidth />
-							<TextField variant="outlined" name="confirmPassword" label="Confirm Password" type="password" fullWidth />
-						</>
+				<Box>
+					{captchaRequired && !captchaToken && (
+						<Stack display="flex" width="100%" maxWidth="25rem" marginTop="20px" justifyContent="space-between" gap="1.5rem">
+							<Typography>Please verify you are human.</Typography>
+							<HCaptcha
+								size="compact"
+								theme="dark"
+								sitekey={CAPTCHA_KEY}
+								onVerify={setCaptchaToken}
+								onExpire={() => setCaptchaToken(undefined)}
+							/>
+						</Stack>
 					)}
-					{error && (
-						<Alert
-							severity={"error"}
-							sx={{
-								minWidth: "300px",
-								textAlign: "left",
-							}}
+
+					{(!captchaRequired || captchaToken) && (
+						<Stack
+							onSubmit={handleSubmit}
+							component="form"
+							display="flex"
+							width="100%"
+							maxWidth="25rem"
+							marginTop="20px"
+							justifyContent="space-between"
+							gap="1.5rem"
+							onChange={() => setError(null)}
 						>
-							{error.charAt(0).toUpperCase() + error.slice(1)}
-						</Alert>
+							<Typography>
+								{signupRequest?.auth_type !== AuthTypes.Email
+									? "Please enter your user display name:"
+									: "Please enter your account details:"}
+							</Typography>
+							<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
+							{signupRequest?.auth_type === AuthTypes.Email && (
+								<>
+									<Box
+										component="ul"
+										sx={{
+											"& li": {
+												ml: "1rem",
+												textAlign: "left",
+											},
+										}}
+									>
+										Password need to contain at least 8 characters and:
+										<li>At least 1 number</li>
+										<li>At least 1 lowercase letter</li>
+										<li>At least 1 uppercase letter</li>
+									</Box>
+									<TextField variant="outlined" name="password" label="Password" type="password" fullWidth />
+									<TextField variant="outlined" name="confirmPassword" label="Confirm Password" type="password" fullWidth />
+								</>
+							)}
+							{error && (
+								<Alert
+									severity={"error"}
+									sx={{
+										minWidth: "300px",
+										textAlign: "left",
+									}}
+								>
+									{error.charAt(0).toUpperCase() + error.slice(1)}
+								</Alert>
+							)}
+							<LoadingButton
+								type="submit"
+								loading={signupLoading}
+								disabled={signupLoading}
+								variant="contained"
+								sx={{ p: ".5em 2em", fontSize: "1.2rem" }}
+							>
+								Submit
+							</LoadingButton>
+						</Stack>
 					)}
-					<LoadingButton
-						type="submit"
-						loading={signupLoading}
-						disabled={signupLoading}
-						variant="contained"
-						sx={{ p: ".5em 2em", fontSize: "1.2rem" }}
-					>
-						Submit
-					</LoadingButton>
-				</Stack>
+				</Box>
 			</Slide>
 		</SupremacyAuth>
 	)
