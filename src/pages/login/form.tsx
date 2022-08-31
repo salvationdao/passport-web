@@ -43,14 +43,14 @@ export const LoginForm = () => {
 					twitter_token: twitterToken,
 					redirect_url: redirectURL,
 				})
-				history.push(`/signup`)
+				history.push(`/signup?captcha=true`)
 			} else if (!!event?.data["twitter_token"]) {
 				const twitterToken = event?.data.twitter_token as string
 				setSignupRequest({
 					auth_type: AuthTypes.Twitter,
 					twitter_token: twitterToken,
 				})
-				history.push("/signup")
+				history.push("/signup/?captcha=true")
 			} else if (!!event?.data["login"]) {
 				try {
 					await handleAuthCheck()

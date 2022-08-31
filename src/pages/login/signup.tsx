@@ -16,7 +16,6 @@ export const Signup: React.FC = () => {
 	const tenant = searchParams.get("tenant")
 	const redirectURL = searchParams.get("redirectURL")
 	const captchaRequired = searchParams.get("captcha") === "true"
-	console.log("Test cakes?", searchParams.get("captcha"))
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
