@@ -293,7 +293,13 @@ export const AuthContainer = createContainer(() => {
 							return
 						case AuthTypes.Facebook:
 							const facebookReq = args[SignupRequestTypes.Facebook]
-							externalAuth({ ...facebookReq, fingerprint: undefined, username: args.username, new_user: undefined })
+							externalAuth({
+								...facebookReq,
+								fingerprint: undefined,
+								username: args.username,
+								new_user: undefined,
+								captcha_required: undefined,
+							})
 							return
 						case AuthTypes.Twitter:
 							const twitterReq = args[SignupRequestTypes.Twitter]
@@ -707,8 +713,10 @@ export const AuthContainer = createContainer(() => {
 				}
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Facebook && resp.payload.new_user) {
+					let uri = "/signup"
+					if (resp.payload.captcha_required) uri += "?captcha=true"
 					setSignupRequest(resp.payload)
-					history.push("/signup")
+					history.push(uri)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })

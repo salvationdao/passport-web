@@ -86,6 +86,8 @@ export interface FacebookLoginRequest extends BasicLoginRequest {
 	session_id?: string
 	auth_type: AuthTypes.Facebook
 	new_user?: boolean
+	captcha_required?: boolean
+	captcha_token?: string
 }
 
 export interface TwoFactorAuthLoginRequest extends BasicLoginRequest {
