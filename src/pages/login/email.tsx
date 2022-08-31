@@ -29,6 +29,11 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 			setError("No email has been provided")
 			return
 		}
+		if (!captchaToken) {
+			setError("Please verify you are human")
+			return
+		}
+
 		if (signup) {
 			// Insert send verify email handler
 			await emailSignup.action(email, captchaToken, errorCallback)
@@ -73,7 +78,10 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 							size="compact"
 							theme="dark"
 							sitekey={CAPTCHA_KEY}
-							onVerify={setCaptchaToken}
+							onVerify={(token) => {
+								setCaptchaToken(token)
+								setError(null)
+							}}
 							onExpire={() => setCaptchaToken(undefined)}
 						/>
 					</>
