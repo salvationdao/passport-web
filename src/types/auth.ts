@@ -76,6 +76,7 @@ export interface GoogleLoginRequest extends BasicLoginRequest {
 	session_id?: string
 	auth_type: AuthTypes.Google
 	new_user?: boolean
+	captcha_required?: boolean
 }
 
 export interface FacebookLoginRequest extends BasicLoginRequest {
@@ -308,6 +309,7 @@ export interface SignupNewUser {
 	auth_type: AuthTypes
 	fingerprint?: Fingerprint
 	redirect_url?: string
+	captcha_token?: string
 }
 
 export type SignUpRequest =

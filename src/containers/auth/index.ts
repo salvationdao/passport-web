@@ -283,7 +283,13 @@ export const AuthContainer = createContainer(() => {
 							return
 						case AuthTypes.Google:
 							const googleReq = args[SignupRequestTypes.Google]
-							externalAuth({ ...googleReq, fingerprint: undefined, username: args.username, new_user: undefined })
+							externalAuth({
+								...googleReq,
+								fingerprint: undefined,
+								username: args.username,
+								new_user: undefined,
+								captcha_required: undefined,
+							})
 							return
 						case AuthTypes.Facebook:
 							const facebookReq = args[SignupRequestTypes.Facebook]
@@ -639,8 +645,10 @@ export const AuthContainer = createContainer(() => {
 
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Google && resp.payload.new_user) {
+					let uri = "/signup"
+					if (resp.payload.captcha_required) uri += "?captcha=true"
 					setSignupRequest(resp.payload)
-					history.push("/signup")
+					history.push(uri)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })

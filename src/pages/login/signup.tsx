@@ -75,12 +75,10 @@ export const Signup: React.FC = () => {
 												tenant,
 												redirect_url: redirectURL,
 										  }
-										: {
-												...signupRequest,
-												captcha_token: captchaToken,
-										  },
+										: signupRequest,
 								username,
 								auth_type: signupRequest.auth_type,
+								captcha_token: captchaToken,
 							},
 							errorCallback,
 						)

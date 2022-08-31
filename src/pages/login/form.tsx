@@ -99,6 +99,7 @@ export const LoginForm = () => {
 
 				{tab === FormTabs.Signup && !captchaToken && (
 					<Stack component={"form"} sx={{ width: "100%", minWidth: "364px" }}>
+						<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
 						<HCaptcha
 							size="compact"
 							theme="dark"
