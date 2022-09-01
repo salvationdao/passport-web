@@ -1,4 +1,4 @@
-import { Alert, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { Alert, Stack, TextField, Typography, Box, useTheme } from "@mui/material"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
 import * as React from "react"
 import { FancyButton } from "../../components/fancyButton"
@@ -13,6 +13,7 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const theme = useTheme()
 	const { loginPassword, emailSignup, captchaToken, setCaptchaToken } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
+	const captchaRef = React.useRef<HCaptcha>(null)
 
 	const errorCallback = (msg: string) => {
 		setError(msg)
@@ -71,20 +72,21 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 					/>
 				)}
 
-				{signup && !captchaToken && (
-					<>
+				{signup && (
+					<Box hidden={!!captchaToken}>
 						<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
 						<HCaptcha
 							size="compact"
 							theme="dark"
 							sitekey={CAPTCHA_KEY}
+							ref={captchaRef}
 							onVerify={(token) => {
 								setCaptchaToken(token)
 								setError(null)
 							}}
 							onExpire={() => setCaptchaToken(undefined)}
 						/>
-					</>
+					</Box>
 				)}
 
 				<FancyButton

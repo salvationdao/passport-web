@@ -1,6 +1,6 @@
 import { LoadingButton } from "@mui/lab"
 import { Alert, Box, Slide, Stack, TextField, Typography } from "@mui/material"
-import { useCallback, useState } from "react"
+import { useCallback, useState, useRef } from "react"
 import { Redirect } from "react-router-dom"
 import { SupremacyAuth } from "../../components/supremacy/auth"
 import { AuthTypes, useAuth } from "../../containers/auth"
@@ -13,12 +13,14 @@ export const Signup: React.FC = () => {
 	const { signupUser, signupRequest, emailCode, captchaToken, setCaptchaToken } = useAuth()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [signupLoading, setSignupLoading] = useState(false)
+	const captchaRef = useRef<HCaptcha>(null)
 	const tenant = searchParams.get("tenant")
 	const redirectURL = searchParams.get("redirectURL")
 	const captchaRequired = searchParams.get("captcha") === "true"
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
+		captchaRef.current?.removeCaptcha()
 	}, [])
 
 	const handleSubmit = useCallback(
@@ -117,17 +119,18 @@ export const Signup: React.FC = () => {
 						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}
 					</Typography>
 					<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
-					{captchaRequired && !captchaToken && (
-						<>
+					{captchaRequired && (
+						<Box hidden={!!captchaToken}>
 							<Typography>Please verify you are human.</Typography>
 							<HCaptcha
 								size="compact"
 								theme="dark"
 								sitekey={CAPTCHA_KEY}
+								ref={captchaRef}
 								onVerify={setCaptchaToken}
 								onExpire={() => setCaptchaToken(undefined)}
 							/>
-						</>
+						</Box>
 					)}
 					{signupRequest?.auth_type === AuthTypes.Email && (
 						<>
