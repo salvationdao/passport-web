@@ -119,7 +119,7 @@ export const Signup: React.FC = () => {
 					<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
 					{captchaRequired && (
 						<Box hidden={!!captchaToken}>
-							<Typography>Please verify you are human.</Typography>
+							<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
 							<HCaptcha
 								size="compact"
 								theme="dark"

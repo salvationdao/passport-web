@@ -73,7 +73,7 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 				)}
 
 				{signup && (
-					<Box hidden={!!captchaToken}>
+					<Box hidden={!!captchaToken} sx={{ mt: 1 }}>
 						<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
 						<HCaptcha
 							size="compact"
