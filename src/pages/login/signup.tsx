@@ -8,14 +8,16 @@ import { SignupRequestTypes } from "../../types/auth"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { CAPTCHA_KEY } from "../../config"
 
+const searchParams = new URLSearchParams(window.location.search)
+
 export const Signup: React.FC = () => {
-	const searchParams = new URLSearchParams(window.location.search)
 	const { signupUser, signupRequest, emailCode, captchaToken, setCaptchaToken } = useAuth()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [signupLoading, setSignupLoading] = useState(false)
 	const tenant = searchParams.get("tenant")
 	const redirectURL = searchParams.get("redirectURL")
-	const captchaRequired = searchParams.get("captcha") === "true"
+	const captchaSearchParams = new URLSearchParams(window.location.search)
+	const captchaRequired = captchaSearchParams.get("captcha") === "true"
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
