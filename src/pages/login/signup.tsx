@@ -1,6 +1,6 @@
 import { LoadingButton } from "@mui/lab"
 import { Alert, Box, Slide, Stack, TextField, Typography } from "@mui/material"
-import { useCallback, useState, useRef } from "react"
+import { useCallback, useState } from "react"
 import { Redirect } from "react-router-dom"
 import { SupremacyAuth } from "../../components/supremacy/auth"
 import { AuthTypes, useAuth } from "../../containers/auth"
@@ -13,14 +13,12 @@ export const Signup: React.FC = () => {
 	const { signupUser, signupRequest, emailCode, captchaToken, setCaptchaToken } = useAuth()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [signupLoading, setSignupLoading] = useState(false)
-	const captchaRef = useRef<HCaptcha>(null)
 	const tenant = searchParams.get("tenant")
 	const redirectURL = searchParams.get("redirectURL")
 	const captchaRequired = searchParams.get("captcha") === "true"
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
-		captchaRef.current?.removeCaptcha()
 	}, [])
 
 	const handleSubmit = useCallback(
@@ -88,7 +86,7 @@ export const Signup: React.FC = () => {
 			} catch (err: any) {
 				setSignupLoading(false)
 				console.error(err)
-				setError(err)
+				setError(typeof err === "string" ? err : "Something went wrong, please try again.")
 			}
 		},
 		[signupRequest, signupUser, captchaToken, emailCode?.email, tenant, errorCallback, redirectURL],
@@ -126,7 +124,6 @@ export const Signup: React.FC = () => {
 								size="compact"
 								theme="dark"
 								sitekey={CAPTCHA_KEY}
-								ref={captchaRef}
 								onVerify={setCaptchaToken}
 								onExpire={() => setCaptchaToken(undefined)}
 							/>

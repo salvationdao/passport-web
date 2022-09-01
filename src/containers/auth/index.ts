@@ -319,7 +319,7 @@ export const AuthContainer = createContainer(() => {
 				throw new Error("No response was received")
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
-				if (e.message) {
+				if (e?.message) {
 					errMsg = e.message
 				}
 				if (errorCallback) {
