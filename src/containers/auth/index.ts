@@ -303,7 +303,7 @@ export const AuthContainer = createContainer(() => {
 							return
 						case AuthTypes.Twitter:
 							const twitterReq = args[SignupRequestTypes.Twitter]
-							externalAuth({ ...twitterReq, fingerprint: undefined, username: args.username, user_id: resp.payload.id })
+							externalAuth({ ...twitterReq, fingerprint: undefined, username: args.username })
 							return
 						default:
 							return
