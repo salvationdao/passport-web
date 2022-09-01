@@ -30,7 +30,7 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 			setError("No email has been provided")
 			return
 		}
-		if (!captchaToken) {
+		if (signup && !captchaToken) {
 			setError("Please verify you are human")
 			return
 		}
