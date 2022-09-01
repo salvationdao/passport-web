@@ -163,6 +163,7 @@ export const AuthContainer = createContainer(() => {
 	// Signup
 	const [signupRequest, setSignupRequest] = useState<LoginNewUserResponse | undefined>()
 	const [emailCode, setEmailCode] = useState<{ token?: string; email: string } | undefined>()
+	const [captchaToken, setCaptchaToken] = useState<string>()
 
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
@@ -268,7 +269,13 @@ export const AuthContainer = createContainer(() => {
 					switch (args.auth_type) {
 						case AuthTypes.Wallet:
 							const walletReq = args[SignupRequestTypes.Wallet]
-							externalAuth({ ...walletReq, fingerprint: undefined, username: args.username, new_user: undefined })
+							externalAuth({
+								...walletReq,
+								fingerprint: undefined,
+								username: args.username,
+								new_user: undefined,
+								captcha_required: undefined,
+							})
 							return
 						case AuthTypes.Email:
 							const emailReq = args[SignupRequestTypes.Email]
@@ -276,11 +283,23 @@ export const AuthContainer = createContainer(() => {
 							return
 						case AuthTypes.Google:
 							const googleReq = args[SignupRequestTypes.Google]
-							externalAuth({ ...googleReq, fingerprint: undefined, username: args.username, new_user: undefined })
+							externalAuth({
+								...googleReq,
+								fingerprint: undefined,
+								username: args.username,
+								new_user: undefined,
+								captcha_required: undefined,
+							})
 							return
 						case AuthTypes.Facebook:
 							const facebookReq = args[SignupRequestTypes.Facebook]
-							externalAuth({ ...facebookReq, fingerprint: undefined, username: args.username, new_user: undefined })
+							externalAuth({
+								...facebookReq,
+								fingerprint: undefined,
+								username: args.username,
+								new_user: undefined,
+								captcha_required: undefined,
+							})
 							return
 						case AuthTypes.Twitter:
 							const twitterReq = args[SignupRequestTypes.Twitter]
@@ -300,7 +319,7 @@ export const AuthContainer = createContainer(() => {
 				throw new Error("No response was received")
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
-				if (e.message) {
+				if (e?.message) {
 					errMsg = e.message
 				}
 				if (errorCallback) {
@@ -401,9 +420,9 @@ export const AuthContainer = createContainer(() => {
 	 * Sends an email to User to start signup process.
 	 */
 	const emailSignupVerify = useCallback(
-		async (email: string, errorCallback?: (msg: string) => void) => {
+		async (email: string, captcha_token: string | undefined, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await emailSignup({ email })
+				const resp = await emailSignup({ email, captcha_token })
 				if (resp.error) {
 					clear()
 					throw resp.payload
@@ -619,6 +638,7 @@ export const AuthContainer = createContainer(() => {
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Google,
 					tenant,
+					captcha_token: captchaToken,
 				}
 
 				const resp = await google({ ...args, auth_type: AuthTypes.Google })
@@ -632,8 +652,10 @@ export const AuthContainer = createContainer(() => {
 
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Google && resp.payload.new_user) {
+					let uri = "/signup"
+					if (resp.payload.captcha_required) uri += "?captcha=true"
 					setSignupRequest(resp.payload)
-					history.push("/signup")
+					history.push(uri)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -665,7 +687,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[redirectURL, sessionId, fingerprint, tenant, google, externalAuth, history],
+		[redirectURL, sessionId, fingerprint, tenant, google, externalAuth, history, captchaToken],
 	)
 	/**
 	 * Facebook login use oauth to give access to user
@@ -681,6 +703,7 @@ export const AuthContainer = createContainer(() => {
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Facebook,
 					tenant,
+					captcha_token: captchaToken,
 				}
 
 				const resp = await facebook({ ...args, auth_type: AuthTypes.Facebook })
@@ -692,8 +715,10 @@ export const AuthContainer = createContainer(() => {
 				}
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Facebook && resp.payload.new_user) {
+					let uri = "/signup"
+					if (resp.payload.captcha_required) uri += "?captcha=true"
 					setSignupRequest(resp.payload)
-					history.push("/signup")
+					history.push(uri)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -725,7 +750,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[redirectURL, sessionId, fingerprint, tenant, facebook, externalAuth, history],
+		[redirectURL, sessionId, fingerprint, tenant, facebook, externalAuth, history, captchaToken],
 	)
 
 	/**
@@ -812,6 +837,7 @@ export const AuthContainer = createContainer(() => {
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Wallet,
 					tenant,
+					captcha_token: captchaToken,
 				}
 
 				const resp = await login({ ...args, auth_type: AuthTypes.Wallet })
@@ -826,7 +852,8 @@ export const AuthContainer = createContainer(() => {
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Wallet && resp.payload.new_user) {
 					let uri = "/signup"
-					if (redirectURL) uri = uri + `?redirectURL=${redirectURL}&tenant=${tenant}`
+					if (redirectURL) uri += `?redirectURL=${redirectURL}&tenant=${tenant}`
+					if (resp.payload.captcha_required) uri += `${uri === "/signup" ? "?" : "&"}captcha=true`
 					setSignupRequest(resp.payload)
 					history.push(uri)
 					return
@@ -858,7 +885,7 @@ export const AuthContainer = createContainer(() => {
 			}
 			throw e
 		}
-	}, [connect, sign, user, redirectURL, sessionId, fingerprint, tenant, login, externalAuth, history])
+	}, [connect, sign, user, redirectURL, sessionId, fingerprint, tenant, login, externalAuth, history, captchaToken])
 	/**
 	 * Logs a User in using a Wallet Connect public address
 	 *
@@ -878,6 +905,7 @@ export const AuthContainer = createContainer(() => {
 					fingerprint: redirectURL ? undefined : fingerprint,
 					auth_type: AuthTypes.Wallet,
 					tenant,
+					captcha_token: captchaToken,
 				}
 
 				const resp = await login({ ...args, auth_type: AuthTypes.Wallet })
@@ -892,7 +920,8 @@ export const AuthContainer = createContainer(() => {
 				// Handle new user
 				if (resp.payload.auth_type === AuthTypes.Wallet && resp.payload.new_user) {
 					let uri = "/signup"
-					if (redirectURL) uri = uri + `?redirectURL=${redirectURL}&tenant=${tenant}`
+					if (redirectURL) uri += `?redirectURL=${redirectURL}&tenant=${tenant}`
+					if (resp.payload.captcha_required) uri += `${uri === "/signup" ? "?" : "&"}captcha=true`
 					setSignupRequest(resp.payload)
 					history.push(uri)
 					return
@@ -927,7 +956,21 @@ export const AuthContainer = createContainer(() => {
 			setUser(undefined)
 			throw typeof e === "string" ? e : "Issue logging in with WalletConnect, try again or contact support."
 		}
-	}, [wcSignature, signWalletConnect, redirectURL, account, wcNonce, sessionId, fingerprint, tenant, login, history, externalAuth, clear])
+	}, [
+		wcSignature,
+		signWalletConnect,
+		redirectURL,
+		account,
+		wcNonce,
+		sessionId,
+		fingerprint,
+		tenant,
+		login,
+		history,
+		externalAuth,
+		clear,
+		captchaToken,
+	])
 
 	// Effect
 	useEffect(() => {
@@ -1103,6 +1146,8 @@ export const AuthContainer = createContainer(() => {
 		setSignupRequest,
 		emailCode,
 		setEmailCode,
+		captchaToken,
+		setCaptchaToken,
 	}
 })
 

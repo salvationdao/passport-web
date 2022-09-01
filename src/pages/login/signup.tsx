@@ -5,14 +5,17 @@ import { Redirect } from "react-router-dom"
 import { SupremacyAuth } from "../../components/supremacy/auth"
 import { AuthTypes, useAuth } from "../../containers/auth"
 import { SignupRequestTypes } from "../../types/auth"
+import HCaptcha from "@hcaptcha/react-hcaptcha"
+import { CAPTCHA_KEY } from "../../config"
 
-const searchParams = new URLSearchParams(window.location.search)
 export const Signup: React.FC = () => {
-	const { signupUser, signupRequest, emailCode } = useAuth()
+	const searchParams = new URLSearchParams(window.location.search)
+	const { signupUser, signupRequest, emailCode, captchaToken, setCaptchaToken } = useAuth()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [signupLoading, setSignupLoading] = useState(false)
 	const tenant = searchParams.get("tenant")
 	const redirectURL = searchParams.get("redirectURL")
+	const captchaRequired = searchParams.get("captcha") === "true"
 
 	const errorCallback = useCallback((msg: string) => {
 		setError(msg)
@@ -28,8 +31,7 @@ export const Signup: React.FC = () => {
 				const password = data.get("password")?.toString()
 				const confirmPassword = data.get("confirmPassword")?.toString()
 
-				if (!signupRequest) {
-				} else {
+				if (signupRequest) {
 					let userRequest: SignupRequestTypes | null = null
 					switch (signupRequest.auth_type) {
 						case AuthTypes.Email:
@@ -75,6 +77,7 @@ export const Signup: React.FC = () => {
 										: signupRequest,
 								username,
 								auth_type: signupRequest.auth_type,
+								captcha_token: captchaToken,
 							},
 							errorCallback,
 						)
@@ -83,18 +86,21 @@ export const Signup: React.FC = () => {
 			} catch (err: any) {
 				setSignupLoading(false)
 				console.error(err)
-				setError(err)
+				setError(typeof err === "string" ? err : "Something went wrong, please try again.")
 			}
 		},
-		[signupRequest, signupUser, emailCode?.email, tenant, errorCallback, redirectURL],
+		[signupRequest, signupUser, captchaToken, emailCode?.email, tenant, errorCallback, redirectURL],
 	)
 
 	if (!signupRequest) {
 		return <Redirect to="/" />
 	}
 
+	let title = "Setup Account"
+	if (signupRequest?.auth_type !== AuthTypes.Email) title = "Setup Display Name"
+
 	return (
-		<SupremacyAuth title={signupRequest?.auth_type !== AuthTypes.Email ? "Setup Display Name" : "Setup Account"}>
+		<SupremacyAuth title={title}>
 			<Slide in={true} direction="left">
 				<Stack
 					onSubmit={handleSubmit}
@@ -111,6 +117,18 @@ export const Signup: React.FC = () => {
 						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}
 					</Typography>
 					<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
+					{captchaRequired && (
+						<Box hidden={!!captchaToken}>
+							<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
+							<HCaptcha
+								size="compact"
+								theme="dark"
+								sitekey={CAPTCHA_KEY}
+								onVerify={setCaptchaToken}
+								onExpire={() => setCaptchaToken(undefined)}
+							/>
+						</Box>
+					)}
 					{signupRequest?.auth_type === AuthTypes.Email && (
 						<>
 							<Box

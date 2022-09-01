@@ -21,7 +21,7 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { setSignupRequest, handleAuthCheck, redirectURL } = useAuth()
+	const { setSignupRequest, handleAuthCheck, redirectURL, setCaptchaToken } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
@@ -36,19 +36,21 @@ export const LoginForm = () => {
 				const redirectURL = event?.data.redirectURL as string
 				const twitterToken = event?.data.twitter_token as string
 
+				setCaptchaToken(undefined)
 				setSignupRequest({
 					auth_type: AuthTypes.Twitter,
 					twitter_token: twitterToken,
 					redirect_url: redirectURL,
 				})
-				history.push(`/signup`)
+				history.push(`/signup?captcha=true`)
 			} else if (!!event?.data["twitter_token"]) {
 				const twitterToken = event?.data.twitter_token as string
+				setCaptchaToken(undefined)
 				setSignupRequest({
 					auth_type: AuthTypes.Twitter,
 					twitter_token: twitterToken,
 				})
-				history.push("/signup")
+				history.push("/signup/?captcha=true")
 			} else if (!!event?.data["login"]) {
 				try {
 					await handleAuthCheck()
@@ -57,7 +59,7 @@ export const LoginForm = () => {
 				}
 			}
 		},
-		[twitterPopup, redirectURL, setSignupRequest, history, handleAuthCheck],
+		[twitterPopup, redirectURL, setSignupRequest, history, handleAuthCheck, setCaptchaToken],
 	)
 
 	useEffect(() => {
