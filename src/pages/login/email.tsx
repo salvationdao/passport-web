@@ -1,8 +1,9 @@
-import { Alert, Stack, useTheme } from "@mui/material"
-import TextField from "@mui/material/TextField"
+import { Alert, Stack, TextField, Typography, Box, useTheme } from "@mui/material"
+import HCaptcha from "@hcaptcha/react-hcaptcha"
 import * as React from "react"
 import { FancyButton } from "../../components/fancyButton"
 import { useAuth } from "../../containers/auth"
+import { CAPTCHA_KEY } from "../../config"
 
 interface IEmailLoginProps {
 	signup?: boolean
@@ -10,8 +11,9 @@ interface IEmailLoginProps {
 
 export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 	const theme = useTheme()
-	const { loginPassword, emailSignup } = useAuth()
+	const { loginPassword, emailSignup, captchaToken, setCaptchaToken } = useAuth()
 	const [error, setError] = React.useState<string | null>(null)
+	const captchaRef = React.useRef<HCaptcha>(null)
 
 	const errorCallback = (msg: string) => {
 		setError(msg)
@@ -28,9 +30,14 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 			setError("No email has been provided")
 			return
 		}
+		if (!captchaToken) {
+			setError("Please verify you are human")
+			return
+		}
+
 		if (signup) {
 			// Insert send verify email handler
-			await emailSignup.action(email, errorCallback)
+			await emailSignup.action(email, captchaToken, errorCallback)
 		} else if (password) {
 			await loginPassword.action(email, password, errorCallback)
 		}
@@ -63,6 +70,23 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 						autoComplete="current-password"
 						inputProps={{ minLength: signup ? 8 : 0 }}
 					/>
+				)}
+
+				{signup && (
+					<Box hidden={!!captchaToken} sx={{ mt: 1 }}>
+						<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
+						<HCaptcha
+							size="compact"
+							theme="dark"
+							sitekey={CAPTCHA_KEY}
+							ref={captchaRef}
+							onVerify={(token) => {
+								setCaptchaToken(token)
+								setError(null)
+							}}
+							onExpire={() => setCaptchaToken(undefined)}
+						/>
+					</Box>
 				)}
 
 				<FancyButton

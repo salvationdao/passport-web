@@ -10,6 +10,7 @@ interface MetaMaskLoginButtonRenderProps {
 	errorMessage: string | null
 }
 interface LoginMetaMaskProps {
+	captchaToken?: string
 	onFailure?: (err: string) => void
 	onClick?: () => void // return false to stop login
 	render: (props: MetaMaskLoginButtonRenderProps) => JSX.Element

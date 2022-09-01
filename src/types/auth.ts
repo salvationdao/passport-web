@@ -42,6 +42,7 @@ export interface EmailSignupRequest extends BasicLoginRequest {
 
 export interface EmailSignupVerifyRequest extends BasicLoginRequest {
 	email: string
+	captcha_token?: string
 }
 
 export interface ForgotPasswordRequest extends BasicLoginRequest {
@@ -75,6 +76,7 @@ export interface GoogleLoginRequest extends BasicLoginRequest {
 	session_id?: string
 	auth_type: AuthTypes.Google
 	new_user?: boolean
+	captcha_required?: boolean
 }
 
 export interface FacebookLoginRequest extends BasicLoginRequest {
@@ -84,6 +86,8 @@ export interface FacebookLoginRequest extends BasicLoginRequest {
 	session_id?: string
 	auth_type: AuthTypes.Facebook
 	new_user?: boolean
+	captcha_required?: boolean
+	captcha_token?: string
 }
 
 export interface TwoFactorAuthLoginRequest extends BasicLoginRequest {
@@ -132,6 +136,8 @@ export interface WalletLoginRequest extends BasicLoginRequest {
 	username?: string
 	auth_type: AuthTypes.Wallet
 	new_user?: boolean
+	captcha_required?: boolean
+	captcha_token?: string
 }
 
 export interface GoogleSignUpRequest {
@@ -305,6 +311,7 @@ export interface SignupNewUser {
 	auth_type: AuthTypes
 	fingerprint?: Fingerprint
 	redirect_url?: string
+	captcha_token?: string
 }
 
 export type SignUpRequest =
