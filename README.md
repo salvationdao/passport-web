@@ -18,6 +18,13 @@ XGRID_LICENSE_KEY=
 # Required for wallet connect
 REACT_APP_WALLET_CONNECT_RPC=
 
+# Required for signup/signin facebook and google
+REACT_APP_GOOGLE_ID
+REACT_APP_FACEBOOK_APP_ID
+
+# Required for captcha support (for signups)
+REACT_APP_CAPTCHA_SITE_KEY
+
 # Not needed for develop
 REACT_APP_SENTRY_DSN_FRONTEND=
 REACT_APP_SENTRY_CURRENT_RELEASE_NAME=syndicate-passport_web@version # client-project@version (snake_case)
