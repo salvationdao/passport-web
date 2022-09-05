@@ -57,6 +57,6 @@ export const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_ID || ""
 export const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID || ""
 
 // captcha
-export const CAPTCHA_KEY = process.env.REACT_APP_CAPTCHA_SITE_KEY || "87f715ba-98ff-43da-b970-cfc30fd7c5a0"
+export const CAPTCHA_KEY = process.env.REACT_APP_CAPTCHA_SITE_KEY || "d44828b7-471d-4da3-aa8d-173a7dea7da9"
 
 export const ENVIRONMENT = process.env.REACT_APP_PASSPORT_ENVIRONMENT || "develop"
