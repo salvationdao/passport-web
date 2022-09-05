@@ -86,9 +86,10 @@ export const Signup: React.FC = () => {
 					}
 				}
 			} catch (err: any) {
-				setSignupLoading(false)
 				console.error(err)
 				setError(typeof err === "string" ? err : "Something went wrong, please try again.")
+			} finally {
+				setSignupLoading(false)
 			}
 		},
 		[signupRequest, signupUser, captchaToken, emailCode?.email, tenant, errorCallback, redirectURL],
