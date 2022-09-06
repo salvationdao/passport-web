@@ -208,8 +208,10 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				const { new_username } = data
 				// Update user
 				const resp = await send<User>(HubKey.UserUpdate, {
-					id: user.id,
 					...data,
+					id: user.id,
+					user_agent: window.navigator.userAgent,
+					new_username: user.username !== new_username ? new_username : undefined,
 				})
 
 				if (resp) {
