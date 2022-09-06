@@ -6,7 +6,7 @@ import { ConnectionLostSnackbar } from "./components/connectionLostSnackbar"
 import { Loading } from "./components/loading"
 import { Maintenance } from "./components/maintenance"
 import { Sidebar } from "./components/sidebar"
-import { API_ENDPOINT_HOSTNAME, ENVIRONMENT } from "./config"
+import { API_ENDPOINT_HOSTNAME } from "./config"
 import { useAuth } from "./containers/auth"
 import { useFingerprint } from "./containers/fingerprint"
 import { useSidebarState } from "./containers/sidebar"
@@ -26,6 +26,7 @@ import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { LoginPage } from "./pages/login"
+import { LoginRedirect } from "./pages/login/twitterRedirect"
 import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/AssetRedirectPage"
 import { ProfilePage } from "./pages/Profile/ProfilePage"
 import { StorePage } from "./pages/Store/StorePage"
@@ -40,7 +41,7 @@ export const Routes = () => {
 	const { send } = usePassportCommandsUser("/commander")
 	const { setSidebarOpen } = useSidebarState()
 	const { fingerprint } = useFingerprint()
-	const { setSessionID, user, loading: authLoading } = useAuth()
+	const { setSessionID, user, loading: authLoading, redirectURL } = useAuth()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
 	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
 	const [loadingText, setLoadingText] = useState<string>()
@@ -143,23 +144,24 @@ export const Routes = () => {
 							<Route exact path="/">
 								<LoginPage />
 							</Route>
-
 							<Route exact path="/login">
 								<LoginPage />
 							</Route>
 							<Route path="/verify">
 								<VerifyEmail />
 							</Route>
-							{ENVIRONMENT === "develop" && (
-								<Route path="/tfa/:username/setup">
-									<TwoFactorAuthenticationSetup />
-								</Route>
-							)}
-							{ENVIRONMENT === "develop" && (
-								<Route path="/tfa/:username/recovery-code">
-									<TwoFactorAuthenticationRecoveryCode />
-								</Route>
-							)}
+
+							<Route path="/twitter-redirect">
+								<LoginRedirect />
+							</Route>
+
+							<Route path="/tfa/:username/setup">
+								<TwoFactorAuthenticationSetup />
+							</Route>
+
+							<Route path="/tfa/:username/recovery-code">
+								<TwoFactorAuthenticationRecoveryCode />
+							</Route>
 
 							<Route path="/signup">
 								<SignUpPage />
@@ -167,7 +169,6 @@ export const Routes = () => {
 							<Route path="/onboarding">
 								<PassportReady />
 							</Route>
-
 							<Route path="/privacy-policy">
 								<Home />
 							</Route>
@@ -177,7 +178,6 @@ export const Routes = () => {
 							<Route path="/transactions">
 								<TransactionsPage />
 							</Route>
-
 							<Route path="/staking">
 								<FarmsPage />
 							</Route>
@@ -196,20 +196,17 @@ export const Routes = () => {
 							<Route path="/external/buy">
 								<IFrameBuyPage />
 							</Route>
-
 							<Route path="/deposit-assets/:collection_slug">
 								<ContractAssetPage />
 							</Route>
 							<Route path="/deposit-assets">
 								<DepositAssetsPage />
 							</Route>
-
 							{/* User-authenticated routes */}
 							{/* profile */}
 							<Route path={"/profile/:username?"}>
 								<ProfilePage />
 							</Route>
-
 							<Route path="/asset/:asset_hash">
 								<AssetRedirectPage />
 							</Route>
@@ -223,7 +220,7 @@ export const Routes = () => {
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
-			{user && account && <CorrectWalletConnected />}
+			{user && account && !redirectURL && <CorrectWalletConnected />}
 		</Box>
 	)
 }

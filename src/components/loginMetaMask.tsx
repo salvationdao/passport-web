@@ -10,6 +10,7 @@ interface MetaMaskLoginButtonRenderProps {
 	errorMessage: string | null
 }
 interface LoginMetaMaskProps {
+	captchaToken?: string
 	onFailure?: (err: string) => void
 	onClick?: () => void // return false to stop login
 	render: (props: MetaMaskLoginButtonRenderProps) => JSX.Element
@@ -33,7 +34,7 @@ export const MetaMaskLogin: React.VoidFunctionComponent<LoginMetaMaskProps> = ({
 		}
 		try {
 			const resp = await loginMetamask()
-			if (!resp || !resp.payload) {
+			if (!resp) {
 				setErrorMessage(
 					"There was a problem logging you in, Passport may be updating at this time. If the issue persists please contact support.",
 				)

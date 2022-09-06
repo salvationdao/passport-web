@@ -88,6 +88,20 @@ export const ChangePasswordModal: React.FC<IChangePasswordModalProps> = ({ open,
 						<Typography variant="body2">
 							{isNew ? "Setting up" : "Changing"} your password will disconnect user from all other sessions.
 						</Typography>
+						<Box
+							component="ul"
+							sx={{
+								"& li": {
+									ml: "1rem",
+									textAlign: "left",
+								},
+							}}
+						>
+							Password need to contain at least 8 characters and:
+							<li>At least 1 number</li>
+							<li>At least 1 lowercase letter</li>
+							<li>At least 1 uppercase letter</li>
+						</Box>
 						<Typography variant="body2">Please enter your {!isNew && "current password and"}&nbsp;new password:</Typography>
 						<TextField
 							margin="normal"

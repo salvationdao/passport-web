@@ -44,14 +44,13 @@ export const Twitter: React.FC = () => {
 	return (
 		<TwitterLogin
 			add={user.id}
-			onClick={user.twitter_id ? handleRemove : undefined}
 			onFailure={(err) => {
 				displayMessage("Failed to authenticated user")
 				setLoading(false)
 			}}
 			render={(props) => (
 				<ConnectionButton
-					handleClick={props.onClick}
+					handleClick={user.twitter_id ? handleRemove : props.onClick}
 					loading={loading}
 					icon={TwitterIcon}
 					title="Add Twitter"

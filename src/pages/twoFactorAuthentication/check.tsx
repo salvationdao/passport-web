@@ -1,10 +1,11 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import { LoadingButton } from "@mui/lab"
-import { Alert, Box, Button, Paper, TextField, Typography } from "@mui/material"
+import { Alert, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material"
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react"
 import { useHistory, useLocation } from "react-router-dom"
 import { useAuth } from "../../containers/auth"
 import { colors } from "../../theme"
+import { TwoFactorAuthenticationCheckLogin } from "./checkLogin"
 
 interface ITwoFactorAuthenticationCheckProps {
 	setVerified?: React.Dispatch<React.SetStateAction<boolean>>
@@ -14,7 +15,7 @@ const searchParams = new URLSearchParams(window.location.search)
 export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationCheckProps> = ({ setVerified }) => {
 	const location = useLocation()
 	const history = useHistory()
-	const { twoFactorAuthLogin } = useAuth()
+	const { twoFactorAuthLogin, userID } = useAuth()
 	const [code, setCode] = useState("")
 	const [isRecovery, setIsRecovery] = useState(false)
 	const [error, setError] = useState(searchParams.get("err"))
@@ -41,6 +42,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 
 	const handleSubmit = useCallback(
 		async (e: FormEvent) => {
+			setError(null)
 			e.preventDefault()
 			if (code.length === 0) {
 				return
@@ -62,6 +64,10 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 		},
 		[tokenGroup, errorCallback, twoFactorAuthLogin, code, isRecovery, setVerified],
 	)
+
+	if (!userID) {
+		return <TwoFactorAuthenticationCheckLogin />
+	}
 
 	// get 2fa secret
 	return (
@@ -116,25 +122,40 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 					To proceed, please enter the passcode from your authenticator app.
 					<br />
 					<br />
-					If you have lost access to you authenticator app, use one of the recovery codes provided to you or contact support.
+					If you have lost access to your authenticator app, use one of the recovery codes provided to you or contact support.
 				</Typography>
-				<Box
-					onSubmit={handleSubmit}
-					component="form"
-					// onSubmit={onSubmit}
-					display="flex"
-					width="90%"
-					maxWidth="400px"
-					marginTop="20px"
-					justifyContent="space-between"
-					gap="1rem"
-				>
+				<Stack onSubmit={handleSubmit} component="form" width="90%" maxWidth="400px" marginTop="20px" gap="1rem">
 					<TextField
-						variant="outlined"
-						label={isRecovery ? "Recovery code" : "Passcode"}
+						sx={{
+							mt: "1rem",
+							"& *": {
+								"@media (max-width:500px)": {
+									font: `4vw Nostromo Regular Medium !important`,
+								},
+							},
+						}}
+						placeholder="Enter code"
 						value={code}
-						fullWidth
 						onChange={(e) => setCode(e.target.value)}
+						inputProps={{
+							style: {
+								margin: "1rem auto",
+								padding: "0 1rem",
+								width: `${10 * 1.5}ch`,
+								background: `repeating-linear-gradient(90deg, dimgrey 0, 
+									 "dimgrey"
+									}1ch, transparent 0, transparent 1.6ch) 0 100%/ 10ch 2px no-repeat`,
+								font: `2.4ch Nostromo Regular Medium`,
+								letterSpacing: ".6ch",
+								textAlign: "center",
+							},
+							maxLength: 6,
+							spellCheck: false,
+						}}
+						onFocus={() => {
+							setError(null)
+						}}
+						InputProps={{ disableUnderline: true }}
 					/>
 
 					<LoadingButton
@@ -147,11 +168,12 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 					>
 						Submit
 					</LoadingButton>
-				</Box>
+				</Stack>
 
 				<Button
 					onClick={() => {
 						setIsRecovery(!isRecovery)
+						setError(null)
 					}}
 					sx={{ textTransform: "uppercase", color: "secondary.main" }}
 				>

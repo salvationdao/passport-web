@@ -28,7 +28,7 @@ export const WalletConnectLogin: React.VoidFunctionComponent<WalletConnectProps>
 		try {
 			displayMessage("Please refer to your wallet for authentication")
 			const resp = await loginWalletConnect()
-			if (!resp || !resp.payload) return
+			if (!resp) return
 		} catch (e) {
 			setIsProcessing(false)
 			if (onFailure) {

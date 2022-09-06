@@ -220,7 +220,7 @@ export const WithdrawSupsForm = ({
 			await tx.wait()
 			setWithdrawAmount(BigNumber.from(0))
 		} catch (err: any) {
-			console.log(err)
+			console.error(err)
 			setCurrentTransferState("error")
 			const message = metamaskErrorHandling(err)
 			!!message ? setError(message) : setError("Issue withdrawing, please try again.")

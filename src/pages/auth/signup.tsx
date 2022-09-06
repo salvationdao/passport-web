@@ -10,11 +10,11 @@ import { Loading } from "../../components/loading"
 import { useAuth } from "../../containers/auth"
 import { useSidebarState } from "../../containers/sidebar"
 import { useSnackbar } from "../../containers/snackbar"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
 import { fonts } from "../../theme"
 import { RegisterResponse } from "../../types/auth"
 import { PasswordRequirement } from "./onboarding"
-import { usePassportCommandsUser } from "../../hooks/usePassport"
 
 interface SignUpInput {
 	username: string
