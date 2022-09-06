@@ -219,14 +219,15 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 					setSuccessful(true)
 					setNewUsername(new_username)
 				}
-			} catch (err) {
+			} catch (err: any) {
 				errCallback && errCallback(err)
 				setVerifyMessage(undefined)
+				displayMessage(err, "error")
 			} finally {
 				setSubmitting(false)
 			}
 		},
-		[getValues, send, setDisplayResult, setNewUsername, setSuccessful, setVerifyMessage, user],
+		[getValues, send, setDisplayResult, setNewUsername, setSuccessful, setVerifyMessage, user, displayMessage],
 	)
 
 	const onSaveForm = handleSubmit(async (data) => {
@@ -437,7 +438,7 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				<>
 					<Stack spacing=".5rem">
 						<Typography variant="h6">Manage Connections</Typography>
-						<Box sx={{ display: "flex", gap: "1rem" }}>
+						<Box sx={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
 							<Wallet />
 							<Facebook />
 							<Google />
@@ -456,6 +457,9 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 								sx={{
 									width: "calc(50% - .25rem)",
 									fontSize: "105%",
+									"@media (max-width:800px)": {
+										width: "100%",
+									},
 								}}
 								size="small"
 								onClick={async () => {
@@ -475,6 +479,9 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 								sx={{
 									width: "calc(50% - .25rem)",
 									fontSize: "105%",
+									"@media (max-width:800px)": {
+										width: "100%",
+									},
 								}}
 								size="small"
 								onClick={() => {
