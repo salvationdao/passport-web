@@ -33,7 +33,7 @@ export const LoginRedirect = () => {
 			window.close()
 		}, 1200)
 		if (login) {
-			window.opener.postMessage({ login })
+			window.opener.postMessage({ login, token })
 			return
 		}
 		if (tfa) {

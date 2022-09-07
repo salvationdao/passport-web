@@ -1,6 +1,3 @@
-const searchParams = new URLSearchParams(window.location.search)
-const tenant = searchParams.get("tenant")
-
 export const XGRID_LICENSE = process.env.XGRID_LICENSE_KEY
 
 export const SENTRY_CONFIG = {
@@ -22,10 +19,8 @@ export const SUPREMACY_IMAGE_FOLDER = process.env.REACT_APP_SUPREMACY_IMAGE_FOLD
 
 export const TOKEN_SALE_ENDPOINT = process.env.REACT_APP_TOKEN_SALE_ENDPOINT || `${window.location.protocol}//${"api.xsyndev.io"}/buy`
 
-export const API_ENDPOINT_HOSTNAME =
-	tenant === "supremacy"
-		? process.env.REACT_APP_PASSPORT_API_SUPREMACY || "passport.supremacygame.io"
-		: process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME || "api.xsyndev.io"
+export const API_ENDPOINT_HOSTNAME = process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME || "api.xsyndev.io"
+export const API_SUPREMACY = process.env.REACT_APP_PASSPORT_API_SUPREMACY || "passport.supremacygame.io"
 
 export const SIGN_MESSAGE = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE || ""
 export const BYPASS_WHITELIST = process.env.REACT_APP_BYPASS_WHITELIST || "false"
