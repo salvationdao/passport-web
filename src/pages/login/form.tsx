@@ -21,7 +21,7 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { setSignupRequest, redirectURL, setCaptchaToken, externalAuth } = useAuth()
+	const { setSignupRequest, redirectURL, setCaptchaToken, externalAuth, handleAuthCheck } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
@@ -58,13 +58,13 @@ export const LoginForm = () => {
 						redirect_url: window.location.href,
 						twitter_token: token,
 					})
-					// await handleAuthCheck()
+					await handleAuthCheck()
 				} catch (err: any) {
 					setError(err.message)
 				}
 			}
 		},
-		[twitterPopup, redirectURL, setCaptchaToken, setSignupRequest, history, externalAuth],
+		[twitterPopup, redirectURL, setCaptchaToken, setSignupRequest, history, externalAuth, handleAuthCheck],
 	)
 
 	useEffect(() => {
