@@ -26,6 +26,7 @@ import { User } from "../../types/types"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 import { useSubscription } from "../ws/useSubscription"
+import { API_SUPREMACY } from "./../../config"
 import { ResetPasswordRequest } from "./../../types/auth"
 
 export enum AuthTypes {
@@ -168,17 +169,16 @@ export const AuthContainer = createContainer(() => {
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
-		return urlParams.get("redirectURL") || undefined
+		return urlParams.get("redirectURL") || window.location.href
 	}, [])
 
 	const tenant = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
-		return urlParams.get("tenant") || undefined
+		return urlParams.get("tenant") || "supremacy"
 	}, [])
 
 	const [sessionId, setSessionID] = useState("")
-	const isLogoutPage = window.location.pathname.startsWith("/external/logout")
 
 	const clear = useCallback(() => {
 		console.info("clearing local storage")
@@ -207,6 +207,7 @@ export const AuthContainer = createContainer(() => {
 		},
 		false,
 	)
+
 	const { query: authCheck } = useQuery<User>({
 		method: "GET",
 		endpoint: `/auth/check`,
@@ -221,7 +222,18 @@ export const AuthContainer = createContainer(() => {
 	const externalAuth = useMemo(
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
+			let api = API_ENDPOINT_HOSTNAME
 
+			switch (tenant) {
+				case "supremacy":
+					api = API_SUPREMACY
+					break
+				default:
+					api = API_ENDPOINT_HOSTNAME
+					break
+			}
+
+			console.log("LOGIN EXTERNAL", api)
 			Object.keys(args).forEach((key) => {
 				if (args[key] === "" || args[key] === "null" || !args[key]) {
 					return
@@ -231,7 +243,7 @@ export const AuthContainer = createContainer(() => {
 
 			const form = document.createElement("form")
 			form.method = "post"
-			form.action = `https://${API_ENDPOINT_HOSTNAME}/api/auth/external`
+			form.action = `https://${api}/api/auth/external`
 
 			Object.keys(args).forEach((key) => {
 				const hiddenField = document.createElement("input")
@@ -245,7 +257,7 @@ export const AuthContainer = createContainer(() => {
 			document.body.appendChild(form)
 			form.submit()
 		},
-		[],
+		[tenant],
 	)
 
 	/**
@@ -339,7 +351,6 @@ export const AuthContainer = createContainer(() => {
 		try {
 			await logoutQuery()
 			setRecheckAuth(false)
-
 			clear()
 
 			// Wallet connect
@@ -347,17 +358,14 @@ export const AuthContainer = createContainer(() => {
 
 			setLoading(true)
 
-			if (isLogoutPage) {
-				window.close()
-			} else {
-				window.location.reload()
-			}
+			// Redirect
+			history.push(`https://${API_SUPREMACY}/api/auth/logout`)
 
 			return true
 		} catch (error) {
 			console.error()
 		}
-	}, [logoutQuery, clear, wcProvider, isLogoutPage])
+	}, [logoutQuery, clear, wcProvider, history])
 
 	/**
 	 * Logs a User in using their email and password.
@@ -1063,10 +1071,10 @@ export const AuthContainer = createContainer(() => {
 
 	// close web page if it is a iframe login through gamebar
 	useEffect(() => {
-		if (authorised && sessionId && !isLogoutPage) {
+		if (authorised && sessionId) {
 			window.close()
 		}
-	}, [authorised, sessionId, isLogoutPage])
+	}, [authorised, sessionId])
 
 	/////////////////
 	//  Container  //

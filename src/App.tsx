@@ -1,6 +1,7 @@
 import { CssBaseline } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
 import { Redirect, Route, Switch } from "react-router-dom"
+import { ExternalLogout } from "./components/externalLogout"
 import { Loading } from "./components/loading"
 import { API_ENDPOINT_HOSTNAME } from "./config"
 import { Themes } from "./containers"
@@ -25,7 +26,9 @@ ws.Initialise({ defaultHost: API_ENDPOINT_HOSTNAME })
 
 const AppInner = () => {
 	const { user, userID, loading } = useAuth()
+	const isLogout = window.location.pathname.includes("/external/logout")
 	const params = new URL(window.location.href).searchParams
+
 	if (params.has("denied")) {
 		return (
 			<Switch>
@@ -33,6 +36,8 @@ const AppInner = () => {
 			</Switch>
 		)
 	}
+
+	if (isLogout) return <ExternalLogout />
 	if (loading) return <Loading />
 	if (!user) {
 		return (
