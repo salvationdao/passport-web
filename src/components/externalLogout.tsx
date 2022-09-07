@@ -4,20 +4,20 @@ import { useSnackbar } from "../containers/snackbar"
 import { Loading } from "./loading"
 
 export const ExternalLogout = () => {
-	const { logout, userID } = useAuth()
+	const { logout } = useAuth()
 	const { displayMessage } = useSnackbar()
 
 	useEffect(() => {
 		;(async () => {
 			try {
-				if (userID) await logout()
+				await logout()
 				window.close()
 			} catch (err: any) {
 				console.error(err)
 				displayMessage(err.message)
 			}
 		})()
-	}, [logout, userID, displayMessage])
+	}, [logout, displayMessage])
 
 	return <Loading />
 }

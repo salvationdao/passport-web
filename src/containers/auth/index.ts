@@ -52,7 +52,7 @@ export enum VerificationType {
 	ForgotPassword,
 }
 
-const signupAction = (formValues: SignupNewUser): Action<User> => ({
+const signupAction = (formValues: SignupNewUser): Action => ({
 	method: "POST",
 	endpoint: "/auth/signup",
 	responseType: "json",
@@ -232,8 +232,6 @@ export const AuthContainer = createContainer(() => {
 					api = API_ENDPOINT_HOSTNAME
 					break
 			}
-
-			console.log("LOGIN EXTERNAL", api)
 			Object.keys(args).forEach((key) => {
 				if (args[key] === "" || args[key] === "null" || !args[key]) {
 					return
@@ -268,7 +266,7 @@ export const AuthContainer = createContainer(() => {
 	const signupUser = useCallback(
 		async (args: SignupNewUser, errorCallback?: (msg: string) => void) => {
 			try {
-				const resp = await signup({ ...args, fingerprint })
+				const resp = await signup({ ...args, redirect_url: redirectURL, fingerprint })
 
 				if (resp.error) {
 					throw resp.payload
@@ -357,15 +355,13 @@ export const AuthContainer = createContainer(() => {
 			if (wcProvider) wcProvider.disconnect()
 
 			setLoading(true)
-
-			// Redirect
-			history.push(`https://${API_SUPREMACY}/api/auth/logout`)
+			window.location.reload()
 
 			return true
 		} catch (error) {
 			console.error()
 		}
-	}, [logoutQuery, clear, wcProvider, history])
+	}, [logoutQuery, clear, wcProvider])
 
 	/**
 	 * Logs a User in using their email and password.
@@ -1081,6 +1077,7 @@ export const AuthContainer = createContainer(() => {
 	/////////////////
 	return {
 		redirectURL,
+		externalAuth,
 		handleAuthCheck,
 		loginMetamask,
 		loginWalletConnect,
