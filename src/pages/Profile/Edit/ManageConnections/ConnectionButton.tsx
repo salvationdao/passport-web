@@ -45,6 +45,9 @@ export const ConnectionButton = ({ icon, value, loading, disabled, sx, handleCli
 					border: `2px solid ${small ? colors.skyBlue : colors.gold}`,
 				},
 				...sx,
+				"@media (max-width:800px)": {
+					minWidth: "100%",
+				},
 			}}
 			disabled={disabled || !!loading}
 			{...props}

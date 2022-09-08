@@ -124,7 +124,7 @@ export const WithdrawSupsForm = ({
 	useEffect(() => {
 		if (userSups) {
 			setXsynSups(BigNumber.from(userSups))
-			if (!isInfinite) {
+			if (isInfinite) {
 				setMaxLimit(BigNumber.from(userSups))
 			}
 		}
