@@ -48,8 +48,8 @@ const EmailSignupVerify: React.FC = () => {
 	return (
 		<SupremacyAuth title="Verify Email Signup">
 			<Slide in={true} direction="left">
-				<Stack sx={{ borderTop: 1, borderColor: "divider", p: "2em" }}>
-					<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", minWidth: "25rem" }}>
+				<Stack sx={{ borderTop: 1, borderColor: "divider", p: "2em 1em" }}>
+					<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", maxWidth: "28rem" }}>
 						<Typography sx={{ textAlign: "center" }}>
 							A verifying code was sent to your email. <br />
 							Please enter it below:
@@ -108,8 +108,8 @@ const EmailSignupVerify: React.FC = () => {
 						component="span"
 						sx={{
 							position: "absolute",
-							bottom: "1rem",
-							left: "1rem",
+							bottom: "2rem",
+							left: "2rem",
 							color: theme.palette.secondary.main,
 							display: "flex",
 							alignItems: "center",

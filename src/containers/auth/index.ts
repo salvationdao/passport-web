@@ -8,6 +8,7 @@ import { usePassportSubscriptionUser } from "../../hooks/usePassport"
 import keys from "../../keys"
 import {
 	ChangePasswordRequest,
+	EmailLoginRequest,
 	EmailSignupVerifyRequest,
 	FacebookLoginRequest,
 	ForgotPasswordRequest,
@@ -76,7 +77,7 @@ const forgotPasswordAction = (formValues: ForgotPasswordRequest): Action<string>
 	body: formValues,
 })
 
-const resetPasswordAction = (formValues: ResetPasswordRequest): Action<User> => ({
+const resetPasswordAction = (formValues: ResetPasswordRequest): Action<User | EmailLoginRequest> => ({
 	method: "POST",
 	endpoint: `/auth/${AuthTypes.Reset}`,
 	responseType: "json",
@@ -169,13 +170,13 @@ export const AuthContainer = createContainer(() => {
 	const redirectURL = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
-		return urlParams.get("redirectURL") || window.location.href
+		return urlParams.get("redirectURL") || window.location.origin
 	}, [])
 
 	const tenant = useMemo(() => {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString)
-		return urlParams.get("tenant") || "supremacy"
+		return urlParams.get("tenant") || ""
 	}, [])
 
 	const [sessionId, setSessionID] = useState("")
@@ -223,8 +224,9 @@ export const AuthContainer = createContainer(() => {
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
 			let api = API_ENDPOINT_HOSTNAME
+			let game = tenant || "supremacy"
 
-			switch (tenant) {
+			switch (game) {
 				case "supremacy":
 					api = API_SUPREMACY
 					break
@@ -267,7 +269,6 @@ export const AuthContainer = createContainer(() => {
 		async (args: SignupNewUser, errorCallback?: (msg: string) => void) => {
 			try {
 				const resp = await signup({ ...args, redirect_url: redirectURL, fingerprint })
-
 				if (resp.error) {
 					throw resp.payload
 				}
@@ -277,7 +278,7 @@ export const AuthContainer = createContainer(() => {
 
 				if (redirectURL || args.redirect_url) {
 					switch (args.auth_type) {
-						case AuthTypes.Wallet:
+						case AuthTypes.Wallet: {
 							const walletReq = args[SignupRequestTypes.Wallet]
 							externalAuth({
 								...walletReq,
@@ -285,13 +286,16 @@ export const AuthContainer = createContainer(() => {
 								username: args.username,
 								new_user: undefined,
 								captcha_required: undefined,
+								redirect_url: redirectURL,
 							})
 							return
-						case AuthTypes.Email:
+						}
+						case AuthTypes.Email: {
 							const emailReq = args[SignupRequestTypes.Email]
-							externalAuth({ ...emailReq, fingerprint: undefined, username: args.username })
+							externalAuth({ ...emailReq, fingerprint: undefined, username: args.username, redirect_url: redirectURL })
 							return
-						case AuthTypes.Google:
+						}
+						case AuthTypes.Google: {
 							const googleReq = args[SignupRequestTypes.Google]
 							externalAuth({
 								...googleReq,
@@ -299,9 +303,11 @@ export const AuthContainer = createContainer(() => {
 								username: args.username,
 								new_user: undefined,
 								captcha_required: undefined,
+								redirect_url: redirectURL,
 							})
 							return
-						case AuthTypes.Facebook:
+						}
+						case AuthTypes.Facebook: {
 							const facebookReq = args[SignupRequestTypes.Facebook]
 							externalAuth({
 								...facebookReq,
@@ -309,12 +315,15 @@ export const AuthContainer = createContainer(() => {
 								username: args.username,
 								new_user: undefined,
 								captcha_required: undefined,
+								redirect_url: redirectURL,
 							})
 							return
-						case AuthTypes.Twitter:
+						}
+						case AuthTypes.Twitter: {
 							const twitterReq = args[SignupRequestTypes.Twitter]
-							externalAuth({ ...twitterReq, fingerprint: undefined, username: args.username })
+							externalAuth({ ...twitterReq, fingerprint: undefined, username: args.username, redirect_url: redirectURL })
 							return
+						}
 						default:
 							return
 					}
@@ -388,15 +397,13 @@ export const AuthContainer = createContainer(() => {
 					throw new Error("No response was received")
 				}
 
-				if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-
 				// Check if payload contains jwt
 				// Check if 2FA is set
 				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				} else if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
 					return
 				} else if (!resp.payload.auth_type) {
 					setUser(resp.payload)
@@ -531,8 +538,21 @@ export const AuthContainer = createContainer(() => {
 					clear()
 					throw resp.payload
 				}
-				setUser(resp.payload)
-				setAuthorised(true)
+				if (!resp.payload) {
+					throw new Error("No response was received")
+				}
+				if (redirectURL && resp.payload.auth_type) {
+					externalAuth({ ...resp.payload, fingerprint: undefined, redirect_url: redirectURL, token })
+					return
+				}
+
+				if (!resp.payload.auth_type) {
+					setUser(resp.payload)
+					setAuthorised(true)
+					setLoading(false)
+
+					return resp
+				}
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
 				if (e.message) {
@@ -545,7 +565,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[reset, redirectURL, sessionId, fingerprint, clear],
+		[reset, redirectURL, sessionId, fingerprint, clear, externalAuth],
 	)
 
 	/**
@@ -646,7 +666,6 @@ export const AuthContainer = createContainer(() => {
 				}
 
 				const resp = await google({ ...args, auth_type: AuthTypes.Google })
-
 				if (resp.error) {
 					throw resp.payload
 				}
@@ -661,15 +680,15 @@ export const AuthContainer = createContainer(() => {
 					setSignupRequest(resp.payload)
 					history.push(uri)
 					return
-				} else if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
 				}
 
 				// Check if payload contains  jwt
 				// Check if 2FA is set
 				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				} else if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
 					return
 				} else if (!resp.payload.auth_type) {
 					setUser(resp.payload)
@@ -724,15 +743,15 @@ export const AuthContainer = createContainer(() => {
 					setSignupRequest(resp.payload)
 					history.push(uri)
 					return
-				} else if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
 				}
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
 				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				} else if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
 					return
 				} else if (!resp.payload.auth_type) {
 					setUser(resp.payload)
@@ -780,7 +799,7 @@ export const AuthContainer = createContainer(() => {
 		async (code: string, isRecovery: boolean, token?: string, rURL?: string, isVerified?: boolean, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
-					redirect_url: rURL,
+					redirect_url: rURL || redirectURL,
 					token,
 					passcode: isRecovery ? undefined : code,
 					recovery_code: isRecovery ? code : undefined,
@@ -799,7 +818,7 @@ export const AuthContainer = createContainer(() => {
 					throw new Error("No response was received")
 				}
 
-				if (redirectURL) {
+				if (redirectURL || rURL) {
 					externalAuth({ ...args, fingerprint: undefined })
 					return
 				}
@@ -861,15 +880,15 @@ export const AuthContainer = createContainer(() => {
 					setSignupRequest(resp.payload)
 					history.push(uri)
 					return
-				} else if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
 				}
 
 				// Check if payload contains jwt
 				// Check if 2FA is set
 				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				} else if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
 					return
 				} else if (!resp.payload.auth_type) {
 					setUser(resp.payload)
@@ -929,22 +948,15 @@ export const AuthContainer = createContainer(() => {
 					setSignupRequest(resp.payload)
 					history.push(uri)
 					return
-				} else if (redirectURL) {
-					externalAuth({ ...args, fingerprint: undefined })
-					return
-				}
-
-				// Handle new user
-				if (resp.payload.auth_type === AuthTypes.Wallet) {
-					setSignupRequest(resp.payload)
-					history.push("/signup")
-					return
 				}
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
 				if (!resp.payload.auth_type && !resp.payload.id) {
 					history.push(`/tfa/check?token=${resp.payload}`)
+					return
+				} else if (redirectURL) {
+					externalAuth({ ...args, fingerprint: undefined })
 					return
 				} else if (!resp.payload.auth_type) {
 					setUser(resp.payload)

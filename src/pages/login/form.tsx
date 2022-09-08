@@ -30,9 +30,9 @@ export const LoginForm = () => {
 	const twitterAuthCallback = useCallback(
 		async (event?: MessageEvent) => {
 			if (!twitterPopup || twitterPopup.closed) return
-			if (!!event?.data["tfa"] && redirectURL) {
+			if (!!event?.data["tfa"]) {
 				window.location.replace(redirectURL)
-			} else if (!!event?.data["redirectURL"] && !!event?.data["twitter_token"]) {
+			} else if (!!event?.data["redirectURL"] && !!event?.data["twitter_token"] && !event?.data["login"]) {
 				const redirectURL = event?.data.redirectURL as string
 				const twitterToken = event?.data.twitter_token as string
 
@@ -43,7 +43,7 @@ export const LoginForm = () => {
 					redirect_url: redirectURL,
 				})
 				history.push(`/signup?captcha=true`)
-			} else if (!!event?.data["twitter_token"]) {
+			} else if (!!event?.data["twitter_token"] && !event?.data["login"]) {
 				const twitterToken = event?.data.twitter_token as string
 				setCaptchaToken(undefined)
 				setSignupRequest({
@@ -53,10 +53,11 @@ export const LoginForm = () => {
 				history.push("/signup/?captcha=true")
 			} else if (!!event?.data["login"]) {
 				try {
-					const token = event?.data.token as string
+					const twitter_token = event?.data.twitter_token as string
 					await externalAuth({
 						redirect_url: window.location.href,
-						twitter_token: token,
+						twitter_token,
+						auth_type: AuthTypes.Twitter,
 					})
 					await handleAuthCheck()
 				} catch (err: any) {

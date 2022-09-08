@@ -12,19 +12,24 @@ const searchParams = new URLSearchParams(window.location.search)
 
 export const LoginRedirect = () => {
 	const location = useLocation()
-	const token = searchParams.get("token")
-	const verifier = searchParams.get("oauth_verifier") // only for initial login or adding connection
 	const login = searchParams.get("login")
 	const redirectURL = searchParams.get("redirectURL")
 	const tfa = searchParams.get("tfa")
 
+	// For login
+	const loginToken = useMemo(() => {
+		const group = location.search.split("&token=")
+		const token = group[1]
+		return token
+	}, [location.search])
+
 	// For signup
-	const jwtToken = useMemo(() => {
-		if (verifier && login && tfa) return
+	const signupToken = useMemo(() => {
+		if (login && tfa) return
 		const group = location.search.split("&redirectURL")
 		const token = group[0].replace("?token=", "")
 		return token
-	}, [location.search, login, tfa, verifier])
+	}, [location.search, login, tfa])
 
 	// Receives token from the url param and passes it to the parent via postMessage
 	useEffect(() => {
@@ -33,21 +38,19 @@ export const LoginRedirect = () => {
 			window.close()
 		}, 1200)
 		if (login) {
-			window.opener.postMessage({ login, token })
+			window.opener.postMessage({ login, twitter_token: loginToken })
 			return
 		}
 		if (tfa) {
 			window.opener.postMessage({ tfa })
 			return
 		}
-		if (token && verifier) {
-			window.opener.postMessage({ twitter_token: token + `&oauth_verifier=${verifier}`, redirectURL })
-			return
-		} else if (jwtToken) {
-			window.opener.postMessage({ twitter_token: decodeURI(jwtToken), redirectURL })
+		// For signup
+		if (signupToken) {
+			window.opener.postMessage({ twitter_token: decodeURI(signupToken), redirectURL })
 			return
 		}
-	}, [token, login, redirectURL, tfa, verifier, jwtToken])
+	}, [login, redirectURL, tfa, signupToken, loginToken])
 
 	return (
 		<Stack alignItems="center" justifyContent="center" sx={{ height: "100vh", p: "3.8rem", backgroundColor: colors.darkNavyBackground }}>

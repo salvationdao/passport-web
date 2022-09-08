@@ -33,7 +33,7 @@ export interface PasswordLoginRequest extends BasicLoginRequest {
 	auth_type: AuthTypes.Email
 }
 
-export interface EmailSignupRequest extends BasicLoginRequest {
+export interface EmailLoginRequest extends BasicLoginRequest {
 	email: string
 	password?: string
 	session_id?: string
@@ -291,7 +291,7 @@ export type LoginRequest =
 	| DiscordLoginRequest
 	| SocialLoginRequest
 
-export type LoginNewUserResponse = WalletLoginRequest | GoogleLoginRequest | FacebookLoginRequest | EmailSignupRequest | TwitterSignUpRequest
+export type LoginNewUserResponse = WalletLoginRequest | GoogleLoginRequest | FacebookLoginRequest | EmailLoginRequest | TwitterSignUpRequest
 
 export enum SignupRequestTypes {
 	Wallet = "wallet_request",
@@ -304,7 +304,7 @@ export interface SignupNewUser {
 	[SignupRequestTypes.Wallet]?: WalletLoginRequest
 	[SignupRequestTypes.Google]?: GoogleLoginRequest
 	[SignupRequestTypes.Facebook]?: FacebookLoginRequest
-	[SignupRequestTypes.Email]?: EmailSignupRequest
+	[SignupRequestTypes.Email]?: EmailLoginRequest
 	[SignupRequestTypes.Twitter]?: TwitterSignUpRequest
 
 	username: string

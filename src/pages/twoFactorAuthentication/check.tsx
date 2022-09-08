@@ -22,7 +22,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 
 	const tokenGroup = useMemo(() => {
 		let token = location.search.replace("?", "").split("&redirectURL")[0].replace("token=", "")
-		const redirectURL = searchParams.get("redirectURL") || undefined
+		const redirectURL = searchParams.get("redirectURL")
 
 		if (token) {
 			token = decodeURI(token)
@@ -49,7 +49,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 			}
 			try {
 				const token = !!setVerified ? undefined : tokenGroup.token
-				const redirectURL = !tokenGroup.redirectURL ? undefined : tokenGroup.redirectURL
+				const redirectURL = tokenGroup.redirectURL || ""
 				await twoFactorAuthLogin.action(code, isRecovery, token, redirectURL, !!setVerified, errorCallback)
 				if (setVerified) {
 					setVerified(true)
