@@ -1,15 +1,11 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import { Box, Button, Skeleton, styled, Typography, TypographyProps } from "@mui/material"
-import { useEffect, useState } from "react"
-import { supFormatter } from "../../helpers/items"
-import HubKey from "../../keys"
-import { colors, fonts } from "../../theme"
-import { Transaction } from "../../types/types"
-import { TransactionEntryProps, TransactionTableProps } from "./desktopTransactionTable"
-import { usePassportCommandsUser } from "../../hooks/usePassport"
+import { Box, Button, styled, Typography, TypographyProps } from "@mui/material"
 import { useAuth } from "../../containers/auth"
+import { supFormatter } from "../../helpers/items"
+import { colors, fonts } from "../../theme"
+import { TransactionEntryProps, TransactionTableProps } from "./desktopTransactionTable"
 
-export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps) => {
+export const MobileTransactionTable = ({ transactions: transactionIDs }: TransactionTableProps) => {
 	return (
 		<Box>
 			<Box
@@ -26,113 +22,14 @@ export const MobileTransactionTable = ({ transactionIDs }: TransactionTableProps
 				<EntryData>Data</EntryData>
 			</Box>
 			{transactionIDs.map((t, index) => (
-				<TransactionEntry key={`${t}-${index}`} transactionID={t} />
+				<TransactionEntry key={`${t}-${index}`} transaction={t} />
 			))}
 		</Box>
 	)
 }
 
-const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
+const TransactionEntry = ({ transaction }: TransactionEntryProps) => {
 	const { user } = useAuth()
-	const { state, send } = usePassportCommandsUser("/commander")
-	const [entry, setEntry] = useState<Transaction>()
-	const [error, setError] = useState<string>()
-
-	useEffect(() => {
-		if (state !== WebSocket.OPEN || !user) return
-
-		try {
-			send<Transaction>(HubKey.TransactionSubscribe, { transaction_id: transactionID }).then((payload) => {
-				if (!payload) return
-				setEntry(payload)
-			})
-		} catch (e) {
-			if (typeof e === "string") {
-				setError(e)
-			} else if (e instanceof Error) {
-				setError(e.message)
-			}
-		}
-	}, [state, user, transactionID, send])
-
-	if (error)
-		return (
-			<EntryBox
-				sx={{
-					display: "flex",
-					flexDirection: "column",
-					"&:nth-of-type(even)": {
-						backgroundColor: "#160d45",
-					},
-				}}
-			>
-				<EntryDataRow>
-					<EntryLabel>Transaction Ref.</EntryLabel>
-					<EntryData color={colors.darkerGrey}>{error}</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>Amount</EntryLabel>
-					<EntryData color={colors.darkerGrey}>{error}</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>Description</EntryLabel>
-					<EntryData color={colors.darkerGrey}>{error}</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>To</EntryLabel>
-					<EntryData color={colors.darkerGrey}>{error}</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>From</EntryLabel>
-					<EntryData color={colors.darkerGrey}>{error}</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>Date</EntryLabel>
-					<EntryData color={colors.darkerGrey}>{error}</EntryData>
-				</EntryDataRow>
-			</EntryBox>
-		)
-
-	if (!entry)
-		return (
-			<Skeleton
-				sx={{
-					display: "flex",
-					flexDirection: "column",
-					maxWidth: "initial",
-					borderRadius: 0,
-					transform: "none",
-					"&:nth-of-type(even)": {
-						backgroundColor: "#160d45",
-					},
-				}}
-			>
-				<EntryDataRow>
-					<EntryLabel>Transaction Ref.</EntryLabel>
-					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>Amount</EntryLabel>
-					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>Description</EntryLabel>
-					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>To</EntryLabel>
-					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>From</EntryLabel>
-					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
-				</EntryDataRow>
-				<EntryDataRow>
-					<EntryLabel>Date</EntryLabel>
-					<EntryData color={colors.darkerGrey}>Loading entry...</EntryData>
-				</EntryDataRow>
-			</Skeleton>
-		)
 
 	return (
 		<EntryBox>
@@ -145,7 +42,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					}}
 					endIcon={<ContentCopyIcon />}
 					variant="text"
-					onClick={() => navigator.clipboard.writeText(entry.transaction_reference)}
+					onClick={() => navigator.clipboard.writeText(transaction.transaction_reference)}
 				>
 					<EntryData
 						sx={{
@@ -156,26 +53,26 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 							whiteSpace: "nowrap",
 						}}
 					>
-						{entry.transaction_reference}
+						{transaction.transaction_reference}
 					</EntryData>
 				</Button>
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>Amount</EntryLabel>
-				<EntryData>{supFormatter(entry.amount)} SUPS</EntryData>
+				<EntryData>{supFormatter(transaction.amount)} SUPS</EntryData>
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>Description</EntryLabel>
-				<EntryData>{entry.description}</EntryData>
+				<EntryData>{transaction.description}</EntryData>
 			</EntryDataRow>
 			<EntryDataRow>
 				<EntryLabel>To</EntryLabel>
 				<EntryData
 					sx={{
 						textTransform: "uppercase",
-						fontFamily: entry?.to?.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						fontFamily: transaction.to.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
 						"&::after":
-							entry?.to?.username === user?.username
+							transaction.to.username === user?.username
 								? {
 										content: '"(You)"',
 										marginLeft: ".2rem",
@@ -184,7 +81,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								: undefined,
 					}}
 				>
-					{entry?.to?.username}
+					{transaction.to.username}
 				</EntryData>
 			</EntryDataRow>
 			<EntryDataRow>
@@ -192,9 +89,9 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 				<EntryData
 					sx={{
 						textTransform: "uppercase",
-						fontFamily: entry?.from?.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						fontFamily: transaction.from.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
 						"&::after":
-							entry?.from?.username === user?.username
+							transaction.from.username === user?.username
 								? {
 										content: '"(You)"',
 										marginLeft: ".2rem",
@@ -203,13 +100,13 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								: undefined,
 					}}
 				>
-					{entry?.from?.username}
+					{transaction.from.username}
 				</EntryData>
 			</EntryDataRow>
 
 			<EntryDataRow>
 				<EntryLabel>Date</EntryLabel>
-				<EntryData>{entry.created_at.toLocaleString()}</EntryData>
+				<EntryData>{transaction.created_at.toLocaleString()}</EntryData>
 			</EntryDataRow>
 		</EntryBox>
 	)
