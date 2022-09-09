@@ -108,8 +108,8 @@ export interface Transaction {
 	reason?: string
 	created_at: Date
 	group_id?: string
-	to: User
-	from: User
+	to: string
+	from: string
 }
 
 export interface ExchangeRates {
