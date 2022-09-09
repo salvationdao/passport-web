@@ -1,12 +1,12 @@
+import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { LoadingButton } from "@mui/lab"
 import { Alert, Box, Slide, Stack, TextField, Typography } from "@mui/material"
 import { useCallback, useState } from "react"
 import { Redirect } from "react-router-dom"
 import { SupremacyAuth } from "../../components/supremacy/auth"
+import { CAPTCHA_KEY } from "../../config"
 import { AuthTypes, useAuth } from "../../containers/auth"
 import { SignupRequestTypes } from "../../types/auth"
-import HCaptcha from "@hcaptcha/react-hcaptcha"
-import { CAPTCHA_KEY } from "../../config"
 
 const searchParams = new URLSearchParams(window.location.search)
 
