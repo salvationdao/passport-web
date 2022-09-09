@@ -1,8 +1,8 @@
 import SortIcon from "@mui/icons-material/Sort"
 import {
+	Autocomplete,
 	Box,
 	CircularProgress,
-	Autocomplete,
 	MenuItem,
 	Pagination,
 	Paper,
@@ -12,22 +12,23 @@ import {
 	SwipeableDrawer,
 	TextField,
 	Typography,
-	useMediaQuery,
+	useMediaQuery
 } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { Loading } from "../../components/loading"
 import { PageSizeSelectionInput } from "../../components/pageSizeSelectionInput"
 import { SearchBar } from "../../components/searchBar"
+import { useAuth } from "../../containers/auth"
+import { usePassportCommandsUser } from "../../hooks/usePassport"
 import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
+import { Transaction } from "../../types/types"
 import { SortChip } from "../Profile/Assets/Common/SortChip"
 import { DesktopTransactionTable } from "./desktopTransactionTable"
 import { MobileTransactionTable } from "./mobileTransactionTable"
-import { usePassportCommandsUser } from "../../hooks/usePassport"
-import { useAuth } from "../../containers/auth"
 
 type GroupType = "All" | "Ungrouped" | string
 
@@ -52,7 +53,7 @@ export const TransactionsPage = () => {
 	// Ungrouped transactions
 	const [totalPages, setTotalPages] = useState(0)
 	const [currentPage, setCurrentPage] = useState(1)
-	const [transactionIDs, setTransactionIDs] = useState<string[]>([])
+	const [transactions, setTransactions] = useState<Transaction[]>([])
 
 	// Groups
 	const [transactionGroups, setTransactionGroups] = useState<{ [key: string]: string[] }>({})
@@ -106,7 +107,7 @@ export const TransactionsPage = () => {
 						}
 				}
 
-				const resp = await send<{ total: number; transaction_ids: string[] }>(HubKey.TransactionList, {
+				const resp = await send<{ total: number; transactions: Transaction[] }>(HubKey.TransactionList, {
 					page_size: pageSize,
 					page: currentPage - 1,
 					search,
@@ -116,7 +117,7 @@ export const TransactionsPage = () => {
 					},
 					...sort,
 				})
-				setTransactionIDs(resp.transaction_ids)
+				setTransactions(resp.transactions)
 				setTotalPages(Math.ceil(resp.total / pageSize))
 				setError(undefined)
 			} catch (e) {
@@ -374,12 +375,12 @@ export const TransactionsPage = () => {
 									flex: 1,
 								}}
 							>
-								<DesktopTransactionTable transactionIDs={transactionIDs} />
+								<DesktopTransactionTable transactions={transactions} />
 							</Box>
 						) : (
-							<MobileTransactionTable transactionIDs={transactionIDs} />
+							<MobileTransactionTable transactions={transactions} />
 						)}
-						{transactionIDs.length === 0 && (
+						{transactions.length === 0 && (
 							<Box
 								sx={{
 									flex: 1,

@@ -1,18 +1,15 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import { Box, Button, styled, Typography, TypographyProps } from "@mui/material"
-import { useEffect, useState } from "react"
+import { useAuth } from "../../containers/auth"
 import { supFormatter } from "../../helpers/items"
-import HubKey from "../../keys"
 import { colors, fonts } from "../../theme"
 import { Transaction } from "../../types/types"
-import { usePassportCommandsUser } from "../../hooks/usePassport"
-import { useAuth } from "../../containers/auth"
 
 export interface TransactionTableProps {
-	transactionIDs: string[]
+	transactions: Transaction[]
 }
 
-export const DesktopTransactionTable = ({ transactionIDs }: TransactionTableProps) => {
+export const DesktopTransactionTable = ({ transactions }: TransactionTableProps) => {
 	return (
 		<Box
 			component="table"
@@ -31,15 +28,15 @@ export const DesktopTransactionTable = ({ transactionIDs }: TransactionTableProp
 					<th align="right">Date</th>
 				</EntryRow>
 			</EntryHeader>
-			{transactionIDs.length > 0 && (
+			{transactions.length > 0 && (
 				<Box
 					component="tbody"
 					sx={{
 						height: "100%",
 					}}
 				>
-					{transactionIDs.map((t, index) => (
-						<TransactionEntry key={`${t}-${index}`} transactionID={t} />
+					{transactions.map((t, index) => (
+						<TransactionEntry key={`${t}-${index}`} transaction={t} />
 					))}
 				</Box>
 			)}
@@ -84,69 +81,11 @@ const EntryData = styled((props: TypographyProps) => <Typography {...props} tabI
 })
 
 export interface TransactionEntryProps {
-	transactionID: string
+	transaction: Transaction
 }
 
-const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
+const TransactionEntry = ({ transaction }: TransactionEntryProps) => {
 	const { user } = useAuth()
-	const { state, send } = usePassportCommandsUser("/commander")
-	const [entry, setEntry] = useState<Transaction>()
-	const [error, setError] = useState<string>()
-
-	useEffect(() => {
-		if (state !== WebSocket.OPEN || !user) return
-
-		try {
-			send<Transaction>(HubKey.TransactionSubscribe, { transaction_id: transactionID }).then((payload) => {
-				if (!payload) return
-				setEntry(payload)
-			})
-		} catch (e) {
-			if (typeof e === "string") {
-				setError(e)
-			} else if (e instanceof Error) {
-				setError(e.message)
-			}
-		}
-	}, [state, user, transactionID, send])
-
-	if (error)
-		return (
-			<EntryRow
-				sx={{
-					"&:nth-of-type(odd)": {
-						backgroundColor: "#160d45",
-					},
-				}}
-			>
-				<td align="left">An error occurred while loading this entry</td>
-				<td align="right"></td>
-				<td align="left"></td>
-				<td align="left"></td>
-				<td align="left"></td>
-				<td align="center"></td>
-				<td align="right"></td>
-			</EntryRow>
-		)
-
-	if (!entry)
-		return (
-			<EntryRow
-				sx={{
-					"&:nth-of-type(odd)": {
-						backgroundColor: "#160d45",
-					},
-				}}
-			>
-				<td align="left">Loading transaction entry...</td>
-				<td align="right"></td>
-				<td align="left"></td>
-				<td align="left"></td>
-				<td align="left"></td>
-				<td align="center"></td>
-				<td align="right"></td>
-			</EntryRow>
-		)
 
 	return (
 		<EntryRow
@@ -158,8 +97,8 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 		>
 			<td align="left">
 				<Button
-					title={entry.transaction_reference}
-					onClick={() => navigator.clipboard.writeText(entry.transaction_reference)}
+					title={transaction.transaction_reference}
+					onClick={() => navigator.clipboard.writeText(transaction.transaction_reference)}
 					endIcon={<ContentCopyIcon />}
 					variant="text"
 					fullWidth
@@ -172,12 +111,12 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 							textOverflow: "ellipsis",
 						}}
 					>
-						{entry.transaction_reference}
+						{transaction.transaction_reference}
 					</EntryData>
 				</Button>
 			</td>
 			<td align="right">
-				<EntryData variant="caption">{supFormatter(entry.amount)} SUPS</EntryData>
+				<EntryData variant="caption">{supFormatter(transaction.amount)} SUPS</EntryData>
 			</td>
 			<td align="left">
 				<EntryData
@@ -187,7 +126,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 						whiteSpace: "initial",
 					}}
 				>
-					{entry.description}
+					{transaction.description}
 				</EntryData>
 			</td>
 			<td align="left">
@@ -195,9 +134,9 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
-						fontFamily: entry?.to?.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						fontFamily: transaction.to === user?.username ? fonts.bizmobold : fonts.bizmomedium,
 						"&::after":
-							entry?.to?.username === user?.username
+							transaction.to === user?.username
 								? {
 										content: '"(You)"',
 										marginLeft: "1ch",
@@ -206,7 +145,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								: undefined,
 					}}
 				>
-					{entry?.to?.username}
+					{transaction.to}
 				</EntryData>
 			</td>
 			<td align="left">
@@ -214,9 +153,9 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 					variant="caption"
 					sx={{
 						textTransform: "uppercase",
-						fontFamily: entry?.from?.username === user?.username ? fonts.bizmobold : fonts.bizmomedium,
+						fontFamily: transaction.from === user?.username ? fonts.bizmobold : fonts.bizmomedium,
 						"&::after":
-							entry?.from?.username === user?.username
+							transaction.from === user?.username
 								? {
 										content: '"(You)"',
 										marginLeft: ".2rem",
@@ -225,7 +164,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 								: undefined,
 					}}
 				>
-					{entry?.from?.username}
+					{transaction.from}
 				</EntryData>
 			</td>
 			<td align="right">
@@ -237,7 +176,7 @@ const TransactionEntry = ({ transactionID }: TransactionEntryProps) => {
 						textTransform: "uppercase",
 					}}
 				>
-					{entry.created_at.toLocaleString()}
+					{transaction.created_at.toLocaleString()}
 				</EntryData>
 			</td>
 		</EntryRow>
