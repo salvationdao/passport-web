@@ -233,11 +233,6 @@ export const AssetView = ({
 		)
 	}
 
-	console.log(userAsset.animation_url)
-	console.log(userAsset.animation_url)
-	console.log(userAsset.card_animation_url)
-	console.log(userAsset.card_animation_url)
-
 	return (
 		<>
 			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
