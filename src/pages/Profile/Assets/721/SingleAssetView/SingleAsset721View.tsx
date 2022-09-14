@@ -233,6 +233,11 @@ export const AssetView = ({
 		)
 	}
 
+	console.log(userAsset.animation_url)
+	console.log(userAsset.animation_url)
+	console.log(userAsset.card_animation_url)
+	console.log(userAsset.card_animation_url)
+
 	return (
 		<>
 			<Stack sx={{ flexGrow: 1, p: "2rem" }}>
@@ -269,10 +274,17 @@ export const AssetView = ({
 								onClick={() => {
 									setEnlarge(!enlarge)
 								}}
-								poster={`${userAsset.image_url}`}
+								poster={userAsset.image_url}
 								ref={videoDiv}
 							>
-								<source src={userAsset.animation_url || userAsset.image_url} type="video/mp4" />
+								<source
+									src={
+										userAsset.animation_url && userAsset.animation_url !== ""
+											? userAsset.animation_url
+											: userAsset.card_animation_url
+									}
+									type={"video/mp4"}
+								/>
 							</Box>
 
 							{userAsset.avatar_url && (
@@ -467,9 +479,14 @@ export const AssetView = ({
 							onClick={() => {
 								setEnlarge(!enlarge)
 							}}
-							poster={`${userAsset.large_image_url}`}
+							poster={userAsset.large_image_url || userAsset.image_url}
 						>
-							<source src={userAsset.animation_url} type="video/mp4" />
+							<source
+								src={
+									userAsset.animation_url && userAsset.animation_url !== "" ? userAsset.animation_url : userAsset.card_animation_url
+								}
+								type={"video/mp4"}
+							/>
 						</Box>
 					</Dialog>
 				)}
