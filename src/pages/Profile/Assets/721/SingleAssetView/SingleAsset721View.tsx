@@ -272,7 +272,7 @@ export const AssetView = ({
 								poster={`${userAsset.image_url}`}
 								ref={videoDiv}
 							>
-								<source src={userAsset.animation_url} type="video/mp4" />
+								<source src={userAsset.animation_url || userAsset.image_url} type="video/mp4" />
 							</Box>
 
 							{userAsset.avatar_url && (
