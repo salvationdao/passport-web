@@ -102,8 +102,8 @@ export const Asset721ItemCard: React.VoidFunctionComponent<Asset721ItemCardProps
 						mb: ".3rem",
 						visibility: "visible",
 						opacity: 1,
-						objectFit: "contain",
-						objectPosition: "center",
+						objectFit: asset_type === "mech" ? "cover" : "contain",
+						objectPosition: asset_type === "mech" ? "top" : "center",
 						transition: "all .2s ease-in",
 					}}
 				/>
