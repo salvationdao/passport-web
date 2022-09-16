@@ -25,10 +25,12 @@ import {
 	WALLET_CONNECT_RPC,
 } from "../config"
 import { metamaskErrorHandling } from "../helpers/web3"
+import HubKey from "../keys"
 import { GetNonceResponse } from "../types/auth"
-import { tokenSelect } from "../types/types"
+import { tokenSelect, User } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { genericABI } from "./web3GenericABI"
+import { useCommands } from "./ws"
 
 export interface FarmData {
 	earned: BigNumber
@@ -139,6 +141,8 @@ export const Web3Container = createContainer(() => {
 	const [wcNonce, setWcNonce] = useState<string | undefined>()
 	const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>()
 	const [disableWalletModal, setDisableWalletModal] = useState(false)
+	const [userForWeb3, setUserForWeb3] = useState<User>()
+	const { send } = useCommands({ host: API_ENDPOINT_HOSTNAME, URI: `/user/${userForWeb3 ? userForWeb3.id : ""}/commander`, ready: !!userForWeb3 })
 
 	useEffect(() => {
 		if (!provider) return
@@ -256,8 +260,10 @@ export const Web3Container = createContainer(() => {
 			]
 
 			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
+
 			try {
 				const bal = await erc20.balanceOf(acc)
+
 				if (!bal) {
 					setSupBalance(BigNumber.from(0))
 					return
@@ -320,8 +326,8 @@ export const Web3Container = createContainer(() => {
 			//  Wrap with Web3Provider from ethers.js
 			const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
 			setProvider(web3Provider)
-			setCurrentChainId(walletConnectProvider.chainId)
 			setWcProvider(walletConnectProvider)
+			setCurrentChainId(walletConnectProvider.chainId)
 
 			// Subscribe to connect
 			walletConnectProvider.on("connect", async () => {
@@ -340,8 +346,13 @@ export const Web3Container = createContainer(() => {
 				const signature = await connector.signMessage([acc, signMsg])
 				setWcSignature(signature)
 
-				// Delete wallet connect token
-				localStorage.removeItem("walletconnect")
+				if (!userForWeb3 || userForWeb3.public_address) return
+				await send<User>(HubKey.UserAddWallet, {
+					id: userForWeb3.id,
+					public_address: acc,
+					signature,
+					nonce,
+				})
 			})
 
 			// Subscribe to accounts change
@@ -362,10 +373,11 @@ export const Web3Container = createContainer(() => {
 				setWcProvider(undefined)
 				setMetaMaskState(MetaMaskState.NotInstalled)
 				localStorage.removeItem("token")
+				localStorage.removeItem("walletconnect")
 			})
 			return walletConnectProvider
 		},
-		[getNonce],
+		[getNonce, send, userForWeb3],
 	)
 
 	useEffect(() => {
@@ -405,6 +417,8 @@ export const Web3Container = createContainer(() => {
 				setCurrentChainId(response.chainId)
 			} else {
 				const walletConnectProvider = await createWcProvider(false)
+				const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider, "any")
+				setProvider(web3Provider)
 				setWcProvider(walletConnectProvider)
 				await walletConnectProvider.enable()
 				return () => walletConnectProvider.removeAllListeners()
@@ -464,6 +478,7 @@ export const Web3Container = createContainer(() => {
 	}, [displayMessage, provider, handleAccountChange])
 
 	const wcConnect = useCallback(async (): Promise<string | undefined> => {
+		localStorage.removeItem("walletconnect")
 		let walletConnectProvider
 		try {
 			walletConnectProvider = await createWcProvider()
@@ -1033,6 +1048,7 @@ export const Web3Container = createContainer(() => {
 		setDisableWalletModal,
 		disableWalletModal,
 		wcNonce,
+		setUserForWeb3,
 	}
 })
 

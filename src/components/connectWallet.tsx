@@ -46,9 +46,9 @@ export const ConnectWallet: React.FC<IConnectWalletProps> = ({ replaceText, sx, 
 						acc = await connect()
 						const resp = await sign(user.id)
 						signature = resp?.signature
-					}
-					if (signature === undefined) {
-						throw Error("No signature was found in process.")
+						if (signature === undefined) {
+							throw Error("No signature was found in process.")
+						}
 					}
 					const resp = await send<User>(HubKey.UserAddWallet, {
 						id: user.id,
