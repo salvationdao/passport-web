@@ -5,7 +5,6 @@ import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { usePassportCommandsUser } from "../hooks/usePassport"
 import HubKey from "../keys"
-import { colors } from "../theme"
 import { User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 
@@ -27,8 +26,11 @@ export const ConnectWallet: React.FC<IConnectWalletProps> = ({ replaceText, sx, 
 
 	return (
 		<FancyButton
+			filled
 			sx={{
-				background: colors.darkNavyBackground,
+				width: "fit-content",
+				px: "2em",
+				borderRadius: "10px",
 				...sx,
 			}}
 			onClick={async () => {

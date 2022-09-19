@@ -1,5 +1,6 @@
 import { MultiCall } from "@indexed-finance/multicall"
 import WalletConnectProvider from "@walletconnect/web3-provider"
+import { BINANCE_NODE, BINANCE_TESTNET_NODE } from "./../config"
 
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 import { BigNumber, constants, ethers } from "ethers"
@@ -17,12 +18,13 @@ import {
 	BUSD_CONTRACT_ADDRESS,
 	ETHEREUM_CHAIN_ID,
 	ETH_SCAN_SITE,
+	INFURA_ETHEREUM_NODE,
+	INFURA_GOERLI_NODE,
 	LP_TOKEN_ADDRESS,
 	PURCHASE_ADDRESS,
 	SIGN_MESSAGE,
 	SUPS_CONTRACT_ADDRESS,
 	USDC_CONTRACT_ADDRESS,
-	WALLET_CONNECT_RPC,
 } from "../config"
 import { metamaskErrorHandling } from "../helpers/web3"
 import HubKey from "../keys"
@@ -311,10 +313,10 @@ export const Web3Container = createContainer(() => {
 			//  Create WalletConnect Provider
 			const walletConnectProvider = new WalletConnectProvider({
 				rpc: {
-					1: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/mainnet`,
-					5: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/goerli`,
-					56: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/mainnet`,
-					97: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/testnet`,
+					1: INFURA_ETHEREUM_NODE || INFURA_GOERLI_NODE,
+					5: INFURA_GOERLI_NODE,
+					56: BINANCE_NODE,
+					97: BINANCE_TESTNET_NODE,
 				},
 				qrcode: showQrCode,
 				qrcodeModalOptions: {

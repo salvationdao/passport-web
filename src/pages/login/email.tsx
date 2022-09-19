@@ -1,9 +1,9 @@
-import { Alert, Stack, TextField, Typography, Box, useTheme } from "@mui/material"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
+import { Alert, Box, Stack, TextField, Typography, useTheme } from "@mui/material"
 import * as React from "react"
 import { FancyButton } from "../../components/fancyButton"
-import { useAuth } from "../../containers/auth"
 import { CAPTCHA_KEY } from "../../config"
+import { useAuth } from "../../containers/auth"
 
 interface IEmailLoginProps {
 	signup?: boolean
@@ -73,10 +73,13 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 				)}
 
 				{signup && (
-					<Box hidden={!!captchaToken} sx={{ mt: 1 }}>
-						<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
+					<Box sx={{ my: 3 }}>
+						{!captchaToken && (
+							<Typography variant="h2" sx={{ fontSize: "1rem", my: "1rem" }}>
+								Please verify you are human.
+							</Typography>
+						)}
 						<HCaptcha
-							size="compact"
 							theme="dark"
 							sitekey={CAPTCHA_KEY}
 							ref={captchaRef}
@@ -88,17 +91,18 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 						/>
 					</Box>
 				)}
-
-				<FancyButton
-					submit
-					fullWidth
-					filled
-					borderColor={signup ? theme.palette.secondary.main : theme.palette.primary.main}
-					sx={{ mt: 1, mb: 2 }}
-					loading={signup ? emailSignup.loading : loginPassword.loading}
-				>
-					{loginPassword.loading || emailSignup.loading ? "Loading..." : signup ? "Sign up with email" : "Sign In"}
-				</FancyButton>
+				{captchaToken && (
+					<FancyButton
+						submit
+						fullWidth
+						filled
+						borderColor={signup ? theme.palette.secondary.main : theme.palette.primary.main}
+						sx={{ mt: 1, mb: 2 }}
+						loading={signup ? emailSignup.loading : loginPassword.loading}
+					>
+						{loginPassword.loading || emailSignup.loading ? "Loading..." : signup ? "Sign up with email" : "Sign In"}
+					</FancyButton>
+				)}
 			</Stack>
 			{formatError && (
 				<Alert severity="error">
