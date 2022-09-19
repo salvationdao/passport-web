@@ -117,7 +117,6 @@ export const Signup: React.FC = () => {
 					onChange={(e: any) => {
 						const data = new FormData(e.currentTarget)
 						const username = data.get("username")?.toString()
-						console.log(username)
 						setError(null)
 					}}
 				>
