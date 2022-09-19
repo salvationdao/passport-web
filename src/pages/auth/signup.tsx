@@ -43,7 +43,6 @@ export const SignUpPage: React.FC = () => {
 		<Box
 			component="form"
 			onSubmit={handleSubmit(async (input) => {
-				console.log("input")
 				try {
 					setLoading(true)
 

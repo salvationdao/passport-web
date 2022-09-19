@@ -396,7 +396,7 @@ export const Web3Container = createContainer(() => {
 		if (provider) return // metamask connected
 		;(async () => {
 			if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
-				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
+				const provider = new ethers.providers.Web3Provider((window as any).ethereum)
 				setProvider(provider)
 				setMetaMaskState(MetaMaskState.Active)
 				const accounts = await provider.listAccounts()
@@ -419,7 +419,7 @@ export const Web3Container = createContainer(() => {
 				setCurrentChainId(response.chainId)
 			} else {
 				const walletConnectProvider = await createWcProvider(false)
-				const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider, "any")
+				const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
 				setProvider(web3Provider)
 				setWcProvider(walletConnectProvider)
 				await walletConnectProvider.enable()

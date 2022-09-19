@@ -114,9 +114,7 @@ export const Signup: React.FC = () => {
 					marginTop="20px"
 					justifyContent="space-between"
 					gap="1.5rem"
-					onChange={(e: any) => {
-						const data = new FormData(e.currentTarget)
-						const username = data.get("username")?.toString()
+					onChange={() => {
 						setError(null)
 					}}
 				>
