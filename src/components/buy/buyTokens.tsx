@@ -9,6 +9,7 @@ import SupsToken from "../../assets/images/supsToken.png"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../../config"
 import { useAuth } from "../../containers/auth"
 import { MetaMaskState, useWeb3 } from "../../containers/web3"
+import { useSubscription } from "../../containers/ws/useSubscription"
 import HubKey from "../../keys"
 import { colors } from "../../theme"
 import { ExchangeRates, tokenSelect } from "../../types/types"
@@ -16,7 +17,6 @@ import { ConnectWallet } from "../connectWallet"
 import { FancyButton } from "../fancyButton"
 import { Loading } from "../loading"
 import { TokenSelect } from "./tokenSelect"
-import { useSubscription } from "../../containers/ws/useSubscription"
 
 type conversionType = "supsToTokens" | "tokensToSups"
 type transferStateType = "waiting" | "error" | "confirm" | "none"
@@ -37,6 +37,7 @@ export const BuyTokens: React.FC = () => {
 		currentToken,
 		tokenOptions,
 		supBalance,
+		account,
 	} = useWeb3()
 	const theme = useTheme()
 	const [enableSale, setEnableSale] = useState<boolean | null>(null)
@@ -358,7 +359,7 @@ export const BuyTokens: React.FC = () => {
 			{/* Switch Network Dialog */}
 			<Box
 				sx={
-					acceptedChainExceptions && currentChainId === currentToken.chainId
+					(acceptedChainExceptions && currentChainId === currentToken.chainId) || !account
 						? { display: "none" }
 						: {
 								position: "absolute",
@@ -378,7 +379,12 @@ export const BuyTokens: React.FC = () => {
 				<Typography variant="body1" sx={{ textAlign: "center", marginBottom: "1rem" }}>
 					Please switch to a valid network to continue your transaction. Click the button below and follow the prompts.
 				</Typography>
-				<FancyButton borderColor={colors.skyBlue} onClick={handleNetworkSwitch}>
+				<FancyButton
+					filled
+					borderColor={colors.skyBlue}
+					onClick={handleNetworkSwitch}
+					sx={{ width: "fit-content", mx: "auto", px: "2em", color: colors.black, borderRadius: "10px" }}
+				>
 					Switch Network
 				</FancyButton>
 			</Box>

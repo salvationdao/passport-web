@@ -148,7 +148,7 @@ const emailSignupVerifyAction = (formValues: EmailSignupVerifyRequest): Action<{
 export const AuthContainer = createContainer(() => {
 	const history = useHistory()
 	const { fingerprint } = useFingerprint()
-	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature, wcNonce } = useWeb3()
+	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature, wcNonce, setUserForWeb3 } = useWeb3()
 	const [user, _setUser] = useState<User>()
 
 	const setUser = (user?: User) => {
@@ -244,6 +244,7 @@ export const AuthContainer = createContainer(() => {
 			const form = document.createElement("form")
 			form.method = "post"
 			form.action = `https://${api}/api/auth/external`
+			// form.target = "_blank"
 
 			Object.keys(args).forEach((key) => {
 				const hiddenField = document.createElement("input")
@@ -399,8 +400,8 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains jwt
 				// Check if 2FA is set
-				if (!resp.payload.auth_type && !resp.payload.id) {
-					history.push(`/tfa/check?token=${resp.payload}`)
+				if (!!resp.payload.tfa_token) {
+					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -684,8 +685,8 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains  jwt
 				// Check if 2FA is set
-				if (!resp.payload.auth_type && !resp.payload.id) {
-					history.push(`/tfa/check?token=${resp.payload}`)
+				if (!!resp.payload.tfa_token) {
+					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -747,13 +748,12 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
-				if (!resp.payload.auth_type && !resp.payload.id) {
-					history.push(`/tfa/check?token=${resp.payload}`)
+				if (!!resp.payload.tfa_token) {
+					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
-					return
-				} else if (!resp.payload.auth_type) {
+				} else if (!resp.payload.auth_type && !!resp.payload.tfa_token) {
 					setUser(resp.payload)
 					setAuthorised(true)
 					setLoading(false)
@@ -809,7 +809,7 @@ export const AuthContainer = createContainer(() => {
 					auth_type: AuthTypes.TFA,
 				}
 
-				const resp = await twoFactorAuth(args)
+				const resp = await twoFactorAuth({ ...args, is_verified: isVerified })
 				if (resp.error) {
 					throw resp.payload
 				}
@@ -818,6 +818,9 @@ export const AuthContainer = createContainer(() => {
 					throw new Error("No response was received")
 				}
 
+				if (isVerified) {
+					return
+				}
 				if (redirectURL || rURL) {
 					externalAuth({ ...args, fingerprint: undefined })
 					return
@@ -884,8 +887,8 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains jwt
 				// Check if 2FA is set
-				if (!resp.payload.auth_type && !resp.payload.id) {
-					history.push(`/tfa/check?token=${resp.payload}`)
+				if (!!resp.payload.tfa_token) {
+					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -952,8 +955,8 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
-				if (!resp.payload.auth_type && !resp.payload.id) {
-					history.push(`/tfa/check?token=${resp.payload}`)
+				if (!!resp.payload.tfa_token) {
+					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
 					externalAuth({ ...args, fingerprint: undefined })
@@ -987,15 +990,14 @@ export const AuthContainer = createContainer(() => {
 		clear,
 		captchaToken,
 	])
-
 	// Effect
 	useEffect(() => {
-		if (wcSignature) {
+		if (wcSignature && !user) {
 			;(async () => {
 				await loginWalletConnect()
 			})()
 		}
-	}, [wcSignature, loginWalletConnect])
+	}, [wcSignature, loginWalletConnect, user])
 
 	/**
 	 * Verifies a User and takes them to the next page.
@@ -1050,7 +1052,7 @@ export const AuthContainer = createContainer(() => {
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
 				if (!resp.payload?.id) {
-					history.push(`/tfa/check?token=${resp.payload}`)
+					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				}
 			}
@@ -1083,6 +1085,11 @@ export const AuthContainer = createContainer(() => {
 			window.close()
 		}
 	}, [authorised, sessionId])
+
+	useEffect(() => {
+		if (!user) return
+		setUserForWeb3(user)
+	}, [setUserForWeb3, user])
 
 	/////////////////
 	//  Container  //

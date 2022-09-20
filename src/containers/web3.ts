@@ -1,5 +1,6 @@
 import { MultiCall } from "@indexed-finance/multicall"
 import WalletConnectProvider from "@walletconnect/web3-provider"
+import { BINANCE_NODE, BINANCE_TESTNET_NODE } from "./../config"
 
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 import { BigNumber, constants, ethers } from "ethers"
@@ -17,18 +18,21 @@ import {
 	BUSD_CONTRACT_ADDRESS,
 	ETHEREUM_CHAIN_ID,
 	ETH_SCAN_SITE,
+	INFURA_ETHEREUM_NODE,
+	INFURA_GOERLI_NODE,
 	LP_TOKEN_ADDRESS,
 	PURCHASE_ADDRESS,
 	SIGN_MESSAGE,
 	SUPS_CONTRACT_ADDRESS,
 	USDC_CONTRACT_ADDRESS,
-	WALLET_CONNECT_RPC,
 } from "../config"
 import { metamaskErrorHandling } from "../helpers/web3"
+import HubKey from "../keys"
 import { GetNonceResponse } from "../types/auth"
-import { tokenSelect } from "../types/types"
+import { tokenSelect, User } from "../types/types"
 import { useSnackbar } from "./snackbar"
 import { genericABI } from "./web3GenericABI"
+import { useCommands } from "./ws"
 
 export interface FarmData {
 	earned: BigNumber
@@ -139,6 +143,8 @@ export const Web3Container = createContainer(() => {
 	const [wcNonce, setWcNonce] = useState<string | undefined>()
 	const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>()
 	const [disableWalletModal, setDisableWalletModal] = useState(false)
+	const [userForWeb3, setUserForWeb3] = useState<User>()
+	const { send } = useCommands({ host: API_ENDPOINT_HOSTNAME, URI: `/user/${userForWeb3 ? userForWeb3.id : ""}/commander`, ready: !!userForWeb3 })
 
 	useEffect(() => {
 		if (!provider) return
@@ -256,8 +262,10 @@ export const Web3Container = createContainer(() => {
 			]
 
 			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
+
 			try {
 				const bal = await erc20.balanceOf(acc)
+
 				if (!bal) {
 					setSupBalance(BigNumber.from(0))
 					return
@@ -305,10 +313,10 @@ export const Web3Container = createContainer(() => {
 			//  Create WalletConnect Provider
 			const walletConnectProvider = new WalletConnectProvider({
 				rpc: {
-					1: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/mainnet`,
-					5: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/eth/goerli`,
-					56: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/mainnet`,
-					97: `https://speedy-nodes-nyc.moralis.io/${WALLET_CONNECT_RPC}/bsc/testnet`,
+					1: INFURA_ETHEREUM_NODE || INFURA_GOERLI_NODE,
+					5: INFURA_GOERLI_NODE,
+					56: BINANCE_NODE,
+					97: BINANCE_TESTNET_NODE,
 				},
 				qrcode: showQrCode,
 				qrcodeModalOptions: {
@@ -320,8 +328,8 @@ export const Web3Container = createContainer(() => {
 			//  Wrap with Web3Provider from ethers.js
 			const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
 			setProvider(web3Provider)
-			setCurrentChainId(walletConnectProvider.chainId)
 			setWcProvider(walletConnectProvider)
+			setCurrentChainId(walletConnectProvider.chainId)
 
 			// Subscribe to connect
 			walletConnectProvider.on("connect", async () => {
@@ -340,8 +348,13 @@ export const Web3Container = createContainer(() => {
 				const signature = await connector.signMessage([acc, signMsg])
 				setWcSignature(signature)
 
-				// Delete wallet connect token
-				localStorage.removeItem("walletconnect")
+				if (!userForWeb3 || userForWeb3.public_address) return
+				await send<User>(HubKey.UserAddWallet, {
+					id: userForWeb3.id,
+					public_address: acc,
+					signature,
+					nonce,
+				})
 			})
 
 			// Subscribe to accounts change
@@ -362,10 +375,11 @@ export const Web3Container = createContainer(() => {
 				setWcProvider(undefined)
 				setMetaMaskState(MetaMaskState.NotInstalled)
 				localStorage.removeItem("token")
+				localStorage.removeItem("walletconnect")
 			})
 			return walletConnectProvider
 		},
-		[getNonce],
+		[getNonce, send, userForWeb3],
 	)
 
 	useEffect(() => {
@@ -382,7 +396,7 @@ export const Web3Container = createContainer(() => {
 		if (provider) return // metamask connected
 		;(async () => {
 			if (typeof (window as any).ethereum !== "undefined" || typeof (window as any).web3 !== "undefined") {
-				const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any")
+				const provider = new ethers.providers.Web3Provider((window as any).ethereum)
 				setProvider(provider)
 				setMetaMaskState(MetaMaskState.Active)
 				const accounts = await provider.listAccounts()
@@ -405,6 +419,8 @@ export const Web3Container = createContainer(() => {
 				setCurrentChainId(response.chainId)
 			} else {
 				const walletConnectProvider = await createWcProvider(false)
+				const web3Provider = new ethers.providers.Web3Provider(walletConnectProvider)
+				setProvider(web3Provider)
 				setWcProvider(walletConnectProvider)
 				await walletConnectProvider.enable()
 				return () => walletConnectProvider.removeAllListeners()
@@ -464,6 +480,7 @@ export const Web3Container = createContainer(() => {
 	}, [displayMessage, provider, handleAccountChange])
 
 	const wcConnect = useCallback(async (): Promise<string | undefined> => {
+		localStorage.removeItem("walletconnect")
 		let walletConnectProvider
 		try {
 			walletConnectProvider = await createWcProvider()
@@ -1033,6 +1050,7 @@ export const Web3Container = createContainer(() => {
 		setDisableWalletModal,
 		disableWalletModal,
 		wcNonce,
+		setUserForWeb3,
 	}
 })
 

@@ -496,11 +496,27 @@ const ProfileEdit = ({ setNewUsername, setDisplayResult, setSuccessful, setVerif
 				{/* -------------------------- Account admin --------------------------------- */}
 				<Stack spacing=".5rem">
 					<Typography variant="h6">Security</Typography>
-					<Box sx={{ display: "flex", gap: ".5rem", flexWrap: "wrap", width: "100%" }}>
+					<Box
+						sx={{
+							display: "flex",
+							gap: ".5rem",
+							flexWrap: "wrap",
+							width: "100%",
+							"& *": {
+								fontSize: ".9rem !important",
+							},
+						}}
+					>
 						<FancyButton
 							disabled={!user.verified || !user.email}
 							tooltip={"Change your password"}
-							sx={{ minWidth: "15rem", width: "calc(50% - .25rem)" }}
+							sx={{
+								minWidth: "15rem",
+								width: "calc(50% - .25rem)",
+								"@media (max-width:800px)": {
+									minWidth: "100%",
+								},
+							}}
 							size="small"
 							onClick={() => setOpenChangePassword(true)}
 						>

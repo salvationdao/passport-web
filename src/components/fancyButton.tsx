@@ -43,7 +43,7 @@ export const FancyButton: React.FC<FancyButtonProps> = ({ fancy, borderColor, fi
 					border: `2px solid ${mainColor}`,
 					textTransform: "uppercase",
 					background: filled ? mainColor : "transparent",
-					color: filled ? theme.palette.background.default : "inherit",
+					color: "inherit",
 					a: {
 						color: mainColor,
 						textDecoration: "none",
