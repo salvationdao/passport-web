@@ -35,6 +35,7 @@ export interface User {
 	total_lock: boolean
 	auth_type: undefined
 	token?: string
+	tfa_token?: string
 }
 
 export interface FactionTheme {

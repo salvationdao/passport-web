@@ -114,24 +114,14 @@ export const Signup: React.FC = () => {
 					marginTop="20px"
 					justifyContent="space-between"
 					gap="1.5rem"
-					onChange={() => setError(null)}
+					onChange={() => {
+						setError(null)
+					}}
 				>
-					<Typography>
+					<Typography variant="h2" sx={{ fontSize: "1rem" }}>
 						{signupRequest?.auth_type !== AuthTypes.Email ? "Please enter your user display name:" : "Please enter your account details:"}
 					</Typography>
-					<TextField type="text" variant="outlined" name="username" label="Username" fullWidth />
-					{captchaRequired && (
-						<Box hidden={!!captchaToken}>
-							<Typography sx={{ mb: "1rem" }}>Please verify you are human.</Typography>
-							<HCaptcha
-								size="compact"
-								theme="dark"
-								sitekey={CAPTCHA_KEY}
-								onVerify={setCaptchaToken}
-								onExpire={() => setCaptchaToken(undefined)}
-							/>
-						</Box>
-					)}
+					<TextField type="text" variant="outlined" name="username" label="Enter Username" fullWidth />
 					{signupRequest?.auth_type === AuthTypes.Email && (
 						<>
 							<Box
@@ -152,6 +142,35 @@ export const Signup: React.FC = () => {
 							<TextField variant="outlined" name="confirmPassword" label="Confirm Password" type="password" fullWidth />
 						</>
 					)}
+					{captchaRequired && (
+						<Box>
+							{!captchaToken && (
+								<Typography variant="h2" sx={{ fontSize: "1rem" }}>
+									Please verify you are human
+								</Typography>
+							)}
+							<br />
+							<HCaptcha
+								size="normal"
+								theme="dark"
+								sitekey={CAPTCHA_KEY}
+								onVerify={setCaptchaToken}
+								onExpire={() => setCaptchaToken(undefined)}
+							/>
+						</Box>
+					)}
+					{captchaRequired && !!captchaToken && (
+						<LoadingButton
+							type="submit"
+							loading={signupLoading}
+							disabled={signupLoading}
+							variant="contained"
+							sx={{ p: ".5em 2em", fontSize: "1.2rem" }}
+						>
+							Submit
+						</LoadingButton>
+					)}
+
 					{error && (
 						<Alert
 							severity={"error"}
@@ -163,15 +182,6 @@ export const Signup: React.FC = () => {
 							{error.charAt(0).toUpperCase() + error.slice(1)}
 						</Alert>
 					)}
-					<LoadingButton
-						type="submit"
-						loading={signupLoading}
-						disabled={signupLoading}
-						variant="contained"
-						sx={{ p: ".5em 2em", fontSize: "1.2rem" }}
-					>
-						Submit
-					</LoadingButton>
 				</Stack>
 			</Slide>
 		</SupremacyAuth>

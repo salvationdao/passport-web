@@ -23,6 +23,7 @@ interface BasicLoginRequest {
 	fingerprint?: Fingerprint
 	redirect_url?: string
 	tenant?: string
+	tfa_token?: string
 }
 
 export interface PasswordLoginRequest extends BasicLoginRequest {
@@ -95,6 +96,7 @@ export interface TwoFactorAuthLoginRequest extends BasicLoginRequest {
 	passcode?: string
 	recovery_code?: string
 	session_id?: string
+	is_verified?: boolean
 }
 
 export interface BasicLoginResponse {

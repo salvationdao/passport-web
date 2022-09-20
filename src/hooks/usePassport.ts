@@ -1,7 +1,7 @@
+import { API_ENDPOINT_HOSTNAME } from "../config"
+import { useAuth } from "../containers/auth"
 import { SubProps, useCommands, useSubscription } from "../containers/ws"
 import { DataType } from "../containers/ws/util"
-import { useAuth } from "../containers/auth"
-import { API_ENDPOINT_HOSTNAME } from "../config"
 
 // Fetch
 export const usePassportCommandsUser = (URI?: string) => {

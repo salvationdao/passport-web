@@ -33,12 +33,16 @@ export const BUSD_CONTRACT_ADDRESS = process.env.REACT_APP_BUSD_CONTRACT_ADDRESS
 export const ETH_SCAN_SITE = process.env.REACT_APP_ETH_SCAN_SITE || "goerli.etherscan.io"
 export const BSC_SCAN_SITE = process.env.REACT_APP_BSC_SCAN_SITE || "testnet.bscscan.com"
 
-export const ETHEREUM_CHAIN_ID = process.env.REACT_APP_ETHEREUM_CHAIN_ID || "5"
+export const ETHEREUM_CHAIN_ID = process.env.REACT_APP_ETHEREUM_CHAIN_ID || "1"
 export const BINANCE_CHAIN_ID = process.env.REACT_APP_BINANCE_CHAIN_ID || "97"
+export const INFURA_ETHEREUM_NODE = process.env.REACT_APP_INFURA_ETHEREUM_NODE
+export const INFURA_GOERLI_NODE = "https://goerli.infura.io/v3/38ee3b4f0d5a4adfb02fe1ca64645e22"
+export const BINANCE_NODE = "https://bsc-dataseed1.binance.org/"
+export const BINANCE_TESTNET_NODE = "https://data-seed-prebsc-1-s1.binance.org:8545/"
+
 export const PURCHASE_ADDRESS = process.env.REACT_APP_PURCHASE_ADDRESS || "0x7D6439fDF9B096b29b77afa28b3083c0a329c7fE"
 export const WITHDRAW_ADDRESS = process.env.REACT_APP_WITHDRAW_ADDRESS || "0x9DAcEA338E4DDd856B152Ce553C7540DF920Bb15"
 export const REDEEM_ADDRESS = process.env.REACT_APP_REDEEM_ADDRESS || "0xc01c2f6DD7cCd2B9F8DB9aa1Da9933edaBc5079E"
-export const WALLET_CONNECT_RPC = process.env.REACT_APP_WALLET_CONNECT_RPC || "1375aa321ac8ac6cfba6aa9c"
 export const SAFT_AGREEMENT_PDF = process.env.SAFT_AGREEMENT_PDF || "/09_03_22_Token_Subscription_Agreement_Wallet_Address_Signature_Sups.pdf"
 export const FARM_CONTRACT_ADDRESS = process.env.REACT_APP_FARM_CONTRACT_ADDRESS || "0x20034d860bf43ef6d6dded79a8d73e857e10960c"
 export const PANCAKE_POOL_ADDRESS = process.env.REACT_APP_PANCAKE_POOL_ADDRESS || "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"

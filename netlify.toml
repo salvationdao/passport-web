@@ -30,6 +30,7 @@
   REACT_APP_GOOGLE_ID="467953368642-8cobg822tej2i50ncfg4ge1pm4c5v033.apps.googleusercontent.com"
   REACT_APP_PASSPORT_ENVIRONMENT= "production"
   REACT_APP_CAPTCHA_SITE_KEY="6c84c39b-975f-4c12-879e-f14b3dd7bdba"
+  REACT_APP_INFURA_ETHEREUM_NODE="https://mainnet.infura.io/v3/38ee3b4f0d5a4adfb02fe1ca64645e22"
 
 
 [context.staging.environment]
