@@ -41,7 +41,16 @@ const ForgotPassword: React.FC = () => {
 	return (
 		<SupremacyAuth title="Forgot Password">
 			<Slide in={true} direction="left">
-				<Stack sx={{ borderTop: 1, borderColor: "divider", p: "2em" }}>
+				<Stack
+					sx={{
+						borderTop: 1,
+						borderColor: "divider",
+						p: "2em",
+						"@media(max-width:600px)": {
+							p: "1em",
+						},
+					}}
+				>
 					<Stack component="form" onSubmit={handleSubmit} sx={{ width: "100%", maxWidth: "25rem" }} onChange={() => setError(null)}>
 						<Typography sx={{ textAlign: "left" }}>Enter your email address to recover your password:</Typography>
 						<TextField
@@ -85,8 +94,8 @@ const ForgotPassword: React.FC = () => {
 							component="span"
 							sx={{
 								position: "absolute",
-								bottom: "1rem",
-								left: "1rem",
+								bottom: "2rem",
+								left: "2rem",
 								color: theme.palette.secondary.main,
 								display: "flex",
 								alignItems: "center",

@@ -56,7 +56,14 @@ const EmailSignupVerify: React.FC = () => {
 						</Typography>
 
 						<TextField
-							sx={{ mt: "1rem" }}
+							sx={{
+								mt: "1rem",
+								"@media (max-width:600px)": {
+									"& *": {
+										fontSize: "1.5ch !important",
+									},
+								},
+							}}
 							placeholder="Enter code"
 							value={code}
 							onChange={(e) => setCode(e.target.value)}

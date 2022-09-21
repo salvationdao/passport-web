@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material"
-import React from "react"
 import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../../config"
+import { useWeb3 } from "../../containers/web3"
 import { colors } from "../../theme"
 import { FancyButton } from "../fancyButton"
 
@@ -11,8 +11,13 @@ interface SwitchNetworkOverlayProps {
 }
 
 export const SwitchNetworkOverlay = ({ currentChainId, changeChain, newChainID }: SwitchNetworkOverlayProps) => {
+	const { account } = useWeb3()
 	const handleNetworkSwitch = async () => {
 		await changeChain(parseInt(newChainID))
+	}
+
+	if (!account) {
+		return null
 	}
 	return (
 		<Box
@@ -55,7 +60,12 @@ export const SwitchNetworkOverlay = ({ currentChainId, changeChain, newChainID }
 						Please switch your network. Click the button below and follow the prompts.
 					</Typography>
 				)}
-				<FancyButton borderColor={colors.skyBlue} sx={{ width: "50%" }} onClick={handleNetworkSwitch}>
+				<FancyButton
+					filled
+					borderColor={colors.skyBlue}
+					sx={{ width: "fit-content", mx: "auto", px: "2em", color: colors.black, borderRadius: "10px" }}
+					onClick={handleNetworkSwitch}
+				>
 					Switch Network
 				</FancyButton>
 			</Box>
