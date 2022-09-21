@@ -102,15 +102,15 @@ export const TwoFactorAuthenticationCheckLogin: React.FC<ITwoFactorAuthenticatio
 								style: {
 									margin: "1rem auto",
 									padding: "0 1rem",
-									width: `${10 * 1.5}ch`,
+									width: isRecovery ? "unset" : `${10 * 1.5}ch`,
 									background: `repeating-linear-gradient(90deg, dimgrey 0, 
 									 "dimgrey"
 									}1ch, transparent 0, transparent 1.6ch) 0 100%/ 10ch 2px no-repeat`,
-									font: `2.4ch Nostromo Regular Medium`,
+									font: isRecovery ? "2ch  Nostromo Regular Medium" : `2.4ch Nostromo Regular Medium`,
 									letterSpacing: ".6ch",
 									textAlign: "center",
 								},
-								maxLength: 6,
+								maxLength: isRecovery ? undefined : 6,
 								spellCheck: false,
 							}}
 							onFocus={() => {
@@ -135,6 +135,7 @@ export const TwoFactorAuthenticationCheckLogin: React.FC<ITwoFactorAuthenticatio
 						onClick={() => {
 							setIsRecovery(!isRecovery)
 							setError(null)
+							setCode("")
 						}}
 						sx={{ textTransform: "uppercase", color: "secondary.main" }}
 					>
