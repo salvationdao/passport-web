@@ -14,6 +14,10 @@ const EmailSignupVerify: React.FC = () => {
 	const [error, setError] = React.useState<string | null>(null)
 	const [success, setSuccess] = React.useState<string | null>(null)
 
+	const errorCallback = (msg: string) => {
+		setError(msg)
+	}
+
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 
@@ -26,7 +30,7 @@ const EmailSignupVerify: React.FC = () => {
 			return
 		}
 		// Validate code
-		const success = await verifyCode.action(emailCode?.token, code.toLowerCase())
+		const success = await verifyCode.action(emailCode?.token, code.toLowerCase(), errorCallback)
 
 		if (!success) {
 			setError("Incorrect code. Please try again.")

@@ -159,7 +159,7 @@ export const Signup: React.FC = () => {
 							/>
 						</Box>
 					)}
-					{captchaRequired && !!captchaToken && (
+					{(!captchaRequired || (captchaRequired && !!captchaToken)) && (
 						<LoadingButton
 							type="submit"
 							loading={signupLoading}
