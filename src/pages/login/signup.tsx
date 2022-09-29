@@ -33,7 +33,6 @@ export const Signup: React.FC = () => {
 				const password = data.get("password")?.toString()
 				const confirmPassword = data.get("confirmPassword")?.toString()
 				const acceptsMarketing = data.get("acceptsMarketing")?.valueOf() === "on"
-				console.log(data.get("acceptsMarketing")?.valueOf())
 
 				if (signupRequest) {
 					let userRequest: SignupRequestTypes | null = null
