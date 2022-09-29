@@ -1,6 +1,6 @@
 import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { LoadingButton } from "@mui/lab"
-import { Alert, Box, Slide, Stack, TextField, Typography } from "@mui/material"
+import { Alert, Box, Checkbox, FormControlLabel, Slide, Stack, TextField, Typography } from "@mui/material"
 import { useCallback, useState } from "react"
 import { Redirect } from "react-router-dom"
 import { SupremacyAuth } from "../../components/supremacy/auth"
@@ -32,6 +32,8 @@ export const Signup: React.FC = () => {
 				const username = data.get("username")?.toString()
 				const password = data.get("password")?.toString()
 				const confirmPassword = data.get("confirmPassword")?.toString()
+				const acceptsMarketing = data.get("acceptsMarketing")?.valueOf() === "on"
+				console.log(data.get("acceptsMarketing")?.valueOf())
 
 				if (signupRequest) {
 					let userRequest: SignupRequestTypes | null = null
@@ -75,6 +77,7 @@ export const Signup: React.FC = () => {
 												auth_type: AuthTypes.Email,
 												tenant,
 												redirect_url: redirectURL,
+												accepts_marketing: acceptsMarketing.toString(),
 										  }
 										: signupRequest,
 								username,
@@ -140,6 +143,11 @@ export const Signup: React.FC = () => {
 							</Box>
 							<TextField variant="outlined" name="password" label="Password" type="password" fullWidth />
 							<TextField variant="outlined" name="confirmPassword" label="Confirm Password" type="password" fullWidth />
+							<FormControlLabel
+								control={<Checkbox />}
+								label="I would like to receive updates, special offers and newsletters from Supremacy."
+								name="acceptsMarketing"
+							/>
 						</>
 					)}
 					{captchaRequired && (
