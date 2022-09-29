@@ -91,7 +91,7 @@ export const EmailLogin: React.FC<IEmailLoginProps> = ({ signup }) => {
 						/>
 					</Box>
 				)}
-				{captchaToken && (
+				{(!signup || (signup && captchaToken)) && (
 					<FancyButton
 						submit
 						fullWidth

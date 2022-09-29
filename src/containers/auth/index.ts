@@ -474,14 +474,10 @@ export const AuthContainer = createContainer(() => {
 				return resp.payload?.success
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
-				if (e.message) {
-					errMsg = e.message
-				}
 				if (errorCallback) {
 					errorCallback(errMsg)
 				}
 				console.error(e)
-				throw typeof e === "string" ? e : errMsg
 			}
 		},
 		[verifyCode],
