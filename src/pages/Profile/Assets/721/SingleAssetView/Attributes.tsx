@@ -4,7 +4,7 @@ import { UserAsset } from "../../../../../types/purchased_item"
 import { PercentageDisplay } from "../../Common/PercentageDisplay"
 import { useHistory } from "react-router-dom"
 
-export const Attributes = ({ userAsset, username }: { userAsset: UserAsset, username: string }) => {
+export const Attributes = ({ userAsset, username }: { userAsset: UserAsset; username: string }) => {
 	const { push } = useHistory()
 	return (
 		<Box
@@ -40,12 +40,11 @@ export const Attributes = ({ userAsset, username }: { userAsset: UserAsset, user
 											cursor: clickable ? `pointer` : `default`,
 											transition: "all .3s ease-in",
 											":hover": {
-												boxShadow: clickable ? "inset 0px 0px 10px #f72485,0px 0px 10px #f72485" : '',
+												boxShadow: clickable ? "inset 0px 0px 10px #f72485,0px 0px 10px #f72485" : "",
 											},
 										}}
 									>
-										<Typography variant="subtitle1" color={colors.skyBlue}
-													sx={{ textTransform: "uppercase" }}>
+										<Typography variant="subtitle1" color={colors.skyBlue} sx={{ textTransform: "uppercase" }}>
 											{attr.trait_type}
 										</Typography>
 										<Typography variant="subtitle2">{attr.value}</Typography>
@@ -58,8 +57,7 @@ export const Attributes = ({ userAsset, username }: { userAsset: UserAsset, user
 				</Stack>
 
 				<Stack>
-					<Typography variant="subtitle1" color={colors.neonPink}
-								sx={{ mb: ".5rem", textTransform: "uppercase" }}>
+					<Typography variant="subtitle1" color={colors.neonPink} sx={{ mb: ".5rem", textTransform: "uppercase" }}>
 						Stats
 					</Typography>
 
@@ -85,8 +83,7 @@ export const Attributes = ({ userAsset, username }: { userAsset: UserAsset, user
 				</Stack>
 
 				<Stack>
-					<Typography variant="subtitle1" color={colors.neonPink}
-								sx={{ mb: ".5rem", textTransform: "uppercase" }}>
+					<Typography variant="subtitle1" color={colors.neonPink} sx={{ mb: ".5rem", textTransform: "uppercase" }}>
 						Boosts
 					</Typography>
 
