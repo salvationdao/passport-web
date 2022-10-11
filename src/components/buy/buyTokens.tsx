@@ -24,7 +24,7 @@ const BIG_NUMBER_FIX = 10 ** 6
 const MINIMUM_SPEND = "5"
 
 export const BuyTokens: React.FC = () => {
-	const { user, userID } = useAuth()
+	const { user } = useAuth()
 	const {
 		changeChain,
 		currentChainId,
@@ -52,7 +52,7 @@ export const BuyTokens: React.FC = () => {
 	const [minAmount, setMinAmount] = useState<BigNumber>()
 	const [loading, setLoading] = useState<boolean>(false)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRates>()
-	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
+	const userSups = useSubscription<string>({ URI: `/account/${user?.account_id}/sups`, key: HubKey.UserSupsSubscribe, ready: !!user })
 	const acceptedChainExceptions = currentChainId?.toString() === BINANCE_CHAIN_ID || currentChainId?.toString() === ETHEREUM_CHAIN_ID
 	const [balanceDelta, setBalanceDelta] = useState<number | undefined>()
 	const [tokenDecimals, setTokenDecimals] = useState(18)
