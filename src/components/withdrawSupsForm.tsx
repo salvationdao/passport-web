@@ -62,14 +62,12 @@ export const WithdrawSupsForm = ({
 	setCurrentTransferHash,
 	setCurrentTransferState,
 	setError,
-	user,
 	state,
 	send,
 }: WithdrawSupsFormProps) => {
 	const { account, metaMaskState, supBalance, provider, signer, changeChain, currentChainId } = useWeb3()
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
-	const { userID } = useAuth()
-	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
+	const userSups = useSubscription<string>({ URI: `/account/${user?.account_id}/sups`, key: HubKey.UserSupsSubscribe, ready: !!user })
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsWalletTotal, setSupsWalletTotal] = useState<BigNumber>()

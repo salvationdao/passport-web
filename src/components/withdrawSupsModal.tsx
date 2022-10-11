@@ -25,8 +25,8 @@ interface GetSignatureResponse {
 
 export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }: WithdrawModalProps) => {
 	const { account, provider, currentChainId, metaMaskState, changeChain } = useWeb3()
-	const { userID } = useAuth()
-	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
+	const { user } = useAuth()
+	const userSups = useSubscription<string>({ URI: `/account/${user?.account_id}/sups`, key: HubKey.UserSupsSubscribe, ready: !!user })
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber | null>(null)
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string | null>(null)
 	const [withdrawContractAmount, setWithdrawContractAmount] = useState<BigNumber>()
