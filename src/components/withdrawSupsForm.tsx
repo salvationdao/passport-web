@@ -8,7 +8,6 @@ import Arrow from "../assets/images/arrow.png"
 import Safe from "../assets/images/gradient/safeLarge.png"
 import SupsToken from "../assets/images/sup-token.svg"
 import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
-import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { SendFunc } from "../containers/ws/useCommands"
@@ -21,6 +20,7 @@ import { transferStateType, User } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { ConnectWalletOverlay } from "./transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "./transferStatesOverlay/switchNetworkOverlay"
+import { useAuth } from "../containers/auth"
 
 interface WithdrawSupsFormProps {
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
@@ -67,6 +67,7 @@ export const WithdrawSupsForm = ({
 }: WithdrawSupsFormProps) => {
 	const { account, metaMaskState, supBalance, provider, signer, changeChain, currentChainId } = useWeb3()
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
+	const { user } = useAuth()
 	const userSups = useSubscription<string>({ URI: `/account/${user?.account_id}/sups`, key: HubKey.UserSupsSubscribe, ready: !!user })
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
