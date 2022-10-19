@@ -22,7 +22,7 @@ import { Routes } from "./routes"
 
 loadIcons()
 
-ws.Initialise({ defaultHost: API_ENDPOINT_HOSTNAME })
+ws.Initialize({ defaultHost: API_ENDPOINT_HOSTNAME })
 
 const AppInner = () => {
 	const { user, userID, loading } = useAuth()
