@@ -19,11 +19,9 @@ import {
 	Typography,
 	useMediaQuery,
 } from "@mui/material"
-import { formatDistanceToNow, fromUnixTime, isPast } from "date-fns"
 import { BigNumber, constants } from "ethers"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { useInterval } from "react-use"
 import Axe from "../../assets/images/gradient/axe.png"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
@@ -83,7 +81,7 @@ export const FarmsPage = () => {
 						<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={BINANCE_CHAIN_ID} />
 					)}
 					{!account && <ConnectWalletOverlay walletIsConnected={!!account} />}
-					<Stack gap="1rem">
+					<Stack gap="1rem" alignItems="center">
 						<Box
 							component="img"
 							src={Axe}
@@ -100,6 +98,9 @@ export const FarmsPage = () => {
 						/>
 						<Typography variant="h1" sx={{ textTransform: "uppercase", fontFamily: "bizmobold" }}>
 							Liquidity Farming
+						</Typography>
+						<Typography sx={{ textTransform: "uppercase", fontFamily: "bizmobold", color: colors.errorRed, fontSize: "1.2rem" }}>
+							Staking has ended
 						</Typography>
 					</Stack>
 					{currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account && <FarmCard />}
@@ -119,7 +120,6 @@ interface FarmInfoProps {
 	userRewardRate: BigNumber
 	rewardRate: BigNumber
 	yieldPercentage: number
-	remainingTime: string
 	hasAllowance: boolean
 }
 
@@ -168,7 +168,7 @@ const FarmInfo = (props: FarmInfoProps) => {
 				<LabelContainer>
 					<InfoLabel>Your reward rate:</InfoLabel>{" "}
 					<InfoValue>
-						{props.loading ? "---" : (+formatUnits(props.userRewardRate)).toFixed(6)}{" "}
+						{props.loading ? "---" : "0.000000"}{" "}
 						<span style={{ fontSize: "1rem" }}>
 							SUPS/<span style={{ fontSize: ".8rem" }}>s</span>
 						</span>
@@ -187,7 +187,6 @@ const FarmCard = (props: FarmCardProps) => {
 	const [stakeDisplayAmount, setStakeDisplayAmount] = useState<string>("")
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber | null>(null)
 	const [withdrawDisplayAmount, setWithdrawDisplayAmount] = useState<string>("")
-	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	const [hasAllowance, setHasAllowance] = useState<boolean>(false)
 	const [withdrawError, setWithdrawError] = useState<string | null>(null)
 	const [stakeError, setStakeError] = useState<string | null>(null)
@@ -198,22 +197,6 @@ const FarmCard = (props: FarmCardProps) => {
 	const [openTutorial, setOpenTutorial] = useState<boolean | null>(false)
 	const [openInfoApr, setOpenInfoApr] = useState<boolean>(false)
 	const isMobile = useMediaQuery("(max-width:600px)")
-
-	useInterval(() => {
-		if (data) {
-			if (!pending.claim) {
-				setData((prevState) => {
-					if (prevState) return { ...prevState, earned: prevState.earned.add(prevState.userRewardRate.div(10)) }
-					else return prevState
-				})
-			}
-			if (isPast(fromUnixTime(data.periodFinish.toNumber()))) {
-				setRemainingTime("Rewards are inactive")
-			} else {
-				setRemainingTime(formatDistanceToNow(fromUnixTime(data.periodFinish.toNumber())))
-			}
-		}
-	}, 100)
 
 	useEffect(() => {
 		setStakeError(null)
@@ -413,7 +396,6 @@ const FarmCard = (props: FarmCardProps) => {
 				}}
 			>
 				<FarmInfo
-					remainingTime={remainingTime || "---"}
 					rewardRate={data ? data.rewardRate : BigNumber.from(0)}
 					block={block}
 					loading={!data}
@@ -510,6 +492,7 @@ const FarmCard = (props: FarmCardProps) => {
 											<RemoveIcon fontSize="large" />
 										</FancyButton>
 										<FancyButton
+											disabled
 											onClick={() => {
 												setWeb3Error(null)
 												setOpenStaking(true)
@@ -523,6 +506,7 @@ const FarmCard = (props: FarmCardProps) => {
 							</FormSectionInner>
 							{!hasAllowance && (
 								<FancyButton
+									disabled
 									loading={pending.approve}
 									onClick={async () => {
 										setPending({ ...pending, approve: true })
