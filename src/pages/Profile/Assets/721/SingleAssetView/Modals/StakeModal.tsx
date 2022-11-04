@@ -39,7 +39,7 @@ export const StakeModal = ({ open, onClose, asset, collection, reloadAsset }: St
 				const nftContract = new ethers.Contract(collection.mint_contract, abi, provider)
 				const resp = await nftContract.getApproved(asset.token_id)
 
-				if (!!resp) {
+				if (resp) {
 					setApprovalSuccess(resp === collection.stake_contract)
 				}
 			} catch (e) {

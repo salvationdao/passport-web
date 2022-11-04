@@ -29,8 +29,7 @@ export const BlockConfirmationSnackList = () => {
 	//compare the original array to the filtered array and if the id is in the transaction array then filter it out.
 	//if the confirmation has 6+ confirmation blocks, then set a time out to make the alert dissapear
 	useEffect(() => {
-		let resultArr: ChainConfirmations[]
-		resultArr = txConfirms.filter((item) => !filterArr.includes(item.tx))
+		const resultArr: ChainConfirmations[] = txConfirms.filter((item) => !filterArr.includes(item.tx))
 		resultArr.map((item) => {
 			if (item.confirmationAmount >= 6) {
 				return setTimeout(() => {

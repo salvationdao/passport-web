@@ -6,7 +6,7 @@ const fileUpload = (values: { file: File; public?: boolean }): Action<{ id: stri
 	formData.set("file", values.file)
 	return {
 		method: "POST",
-		endpoint: `/files/upload?token=${encodeURIComponent(token || "")}${!!values.public ? "&public=true" : ""}`,
+		endpoint: `/files/upload?token=${encodeURIComponent(token || "")}${values.public ? "&public=true" : ""}`,
 		credentials: "include",
 		body: formData,
 		responseType: "json",

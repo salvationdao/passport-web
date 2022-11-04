@@ -8,11 +8,12 @@ import { Navbar } from "../../components/home/navbar"
 import { ConnectWalletOverlay } from "../../components/transferStatesOverlay/connectWalletOverlay"
 import { SwitchNetworkOverlay } from "../../components/transferStatesOverlay/switchNetworkOverlay"
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
-import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID } from "../../config"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../../config"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
 import { transferStateType } from "../../types/types"
 import { useAuth } from "../../containers/auth"
+import { FancyButton } from "../../components/fancyButton"
 
 interface CanEnterResponse {
 	can_withdraw: boolean
@@ -21,6 +22,7 @@ interface CanEnterResponse {
 export const DepositPage = () => {
 	const { user } = useAuth()
 	const { account, changeChain, currentChainId } = useWeb3()
+	const [chain, setChain] = useState<string>()
 
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 
@@ -82,43 +84,55 @@ export const DepositPage = () => {
 							height: "12rem",
 						}}
 					/>
-					<SwitchNetworkOverlay currentChainId={currentChainId} changeChain={changeChain} newChainID={BINANCE_CHAIN_ID} />
 					<ConnectWalletOverlay walletIsConnected={!!account} />
-					<TransactionResultOverlay
-						currentTransferState={currentTransferState}
-						setCurrentTransferState={setCurrentTransferState}
-						currentTransferHash={currentTransferHash}
-						confirmationMessage={`Depositing ${formatUnits(depositAmount, 18)} $SUPS from wallet address: ${
-							account ? AddressDisplay(account) : null
-						} to ${user && user.username}.`}
-						error={error}
-						loading={loading}
-					/>
+					{chain && (
+						<TransactionResultOverlay
+							chain={chain}
+							currentTransferState={currentTransferState}
+							setCurrentTransferState={setCurrentTransferState}
+							currentTransferHash={currentTransferHash}
+							confirmationMessage={`Depositing ${formatUnits(depositAmount, 18)} $SUPS from wallet address: ${
+								account ? AddressDisplay(account) : null
+							} to ${user && user.username}.`}
+							error={error}
+							loading={loading}
+						/>
+					)}
 
 					<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: "3rem" }}>
 						Deposit $Sups
 					</Typography>
+					{!chain && (
+						<Box sx={{ display: "flex", flexDirection: "column", gap: "1rem", width: "400px" }}>
+							<FancyButton onClick={() => setChain(ETHEREUM_CHAIN_ID)}>Deposit Sups on Ethereum </FancyButton>
+							<FancyButton onClick={() => setChain(BINANCE_CHAIN_ID)}>Deposit Sups Binance</FancyButton>
+						</Box>
+					)}
 
-					<Box
-						sx={{
-							width: "80%",
-							maxWidth: "750px",
-							position: "relative",
-							display: "flex",
-							flexDirection: "column",
-							alignItems: "center",
-						}}
-					>
-						<DepositSups
-							setCurrentTransferState={setCurrentTransferState}
-							currentTransferState={currentTransferState}
-							setCurrentTransferHash={setCurrentTransferHash}
-							depositAmount={depositAmount}
-							setDepositAmount={setDepositAmount}
-							setLoading={setLoading}
-							setError={setError}
-						/>
-					</Box>
+					{chain && <SwitchNetworkOverlay currentChainId={currentChainId} changeChain={changeChain} newChainID={chain} />}
+					{chain && (
+						<Box
+							sx={{
+								width: "80%",
+								maxWidth: "750px",
+								position: "relative",
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "center",
+							}}
+						>
+							<DepositSups
+								chain={chain}
+								setCurrentTransferState={setCurrentTransferState}
+								currentTransferState={currentTransferState}
+								setCurrentTransferHash={setCurrentTransferHash}
+								depositAmount={depositAmount}
+								setDepositAmount={setDepositAmount}
+								setLoading={setLoading}
+								setError={setError}
+							/>
+						</Box>
+					)}
 				</Paper>
 			</Box>
 		</Box>

@@ -5,7 +5,7 @@ export const SENTRY_CONFIG = {
 	RELEASE: process.env.REACT_APP_SENTRY_CURRENT_RELEASE_NAME,
 	ENVIRONMENT: process.env.REACT_APP_SENTRY_ENVIRONMENT,
 	get SAMPLERATE(): number {
-		let rate = Number(process.env.REACT_APP_SENTRY_SAMPLERATE)
+		const rate = Number(process.env.REACT_APP_SENTRY_SAMPLERATE)
 
 		// Check rate is a number between 0 and 1
 		if (isNaN(rate) || rate > 1 || rate < 0) {
@@ -26,14 +26,15 @@ export const SIGN_MESSAGE = process.env.REACT_APP_PASSPORT_METAMASK_SIGN_MESSAGE
 export const BYPASS_WHITELIST = process.env.REACT_APP_BYPASS_WHITELIST || "false"
 export const BATTLE_ARENA_LINK = process.env.REACT_APP_BATTLE_ARENA_LINK || "https://play.supremacygame.io"
 
-export const SUPS_CONTRACT_ADDRESS = process.env.REACT_APP_SUPS_CONTRACT_ADDRESS || "0x5e8b6999B44E011F485028bf1AF0aF601F845304"
+export const SUPS_CONTRACT_ADDRESS_BSC = process.env.REACT_APP_SUPS_CONTRACT_ADDRESS || "0x5e8b6999B44E011F485028bf1AF0aF601F845304"
+export const SUPS_CONTRACT_ADDRESS_ETH = process.env.REACT_APP_SUPS_CONTRACT_ADDRESS_ETH || "0xfF30d2c046AEb5FA793138265Cc586De814d0040"
 export const USDC_CONTRACT_ADDRESS = process.env.REACT_APP_USDC_CONTRACT_ADDRESS || "0x8BB4eC208CDDE7761ac7f3346deBb9C931f80A33"
 export const BUSD_CONTRACT_ADDRESS = process.env.REACT_APP_BUSD_CONTRACT_ADDRESS || "0xeAf33Ba4AcA3fE3110EAddD7D4cf0897121583D0"
 
 export const ETH_SCAN_SITE = process.env.REACT_APP_ETH_SCAN_SITE || "goerli.etherscan.io"
 export const BSC_SCAN_SITE = process.env.REACT_APP_BSC_SCAN_SITE || "testnet.bscscan.com"
 
-export const ETHEREUM_CHAIN_ID = process.env.REACT_APP_ETHEREUM_CHAIN_ID || "1"
+export const ETHEREUM_CHAIN_ID = process.env.REACT_APP_ETHEREUM_CHAIN_ID || "5"
 export const BINANCE_CHAIN_ID = process.env.REACT_APP_BINANCE_CHAIN_ID || "97"
 export const INFURA_ETHEREUM_NODE = process.env.REACT_APP_INFURA_ETHEREUM_NODE
 export const INFURA_GOERLI_NODE = "https://goerli.infura.io/v3/38ee3b4f0d5a4adfb02fe1ca64645e22"

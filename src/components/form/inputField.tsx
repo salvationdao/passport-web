@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Control, Controller } from "react-hook-form"
 
 interface InputFieldProps {
-	control: Control<any, object>
+	control: Control<any, Record<string, unknown>>
 	rules?: any
 	name: string
 }

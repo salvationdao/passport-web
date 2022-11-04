@@ -2,7 +2,7 @@ import { formatUnits, parseUnits } from "@ethersproject/units"
 import { Alert, Box, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Skeleton, TextField, Typography } from "@mui/material"
 import { BigNumber, ethers } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
-import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS_BSC, WITHDRAW_ADDRESS } from "../config"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
@@ -84,7 +84,7 @@ export const WithdrawSupsModal = ({ walletBalance, xsynBalance, open, onClose }:
 				// Events
 				// "event Transfer(address indexed from, address indexed to, uint amount)",
 			]
-			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
+			const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS_BSC, abi, provider)
 			const bal: BigNumber = await erc20.balanceOf(WITHDRAW_ADDRESS)
 			setWithdrawContractAmount(bal)
 			setErrorWalletBalance(undefined)

@@ -36,7 +36,7 @@ import {
 	LP_TOKEN_ADDRESS,
 	PANCAKE_POOL_ADDRESS,
 	PANCAKE_SWAP_ADDRESS,
-	SUPS_CONTRACT_ADDRESS,
+	SUPS_CONTRACT_ADDRESS_BSC,
 	WRAPPED_BNB_ADDRESS,
 } from "../../config"
 import { FarmData, useWeb3 } from "../../containers/web3"
@@ -110,8 +110,6 @@ export const FarmsPage = () => {
 	)
 }
 
-interface FarmCardProps {}
-
 interface FarmInfoProps {
 	block: number
 	loading: boolean
@@ -179,7 +177,7 @@ const FarmInfo = (props: FarmInfoProps) => {
 	)
 }
 
-const FarmCard = (props: FarmCardProps) => {
+const FarmCard = () => {
 	const { provider, signer, account, block, farmInfo, farmWithdraw, farmExit, farmCheckAllowance, farmLPApproveMax, farmStake, farmGetReward } =
 		useWeb3()
 	const [data, setData] = useState<FarmData | null>(null)
@@ -218,7 +216,7 @@ const FarmCard = (props: FarmCardProps) => {
 
 	useEffect(() => {
 		if (!provider || !signer || !account) return
-		farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
+		farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS_BSC, WRAPPED_BNB_ADDRESS)
 			.then((data) => {
 				if (!data) return
 				if (!pending.claim) {
@@ -227,7 +225,7 @@ const FarmCard = (props: FarmCardProps) => {
 			})
 			.catch((err) =>
 				console.error(
-					`get farm info with farm address ${FARM_CONTRACT_ADDRESS}, pancake pool ${PANCAKE_POOL_ADDRESS}, lp token ${LP_TOKEN_ADDRESS},  supsContractAddr ${SUPS_CONTRACT_ADDRESS}, wbnbContractAddr ${WRAPPED_BNB_ADDRESS}:`,
+					`get farm info with farm address ${FARM_CONTRACT_ADDRESS}, pancake pool ${PANCAKE_POOL_ADDRESS}, lp token ${LP_TOKEN_ADDRESS},  supsContractAddr ${SUPS_CONTRACT_ADDRESS_BSC}, wbnbContractAddr ${WRAPPED_BNB_ADDRESS}:`,
 					err,
 				),
 			)
@@ -307,7 +305,13 @@ const FarmCard = (props: FarmCardProps) => {
 			await tx.wait()
 			setWithdrawDisplayAmount("")
 			setWithdrawAmount(BigNumber.from(0))
-			const newData = await farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
+			const newData = await farmInfo(
+				FARM_CONTRACT_ADDRESS,
+				PANCAKE_POOL_ADDRESS,
+				LP_TOKEN_ADDRESS,
+				SUPS_CONTRACT_ADDRESS_BSC,
+				WRAPPED_BNB_ADDRESS,
+			)
 			if (!newData) return
 			setData(newData)
 		} catch (err) {
@@ -327,7 +331,13 @@ const FarmCard = (props: FarmCardProps) => {
 			setPending({ ...pending, stake: false })
 			setStakeDisplayAmount("")
 			setStakeAmount(BigNumber.from(0))
-			const newData = await farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
+			const newData = await farmInfo(
+				FARM_CONTRACT_ADDRESS,
+				PANCAKE_POOL_ADDRESS,
+				LP_TOKEN_ADDRESS,
+				SUPS_CONTRACT_ADDRESS_BSC,
+				WRAPPED_BNB_ADDRESS,
+			)
 			if (!newData) return
 			setData(newData)
 		} catch (error: any) {
@@ -687,7 +697,7 @@ const FarmCard = (props: FarmCardProps) => {
 							</Button>
 							<Button
 								component={"a"}
-								href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`}
+								href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS_BSC}`}
 								target="_blank"
 								rel="noopener noreferrer"
 								endIcon={<OpenInNewIcon />}
@@ -918,7 +928,7 @@ const Tutorial: React.FC<ITutorialProps> = ({ cb }) => {
 							Acquire <Link to="/buy">SUPS</Link>&nbsp; and BNB Tokens (WBNB on the BEP-20 network).
 						</li>
 						<li>
-							<a href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer">
+							<a href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS_BSC}`} target="_blank" rel="noreferrer">
 								Add liquidity
 							</a>{" "}
 							to the SUPS/BNB pool.

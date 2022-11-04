@@ -17,7 +17,7 @@ interface ConnectionButtonProps extends Omit<IconButtonProps, "children"> {
 export const ConnectionButton = ({ icon, value, loading, disabled, sx, handleClick, connected, small, ...props }: ConnectionButtonProps) => {
 	const [hoverRef, isHovered] = useHover<HTMLButtonElement>()
 
-	let greyBorder = disabled || connected
+	const greyBorder = disabled || connected
 
 	return (
 		<IconButton

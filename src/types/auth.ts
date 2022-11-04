@@ -106,8 +106,6 @@ export interface BasicLoginResponse {
 	redirect_token?: string
 }
 
-export interface PasswordLoginResponse extends BasicLoginResponse {}
-
 export interface TokenLoginRequest extends BasicLoginRequest {
 	token: string
 	admin?: boolean
@@ -115,8 +113,6 @@ export interface TokenLoginRequest extends BasicLoginRequest {
 	session_id?: string
 	twitch_extension_jwt: string | null
 }
-
-export interface TokenLoginResponse extends BasicLoginResponse {}
 
 export interface GetNonceResponse {
 	nonce: string
@@ -325,6 +321,6 @@ export type SignUpRequest =
 	| DiscordSignUpRequest
 	| SocialSignupRequest
 
-export type LoginFunc = (action: LoginRequest) => Promise<QueryResponse<PasswordLoginResponse>>
+export type LoginFunc = (action: LoginRequest) => Promise<QueryResponse>
 
 export type SignupFunc = (action: SignUpRequest) => Promise<QueryResponse<RegisterResponse>>

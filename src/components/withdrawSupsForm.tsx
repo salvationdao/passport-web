@@ -7,7 +7,7 @@ import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
 import Safe from "../assets/images/gradient/safeLarge.png"
 import SupsToken from "../assets/images/sup-token.svg"
-import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS, WITHDRAW_ADDRESS } from "../config"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS_BSC, WITHDRAW_ADDRESS } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
@@ -66,7 +66,7 @@ export const WithdrawSupsForm = ({
 	state,
 	send,
 }: WithdrawSupsFormProps) => {
-	const { account, metaMaskState, supBalance, provider, signer, changeChain, currentChainId } = useWeb3()
+	const { account, metaMaskState, supBalanceBSC, provider, signer, changeChain, currentChainId } = useWeb3()
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
 	const { userID } = useAuth()
 	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
@@ -131,24 +131,24 @@ export const WithdrawSupsForm = ({
 	}, [userSups, isInfinite])
 
 	useEffect(() => {
-		if (xsynSups && supBalance) {
-			setSupsWalletTotal(supBalance)
+		if (xsynSups && supBalanceBSC) {
+			setSupsWalletTotal(supBalanceBSC)
 		}
-	}, [xsynSups, supBalance])
+	}, [xsynSups, supBalanceBSC])
 
 	useEffect(() => {
-		if (xsynSups === undefined || supBalance === undefined) return
-		if (withdrawAmount && xsynSups && supBalance) {
-			const totalWalletSups = supBalance.add(withdrawAmount)
+		if (xsynSups === undefined || supBalanceBSC === undefined) return
+		if (withdrawAmount && xsynSups && supBalanceBSC) {
+			const totalWalletSups = supBalanceBSC.add(withdrawAmount)
 			setSupsWalletTotal(totalWalletSups)
 			return
 		}
 		if (!withdrawAmount) {
-			setSupsWalletTotal(supBalance)
+			setSupsWalletTotal(supBalanceBSC)
 			return
 		}
 		setSupsWalletTotal(undefined)
-	}, [withdrawAmount, xsynSups, supBalance])
+	}, [withdrawAmount, xsynSups, supBalanceBSC])
 
 	// check balance on frontend
 	useEffect(() => {
@@ -158,7 +158,7 @@ export const WithdrawSupsForm = ({
 				return
 			}
 		}
-		if (!supBalance) {
+		if (!supBalanceBSC) {
 			setImmediateError("Could not get user $SUPS balance")
 			return
 		}
@@ -185,7 +185,7 @@ export const WithdrawSupsForm = ({
 			}
 		}
 		setImmediateError(undefined)
-	}, [withdrawAmount, supBalance, withdrawContractAmount, earlyLimit, xsynSups, isInfinite])
+	}, [withdrawAmount, supBalanceBSC, withdrawContractAmount, earlyLimit, xsynSups, isInfinite])
 
 	const withdrawAttemptSignature = useCallback(async () => {
 		setLoading(true)
@@ -243,7 +243,7 @@ export const WithdrawSupsForm = ({
 					// Events
 					// "event Transfer(address indexed from, address indexed to, uint amount)",
 				]
-				const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS, abi, provider)
+				const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS_BSC, abi, provider)
 				const bal = await erc20.balanceOf(UseSignatureMode ? WITHDRAW_ADDRESS : REDEEM_ADDRESS)
 				setWithdrawContractAmount(bal)
 			} catch (e) {
@@ -470,7 +470,7 @@ export const WithdrawSupsForm = ({
 										Current Wallet Balance:
 									</Typography>
 									<Typography variant="body1" sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }}>
-										{supBalance ? parseFloat(formatUnits(supBalance, 18)) : "--"}
+										{supBalanceBSC ? parseFloat(formatUnits(supBalanceBSC, 18)) : "--"}
 									</Typography>
 								</Box>
 							</Box>

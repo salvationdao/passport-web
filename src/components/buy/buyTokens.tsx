@@ -36,7 +36,7 @@ export const BuyTokens: React.FC = () => {
 		setCurrentToken,
 		currentToken,
 		tokenOptions,
-		supBalance,
+		supBalanceBSC,
 		account,
 	} = useWeb3()
 	const theme = useTheme()
@@ -102,14 +102,15 @@ export const BuyTokens: React.FC = () => {
 
 			if ((currentToken.name === "usdc" && exchangeRates?.sup_to_usd) || (currentToken.name === "busd" && exchangeRates?.sup_to_usd)) {
 				switch (direction) {
-					case "tokensToSups":
+					case "tokensToSups": {
 						const sups = value.mul(exchangeRates?.sup_to_usd * BIG_NUMBER_FIX).div(BIG_NUMBER_FIX)
 						setSupsAmt(sups)
 						setSupsDisplay(formatUnits(sups, tokenDecimals))
 						setTokenAmt(value)
 						setTokenDisplay(formatUnits(value, tokenDecimals))
 						return
-					case "supsToTokens":
+					}
+					case "supsToTokens": {
 						const v = BigNumber.from(value)
 						const tokens = v.mul(exchangeRates?.sup_to_usd * BIG_NUMBER_FIX).div(BIG_NUMBER_FIX)
 						const cTokens = tokens.div(BigNumber.from(10 ** 12))
@@ -119,13 +120,14 @@ export const BuyTokens: React.FC = () => {
 						setTokenDisplay(formatUnits(tokens, 18))
 						setSupsDisplay(formatUnits(value, 18))
 						return
+					}
 				}
 			}
 			if (currentToken.isNative && exchangeRates) {
 				switch (currentToken.name) {
 					case "bnb":
 						switch (direction) {
-							case "tokensToSups":
+							case "tokensToSups": {
 								const sups = value
 									.mul(parseUnits(exchangeRates.bnb_to_usd.toString(), 18))
 									.div(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
@@ -134,7 +136,8 @@ export const BuyTokens: React.FC = () => {
 								setTokenAmt(value)
 								setTokenDisplay(formatUnits(value, tokenDecimals))
 								break
-							case "supsToTokens":
+							}
+							case "supsToTokens": {
 								const tokens = value
 									.mul(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
 									.div(parseUnits(exchangeRates.bnb_to_usd.toString(), 18))
@@ -143,11 +146,12 @@ export const BuyTokens: React.FC = () => {
 								setSupsAmt(value)
 								setSupsDisplay(formatUnits(value, 18))
 								break
+							}
 						}
 						break
 					default:
 						switch (direction) {
-							case "tokensToSups":
+							case "tokensToSups": {
 								const sups = value
 									.mul(parseUnits(exchangeRates.eth_to_usd.toString(), tokenDecimals))
 									.div(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
@@ -156,7 +160,8 @@ export const BuyTokens: React.FC = () => {
 								setTokenAmt(value)
 								setTokenDisplay(formatUnits(value, tokenDecimals))
 								break
-							case "supsToTokens":
+							}
+							case "supsToTokens": {
 								const tokens = value
 									.mul(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
 									.div(parseUnits(exchangeRates.eth_to_usd.toString(), tokenDecimals))
@@ -165,25 +170,28 @@ export const BuyTokens: React.FC = () => {
 								setSupsAmt(value)
 								setSupsDisplay(formatUnits(value, 18))
 								break
+							}
 						}
 						break
 				}
 			} else if (exchangeRates) {
 				switch (direction) {
-					case "tokensToSups":
+					case "tokensToSups": {
 						const sups = parseUnits(value.div(parseUnits(exchangeRates.sup_to_usd.toString(), 18)).toString(), 18)
 						setSupsAmt(sups)
 						setSupsDisplay(parseFloat(formatUnits(sups, 18)).toFixed(2))
 						setTokenAmt(value)
 						setTokenDisplay(formatUnits(value, tokenDecimals))
 						break
-					case "supsToTokens":
+					}
+					case "supsToTokens": {
 						const tokens = value.mul(parseUnits(exchangeRates.sup_to_usd.toString(), 18))
 						setTokenAmt(tokens)
 						setTokenDisplay(parseFloat(formatUnits(tokens, tokenDecimals)).toFixed(2))
 						setSupsAmt(value)
 						setSupsDisplay(formatUnits(value, 18))
 						break
+					}
 				}
 			}
 		},
@@ -341,8 +349,7 @@ export const BuyTokens: React.FC = () => {
 	if (currentToken.isNative) {
 		tokenBalance = nativeBalance
 	}
-	let supsDecimals = 18
-
+	const supsDecimals = 18
 	if (!enableSale) return <Loading text="Loading please wait..." />
 	return (
 		<Box
@@ -898,7 +905,8 @@ export const BuyTokens: React.FC = () => {
 										</Typography>
 									)}
 									<Typography sx={{ color: colors.darkGrey, fontWeight: 600 }} variant="body1">
-										Wallet Balance: <b>{supBalance ? parseFloat(formatUnits(supBalance, supsDecimals)).toFixed(2) : "--"}</b>
+										Wallet Balance:{" "}
+										<b>{supBalanceBSC ? parseFloat(formatUnits(supBalanceBSC, supsDecimals)).toFixed(2) : "--"}</b>
 									</Typography>
 								</Box>
 							</Box>

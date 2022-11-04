@@ -37,12 +37,7 @@ export const Web3 = () => {
 					<MetaMaskLogin
 						onFailure={setError}
 						render={(props) => (
-							<ConnectButton
-								onClick={props.onClick}
-								loading={props.isProcessing}
-								title="Connect Wallet to account"
-								startIcon={<MetaMaskIcon />}
-							>
+							<ConnectButton onClick={props.onClick} loading={props.isProcessing} startIcon={<MetaMaskIcon />}>
 								MetaMask
 							</ConnectButton>
 						)}
@@ -50,12 +45,7 @@ export const Web3 = () => {
 					<WalletConnectLogin
 						onFailure={setError}
 						render={(props) => (
-							<ConnectButton
-								onClick={props.onClick}
-								loading={props.isProcessing}
-								title="Connect Wallet to account"
-								startIcon={<WalletConnectIcon />}
-							>
+							<ConnectButton onClick={props.onClick} loading={props.isProcessing} startIcon={<WalletConnectIcon />}>
 								Wallet Connect
 							</ConnectButton>
 						)}

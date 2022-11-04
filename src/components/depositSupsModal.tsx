@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { BigNumber } from "ethers"
 import { FancyButton } from "./fancyButton"
-import { BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS } from "../config"
+import { BINANCE_CHAIN_ID, SUPS_CONTRACT_ADDRESS_BSC } from "../config"
 import { ConnectWallet } from "./connectWallet"
 import { formatUnits, parseUnits } from "@ethersproject/units"
 
@@ -121,7 +121,7 @@ export const DepositSupsModal = ({ open, onClose, walletBalance, xsynBalance }: 
 						<FancyButton
 							disabled={!!errorAmount}
 							onClick={async () => {
-								if (depositAmount) await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, depositAmount)
+								if (depositAmount) await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS_BSC, depositAmount)
 							}}
 						>
 							Deposit

@@ -46,7 +46,7 @@ export const SignUpPage: React.FC = () => {
 				try {
 					setLoading(true)
 
-					const resp = await send<RegisterResponse>(HubKey.AuthRegister, input)
+					const resp = await send<RegisterResponse, SignUpInput>(HubKey.AuthRegister, input)
 					setUser(resp.user)
 					// localStorage.setItem("token", resp.token)
 

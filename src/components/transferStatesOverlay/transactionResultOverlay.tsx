@@ -3,12 +3,13 @@ import ErrorIcon from "@mui/icons-material/Error"
 import InfoIcon from "@mui/icons-material/Info"
 import { Box, LinearProgress, Link, Stack, Typography, useTheme } from "@mui/material"
 import React from "react"
-import { BSC_SCAN_SITE } from "../../config"
+import { BINANCE_CHAIN_ID, BSC_SCAN_SITE, ETH_SCAN_SITE } from "../../config"
 import { colors } from "../../theme"
 import { transferStateType } from "../../types/types"
 import { FancyButton } from "../fancyButton"
 
 interface TransactionResultOverlayProps {
+	chain: string
 	currentTransferState: transferStateType
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
 	currentTransferHash: string
@@ -18,6 +19,7 @@ interface TransactionResultOverlayProps {
 }
 
 export const TransactionResultOverlay = ({
+	chain,
 	currentTransferState,
 	confirmationMessage,
 	currentTransferHash,
@@ -133,7 +135,7 @@ export const TransactionResultOverlay = ({
 					a ticket on Discord.
 				</Typography>
 				<Typography variant="body1">
-					<Link href={`https://${BSC_SCAN_SITE}/tx/${currentTransferHash}`} target="_blank">
+					<Link href={`https://${chain === BINANCE_CHAIN_ID ? BSC_SCAN_SITE : ETH_SCAN_SITE}/tx/${currentTransferHash}`} target="_blank">
 						View on Explorer
 					</Link>
 				</Typography>

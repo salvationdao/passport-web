@@ -35,7 +35,7 @@ import { WithdrawSupsModal } from "./withdrawSupsModal"
 const drawerWidth = 280
 
 export interface SidebarLayoutProps {
-	onClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
+	onClose: ((event: unknown, reason: "backdropClick" | "escapeKeyDown") => void) | undefined
 }
 
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const userPublicAddress = user?.public_address
 
 	// Supremacy
-	const { supBalance, account, metaMaskState } = useWeb3()
+	const { supBalanceBSC, supBalanceETH, account, metaMaskState } = useWeb3()
 	const theme = useTheme()
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
@@ -85,8 +85,9 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			setWalletMsg(undefined)
 		}
 
-		if (supBalance) setWalletSups(supBalance.toString())
-	}, [supBalance, account, user, userPublicAddress, metaMaskState])
+		if (supBalanceBSC) setWalletSups(supBalanceBSC.toString())
+		if (supBalanceETH) setWalletSups(supBalanceETH.toString())
+	}, [supBalanceBSC, supBalanceETH, account, user, userPublicAddress, metaMaskState])
 
 	useEffect(() => {
 		if (!user?.public_address) return
@@ -458,13 +459,13 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 				{children}
 			</Box>
 			<WithdrawSupsModal
-				walletBalance={supBalance || BigNumber.from(0)}
+				walletBalance={supBalanceBSC || BigNumber.from(0)}
 				xsynBalance={xsynSups}
 				open={withdrawDialogOpen}
 				onClose={() => setWithdrawDialogOpen(false)}
 			/>
 			<DepositSupsModal
-				walletBalance={supBalance || BigNumber.from(0)}
+				walletBalance={supBalanceBSC || BigNumber.from(0)}
 				xsynBalance={xsynSups}
 				open={depositDialogOpen}
 				onClose={() => setDepositDialogOpen(false)}

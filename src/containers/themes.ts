@@ -4,7 +4,7 @@ import { createContainer } from "unstated-next"
 import themes from "../theme"
 
 const useTheme = (initialState: number = 0) => {
-	let [currentTheme, setTheme] = useState<Theme>(themes[initialState])
+	const [currentTheme, setTheme] = useState<Theme>(themes[initialState])
 	return {
 		currentTheme,
 		setTheme: (themeIndex: number) => {
