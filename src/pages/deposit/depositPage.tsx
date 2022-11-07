@@ -118,7 +118,7 @@ export const DepositPage = () => {
 							{checkCanDepositResp.deposits_enabled_bsc && (
 								<FancyButton onClick={() => setChain(BINANCE_CHAIN_ID)}>Deposit Sups Binance</FancyButton>
 							)}
-							{!checkCanDepositResp.deposits_enabled_eth && checkCanDepositResp.deposits_enabled_bsc && (
+							{!checkCanDepositResp.deposits_enabled_eth && !checkCanDepositResp.deposits_enabled_bsc && (
 								<Typography>Deposits are currently unavailable, please try again later.</Typography>
 							)}
 						</Box>
