@@ -39,9 +39,10 @@ export const middleTruncate = (str: string, length?: number, startOffset?: numbe
 	return str
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export default function debounce<T extends Function>(cb: T, wait = 20) {
 	let h: number
-	let callable = (...args: any) => {
+	const callable = (...args: any) => {
 		clearTimeout(h)
 		h = window.setTimeout(() => cb(...args), wait)
 	}

@@ -3,6 +3,7 @@ import { BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID } from "../../config"
 import { useWeb3 } from "../../containers/web3"
 import { colors } from "../../theme"
 import { FancyButton } from "../fancyButton"
+import { useCallback } from "react"
 
 interface SwitchNetworkOverlayProps {
 	currentChainId: number | undefined
@@ -12,9 +13,9 @@ interface SwitchNetworkOverlayProps {
 
 export const SwitchNetworkOverlay = ({ currentChainId, changeChain, newChainID }: SwitchNetworkOverlayProps) => {
 	const { account } = useWeb3()
-	const handleNetworkSwitch = async () => {
+	const handleNetworkSwitch = useCallback(async () => {
 		await changeChain(parseInt(newChainID))
-	}
+	}, [changeChain, newChainID])
 
 	if (!account) {
 		return null

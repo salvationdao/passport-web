@@ -39,7 +39,7 @@ export const TwoFactorAuthenticationRecoveryCode: React.FC<ITwoFactorAuthenticat
 	}, [send, username, user?.username, disableVerification])
 	const download = useCallback(() => {
 		if (!recoveryCode) return
-		var a = document.createElement("a")
+		const a = document.createElement("a")
 		document.body.appendChild(a)
 		const recoverCodeStr: string[] = []
 		recoveryCode.forEach((r) => {

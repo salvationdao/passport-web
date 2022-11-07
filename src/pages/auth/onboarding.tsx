@@ -36,8 +36,6 @@ export const PasswordRequirement: React.FC<PasswordRequirementProps> = ({ fulfil
 	)
 }
 
-interface PassportReadyProps {}
-
 enum Step {
 	YourPassportIsReadyStep,
 	LetsSetUpYourProfileStep,
@@ -46,7 +44,7 @@ enum Step {
 	SuccessStep,
 }
 
-export const PassportReady: React.FC<PassportReadyProps> = () => {
+export const PassportReady: React.FC = () => {
 	const history = useHistory()
 	const { search } = useLocation()
 	const skipUsername = new URLSearchParams(search).get("skip_username") === "true"
@@ -267,7 +265,7 @@ export const PassportReady: React.FC<PassportReadyProps> = () => {
 							/>
 						)}
 						<MiddleText show={step === Step.YourPassportIsReadyStep}>Your passport is ready</MiddleText>
-						<MiddleText show={step === Step.LetsSetUpYourProfileStep}>Let's set up your profile</MiddleText>
+						<MiddleText show={step === Step.LetsSetUpYourProfileStep}>{"Let's set up your profile"}</MiddleText>
 						<FadeTransition
 							show={step === Step.UsernameStep && !loading}
 							component="form"

@@ -85,7 +85,7 @@ const AppInner = () => {
 	)
 }
 
-const AppAdmin = () => {
+const AppAdmin = (): JSX.Element => {
 	const { currentTheme } = Themes.useContainer()
 
 	return (

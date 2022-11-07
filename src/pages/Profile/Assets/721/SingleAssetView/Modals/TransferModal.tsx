@@ -136,7 +136,7 @@ export const TransferModal = ({ open, onClose, onSuccess, userAsset }: ServiceTr
 				<FancyButton
 					tooltip={feeType ? "" : "Select a payment method"}
 					fullWidth
-					borderColor={!!feeType ? undefined : "#6b6b6b"}
+					borderColor={feeType ? undefined : "#6b6b6b"}
 					loading={loading}
 					sx={{
 						span: {

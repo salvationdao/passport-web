@@ -1,4 +1,4 @@
-import { Box, Paper } from "@mui/material"
+import { Alert, Box, Paper, Typography } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
@@ -12,8 +12,11 @@ import { transferStateType } from "../../types/types"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 
-interface CanEnterResponse {
-	can_withdraw: boolean
+interface CheckCanWithdrawResp {
+	withdrawals_enabled: boolean
+	withdrawal_chain: number
+	withdrawal_contract_address: string
+	token_contract_address: string
 }
 
 export const WithdrawPage = () => {
@@ -23,25 +26,32 @@ export const WithdrawPage = () => {
 
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
 
-	//TODO: set this transferstate to "none" when withdrawSUPs functionality becomes available
+	const [checkCanWithdrawResp, setCheckCanWithdrawResp] = useState<CheckCanWithdrawResp>()
 	const [currentTransferState, setCurrentTransferState] = useState<transferStateType>("unavailable")
 	const [loading, setLoading] = useState<boolean>(false)
+	const [loadingError, setLoadingError] = useState<string>()
 	const [error, setError] = useState<string>("")
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber>(BigNumber.from(0))
 
 	useEffect(() => {
-		try {
-			;(async () => {
+		;(async () => {
+			try {
+				setLoading(true)
 				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/check`)
-				const body = (await resp.clone().json()) as CanEnterResponse
-				if (body.can_withdraw) {
-					setCurrentTransferState("none")
-					return
+				if (resp.status === 200) {
+					const body = (await resp.json()) as CheckCanWithdrawResp
+					setCheckCanWithdrawResp(body)
+					if (body.withdrawals_enabled) setCurrentTransferState("none")
+				} else {
+					setLoadingError("Unable to get withdrawal details, please try again or contract support.")
 				}
-			})()
-		} catch (e) {
-			console.error(e)
-		}
+			} catch (e) {
+				console.error(e)
+				setLoadingError(typeof e === "string" ? e : "Unable to get withdrawal details, please try again or contract support.")
+			} finally {
+				setLoading(false)
+			}
+		})()
 	}, [])
 
 	return (
@@ -74,16 +84,19 @@ export const WithdrawPage = () => {
 						position: "relative",
 					}}
 				>
-					<TransactionResultOverlay
-						currentTransferState={currentTransferState}
-						setCurrentTransferState={setCurrentTransferState}
-						currentTransferHash={currentTransferHash}
-						confirmationMessage={`Withdrawing ${withdrawAmount ? formatUnits(withdrawAmount) : "NONE"} $SUPS from users: ${
-							user?.username
-						} to wallet address: ${account ? AddressDisplay(account) : null}.`}
-						error={error}
-						loading={loading}
-					/>
+					{checkCanWithdrawResp && (
+						<TransactionResultOverlay
+							chain={checkCanWithdrawResp.withdrawal_chain.toString()}
+							currentTransferState={currentTransferState}
+							setCurrentTransferState={setCurrentTransferState}
+							currentTransferHash={currentTransferHash}
+							confirmationMessage={`Withdrawing ${withdrawAmount ? formatUnits(withdrawAmount) : "NONE"} $SUPS from users: ${
+								user?.username
+							} to wallet address: ${account ? AddressDisplay(account) : null}.`}
+							error={error}
+							loading={loading}
+						/>
+					)}
 					<Box
 						sx={{
 							width: "80%",
@@ -93,18 +106,24 @@ export const WithdrawPage = () => {
 							alignItems: "center",
 						}}
 					>
-						<WithdrawSups
-							setCurrentTransferState={setCurrentTransferState}
-							currentTransferState={currentTransferState}
-							withdrawAmount={withdrawAmount}
-							setWithdrawAmount={setWithdrawAmount}
-							setError={setError}
-							setCurrentTransferHash={setCurrentTransferHash}
-							setLoading={setLoading}
-							user={user}
-							send={send}
-							state={state}
-						/>
+						{loadingError && <Alert severity={"error"}>{loadingError}</Alert>}
+						{checkCanWithdrawResp && (
+							<WithdrawSups
+								chain={checkCanWithdrawResp.withdrawal_chain}
+								withdrawalContractAddress={checkCanWithdrawResp.withdrawal_contract_address}
+								tokenContractAddress={checkCanWithdrawResp.token_contract_address}
+								setCurrentTransferState={setCurrentTransferState}
+								currentTransferState={currentTransferState}
+								withdrawAmount={withdrawAmount}
+								setWithdrawAmount={setWithdrawAmount}
+								setError={setError}
+								setCurrentTransferHash={setCurrentTransferHash}
+								setLoading={setLoading}
+								user={user}
+								send={send}
+								state={state}
+							/>
+						)}
 					</Box>
 				</Paper>
 			</Box>

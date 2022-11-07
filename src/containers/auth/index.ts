@@ -224,7 +224,7 @@ export const AuthContainer = createContainer(() => {
 		() => (args: { [key: string]: string | null | undefined }) => {
 			const cleanArgs: { [key: string]: string } = {}
 			let api = API_ENDPOINT_HOSTNAME
-			let game = tenant || "supremacy"
+			const game = tenant || "supremacy"
 
 			switch (game) {
 				case "supremacy":
@@ -400,7 +400,7 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains jwt
 				// Check if 2FA is set
-				if (!!resp.payload.tfa_token) {
+				if (resp.payload.tfa_token) {
 					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
@@ -473,7 +473,7 @@ export const AuthContainer = createContainer(() => {
 
 				return resp.payload?.success
 			} catch (e: any) {
-				let errMsg = "Something went wrong, please try again."
+				const errMsg = "Something went wrong, please try again."
 				if (errorCallback) {
 					errorCallback(errMsg)
 				}
@@ -681,7 +681,7 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains  jwt
 				// Check if 2FA is set
-				if (!!resp.payload.tfa_token) {
+				if (resp.payload.tfa_token) {
 					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
@@ -744,7 +744,7 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
-				if (!!resp.payload.tfa_token) {
+				if (resp.payload.tfa_token) {
 					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
@@ -883,7 +883,7 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains jwt
 				// Check if 2FA is set
-				if (!!resp.payload.tfa_token) {
+				if (resp.payload.tfa_token) {
 					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {
@@ -951,7 +951,7 @@ export const AuthContainer = createContainer(() => {
 
 				// Check if payload contains user or jwt
 				// Check if 2FA is set
-				if (!!resp.payload.tfa_token) {
+				if (resp.payload.tfa_token) {
 					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				} else if (redirectURL) {

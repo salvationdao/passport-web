@@ -140,8 +140,7 @@ export const TwoFactorAuthenticationSetup = () => {
 				</Box>
 
 				<Typography sx={{ maxWidth: "600px" }}>
-					Scan the following QR code with the two-factor authentication app on your mobile. If you can't use the QR code, click on the
-					button and copy the code instead.
+					{`Scan the following QR code with the two-factor authentication app on your mobile. If you can't use the QR code, click on the button and copy the code instead.`}
 				</Typography>
 				{tfaSecret && (
 					<Box

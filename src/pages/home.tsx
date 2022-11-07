@@ -55,8 +55,8 @@ export const Home = () => {
 					>
 						Your ticket to the metaverse
 					</Typography>
-					<FancyButton onClick={() => history.push(!!user ? "/profile" : "/login")} fancy>
-						{!!user ? "View Profile" : "Login"}
+					<FancyButton onClick={() => history.push(user ? "/profile" : "/login")} fancy>
+						{user ? "View Profile" : "Login"}
 					</FancyButton>
 				</Box>
 			</Box>

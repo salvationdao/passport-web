@@ -48,7 +48,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 				return
 			}
 			try {
-				const token = !!setVerified ? undefined : tokenGroup.token
+				const token = setVerified ? undefined : tokenGroup.token
 				const redirectURL = tokenGroup.redirectURL || ""
 				await twoFactorAuthLogin.action(code, isRecovery, token, redirectURL, !!setVerified, errorCallback)
 				if (setVerified) {

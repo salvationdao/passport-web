@@ -103,7 +103,7 @@ export const SpamEmailWarning = () => {
 				},
 			}}
 		>
-			If you do not receive an email in a few minutes, please check your email's "junk mail" or "spam" folder.
+			{`If you do not receive an email in a few minutes, please check your email's "junk mail" or "spam" folder.`}
 		</Typography>
 	)
 }

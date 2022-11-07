@@ -27,7 +27,7 @@ export const EarlySaftAgreement = ({ setReadAgreement }: EarlySaftAgreementProps
 					setReadAgreement(true)
 				}}
 			>
-				I've read the above agreement
+				{"I've read the above agreement"}
 			</FancyButton>
 		</>
 	)
