@@ -39,6 +39,9 @@ export const DepositPage = () => {
 					const body: CheckCanDepositResp = await resp.json()
 					setCheckCanDepositResp(body)
 					if (body.deposits_enabled_eth || body.deposits_enabled_bsc) setCurrentTransferState("none")
+					// if there is only one chain with deposits enabled, set the chain id to that
+					if (body.deposits_enabled_eth && !body.deposits_enabled_bsc) setChain(ETHEREUM_CHAIN_ID)
+					if (!body.deposits_enabled_eth && body.deposits_enabled_bsc) setChain(BINANCE_CHAIN_ID)
 				} else {
 					setError("Unable to get deposit details, please try again or contract support.")
 				}
