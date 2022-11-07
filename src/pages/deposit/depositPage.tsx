@@ -15,35 +15,40 @@ import { transferStateType } from "../../types/types"
 import { useAuth } from "../../containers/auth"
 import { FancyButton } from "../../components/fancyButton"
 
-interface CanEnterResponse {
-	can_withdraw: boolean
+interface CheckCanDepositResp {
+	deposits_enabled_eth: boolean
+	deposits_enabled_bsc: number
 }
 
 export const DepositPage = () => {
 	const { user } = useAuth()
 	const { account, changeChain, currentChainId } = useWeb3()
 	const [chain, setChain] = useState<string>()
-
+	const [checkCanDepositResp, setCheckCanDepositResp] = useState<CheckCanDepositResp>()
 	const [currentTransferHash, setCurrentTransferHash] = useState<string>("")
-
 	const [currentTransferState, setCurrentTransferState] = useState<transferStateType>("unavailable")
 	const [loading, setLoading] = useState<boolean>(false)
 	const [error, setError] = useState<string>("")
 	const [depositAmount, setDepositAmount] = useState<BigNumber>(BigNumber.from("0"))
 
 	useEffect(() => {
-		try {
-			;(async () => {
-				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/check`)
-				const body = (await resp.clone().json()) as CanEnterResponse
-				if (body.can_withdraw) {
-					setCurrentTransferState("none")
-					return
+		;(async () => {
+			try {
+				const resp = await fetch(`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/deposit/check`)
+				if (resp.status === 200) {
+					const body: CheckCanDepositResp = await resp.json()
+					setCheckCanDepositResp(body)
+					if (body.deposits_enabled_eth || body.deposits_enabled_bsc) setCurrentTransferState("none")
+				} else {
+					setError("Unable to get deposit details, please try again or contract support.")
 				}
-			})()
-		} catch (e) {
-			console.error(e)
-		}
+			} catch (e) {
+				console.error(e)
+				setError(typeof e === "string" ? e : "Unable to get deposit details, please try again or contract support.")
+			} finally {
+				setLoading(false)
+			}
+		})()
 	}, [])
 
 	return (
@@ -102,13 +107,19 @@ export const DepositPage = () => {
 					<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: "3rem" }}>
 						Deposit $Sups
 					</Typography>
-					{!chain && (
+					{checkCanDepositResp && !chain && (
 						<Box sx={{ display: "flex", flexDirection: "column", gap: "1rem", width: "400px" }}>
-							<FancyButton onClick={() => setChain(ETHEREUM_CHAIN_ID)}>Deposit Sups on Ethereum </FancyButton>
-							<FancyButton onClick={() => setChain(BINANCE_CHAIN_ID)}>Deposit Sups Binance</FancyButton>
+							{checkCanDepositResp.deposits_enabled_eth && (
+								<FancyButton onClick={() => setChain(ETHEREUM_CHAIN_ID)}>Deposit Sups on Ethereum </FancyButton>
+							)}
+							{checkCanDepositResp.deposits_enabled_bsc && (
+								<FancyButton onClick={() => setChain(BINANCE_CHAIN_ID)}>Deposit Sups Binance</FancyButton>
+							)}
+							{!checkCanDepositResp.deposits_enabled_eth && checkCanDepositResp.deposits_enabled_bsc && (
+								<Typography>Deposits are currently unavailable, please try again later.</Typography>
+							)}
 						</Box>
 					)}
-
 					{chain && <SwitchNetworkOverlay currentChainId={currentChainId} changeChain={changeChain} newChainID={chain} />}
 					{chain && (
 						<Box

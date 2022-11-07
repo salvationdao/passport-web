@@ -26,13 +26,11 @@ export const EarlyContributorModal = ({ open, onClose, signedSAFT }: EarlyContri
 			<DialogActions sx={{ display: "flex", width: "100%", justifyContent: "space-between", flexDirection: "row-reverse" }}>
 				<FancyButton
 					onClick={async () => {
-						try {
-							const signed = await signedSAFT()
-							if (!signed) {
-								return
-							}
-							window.location.reload()
-						} catch (error) {}
+						const signed = await signedSAFT()
+						if (!signed) {
+							return
+						}
+						window.location.reload()
 					}}
 				>
 					I understand

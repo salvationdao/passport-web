@@ -7,9 +7,12 @@ import { EarlyContributorSignMessage } from "./earlyContributorSignMessage"
 import { EarlySaftAgreement } from "./earlySaftAgreement"
 import { Loading } from "./loading"
 import { WithdrawSupsForm } from "./withdrawSupsForm"
-import { SendFunc } from "../containers/ws/useCommands"
+import { SendFunc } from "../containers/ws"
 
 interface WithdrawSupsProps {
+	chain: number
+	withdrawalContractAddress: string
+	tokenContractAddress: string
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
 	currentTransferState: string
 	withdrawAmount: BigNumber
@@ -38,8 +41,9 @@ export const WithdrawSups = ({
 	setCurrentTransferHash,
 	setLoading,
 	user,
-	state,
-	send,
+	chain,
+	withdrawalContractAddress,
+	tokenContractAddress,
 }: WithdrawSupsProps) => {
 	const [signed, setSigned] = useState(false)
 	const [loadingEarlyCheck, setLoadingEarlyCheck] = useState<boolean>(true)
@@ -103,6 +107,9 @@ export const WithdrawSups = ({
 
 			{showWithdrawSupsForm && (
 				<WithdrawSupsForm
+					chain={chain}
+					withdrawalContractAddress={withdrawalContractAddress}
+					tokenContractAddress={tokenContractAddress}
 					currentTransferState={currentTransferState}
 					withdrawAmount={withdrawAmount}
 					setWithdrawAmount={setWithdrawAmount}
@@ -111,8 +118,6 @@ export const WithdrawSups = ({
 					setCurrentTransferState={setCurrentTransferState}
 					setError={setError}
 					user={user}
-					state={state}
-					send={send}
 				/>
 			)}
 		</Box>

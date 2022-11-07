@@ -7,12 +7,11 @@ import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
 import Safe from "../assets/images/gradient/safeLarge.png"
 import SupsToken from "../assets/images/sup-token.svg"
-import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, REDEEM_ADDRESS, SUPS_CONTRACT_ADDRESS_BSC, WITHDRAW_ADDRESS } from "../config"
+import { API_ENDPOINT_HOSTNAME, BINANCE_CHAIN_ID, ETHEREUM_CHAIN_ID, REDEEM_ADDRESS } from "../config"
 import { useAuth } from "../containers/auth"
 import { useSnackbar } from "../containers/snackbar"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
-import { SendFunc } from "../containers/ws/useCommands"
-import { useSubscription } from "../containers/ws/useSubscription"
+import { useSubscription } from "../containers/ws"
 import { supFormatter } from "../helpers/items"
 import { AddressDisplay, metamaskErrorHandling } from "../helpers/web3"
 import HubKey from "../keys"
@@ -23,6 +22,9 @@ import { ConnectWalletOverlay } from "./transferStatesOverlay/connectWalletOverl
 import { SwitchNetworkOverlay } from "./transferStatesOverlay/switchNetworkOverlay"
 
 interface WithdrawSupsFormProps {
+	chain: number
+	withdrawalContractAddress: string
+	tokenContractAddress: string
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
 	currentTransferState: string
 	withdrawAmount: BigNumber
@@ -31,8 +33,6 @@ interface WithdrawSupsFormProps {
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
 	user: User | undefined
-	state: number
-	send: SendFunc
 }
 
 const UseSignatureMode = true
@@ -55,6 +55,9 @@ interface CheckEarlyResponse {
 }
 
 export const WithdrawSupsForm = ({
+	chain,
+	withdrawalContractAddress,
+	tokenContractAddress,
 	currentTransferState,
 	withdrawAmount,
 	setWithdrawAmount,
@@ -63,15 +66,14 @@ export const WithdrawSupsForm = ({
 	setCurrentTransferState,
 	setError,
 	user,
-	state,
-	send,
 }: WithdrawSupsFormProps) => {
-	const { account, metaMaskState, supBalanceBSC, provider, signer, changeChain, currentChainId } = useWeb3()
+	const { account, metaMaskState, supBalanceBSC, supBalanceETH, provider, signer, changeChain, currentChainId } = useWeb3()
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
 	const { userID } = useAuth()
 	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
+	const [supBalance, setSupBalance] = useState<BigNumber>()
 	const [supsWalletTotal, setSupsWalletTotal] = useState<BigNumber>()
 	const [withdrawContractAmount, setWithdrawContractAmount] = useState<BigNumber>()
 	const [immediateError, setImmediateError] = useState<string>()
@@ -83,6 +85,15 @@ export const WithdrawSupsForm = ({
 	const [totalWithdrawn, setTotalWithdrawn] = useState<BigNumber>()
 	const [totalHeld, setTotalHeld] = useState<BigNumber | null>(null)
 	const [maxLimit, setMaxLimit] = useState<BigNumber>()
+
+	useEffect(() => {
+		if (chain.toString() === ETHEREUM_CHAIN_ID && supBalanceETH) {
+			setSupBalance(supBalanceETH)
+		}
+		if (chain.toString() === BINANCE_CHAIN_ID && supBalanceBSC) {
+			setSupBalance(supBalanceBSC)
+		}
+	}, [supBalanceBSC, supBalanceETH, chain])
 
 	useEffect(() => {
 		if (totalHeld) return
@@ -131,24 +142,24 @@ export const WithdrawSupsForm = ({
 	}, [userSups, isInfinite])
 
 	useEffect(() => {
-		if (xsynSups && supBalanceBSC) {
-			setSupsWalletTotal(supBalanceBSC)
+		if (xsynSups && supBalance) {
+			setSupsWalletTotal(supBalance)
 		}
-	}, [xsynSups, supBalanceBSC])
+	}, [xsynSups, supBalance])
 
 	useEffect(() => {
-		if (xsynSups === undefined || supBalanceBSC === undefined) return
-		if (withdrawAmount && xsynSups && supBalanceBSC) {
-			const totalWalletSups = supBalanceBSC.add(withdrawAmount)
+		if (xsynSups === undefined || supBalance === undefined) return
+		if (withdrawAmount && xsynSups && supBalance) {
+			const totalWalletSups = supBalance.add(withdrawAmount)
 			setSupsWalletTotal(totalWalletSups)
 			return
 		}
 		if (!withdrawAmount) {
-			setSupsWalletTotal(supBalanceBSC)
+			setSupsWalletTotal(supBalance)
 			return
 		}
 		setSupsWalletTotal(undefined)
-	}, [withdrawAmount, xsynSups, supBalanceBSC])
+	}, [withdrawAmount, xsynSups, supBalance])
 
 	// check balance on frontend
 	useEffect(() => {
@@ -158,7 +169,7 @@ export const WithdrawSupsForm = ({
 				return
 			}
 		}
-		if (!supBalanceBSC) {
+		if (!supBalance) {
 			setImmediateError("Could not get user $SUPS balance")
 			return
 		}
@@ -185,7 +196,7 @@ export const WithdrawSupsForm = ({
 			}
 		}
 		setImmediateError(undefined)
-	}, [withdrawAmount, supBalanceBSC, withdrawContractAmount, earlyLimit, xsynSups, isInfinite])
+	}, [withdrawAmount, supBalance, withdrawContractAmount, earlyLimit, xsynSups, isInfinite])
 
 	const withdrawAttemptSignature = useCallback(async () => {
 		setLoading(true)
@@ -201,33 +212,43 @@ export const WithdrawSupsForm = ({
 			// we must include any fragment we wish to use
 			setCurrentTransferState("waiting")
 			const abi = ["function nonces(address user) view returns (uint256)", "function withdrawSUPS(uint256, bytes signature, uint256 expiry)"]
-			const withdrawContract = new ethers.Contract(WITHDRAW_ADDRESS, abi, signer)
+			const withdrawContract = new ethers.Contract(withdrawalContractAddress, abi, signer)
 			const nonce = await withdrawContract.nonces(account)
 			const resp = await fetch(
-				`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}`,
+				`${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/withdraw/${account}/${nonce}/${withdrawAmount.toString()}/${chain}`,
 			)
-			const respJson: GetSignatureResponse & ErrorResponse = await resp.json()
-			if (!resp.ok) {
-				if (resp.status === 500) {
-					throw await resp.clone().json()
-				}
-				throw respJson.message
+			if (resp.status === 200) {
+				const respJson: GetSignatureResponse = await resp.json()
+				const tx = await withdrawContract.withdrawSUPS(withdrawAmount.toString(), respJson.messageSignature, respJson.expiry)
+				setCurrentTransferHash(tx.hash)
+				setCurrentTransferState("confirm")
+				await tx.wait()
+				setWithdrawAmount(BigNumber.from(0))
+			} else {
+				const respJson: ErrorResponse = await resp.json()
+				setCurrentTransferState("error")
+				setError(respJson.message || "Issue withdrawing, try again or contract support.")
 			}
-
-			const tx = await withdrawContract.withdrawSUPS(withdrawAmount.toString(), respJson.messageSignature, respJson.expiry)
-			setCurrentTransferHash(tx.hash)
-			setCurrentTransferState("confirm")
-			await tx.wait()
-			setWithdrawAmount(BigNumber.from(0))
-		} catch (err: any) {
+		} catch (err) {
 			console.error(err)
 			setCurrentTransferState("error")
 			const message = metamaskErrorHandling(err)
-			!!message ? setError(message) : setError("Issue withdrawing, please try again.")
+			message ? setError(message) : setError("Issue withdrawing, please try again.")
 		} finally {
 			setLoading(false)
 		}
-	}, [signer, account, withdrawAmount, setCurrentTransferHash, setCurrentTransferState, setError, setLoading, setWithdrawAmount])
+	}, [
+		chain,
+		signer,
+		account,
+		withdrawAmount,
+		setCurrentTransferHash,
+		setCurrentTransferState,
+		setError,
+		setLoading,
+		setWithdrawAmount,
+		withdrawalContractAddress,
+	])
 
 	// docs: https://docs.ethers.io/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract
 	useEffect(() => {
@@ -243,17 +264,15 @@ export const WithdrawSupsForm = ({
 					// Events
 					// "event Transfer(address indexed from, address indexed to, uint amount)",
 				]
-				const erc20 = new ethers.Contract(SUPS_CONTRACT_ADDRESS_BSC, abi, provider)
-				const bal = await erc20.balanceOf(UseSignatureMode ? WITHDRAW_ADDRESS : REDEEM_ADDRESS)
+				const erc20 = new ethers.Contract(tokenContractAddress, abi, provider)
+				const bal = await erc20.balanceOf(UseSignatureMode ? withdrawalContractAddress : REDEEM_ADDRESS)
 				setWithdrawContractAmount(bal)
 			} catch (e) {
 				const message = metamaskErrorHandling(e)
-				!!message
-					? displayMessage(message)
-					: displayMessage(e === "string" ? e : "Issue getting withdraw contract balance , please try again.")
+				message ? displayMessage(message) : displayMessage(e === "string" ? e : "Issue getting withdraw contract balance , please try again.")
 			}
 		})()
-	}, [provider, displayMessage, currentChainId])
+	}, [provider, displayMessage, currentChainId, withdrawalContractAddress, tokenContractAddress])
 
 	useEffect(() => {
 		if (withdrawContractAmount && earlyLimit && !limitSet) {
@@ -277,7 +296,7 @@ export const WithdrawSupsForm = ({
 					height: "12rem",
 				}}
 			/>
-			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={BINANCE_CHAIN_ID} />
+			<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={chain.toString()} />
 			<ConnectWalletOverlay walletIsConnected={!!account} />
 			<Typography variant="h2" sx={{ textTransform: "uppercase", marginBottom: ".5rem" }}>
 				Withdraw $Sups
@@ -319,7 +338,6 @@ export const WithdrawSupsForm = ({
 							</Box>
 						</>
 					)}
-
 					<Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
 						<Box sx={{ position: "relative", width: "100%" }}>
 							<Box
@@ -470,7 +488,7 @@ export const WithdrawSupsForm = ({
 										Current Wallet Balance:
 									</Typography>
 									<Typography variant="body1" sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }}>
-										{supBalanceBSC ? parseFloat(formatUnits(supBalanceBSC, 18)) : "--"}
+										{supBalance ? parseFloat(formatUnits(supBalance, 18)) : "--"}
 									</Typography>
 								</Box>
 							</Box>

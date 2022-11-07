@@ -30,7 +30,6 @@ import { colors } from "../theme"
 import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
-import { WithdrawSupsModal } from "./withdrawSupsModal"
 
 const drawerWidth = 280
 
@@ -458,12 +457,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				{children}
 			</Box>
-			<WithdrawSupsModal
-				walletBalance={supBalanceBSC || BigNumber.from(0)}
-				xsynBalance={xsynSups}
-				open={withdrawDialogOpen}
-				onClose={() => setWithdrawDialogOpen(false)}
-			/>
 			<DepositSupsModal
 				walletBalance={supBalanceBSC || BigNumber.from(0)}
 				xsynBalance={xsynSups}
