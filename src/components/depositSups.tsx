@@ -2,11 +2,11 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import { Box, Button, TextField, Typography } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
 import SupsToken from "../assets/images/sup-token.svg"
-import { ETHEREUM_CHAIN_ID, SUPS_CONTRACT_ADDRESS_BSC, SUPS_CONTRACT_ADDRESS_ETH } from "../config"
+import { ETHEREUM_CHAIN_ID } from "../config"
 import { useAuth } from "../containers/auth"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
@@ -18,10 +18,9 @@ import { FancyButton } from "./fancyButton"
 import { usePassportCommandsUser } from "../hooks/usePassport"
 import { useSubscription } from "../containers/ws"
 
-//TODO: after transfer on blockchain, give user ON WORLD game tokens
-
 interface DepositSupsProps {
 	chain: string
+	tokenContractAddress: string
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
 	currentTransferState: string
@@ -33,6 +32,7 @@ interface DepositSupsProps {
 
 export const DepositSups = ({
 	chain,
+	tokenContractAddress,
 	setCurrentTransferState,
 	currentTransferState,
 	setCurrentTransferHash,
@@ -86,38 +86,47 @@ export const DepositSups = ({
 		setSupsTotal(BigNumber.from(0))
 	}, [depositAmount, xsynSups])
 
-	async function handleDeposit(chain: string) {
-		setLoading(true)
-		if (!depositAmount || !user || !provider) return
-		const bigNumDepositAmt = depositAmount
+	const handleDeposit = useCallback(
+		async (tokenContractAddress: string) => {
+			setLoading(true)
+			if (!depositAmount || !user || !provider) return
+			const bigNumDepositAmt = depositAmount
 
-		let contractAddress = SUPS_CONTRACT_ADDRESS_BSC
-		if (chain === ETHEREUM_CHAIN_ID) {
-			contractAddress = SUPS_CONTRACT_ADDRESS_ETH
-		}
+			try {
+				setCurrentTransferState("waiting")
+				if (state !== WebSocket.OPEN) return
+				const tx = await sendTransferToPurchaseAddress(tokenContractAddress, bigNumDepositAmt)
+				setCurrentTransferHash(tx.hash)
+				setCurrentTransferState("confirm")
+				await tx.wait()
 
-		try {
-			setCurrentTransferState("waiting")
-			if (state !== WebSocket.OPEN) return
-			const tx = await sendTransferToPurchaseAddress(contractAddress, bigNumDepositAmt)
-			setCurrentTransferHash(tx.hash)
-			setCurrentTransferState("confirm")
-			await tx.wait()
-
-			// Store transaction in server
-			await send(HubKey.SupsDeposit, {
-				transaction_hash: tx.hash,
-				amount: bigNumDepositAmt.toString(),
-			})
-		} catch (e: any) {
-			//checking metamask Signature
-			const error = metamaskErrorHandling(e)
-			error ? setError(error) : setError("Issue depositing, please try again.")
-			setCurrentTransferState("error")
-		} finally {
-			setLoading(false)
-		}
-	}
+				// Store transaction in server
+				await send(HubKey.SupsDeposit, {
+					transaction_hash: tx.hash,
+					amount: bigNumDepositAmt.toString(),
+				})
+			} catch (e) {
+				//checking metamask Signature
+				const error = metamaskErrorHandling(e)
+				error ? setError(error) : setError("Issue depositing, please try again.")
+				setCurrentTransferState("error")
+			} finally {
+				setLoading(false)
+			}
+		},
+		[
+			depositAmount,
+			provider,
+			send,
+			sendTransferToPurchaseAddress,
+			setCurrentTransferHash,
+			setCurrentTransferState,
+			setError,
+			setLoading,
+			state,
+			user,
+		],
+	)
 
 	useEffect(() => {
 		if (balance) {
@@ -288,7 +297,7 @@ export const DepositSups = ({
 					borderColor={colors.skyBlue}
 					sx={{ marginTop: "1.5rem", width: "50%" }}
 					onClick={() => {
-						handleDeposit(chain)
+						handleDeposit(tokenContractAddress)
 					}}
 				>
 					Deposit $SUPS

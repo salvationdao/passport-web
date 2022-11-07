@@ -27,7 +27,6 @@ import { useSubscription } from "../containers/ws/useSubscription"
 import { supFormatter } from "../helpers/items"
 import HubKey from "../keys"
 import { colors } from "../theme"
-import { DepositSupsModal } from "./depositSupsModal"
 import { FancyButton } from "./fancyButton"
 import { ProfileButton } from "./profileButton"
 
@@ -56,8 +55,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 
 	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
 
-	const [withdrawDialogOpen, setWithdrawDialogOpen] = useState<boolean>(false)
-	const [depositDialogOpen, setDepositDialogOpen] = useState<boolean>(false)
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [pendingRefund, setPendingRefunds] = useState<BigNumber>(BigNumber.from(0))
 
@@ -457,12 +454,6 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 			>
 				{children}
 			</Box>
-			<DepositSupsModal
-				walletBalance={supBalanceBSC || BigNumber.from(0)}
-				xsynBalance={xsynSups}
-				open={depositDialogOpen}
-				onClose={() => setDepositDialogOpen(false)}
-			/>
 		</Box>
 	)
 }
