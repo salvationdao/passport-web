@@ -12,6 +12,7 @@ import { transferStateType } from "../../types/types"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
 import Safe from "../../assets/images/gradient/safeLarge.png"
+import { FancyButton } from "../../components/fancyButton"
 
 interface CheckCanWithdrawResp {
 	withdrawals_enabled: boolean
@@ -109,17 +110,24 @@ export const WithdrawPage = () => {
 					>
 						{loadingError && <Alert severity={"error"}>{loadingError}</Alert>}
 						{checkCanWithdrawResp && !checkCanWithdrawResp.withdrawals_enabled && (
-							<>
+							<Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "1rem" }}>
 								<Box
 									component="img"
 									src={Safe}
 									alt="Image of a Safe"
 									sx={{
 										height: "12rem",
+										width: "12rem",
 									}}
 								/>
-								<Typography>Withdrawals are currently unavailable, please try again later or contact support.</Typography>
-							</>
+								<Typography>
+									{`Withdrawals are currently unavailable as $SUPS are migrating from the Binance Smart Chain to Ethereum Mainnet.  
+									Withdrawals to Ethereum Mainnet will be enabled on November 15th 2022.`}
+								</Typography>
+								<FancyButton href={"https://supremacy.game/news/announcing-the-supremacy-sustainability-roadmap"}>
+									Learn more here
+								</FancyButton>
+							</Box>
 						)}
 						{checkCanWithdrawResp && checkCanWithdrawResp.withdrawals_enabled && (
 							<WithdrawSups

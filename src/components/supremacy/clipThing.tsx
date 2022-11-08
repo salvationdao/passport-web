@@ -1,6 +1,6 @@
 import { Theme } from "@emotion/react"
 import { Box, SxProps } from "@mui/material"
-import React from "react"
+import React, { forwardRef } from "react"
 import { colors } from "../../theme"
 
 interface ClipThingProps {
@@ -18,7 +18,7 @@ interface ClipThingProps {
 	fillHeight?: boolean
 }
 
-export const ClipThing = React.forwardRef(({ children, clipSize = "1rem", border, innerSx, sx, fillHeight }: ClipThingProps, ref) => {
+export const ClipThing = forwardRef(({ children, clipSize = "1rem", border, innerSx, sx, fillHeight }: ClipThingProps, ref) => {
 	const clipStyles: any = {
 		height: fillHeight ? "100%" : "fit-content",
 		lineHeight: 1,
