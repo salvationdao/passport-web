@@ -11,6 +11,7 @@ import { AddressDisplay } from "../../helpers/web3"
 import { transferStateType } from "../../types/types"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
 import { useAuth } from "../../containers/auth"
+import Safe from "../../assets/images/gradient/safeLarge.png"
 
 interface CheckCanWithdrawResp {
 	withdrawals_enabled: boolean
@@ -84,7 +85,7 @@ export const WithdrawPage = () => {
 						position: "relative",
 					}}
 				>
-					{checkCanWithdrawResp && (
+					{checkCanWithdrawResp && checkCanWithdrawResp.withdrawals_enabled && (
 						<TransactionResultOverlay
 							chain={checkCanWithdrawResp.withdrawal_chain.toString()}
 							currentTransferState={currentTransferState}
@@ -107,7 +108,20 @@ export const WithdrawPage = () => {
 						}}
 					>
 						{loadingError && <Alert severity={"error"}>{loadingError}</Alert>}
-						{checkCanWithdrawResp && (
+						{checkCanWithdrawResp && !checkCanWithdrawResp.withdrawals_enabled && (
+							<>
+								<Box
+									component="img"
+									src={Safe}
+									alt="Image of a Safe"
+									sx={{
+										height: "12rem",
+									}}
+								/>
+								<Typography>Withdrawals are currently unavailable, please try again later or contact support.</Typography>
+							</>
+						)}
+						{checkCanWithdrawResp && checkCanWithdrawResp.withdrawals_enabled && (
 							<WithdrawSups
 								chain={checkCanWithdrawResp.withdrawal_chain}
 								withdrawalContractAddress={checkCanWithdrawResp.withdrawal_contract_address}
