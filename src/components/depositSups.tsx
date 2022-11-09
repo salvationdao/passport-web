@@ -2,11 +2,11 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports"
 import { Box, Button, TextField, Typography } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { MetaMaskIcon, WalletConnectIcon } from "../assets"
 import Arrow from "../assets/images/arrow.png"
 import SupsToken from "../assets/images/sup-token.svg"
-import { SUPS_CONTRACT_ADDRESS } from "../config"
+import { ETHEREUM_CHAIN_ID } from "../config"
 import { useAuth } from "../containers/auth"
 import { MetaMaskState, useWeb3 } from "../containers/web3"
 import { supFormatter } from "../helpers/items"
@@ -16,11 +16,11 @@ import { colors } from "../theme"
 import { transferStateType } from "../types/types"
 import { FancyButton } from "./fancyButton"
 import { usePassportCommandsUser } from "../hooks/usePassport"
-import { useSubscription } from "../containers/ws/useSubscription"
-
-//TODO: after transfer on blockchain, give user ON WORLD game tokens
+import { useSubscription } from "../containers/ws"
 
 interface DepositSupsProps {
+	chain: string
+	tokenContractAddress: string
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setCurrentTransferState: React.Dispatch<React.SetStateAction<transferStateType>>
 	currentTransferState: string
@@ -31,6 +31,8 @@ interface DepositSupsProps {
 }
 
 export const DepositSups = ({
+	chain,
+	tokenContractAddress,
 	setCurrentTransferState,
 	currentTransferState,
 	setCurrentTransferHash,
@@ -39,15 +41,24 @@ export const DepositSups = ({
 	setLoading,
 	setError,
 }: DepositSupsProps) => {
-	const { metaMaskState, supBalance, provider, sendTransferToPurchaseAddress, account } = useWeb3()
+	const { metaMaskState, supBalanceBSC, supBalanceETH, provider, sendTransferToPurchaseAddress, account } = useWeb3()
 	const { user } = useAuth()
 	const userSups = useSubscription<string>({ URI: `/account/${user?.account_id}/sups`, key: HubKey.UserSupsSubscribe, ready: !!user })
 	const { state, send } = usePassportCommandsUser("/commander")
 
+	const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0))
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supsTotal, setSupsTotal] = useState<BigNumber>()
 	const [immediateError, setImmediateError] = useState<string>()
 	const [depositDisplay, setDepositDisplay] = useState<string>("")
+
+	useEffect(() => {
+		if (chain === ETHEREUM_CHAIN_ID && supBalanceETH) {
+			setBalance(supBalanceETH)
+		} else if (supBalanceBSC) {
+			setBalance(supBalanceBSC)
+		}
+	}, [chain, supBalanceBSC, supBalanceETH])
 
 	useEffect(() => {
 		if (userSups) {
@@ -75,41 +86,55 @@ export const DepositSups = ({
 		setSupsTotal(BigNumber.from(0))
 	}, [depositAmount, xsynSups])
 
-	async function handleDeposit() {
-		setLoading(true)
-		if (!depositAmount || !user || !provider) return
-		const bigNumDepositAmt = depositAmount
+	const handleDeposit = useCallback(
+		async (tokenContractAddress: string) => {
+			setLoading(true)
+			if (!depositAmount || !user || !provider) return
+			const bigNumDepositAmt = depositAmount
 
-		try {
-			setCurrentTransferState("waiting")
-			if (state !== WebSocket.OPEN) return
-			const tx = await sendTransferToPurchaseAddress(SUPS_CONTRACT_ADDRESS, bigNumDepositAmt)
-			setCurrentTransferHash(tx.hash)
-			setCurrentTransferState("confirm")
-			await tx.wait()
+			try {
+				setCurrentTransferState("waiting")
+				if (state !== WebSocket.OPEN) return
+				const tx = await sendTransferToPurchaseAddress(tokenContractAddress, bigNumDepositAmt)
+				setCurrentTransferHash(tx.hash)
+				setCurrentTransferState("confirm")
+				await tx.wait()
 
-			// Store transaction in server
-			await send(HubKey.SupsDeposit, {
-				transaction_hash: tx.hash,
-				amount: bigNumDepositAmt.toString(),
-			})
-		} catch (e: any) {
-			//checking metamask Signature
-			const error = metamaskErrorHandling(e)
-			error ? setError(error) : setError("Issue depositing, please try again.")
-			setCurrentTransferState("error")
-		} finally {
-			setLoading(false)
-		}
-	}
+				// Store transaction in server
+				await send(HubKey.SupsDeposit, {
+					transaction_hash: tx.hash,
+					amount: bigNumDepositAmt.toString(),
+				})
+			} catch (e) {
+				//checking metamask Signature
+				const error = metamaskErrorHandling(e)
+				error ? setError(error) : setError("Issue depositing, please try again.")
+				setCurrentTransferState("error")
+			} finally {
+				setLoading(false)
+			}
+		},
+		[
+			depositAmount,
+			provider,
+			send,
+			sendTransferToPurchaseAddress,
+			setCurrentTransferHash,
+			setCurrentTransferState,
+			setError,
+			setLoading,
+			state,
+			user,
+		],
+	)
 
 	useEffect(() => {
-		if (supBalance) {
-			if (depositAmount.gt(supBalance)) {
+		if (balance) {
+			if (depositAmount.gt(balance)) {
 				setImmediateError("Deposit amount above max value")
 			}
 		}
-	}, [depositAmount, setImmediateError, supBalance])
+	}, [depositAmount, setImmediateError, balance])
 
 	return (
 		<Box sx={{ width: "80%", minWidth: "300px" }}>
@@ -158,7 +183,7 @@ export const DepositSups = ({
 								variant="filled"
 								value={depositDisplay ? depositDisplay : ""}
 								onChange={(e) => {
-									let num = Number(e.target.value)
+									const num = Number(e.target.value)
 
 									if (e.target.value.charAt(0) !== "." && isNaN(num)) {
 										setDepositDisplay(e.target.value)
@@ -196,16 +221,16 @@ export const DepositSups = ({
 						</Box>
 						<Button
 							sx={{ ml: "auto", width: "fit-content" }}
-							disabled={!supBalance || supBalance._hex === BigNumber.from(0)._hex}
+							disabled={!balance || balance._hex === BigNumber.from(0)._hex}
 							onClick={() => {
-								if (supBalance) {
-									setDepositAmount(supBalance)
-									setDepositDisplay(formatUnits(supBalance, 18))
+								if (balance) {
+									setDepositAmount(balance)
+									setDepositDisplay(formatUnits(balance, 18))
 								}
 							}}
 						>
 							<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="body1">
-								Max: <b>{supBalance ? (+formatUnits(supBalance, 18)).toFixed(4) : "--"}</b>
+								Max: <b>{balance ? (+formatUnits(balance, 18)).toFixed(4) : "--"}</b>
 							</Typography>
 						</Button>
 					</Box>
@@ -267,16 +292,12 @@ export const DepositSups = ({
 				<FancyButton
 					loading={state !== WebSocket.OPEN || !send}
 					disabled={
-						!depositAmount ||
-						!supBalance ||
-						depositAmount.gt(supBalance) ||
-						currentTransferState !== "none" ||
-						immediateError !== undefined
+						!depositAmount || !balance || depositAmount.gt(balance) || currentTransferState !== "none" || immediateError !== undefined
 					}
 					borderColor={colors.skyBlue}
 					sx={{ marginTop: "1.5rem", width: "50%" }}
 					onClick={() => {
-						handleDeposit()
+						handleDeposit(tokenContractAddress)
 					}}
 				>
 					Deposit $SUPS

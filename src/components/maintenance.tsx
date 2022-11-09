@@ -80,7 +80,7 @@ export const Maintenance = () => {
 								},
 							}}
 						>
-							WE'LL BE BACK SOON
+							{"WE'LL BE BACK SOON"}
 						</Typography>
 
 						<Typography

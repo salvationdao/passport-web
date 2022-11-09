@@ -71,7 +71,6 @@ export const ConnectWallet: React.FC<IConnectWalletProps> = ({ replaceText, sx, 
 					setDisableWalletModal(false)
 				}
 			}}
-			title="Connect Wallet to account"
 			startIcon={replaceText ? null : metaMaskState === MetaMaskState.NotInstalled ? <WalletConnectIcon /> : <MetaMaskIcon />}
 			fullWidth
 		>

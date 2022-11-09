@@ -19,11 +19,9 @@ import {
 	Typography,
 	useMediaQuery,
 } from "@mui/material"
-import { formatDistanceToNow, fromUnixTime, isPast } from "date-fns"
 import { BigNumber, constants } from "ethers"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { useInterval } from "react-use"
 import Axe from "../../assets/images/gradient/axe.png"
 import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
@@ -38,7 +36,7 @@ import {
 	LP_TOKEN_ADDRESS,
 	PANCAKE_POOL_ADDRESS,
 	PANCAKE_SWAP_ADDRESS,
-	SUPS_CONTRACT_ADDRESS,
+	SUPS_CONTRACT_ADDRESS_BSC,
 	WRAPPED_BNB_ADDRESS,
 } from "../../config"
 import { FarmData, useWeb3 } from "../../containers/web3"
@@ -83,7 +81,7 @@ export const FarmsPage = () => {
 						<SwitchNetworkOverlay changeChain={changeChain} currentChainId={currentChainId} newChainID={BINANCE_CHAIN_ID} />
 					)}
 					{!account && <ConnectWalletOverlay walletIsConnected={!!account} />}
-					<Stack gap="1rem">
+					<Stack gap="1rem" alignItems="center">
 						<Box
 							component="img"
 							src={Axe}
@@ -101,6 +99,9 @@ export const FarmsPage = () => {
 						<Typography variant="h1" sx={{ textTransform: "uppercase", fontFamily: "bizmobold" }}>
 							Liquidity Farming
 						</Typography>
+						<Typography sx={{ textTransform: "uppercase", fontFamily: "bizmobold", color: colors.errorRed, fontSize: "1.2rem" }}>
+							Staking has ended
+						</Typography>
 					</Stack>
 					{currentChainId && currentChainId.toString() === BINANCE_CHAIN_ID && account && <FarmCard />}
 				</Paper>
@@ -108,8 +109,6 @@ export const FarmsPage = () => {
 		</Box>
 	)
 }
-
-interface FarmCardProps {}
 
 interface FarmInfoProps {
 	block: number
@@ -119,7 +118,6 @@ interface FarmInfoProps {
 	userRewardRate: BigNumber
 	rewardRate: BigNumber
 	yieldPercentage: number
-	remainingTime: string
 	hasAllowance: boolean
 }
 
@@ -168,7 +166,7 @@ const FarmInfo = (props: FarmInfoProps) => {
 				<LabelContainer>
 					<InfoLabel>Your reward rate:</InfoLabel>{" "}
 					<InfoValue>
-						{props.loading ? "---" : (+formatUnits(props.userRewardRate)).toFixed(6)}{" "}
+						{props.loading ? "---" : "0.000000"}{" "}
 						<span style={{ fontSize: "1rem" }}>
 							SUPS/<span style={{ fontSize: ".8rem" }}>s</span>
 						</span>
@@ -179,7 +177,7 @@ const FarmInfo = (props: FarmInfoProps) => {
 	)
 }
 
-const FarmCard = (props: FarmCardProps) => {
+const FarmCard = () => {
 	const { provider, signer, account, block, farmInfo, farmWithdraw, farmExit, farmCheckAllowance, farmLPApproveMax, farmStake, farmGetReward } =
 		useWeb3()
 	const [data, setData] = useState<FarmData | null>(null)
@@ -187,7 +185,6 @@ const FarmCard = (props: FarmCardProps) => {
 	const [stakeDisplayAmount, setStakeDisplayAmount] = useState<string>("")
 	const [withdrawAmount, setWithdrawAmount] = useState<BigNumber | null>(null)
 	const [withdrawDisplayAmount, setWithdrawDisplayAmount] = useState<string>("")
-	const [remainingTime, setRemainingTime] = useState<string | null>(null)
 	const [hasAllowance, setHasAllowance] = useState<boolean>(false)
 	const [withdrawError, setWithdrawError] = useState<string | null>(null)
 	const [stakeError, setStakeError] = useState<string | null>(null)
@@ -198,22 +195,6 @@ const FarmCard = (props: FarmCardProps) => {
 	const [openTutorial, setOpenTutorial] = useState<boolean | null>(false)
 	const [openInfoApr, setOpenInfoApr] = useState<boolean>(false)
 	const isMobile = useMediaQuery("(max-width:600px)")
-
-	useInterval(() => {
-		if (data) {
-			if (!pending.claim) {
-				setData((prevState) => {
-					if (prevState) return { ...prevState, earned: prevState.earned.add(prevState.userRewardRate.div(10)) }
-					else return prevState
-				})
-			}
-			if (isPast(fromUnixTime(data.periodFinish.toNumber()))) {
-				setRemainingTime("Rewards are inactive")
-			} else {
-				setRemainingTime(formatDistanceToNow(fromUnixTime(data.periodFinish.toNumber())))
-			}
-		}
-	}, 100)
 
 	useEffect(() => {
 		setStakeError(null)
@@ -235,7 +216,7 @@ const FarmCard = (props: FarmCardProps) => {
 
 	useEffect(() => {
 		if (!provider || !signer || !account) return
-		farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
+		farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS_BSC, WRAPPED_BNB_ADDRESS)
 			.then((data) => {
 				if (!data) return
 				if (!pending.claim) {
@@ -244,7 +225,7 @@ const FarmCard = (props: FarmCardProps) => {
 			})
 			.catch((err) =>
 				console.error(
-					`get farm info with farm address ${FARM_CONTRACT_ADDRESS}, pancake pool ${PANCAKE_POOL_ADDRESS}, lp token ${LP_TOKEN_ADDRESS},  supsContractAddr ${SUPS_CONTRACT_ADDRESS}, wbnbContractAddr ${WRAPPED_BNB_ADDRESS}:`,
+					`get farm info with farm address ${FARM_CONTRACT_ADDRESS}, pancake pool ${PANCAKE_POOL_ADDRESS}, lp token ${LP_TOKEN_ADDRESS},  supsContractAddr ${SUPS_CONTRACT_ADDRESS_BSC}, wbnbContractAddr ${WRAPPED_BNB_ADDRESS}:`,
 					err,
 				),
 			)
@@ -324,7 +305,13 @@ const FarmCard = (props: FarmCardProps) => {
 			await tx.wait()
 			setWithdrawDisplayAmount("")
 			setWithdrawAmount(BigNumber.from(0))
-			const newData = await farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
+			const newData = await farmInfo(
+				FARM_CONTRACT_ADDRESS,
+				PANCAKE_POOL_ADDRESS,
+				LP_TOKEN_ADDRESS,
+				SUPS_CONTRACT_ADDRESS_BSC,
+				WRAPPED_BNB_ADDRESS,
+			)
 			if (!newData) return
 			setData(newData)
 		} catch (err) {
@@ -344,7 +331,13 @@ const FarmCard = (props: FarmCardProps) => {
 			setPending({ ...pending, stake: false })
 			setStakeDisplayAmount("")
 			setStakeAmount(BigNumber.from(0))
-			const newData = await farmInfo(FARM_CONTRACT_ADDRESS, PANCAKE_POOL_ADDRESS, LP_TOKEN_ADDRESS, SUPS_CONTRACT_ADDRESS, WRAPPED_BNB_ADDRESS)
+			const newData = await farmInfo(
+				FARM_CONTRACT_ADDRESS,
+				PANCAKE_POOL_ADDRESS,
+				LP_TOKEN_ADDRESS,
+				SUPS_CONTRACT_ADDRESS_BSC,
+				WRAPPED_BNB_ADDRESS,
+			)
 			if (!newData) return
 			setData(newData)
 		} catch (error: any) {
@@ -413,7 +406,6 @@ const FarmCard = (props: FarmCardProps) => {
 				}}
 			>
 				<FarmInfo
-					remainingTime={remainingTime || "---"}
 					rewardRate={data ? data.rewardRate : BigNumber.from(0)}
 					block={block}
 					loading={!data}
@@ -510,6 +502,7 @@ const FarmCard = (props: FarmCardProps) => {
 											<RemoveIcon fontSize="large" />
 										</FancyButton>
 										<FancyButton
+											disabled
 											onClick={() => {
 												setWeb3Error(null)
 												setOpenStaking(true)
@@ -523,6 +516,7 @@ const FarmCard = (props: FarmCardProps) => {
 							</FormSectionInner>
 							{!hasAllowance && (
 								<FancyButton
+									disabled
 									loading={pending.approve}
 									onClick={async () => {
 										setPending({ ...pending, approve: true })
@@ -703,7 +697,7 @@ const FarmCard = (props: FarmCardProps) => {
 							</Button>
 							<Button
 								component={"a"}
-								href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`}
+								href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS_BSC}`}
 								target="_blank"
 								rel="noopener noreferrer"
 								endIcon={<OpenInNewIcon />}
@@ -934,7 +928,7 @@ const Tutorial: React.FC<ITutorialProps> = ({ cb }) => {
 							Acquire <Link to="/buy">SUPS</Link>&nbsp; and BNB Tokens (WBNB on the BEP-20 network).
 						</li>
 						<li>
-							<a href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer">
+							<a href={`https://${PANCAKE_SWAP_ADDRESS}/add/BNB/${SUPS_CONTRACT_ADDRESS_BSC}`} target="_blank" rel="noreferrer">
 								Add liquidity
 							</a>{" "}
 							to the SUPS/BNB pool.

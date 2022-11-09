@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react"
 import { Action, QueryResponse, useMutation } from "react-fetching-library"
-import { PasswordLoginResponse, RegisterResponse, WalletSignUpRequest } from "../../types/auth"
+import { RegisterResponse, WalletSignUpRequest } from "../../types/auth"
 import { useFingerprint } from "../fingerprint"
 import { useWeb3 } from "../web3"
 
 const signUpAction =
 	(signupType: string) =>
-	(formValues: WalletSignUpRequest): Action<PasswordLoginResponse> => ({
+	(formValues: WalletSignUpRequest): Action => ({
 		method: "POST",
 		endpoint: `/auth/signup/${signupType}`,
 		responseType: "json",

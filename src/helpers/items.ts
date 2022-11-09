@@ -23,7 +23,7 @@ export const supFormatter = (num: string): string => {
 
 export const usdFormatter = (centCost: number): string => {
 	// Create our number formatter.
-	var formatter = new Intl.NumberFormat("en-US", {
+	const formatter = new Intl.NumberFormat("en-US", {
 		style: "currency",
 		currency: "USD",
 		// These options are needed to round to whole numbers if that's what you want.

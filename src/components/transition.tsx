@@ -45,20 +45,3 @@ export const Transition: React.FC<TransitionProps> = ({ show, timeout, mountDela
 
 	return <>{shouldRender && children(state)}</>
 }
-
-interface TransitionGroupProps {
-	children: React.ReactElement<TransitionProps>[] | React.ReactElement<TransitionProps>
-}
-
-export const TransitionGroup: React.FC<TransitionGroupProps> = ({ children }) => {
-	return (
-		<>
-			{React.Children.map(children, (child) => {
-				if (React.isValidElement(child))
-					return React.cloneElement<TransitionProps>(child, {
-						mountDelay: 5000,
-					})
-			})}
-		</>
-	)
-}
