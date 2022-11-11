@@ -21,7 +21,7 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { setSignupRequest, redirectURL, setCaptchaToken, externalAuth, handleAuthCheck } = useAuth()
+	const { setSignupRequest, setCaptchaToken, handleAuthCheck, postTokenToExternal } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
@@ -31,41 +31,28 @@ export const LoginForm = () => {
 		async (event?: MessageEvent) => {
 			if (!twitterPopup || twitterPopup.closed) return
 			if (event?.data["tfa"]) {
-				window.location.replace(redirectURL)
-			} else if (!!event?.data["redirectURL"] && !!event?.data["twitter_token"] && !event?.data["login"]) {
-				const redirectURL = event?.data.redirectURL as string
+				// Reauth if logging in with TFA
+				await handleAuthCheck()
+			} else if (!!event?.data["twitter_token"] && !event?.data["login"]) {
 				const twitterToken = event?.data.twitter_token as string
 
 				setCaptchaToken(undefined)
 				setSignupRequest({
 					auth_type: AuthTypes.Twitter,
 					twitter_token: twitterToken,
-					redirect_url: redirectURL,
 				})
 				history.push(`/signup?captcha=true`)
-			} else if (!!event?.data["twitter_token"] && !event?.data["login"]) {
-				const twitterToken = event?.data.twitter_token as string
-				setCaptchaToken(undefined)
-				setSignupRequest({
-					auth_type: AuthTypes.Twitter,
-					twitter_token: twitterToken,
-				})
-				history.push("/signup/?captcha=true")
 			} else if (event?.data["login"]) {
 				try {
-					const twitter_token = event?.data.twitter_token as string
-					await externalAuth({
-						redirect_url: window.location.href,
-						twitter_token,
-						auth_type: AuthTypes.Twitter,
-					})
+					const issue_token = event?.data.issue_token as string
+					postTokenToExternal(issue_token)
 					await handleAuthCheck()
 				} catch (err: any) {
 					setError(err.message)
 				}
 			}
 		},
-		[twitterPopup, redirectURL, setCaptchaToken, setSignupRequest, history, externalAuth, handleAuthCheck],
+		[twitterPopup, handleAuthCheck, setCaptchaToken, setSignupRequest, history, postTokenToExternal],
 	)
 
 	useEffect(() => {

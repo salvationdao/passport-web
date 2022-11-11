@@ -15,13 +15,9 @@ export interface RegisterResponse {
 	user: User
 	token: string
 }
-
-export interface ExternalCookieRequest {
-	redirect_url?: string
-}
 interface BasicLoginRequest {
 	fingerprint?: Fingerprint
-	redirect_url?: string
+	is_external?: boolean
 	tenant?: string
 	tfa_token?: string
 }
@@ -291,6 +287,14 @@ export type LoginRequest =
 	| SocialLoginRequest
 
 export type LoginNewUserResponse = WalletLoginRequest | GoogleLoginRequest | FacebookLoginRequest | EmailLoginRequest | TwitterSignUpRequest
+export interface LoginOldUserResponse {
+	auth_type?: AuthTypes.Null
+	tfa_token?: string
+	new_user?: boolean
+	user: User
+	issue_token?: string
+	captcha_required?: boolean
+}
 
 export enum SignupRequestTypes {
 	Wallet = "wallet_request",
@@ -309,7 +313,7 @@ export interface SignupNewUser {
 	username: string
 	auth_type: AuthTypes
 	fingerprint?: Fingerprint
-	redirect_url?: string
+	is_external?: boolean
 	captcha_token?: string
 }
 
