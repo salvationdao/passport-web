@@ -600,7 +600,6 @@ export const AuthContainer = createContainer(() => {
 				}
 
 				const resp = await facebook({ ...args, auth_type: AuthTypes.Facebook })
-				console.log(resp)
 				loginUserCallback(resp)
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
@@ -814,7 +813,7 @@ export const AuthContainer = createContainer(() => {
 				await handleAuthCheck()
 			})()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}, [handleAuthCheck])
 
