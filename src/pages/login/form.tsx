@@ -21,7 +21,7 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { setSignupRequest, setCaptchaToken, handleAuthCheck, postTokenToExternal } = useAuth()
+	const { setSignupRequest, setCaptchaToken, handleAuthCheck } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
 	const [tab, setTab] = useState(signup === "true" ? FormTabs.Signup : FormTabs.Login)
@@ -44,15 +44,13 @@ export const LoginForm = () => {
 				history.push(`/signup?captcha=true`)
 			} else if (event?.data["login"]) {
 				try {
-					const issue_token = event?.data.issue_token as string
-					postTokenToExternal(issue_token)
 					await handleAuthCheck()
 				} catch (err: any) {
 					setError(err.message)
 				}
 			}
 		},
-		[twitterPopup, handleAuthCheck, setCaptchaToken, setSignupRequest, history, postTokenToExternal],
+		[twitterPopup, handleAuthCheck, setCaptchaToken, setSignupRequest, history],
 	)
 
 	useEffect(() => {

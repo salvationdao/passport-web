@@ -10,13 +10,6 @@ export const TwitterRedirect = () => {
 	const login = searchParams.get("login")
 	const tfa = searchParams.get("tfa")
 
-	// For login
-	const loginToken = useMemo(() => {
-		const group = location.search.split("&issue_token=")
-		const token = group[1]
-		return token
-	}, [location.search])
-
 	// For signup
 	const signupToken = useMemo(() => {
 		if (login && tfa) return
@@ -32,7 +25,7 @@ export const TwitterRedirect = () => {
 			window.close()
 		}, 1200)
 		if (login) {
-			window.opener.postMessage({ login, issue_token: loginToken })
+			window.opener.postMessage({ login })
 			return
 		}
 		if (tfa) {
@@ -44,7 +37,7 @@ export const TwitterRedirect = () => {
 			window.opener.postMessage({ twitter_token: decodeURI(signupToken) })
 			return
 		}
-	}, [login, tfa, signupToken, loginToken])
+	}, [login, tfa, signupToken])
 
 	return (
 		<Stack alignItems="center" justifyContent="center" sx={{ height: "100vh", p: "3.8rem", backgroundColor: colors.darkNavyBackground }}>

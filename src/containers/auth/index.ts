@@ -223,13 +223,16 @@ export const AuthContainer = createContainer(() => {
 		(issueToken?: string) => {
 			if (!externalOrigin) return
 			window.opener.postMessage({ issue_token: issueToken }, externalOrigin)
-			window.close()
+			// Delay window close just in case postmessage is delayed
+			setTimeout(() => {
+				window.close()
+			}, 500)
 		},
 		[externalOrigin],
 	)
 
 	const loginUserCallback = useCallback(
-		(resp: QueryResponse<LoginOldUserResponse | LoginNewUserResponse>) => {
+		(resp: QueryResponse<LoginOldUserResponse | LoginNewUserResponse>, twitterCallback?: () => void) => {
 			if (resp.error) {
 				throw resp.payload
 			}
@@ -255,14 +258,21 @@ export const AuthContainer = createContainer(() => {
 				return
 			}
 			if (!resp.payload.auth_type) {
-				setUser(resp.payload.user)
-				setAuthorised(true)
-				setLoading(false)
-				postTokenToExternal(resp.payload.issue_token)
-				return
+				if (twitterCallback) {
+					twitterCallback()
+					return
+				}
+
+				if (!externalOrigin) {
+					setUser(resp.payload.user)
+					setAuthorised(true)
+					setLoading(false)
+				} else {
+					postTokenToExternal(resp.payload.issue_token)
+				}
 			}
 		},
-		[history, postTokenToExternal],
+		[externalOrigin, history, postTokenToExternal],
 	)
 
 	/**
@@ -586,17 +596,11 @@ export const AuthContainer = createContainer(() => {
 					facebook_token: token,
 					session_id: sessionId,
 					fingerprint,
-					auth_type: AuthTypes.Facebook,
 					captcha_token: captchaToken,
 				}
 
 				const resp = await facebook({ ...args, auth_type: AuthTypes.Facebook })
-				if (resp.error) {
-					throw resp.payload
-				}
-				if (!resp.payload) {
-					throw new Error("No response was received")
-				}
+				console.log(resp)
 				loginUserCallback(resp)
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
@@ -620,7 +624,7 @@ export const AuthContainer = createContainer(() => {
 		async (code: string, isRecovery: boolean, token?: string, rURL?: string, isVerified?: boolean, errorCallback?: (msg: string) => void) => {
 			try {
 				const args = {
-					redirect_url: rURL,
+					is_external: !!externalOrigin,
 					token,
 					passcode: isRecovery ? undefined : code,
 					recovery_code: isRecovery ? code : undefined,
@@ -634,7 +638,13 @@ export const AuthContainer = createContainer(() => {
 				if (isVerified) {
 					return
 				}
-				loginUserCallback(resp)
+				let isTwitter
+				if (rURL) {
+					isTwitter = () => {
+						history.push(rURL)
+					}
+				}
+				loginUserCallback(resp, isTwitter)
 			} catch (e: any) {
 				let errMsg = "Something went wrong, please try again."
 				if (e.message) {
@@ -647,7 +657,7 @@ export const AuthContainer = createContainer(() => {
 				throw typeof e === "string" ? e : errMsg
 			}
 		},
-		[sessionId, fingerprint, twoFactorAuth, loginUserCallback],
+		[externalOrigin, sessionId, fingerprint, twoFactorAuth, loginUserCallback, history],
 	)
 	/**
 	 * Logs a User in using a Metamask public address
