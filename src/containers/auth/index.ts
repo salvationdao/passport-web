@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Action, QueryResponse, useMutation, useQuery } from "react-fetching-library"
 import { useHistory } from "react-router-dom"
 import { createContainer } from "unstated-next"
@@ -144,6 +144,8 @@ const emailSignupVerifyAction = (formValues: EmailSignupVerifyRequest): Action<{
 /**
  * A Container that handles Authorisation
  */
+const queryString = window.location.search
+const urlParams = new URLSearchParams(queryString)
 
 export const AuthContainer = createContainer(() => {
 	const history = useHistory()
@@ -167,11 +169,8 @@ export const AuthContainer = createContainer(() => {
 	const [emailCode, setEmailCode] = useState<{ token?: string; email: string } | undefined>()
 	const [captchaToken, setCaptchaToken] = useState<string>()
 
-	const externalOrigin = useMemo(() => {
-		const queryString = window.location.search
-		const urlParams = new URLSearchParams(queryString)
-		return urlParams.get("origin") || ""
-	}, [])
+	const externalOrigin = urlParams.get("origin")
+	const redirectURL = urlParams.get("redirectURL")
 
 	const [sessionId, setSessionID] = useState("")
 
@@ -262,7 +261,10 @@ export const AuthContainer = createContainer(() => {
 					twitterCallback()
 					return
 				}
-
+				if (redirectURL) {
+					window.location.assign(redirectURL)
+					return
+				}
 				if (!externalOrigin) {
 					setUser(resp.payload.user)
 					setAuthorised(true)
@@ -272,7 +274,7 @@ export const AuthContainer = createContainer(() => {
 				}
 			}
 		},
-		[externalOrigin, history, postTokenToExternal],
+		[externalOrigin, history, postTokenToExternal, redirectURL],
 	)
 
 	/**
@@ -791,6 +793,10 @@ export const AuthContainer = createContainer(() => {
 					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 					return
 				}
+			}
+			if (redirectURL) {
+				window.location.assign(redirectURL)
+				return
 			}
 			postTokenToExternal(resp.payload.issue_token)
 			if (externalOrigin && resp.payload.user) return
