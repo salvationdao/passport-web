@@ -1,5 +1,5 @@
-import { Box, Divider, Stack, Typography } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import { Alert, Box, Divider, Stack, Typography } from "@mui/material"
+import React, { useCallback, useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { BuyTokens } from "../components/buy/buyTokens"
 import { GradientCircleThing } from "../components/home/gradientCircleThing"
@@ -13,18 +13,47 @@ import { useSubscription } from "../containers/ws"
 import HubKey from "../keys"
 import { supFormatter } from "../helpers/items"
 import { BigNumber } from "ethers"
+import { usePassportCommandsUser } from "../hooks/usePassport"
+import { User } from "../types/types"
+
+interface TransactSupremacyWorldReq {
+	claim_id: string
+	amount: string
+}
 
 export const IFrameTransactionPage: React.FC = () => {
 	const { amount, claim_id } = useParams<{ claim_id: string; amount: string }>()
-	const { user, loading } = useAuth()
+	const { user } = useAuth()
 	const [userSupsBN, setUserSupsBN] = useState<BigNumber>(BigNumber.from(0))
 	const [amountBN] = useState<BigNumber>(BigNumber.from(amount))
+	const { send } = usePassportCommandsUser("/commander")
+	const [error, setError] = useState<string>()
+	const [successMessage, setSuccessMessage] = useState<string>()
 
 	const userSups = useSubscription<string>({
 		URI: `/user/${user?.id}/sups`,
 		key: HubKey.UserSupsSubscribe,
 		ready: !!user,
 	})
+
+	const makeTransaction = useCallback(async () => {
+		try {
+			setError(undefined)
+			setSuccessMessage(undefined)
+			await send<unknown, TransactSupremacyWorldReq>(HubKey.MakeSupremacyWorldTransaction, {
+				claim_id: claim_id,
+				amount: amount,
+			})
+			setSuccessMessage("Transaction Successful, you may now close this page.")
+		} catch (e) {
+			console.error(e)
+			if (typeof e === "string") {
+				setError(e)
+			} else {
+				setError("Issue making transaction, please try again or contract support.")
+			}
+		}
+	}, [send, claim_id, amount])
 
 	useEffect(() => {
 		setUserSupsBN(BigNumber.from(userSups || 0))
@@ -50,6 +79,7 @@ export const IFrameTransactionPage: React.FC = () => {
 					gap: "1rem",
 					padding: "4rem",
 					minWidth: "410px",
+					position: "relative",
 					border: `2px solid ${theme.palette.secondary.main}`,
 				})}
 			>
@@ -65,12 +95,13 @@ export const IFrameTransactionPage: React.FC = () => {
 				<Box
 					sx={{
 						display: "flex",
+
 						flexDirection: "column",
 						backgroundColor: colors.inputBg,
 						borderRadius: "10px",
 						padding: "1rem",
 						gap: "1rem",
-						width: "300px",
+						width: "100%",
 					}}
 				>
 					<Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -127,7 +158,14 @@ export const IFrameTransactionPage: React.FC = () => {
 						</Typography>
 					</Box>
 				</Box>
-				<FancyButton fullWidth>Confirm Transaction</FancyButton>
+				<FancyButton fullWidth onClick={makeTransaction} disabled={!!successMessage}>
+					Confirm Transaction
+				</FancyButton>
+				{successMessage && <Alert severity={"success"}>{successMessage}</Alert>}
+				{error && <Alert severity={"error"}>{error}</Alert>}
+				<Typography sx={{ position: "absolute", bottom: 0, right: 5 }} textTransform={"uppercase"}>
+					powered by xsyn
+				</Typography>
 			</Box>
 		</Box>
 	)
