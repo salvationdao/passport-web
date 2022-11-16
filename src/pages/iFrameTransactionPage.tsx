@@ -155,8 +155,16 @@ export const IFrameTransactionPage: React.FC = () => {
 				<FancyButton fullWidth onClick={makeTransaction} disabled={!!successMessage}>
 					Confirm Transaction
 				</FancyButton>
-				{successMessage && <Alert severity={"success"}>{successMessage}</Alert>}
-				{error && <Alert severity={"error"}>{error}</Alert>}
+				{successMessage && (
+					<Alert sx={{ maxWidth: "min-content", minWidth: "100%" }} severity={"success"}>
+						{successMessage}
+					</Alert>
+				)}
+				{error && (
+					<Alert sx={{ maxWidth: "min-content", minWidth: "100%" }} severity={"error"}>
+						{error}
+					</Alert>
+				)}
 				<Typography sx={{ position: "absolute", bottom: 0, right: 5 }} textTransform={"uppercase"}>
 					powered by xsyn
 				</Typography>
