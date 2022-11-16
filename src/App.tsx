@@ -72,6 +72,7 @@ const AppInner = () => {
 				<Route exact path="/">
 					<Redirect to="/login" />
 				</Route>
+				<Redirect to={`/login?redirectURL=${window.location.href}`} />
 			</Switch>
 		)
 	}
