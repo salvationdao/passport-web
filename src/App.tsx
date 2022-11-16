@@ -70,7 +70,7 @@ const AppInner = () => {
 					<TwoFactorAuthenticationCheck />
 				</Route>
 				<Route path="/">
-					<Redirect to={"/login"} />
+					<Redirect to={`/login`} />
 				</Route>
 			</Switch>
 		)

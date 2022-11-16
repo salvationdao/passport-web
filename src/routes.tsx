@@ -35,6 +35,7 @@ import { TwoFactorAuthenticationRecoveryCode } from "./pages/twoFactorAuthentica
 import { TwoFactorAuthenticationSetup } from "./pages/twoFactorAuthentication/setup"
 import VerifyEmail from "./pages/verify"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
+import { IFrameTransactionPage } from "./pages/iFrameTransactionPage"
 
 export const Routes = () => {
 	const { account } = useWeb3()
@@ -195,6 +196,9 @@ export const Routes = () => {
 							</Route>
 							<Route path="/external/buy">
 								<IFrameBuyPage />
+							</Route>
+							<Route path="/transact/supremacy-world/:amount/:claim_id">
+								<IFrameTransactionPage />
 							</Route>
 							<Route path="/deposit-assets/:collection_slug">
 								<ContractAssetPage />
