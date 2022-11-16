@@ -144,11 +144,11 @@ const emailSignupVerifyAction = (formValues: EmailSignupVerifyRequest): Action<{
 /**
  * A Container that handles Authorisation
  */
-const queryString = window.location.search
-const urlParams = new URLSearchParams(queryString)
 
 export const AuthContainer = createContainer(() => {
 	const history = useHistory()
+	const urlParams = new URLSearchParams(history.location.search)
+
 	const { fingerprint } = useFingerprint()
 	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature, wcNonce, setUserForWeb3 } = useWeb3()
 	const [user, _setUser] = useState<User>()
@@ -783,7 +783,6 @@ export const AuthContainer = createContainer(() => {
 				// If external then post issue token
 				if (resp.error || !resp.payload) {
 					clear()
-					setLoading(false)
 					// throw resp.payload
 					return
 				}
@@ -805,9 +804,10 @@ export const AuthContainer = createContainer(() => {
 				// else set up user
 				setUser(resp.payload.user)
 				setAuthorised(true)
-				setLoading(false)
 			} catch (e) {
 				console.log(e)
+			} finally {
+				setLoading(false)
 			}
 		},
 		[authCheck, clear, externalOrigin, history, postTokenToExternal, redirectURL],
