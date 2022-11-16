@@ -326,13 +326,11 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 					cursor: { color: !xsynSups.eq(0) ? "pointer" : "default" },
 				}}
 				onClick={() => {
-					if (!xsynSups.eq(0)) {
-						window.open(`${BATTLE_ARENA_LINK}`, "_blank")?.focus()
-					}
+					window.open(`${BATTLE_ARENA_LINK}`, "_blank")?.focus()
 				}}
 				startIcon={<PlayArrowIcon />}
 			>
-				{!xsynSups.eq(0) ? "Battle Arena" : "Battle Arena (SUPS required)"}
+				Battle Arena
 			</Button>
 			<Button
 				startIcon={<LogoutIcon />}
