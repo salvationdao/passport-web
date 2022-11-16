@@ -188,7 +188,7 @@ export const TwoFactorAuthenticationCheck: React.FC<ITwoFactorAuthenticationChec
 							minWidth: "300px",
 						}}
 					>
-						{error.charAt(0).toUpperCase() + error.slice(1)}
+						{error}
 					</Alert>
 				)}
 			</Paper>

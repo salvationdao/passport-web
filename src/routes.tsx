@@ -26,7 +26,7 @@ import { FarmsPage } from "./pages/farms/farmsPage"
 import { Home } from "./pages/home"
 import { IFrameBuyPage } from "./pages/iFrameBuy"
 import { LoginPage } from "./pages/login"
-import { LoginRedirect } from "./pages/login/twitterRedirect"
+import { TwitterRedirect } from "./pages/login/twitterRedirect"
 import { AssetRedirectPage } from "./pages/Profile/Assets/721/SingleAssetView/AssetRedirectPage"
 import { ProfilePage } from "./pages/Profile/ProfilePage"
 import { StorePage } from "./pages/Store/StorePage"
@@ -36,12 +36,12 @@ import { TwoFactorAuthenticationSetup } from "./pages/twoFactorAuthentication/se
 import VerifyEmail from "./pages/verify"
 import { WithdrawPage } from "./pages/withdraw/withdrawPage"
 
-export const Routes = () => {
+export const Routes: React.FC = () => {
 	const { account } = useWeb3()
 	const { send } = usePassportCommandsUser("/commander")
 	const { setSidebarOpen } = useSidebarState()
 	const { fingerprint } = useFingerprint()
-	const { setSessionID, user, loading: authLoading, redirectURL } = useAuth()
+	const { setSessionID, user, loading: authLoading } = useAuth()
 	const { message, snackbarProps, alertSeverity, resetSnackbar } = useSnackbar()
 	const [okCheck, setOkCheck] = useState<boolean | undefined>(undefined)
 	const [loadingText, setLoadingText] = useState<string>()
@@ -152,7 +152,7 @@ export const Routes = () => {
 							</Route>
 
 							<Route path="/twitter-redirect">
-								<LoginRedirect />
+								<TwitterRedirect />
 							</Route>
 
 							<Route path="/tfa/:username/setup">
@@ -220,7 +220,7 @@ export const Routes = () => {
 			</BrowserRouter>
 			<ConnectionLostSnackbar app="public" />
 			<BlockConfirmationSnackList />
-			{user && account && !redirectURL && <CorrectWalletConnected />}
+			{user && account && <CorrectWalletConnected />}
 		</Box>
 	)
 }

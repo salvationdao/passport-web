@@ -17,7 +17,7 @@ interface TFASecret {
 	qr_code_str: string
 }
 
-export const TwoFactorAuthenticationSetup = () => {
+export const TwoFactorAuthenticationSetup: React.FC = () => {
 	const history = useHistory()
 	const { send } = usePassportCommandsUser("/commander")
 	const { username } = useParams<{ username: string }>()

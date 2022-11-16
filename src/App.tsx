@@ -13,7 +13,7 @@ import { loadIcons } from "./helpers/loadicons"
 import ForgotPassword from "./pages/forgotPassword"
 import { LoginPage } from "./pages/login"
 import { Signup } from "./pages/login/signup"
-import { LoginRedirect } from "./pages/login/twitterRedirect"
+import { TwitterRedirect } from "./pages/login/twitterRedirect"
 import EmailSignupVerify from "./pages/login/verifyEmail"
 import ResetPassword from "./pages/resetPassword"
 import { TwoFactorAuthenticationCheck } from "./pages/twoFactorAuthentication/check"
@@ -64,14 +64,15 @@ const AppInner = () => {
 					<VerifyEmail />
 				</Route>
 				<Route path="/twitter-redirect">
-					<LoginRedirect />
+					<TwitterRedirect />
 				</Route>
 				<Route path="/tfa/check">
 					<TwoFactorAuthenticationCheck />
 				</Route>
-				<Route path="/">
-					<Redirect to={"/login"} />
+				<Route exact path="/">
+					<Redirect to="/login" />
 				</Route>
+				<Redirect to={`/login?redirectURL=${window.location.href}`} />
 			</Switch>
 		)
 	}

@@ -3,7 +3,6 @@ import { styled } from "@mui/system"
 import { useState } from "react"
 import { Redirect } from "react-router-dom"
 import { useAuth } from "../../containers/auth"
-import { Loading } from "../loading"
 
 interface LoginBoxProps {
 	wp: string
@@ -70,15 +69,10 @@ const wallpapers = ["rm.jpeg", "bc.png", "zai.png"]
 
 export const SupremacyAuth: React.FC<{ title?: string }> = ({ children, title }) => {
 	const [wp] = useState<string>(wallpapers[Math.floor(Math.random() * wallpapers.length)])
-	const { userID, loginCookieExternal } = useAuth()
-	const isFromExternal = window.location.pathname === "/external/login"
+	const { userID } = useAuth()
 
 	if (userID) {
-		// if it is not from external, redirect user to profile page
-		if (!isFromExternal) return <Redirect to={"/profile"} />
-
-		loginCookieExternal()
-		return <Loading />
+		return <Redirect to={"/profile"} />
 	}
 
 	return (

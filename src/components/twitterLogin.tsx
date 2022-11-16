@@ -29,13 +29,13 @@ interface TwitterLoginProps {
 
 export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, render, add }) => {
 	const [twitterPopup, setTwitterPopup] = useState<Window | undefined>()
-	const { handleAuthCheck, redirectURL } = useAuth()
+	const { handleAuthCheck } = useAuth()
 
 	const click = useCallback(async () => {
 		const twitterParams = {
 			oauth_callback: `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter?${add ? `add=${add}&` : ""}redirect=${
 				window.location.origin
-			}/twitter-redirect${redirectURL ? `&redirectURL=${redirectURL}` : ""}`,
+			}/twitter-redirect`,
 		}
 
 		const href = `${window.location.protocol}//${API_ENDPOINT_HOSTNAME}/api/auth/twitter${getParamsFromObject(twitterParams)}`
@@ -61,7 +61,7 @@ export const TwitterLogin: React.FC<TwitterLoginProps> = ({ onClick, onFailure, 
 			}
 			return
 		}
-	}, [add, redirectURL, onClick, onFailure])
+	}, [add, onClick, onFailure])
 
 	const propsForRender = useMemo(
 		() => ({
