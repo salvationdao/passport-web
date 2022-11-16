@@ -69,9 +69,10 @@ const AppInner = () => {
 				<Route path="/tfa/check">
 					<TwoFactorAuthenticationCheck />
 				</Route>
-				<Route path="/">
-					<Redirect to={"/login"} />
+				<Route exact path="/">
+					<Redirect to="/login" />
 				</Route>
+				<Redirect to={`/login?redirectURL=${window.location.href}`} />
 			</Switch>
 		)
 	}

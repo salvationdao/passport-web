@@ -805,7 +805,7 @@ export const AuthContainer = createContainer(() => {
 			setAuthorised(true)
 			setLoading(false)
 		},
-		[authCheck, clear, externalOrigin, history, postTokenToExternal],
+		[authCheck, clear, externalOrigin, history, postTokenToExternal, redirectURL],
 	)
 
 	///////////////////
