@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material"
+import { Box, Divider, Stack, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useHistory, useParams } from "react-router-dom"
 import { BuyTokens } from "../components/buy/buyTokens"
@@ -37,7 +37,7 @@ export const IFrameTransactionPage: React.FC = () => {
 				flexDirection: "column",
 				width: "100%",
 				height: "100%",
-				padding: "2rem",
+				padding: "3rem",
 			}}
 		>
 			<Box
@@ -47,8 +47,9 @@ export const IFrameTransactionPage: React.FC = () => {
 					alignItems: "center",
 					justifyContent: "space-evenly",
 					margin: "auto",
-					gap: "2rem",
+					gap: "1rem",
 					padding: "4rem",
+					minWidth: "410px",
 					border: `2px solid ${theme.palette.secondary.main}`,
 				})}
 			>
@@ -56,8 +57,6 @@ export const IFrameTransactionPage: React.FC = () => {
 					variant="h2"
 					align="center"
 					sx={{
-						fontWeight: 800,
-						fontSize: "1.4rem",
 						textTransform: "uppercase",
 					}}
 				>
@@ -70,7 +69,6 @@ export const IFrameTransactionPage: React.FC = () => {
 						backgroundColor: colors.inputBg,
 						borderRadius: "10px",
 						padding: "1rem",
-						margin: "1rem 0",
 						gap: "1rem",
 						width: "300px",
 					}}
@@ -79,52 +77,57 @@ export const IFrameTransactionPage: React.FC = () => {
 						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 							From:
 						</Typography>
-						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+						<Typography sx={{ color: colors.lightGrey, fontWeight: 800 }} variant="h6">
 							{user?.username}
 						</Typography>
 					</Box>
+					<Divider sx={{ borderColor: "#ffffff45" }} />
 					<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 							To:
 						</Typography>
-						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+						<Typography sx={{ color: colors.lightGrey, fontWeight: 800 }} variant="h6">
 							Supremacy World
 						</Typography>
 					</Box>
+					<Divider sx={{ borderColor: "#ffffff45" }} />
 					<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 							Currency:
 						</Typography>
-						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+						<Typography sx={{ color: colors.lightGrey, fontWeight: 800 }} variant="h6">
 							SUPS
 						</Typography>
 					</Box>
+					<Divider sx={{ borderColor: "#ffffff45" }} />
 					<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 							Amount:
 						</Typography>
-						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+						<Typography sx={{ color: colors.lightGrey, fontWeight: 800 }} variant="h6">
 							{supFormatter(amountBN.toString())}
 						</Typography>
 					</Box>
+					<Divider sx={{ borderColor: "#ffffff45" }} />
 					<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 							Current Balance:
 						</Typography>
-						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+						<Typography sx={{ color: colors.lightGrey, fontWeight: 800 }} variant="h6">
 							{supFormatter(userSupsBN.toString())}
 						</Typography>
 					</Box>
+					<Divider sx={{ borderColor: "#ffffff45" }} />
 					<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
 							Balance After:
 						</Typography>
-						<Typography sx={{ color: colors.lightNavyBlue2, fontWeight: 800 }} variant="h6">
+						<Typography sx={{ color: colors.lightGrey, fontWeight: 800 }} variant="h6">
 							{supFormatter(userSupsBN.sub(amountBN).toString())}
 						</Typography>
 					</Box>
 				</Box>
-				<FancyButton>Confirm Transaction</FancyButton>
+				<FancyButton fullWidth>Confirm Transaction</FancyButton>
 			</Box>
 		</Box>
 	)
