@@ -21,13 +21,6 @@ const searchParams = new URLSearchParams(window.location.search)
 const signup = searchParams.get("signup")
 
 export const LoginForm = () => {
-	const { forwardAddress } = useParams<{ forwardAddress?: string }>()
-	console.log(forwardAddress)
-	console.log(forwardAddress)
-	console.log(forwardAddress)
-	console.log(forwardAddress)
-	console.log(forwardAddress)
-	console.log(forwardAddress)
 	const { setSignupRequest, redirectURL, setCaptchaToken, externalAuth, handleAuthCheck } = useAuth()
 	const history = useHistory()
 	const [error, setError] = useState<string | null>(searchParams.get("err"))
@@ -129,87 +122,87 @@ export const LoginForm = () => {
 								/>
 							)}
 						/>
-						{/*<WalletConnectLogin*/}
-						{/*	onFailure={setError}*/}
-						{/*	render={(props) => (*/}
-						{/*		<ConnectButton*/}
-						{/*			tooltip="Wallet Connect"*/}
-						{/*			onClick={(e) => {*/}
-						{/*				props.onClick(e)*/}
-						{/*				setError(null)*/}
-						{/*			}}*/}
-						{/*			loading={props.isProcessing}*/}
-						{/*			startIcon={<WalletConnectIcon />}*/}
-						{/*		/>*/}
-						{/*	)}*/}
-						{/*/>*/}
-						{/*<FacebookLoginWrapper*/}
-						{/*	onFailure={setError}*/}
-						{/*	render={(props, loading) => (*/}
-						{/*		<ConnectButton*/}
-						{/*			tooltip="Meta"*/}
-						{/*			onClick={(e) => {*/}
-						{/*				props.onClick(e)*/}
-						{/*				setError(null)*/}
-						{/*			}}*/}
-						{/*			loading={loading ? loading : props.isProcessing}*/}
-						{/*			startIcon={<MetaIcon />}*/}
-						{/*			sx={{*/}
-						{/*				"&>span svg": {*/}
-						{/*					mt: "-5px !important",*/}
-						{/*				},*/}
-						{/*			}}*/}
-						{/*		/>*/}
-						{/*	)}*/}
-						{/*/>*/}
-						{/*<GoogleLoginWrapper*/}
-						{/*	onFailure={setError}*/}
-						{/*	render={(props) => (*/}
-						{/*		<ConnectButton*/}
-						{/*			tooltip="Google"*/}
-						{/*			sx={{*/}
-						{/*				"&>span svg": {*/}
-						{/*					height: "1.5rem !important",*/}
-						{/*					width: "1.5rem !important",*/}
-						{/*					"@media (max-width:600px)": {*/}
-						{/*						height: "2rem !important",*/}
-						{/*						width: "2rem !important",*/}
-						{/*					},*/}
-						{/*				},*/}
-						{/*			}}*/}
-						{/*			loading={props.loading}*/}
-						{/*			onClick={(e) => {*/}
-						{/*				props.onClick()*/}
-						{/*				setError(null)*/}
-						{/*			}}*/}
-						{/*			startIcon={<GoogleIcon />}*/}
-						{/*		/>*/}
-						{/*	)}*/}
-						{/*/>*/}
-						{/*<TwitterLoginWrapper*/}
-						{/*	onFailure={setError}*/}
-						{/*	onClick={async (popup) => {*/}
-						{/*		if (popup) setTwitterPopup(popup)*/}
-						{/*		setError(null)*/}
-						{/*	}}*/}
-						{/*	render={(props) => (*/}
-						{/*		<ConnectButton*/}
-						{/*			tooltip="Twitter"*/}
-						{/*			sx={{*/}
-						{/*				"&>span svg": {*/}
-						{/*					height: "1.6rem !important",*/}
-						{/*					width: "1.6rem !important",*/}
-						{/*					"@media (max-width:600px)": {*/}
-						{/*						height: "2rem !important",*/}
-						{/*						width: "2rem !important",*/}
-						{/*					},*/}
-						{/*				},*/}
-						{/*			}}*/}
-						{/*			onClick={props.onClick}*/}
-						{/*			startIcon={<TwitterIcon />}*/}
-						{/*		/>*/}
-						{/*	)}*/}
-						{/*/>*/}
+						<WalletConnectLogin
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									tooltip="Wallet Connect"
+									onClick={(e) => {
+										props.onClick(e)
+										setError(null)
+									}}
+									loading={props.isProcessing}
+									startIcon={<WalletConnectIcon />}
+								/>
+							)}
+						/>
+						<FacebookLoginWrapper
+							onFailure={setError}
+							render={(props, loading) => (
+								<ConnectButton
+									tooltip="Meta"
+									onClick={(e) => {
+										props.onClick(e)
+										setError(null)
+									}}
+									loading={loading ? loading : props.isProcessing}
+									startIcon={<MetaIcon />}
+									sx={{
+										"&>span svg": {
+											mt: "-5px !important",
+										},
+									}}
+								/>
+							)}
+						/>
+						<GoogleLoginWrapper
+							onFailure={setError}
+							render={(props) => (
+								<ConnectButton
+									tooltip="Google"
+									sx={{
+										"&>span svg": {
+											height: "1.5rem !important",
+											width: "1.5rem !important",
+											"@media (max-width:600px)": {
+												height: "2rem !important",
+												width: "2rem !important",
+											},
+										},
+									}}
+									loading={props.loading}
+									onClick={(e) => {
+										props.onClick()
+										setError(null)
+									}}
+									startIcon={<GoogleIcon />}
+								/>
+							)}
+						/>
+						<TwitterLoginWrapper
+							onFailure={setError}
+							onClick={async (popup) => {
+								if (popup) setTwitterPopup(popup)
+								setError(null)
+							}}
+							render={(props) => (
+								<ConnectButton
+									tooltip="Twitter"
+									sx={{
+										"&>span svg": {
+											height: "1.6rem !important",
+											width: "1.6rem !important",
+											"@media (max-width:600px)": {
+												height: "2rem !important",
+												width: "2rem !important",
+											},
+										},
+									}}
+									onClick={props.onClick}
+									startIcon={<TwitterIcon />}
+								/>
+							)}
+						/>
 					</Box>
 				</Stack>
 				{tab === FormTabs.Login && (
