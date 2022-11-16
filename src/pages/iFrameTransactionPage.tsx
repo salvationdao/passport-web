@@ -1,12 +1,7 @@
-import { Alert, Box, Divider, Stack, Typography } from "@mui/material"
+import { Alert, Box, Divider, Typography } from "@mui/material"
 import React, { useCallback, useEffect, useState } from "react"
-import { useHistory, useParams } from "react-router-dom"
-import { BuyTokens } from "../components/buy/buyTokens"
-import { GradientCircleThing } from "../components/home/gradientCircleThing"
-import { Loading } from "../components/loading"
+import { useParams } from "react-router-dom"
 import { useAuth } from "../containers/auth"
-import { useWeb3 } from "../containers/web3"
-import { Navbar } from "../components/home/navbar"
 import { colors } from "../theme"
 import { FancyButton } from "../components/fancyButton"
 import { useSubscription } from "../containers/ws"
@@ -14,7 +9,6 @@ import HubKey from "../keys"
 import { supFormatter } from "../helpers/items"
 import { BigNumber } from "ethers"
 import { usePassportCommandsUser } from "../hooks/usePassport"
-import { User } from "../types/types"
 
 interface TransactSupremacyWorldReq {
 	claim_id: string
