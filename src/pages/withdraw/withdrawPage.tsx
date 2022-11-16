@@ -2,17 +2,17 @@ import { Alert, Box, Paper, Typography } from "@mui/material"
 import { BigNumber } from "ethers"
 import { formatUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
+import Safe from "../../assets/images/gradient/safeLarge.png"
+import { FancyButton } from "../../components/fancyButton"
 import { Navbar } from "../../components/home/navbar"
 import { TransactionResultOverlay } from "../../components/transferStatesOverlay/transactionResultOverlay"
 import { WithdrawSups } from "../../components/withdrawSups"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
+import { useAuth } from "../../containers/auth"
 import { useWeb3 } from "../../containers/web3"
 import { AddressDisplay } from "../../helpers/web3"
-import { transferStateType } from "../../types/types"
 import { usePassportCommandsUser } from "../../hooks/usePassport"
-import { useAuth } from "../../containers/auth"
-import Safe from "../../assets/images/gradient/safeLarge.png"
-import { FancyButton } from "../../components/fancyButton"
+import { transferStateType } from "../../types/types"
 
 interface CheckCanWithdrawResp {
 	withdrawals_enabled: boolean
@@ -21,7 +21,7 @@ interface CheckCanWithdrawResp {
 	token_contract_address: string
 }
 
-export const WithdrawPage = () => {
+export const WithdrawPage: React.FC = () => {
 	const { account } = useWeb3()
 	const { user } = useAuth()
 	const { state, send } = usePassportCommandsUser("/commander")

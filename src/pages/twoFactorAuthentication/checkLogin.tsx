@@ -17,7 +17,7 @@ export const TwoFactorAuthenticationCheckLogin: React.FC<ITwoFactorAuthenticatio
 	const { twoFactorAuthLogin } = useAuth()
 	const [code, setCode] = useState("")
 	const [isRecovery, setIsRecovery] = useState(false)
-	const [error, setError] = useState(searchParams.get("err"))
+	const [error, setError] = useState<string | null>(null)
 
 	const tokenGroup = useMemo(() => {
 		let token = location.search.replace("?", "").split("&redirectURL")[0].replace("token=", "")
@@ -149,7 +149,7 @@ export const TwoFactorAuthenticationCheckLogin: React.FC<ITwoFactorAuthenticatio
 								minWidth: "300px",
 							}}
 						>
-							{error.charAt(0).toUpperCase() + error.slice(1)}
+							{error}
 						</Alert>
 					)}
 				</Stack>

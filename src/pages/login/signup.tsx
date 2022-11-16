@@ -179,7 +179,7 @@ export const Signup: React.FC = () => {
 								textAlign: "left",
 							}}
 						>
-							{error.charAt(0).toUpperCase() + error.slice(1)}
+							{error}
 						</Alert>
 					)}
 				</Stack>
