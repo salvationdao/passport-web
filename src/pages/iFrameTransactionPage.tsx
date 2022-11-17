@@ -156,12 +156,12 @@ export const IFrameTransactionPage: React.FC = () => {
 					Confirm Transaction
 				</FancyButton>
 				{successMessage && (
-					<Alert sx={{ maxWidth: "min-content", minWidth: "100%" }} severity={"success"}>
+					<Alert variant={"outlined"} sx={{ maxWidth: "min-content", minWidth: "100%" }} severity={"success"}>
 						{successMessage}
 					</Alert>
 				)}
 				{error && (
-					<Alert sx={{ maxWidth: "min-content", minWidth: "100%" }} severity={"error"}>
+					<Alert variant={"outlined"} sx={{ maxWidth: "min-content", minWidth: "100%" }} severity={"error"}>
 						{error}
 					</Alert>
 				)}
