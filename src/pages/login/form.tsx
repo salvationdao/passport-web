@@ -1,6 +1,6 @@
 import { Alert, Box, Stack, styled, Tab, Tabs, Typography } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
-import { Link, useHistory } from "react-router-dom"
+import { Link, useHistory, useParams } from "react-router-dom"
 import { GoogleIcon, MetaIcon, MetaMaskIcon, TwitterIcon, WalletConnectIcon, XSYNWordmarkImagePath } from "../../assets"
 import { FancyButton } from "../../components/fancyButton"
 import { MetaMaskLogin } from "../../components/loginMetaMask"

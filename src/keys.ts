@@ -28,6 +28,7 @@ enum HubKey {
 	UserLock = "USER:LOCK",
 	UserInit = "USER:INIT",
 	UserAddWallet = "USER:WALLET:ADD",
+	MakeSupremacyWorldTransaction = "TRANSACT:SUPREMACY_WORLD",
 
 	ImageList = "IMAGE:LIST",
 
