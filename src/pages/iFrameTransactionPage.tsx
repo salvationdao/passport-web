@@ -1,14 +1,15 @@
 import { Alert, Box, Divider, Typography } from "@mui/material"
+import { BigNumber } from "ethers"
 import React, { useCallback, useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { useAuth } from "../containers/auth"
-import { colors } from "../theme"
 import { FancyButton } from "../components/fancyButton"
+import { SUPREMACY_WORLD_WEB } from "../config"
+import { useAuth } from "../containers/auth"
 import { useSubscription } from "../containers/ws"
-import HubKey from "../keys"
 import { supFormatter } from "../helpers/items"
-import { BigNumber } from "ethers"
 import { usePassportCommandsUser } from "../hooks/usePassport"
+import HubKey from "../keys"
+import { colors } from "../theme"
 
 interface TransactSupremacyWorldReq {
 	claim_id: string
@@ -39,6 +40,7 @@ export const IFrameTransactionPage: React.FC = () => {
 				amount: amount,
 			})
 			setSuccessMessage("Transaction Successful, you may now close this page.")
+			window.opener.postMessage({ payment_success: "true" }, SUPREMACY_WORLD_WEB)
 		} catch (e) {
 			console.error(e)
 			if (typeof e === "string") {
