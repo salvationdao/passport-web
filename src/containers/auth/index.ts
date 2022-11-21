@@ -149,6 +149,8 @@ const urlParams = new URLSearchParams(queryString)
 
 export const AuthContainer = createContainer(() => {
 	const history = useHistory()
+	const urlParams = new URLSearchParams(history.location.search)
+
 	const { fingerprint } = useFingerprint()
 	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature, wcNonce, setUserForWeb3 } = useWeb3()
 	const [user, _setUser] = useState<User>()
@@ -778,32 +780,37 @@ export const AuthContainer = createContainer(() => {
 	// Auth check handler
 	const handleAuthCheck = useCallback(
 		async (isTwitter?: boolean) => {
-			const resp = await authCheck()
-			// If external then post issue token
-			if (resp.error || !resp.payload) {
-				clear()
-				setLoading(false)
-				throw resp.payload
-			}
-
-			if (isTwitter) {
-				// Check if payload contains user or jwt
-				// Check if 2FA is set
-				if (!resp.payload?.user.id) {
-					history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
+			try {
+				const resp = await authCheck()
+				// If external then post issue token
+				if (resp.error || !resp.payload) {
+					clear()
+					// throw resp.payload
 					return
 				}
+
+				if (isTwitter) {
+					// Check if payload contains user or jwt
+					// Check if 2FA is set
+					if (!resp.payload?.user.id) {
+						history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
+						return
+					}
+				}
+				if (redirectURL) {
+					window.location.assign(redirectURL)
+					return
+				}
+				postTokenToExternal(resp.payload.issue_token)
+				if (externalOrigin && resp.payload.user) return
+				// else set up user
+				setUser(resp.payload.user)
+				setAuthorised(true)
+			} catch (e) {
+				console.log(e)
+			} finally {
+				setLoading(false)
 			}
-			if (redirectURL) {
-				window.location.assign(redirectURL)
-				return
-			}
-			postTokenToExternal(resp.payload.issue_token)
-			if (externalOrigin && resp.payload.user) return
-			// else set up user
-			setUser(resp.payload.user)
-			setAuthorised(true)
-			setLoading(false)
 		},
 		[authCheck, clear, externalOrigin, history, postTokenToExternal, redirectURL],
 	)

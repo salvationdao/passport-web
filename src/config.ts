@@ -15,6 +15,8 @@ export const SENTRY_CONFIG = {
 	},
 }
 
+export const SUPREMACY_WORLD_WEB = process.env.REACT_APP_SUPREMACY_WORLD_WEB || "https://world.supremacygame.io"
+
 export const SUPREMACY_IMAGE_FOLDER = process.env.REACT_APP_SUPREMACY_IMAGE_FOLDER || "https://afiles.ninja-cdn.com/supremacy/images"
 
 export const API_ENDPOINT_HOSTNAME = process.env.REACT_APP_PASSPORT_API_ENDPOINT_HOSTNAME || "api.xsyndev.io"
