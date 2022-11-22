@@ -805,9 +805,9 @@ export const AuthContainer = createContainer(() => {
 				// else set up user
 				setUser(resp.payload.user)
 				setAuthorised(true)
+				setLoading(false)
 			} catch (e) {
 				console.log(e)
-			} finally {
 				setLoading(false)
 			}
 		},
