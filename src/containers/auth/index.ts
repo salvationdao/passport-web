@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { Action, QueryResponse, useMutation, useQuery } from "react-fetching-library"
-import { useHistory } from "react-router-dom"
+import { useHistory, useLocation } from "react-router-dom"
 import { createContainer } from "unstated-next"
 import { API_ENDPOINT_HOSTNAME } from "../../config"
 import { metamaskErrorHandling } from "../../helpers/web3"
@@ -147,7 +147,8 @@ const emailSignupVerifyAction = (formValues: EmailSignupVerifyRequest): Action<{
 
 export const AuthContainer = createContainer(() => {
 	const history = useHistory()
-	const urlParams = new URLSearchParams(history.location.search)
+	const location = useLocation()
+	const urlParams = new URLSearchParams(location.search)
 
 	const { fingerprint } = useFingerprint()
 	const { sign, signWalletConnect, account, connect, wcProvider, wcSignature, wcNonce, setUserForWeb3 } = useWeb3()
