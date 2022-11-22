@@ -784,7 +784,7 @@ export const AuthContainer = createContainer(() => {
 				// If external then post issue token
 				if (resp.error || !resp.payload) {
 					clear()
-					// throw resp.payload
+					setLoading(false)
 					return
 				}
 
@@ -792,6 +792,7 @@ export const AuthContainer = createContainer(() => {
 					// Check if payload contains user or jwt
 					// Check if 2FA is set
 					if (!resp.payload?.user.id) {
+						setLoading(false)
 						history.push(`/tfa/check?token=${resp.payload.tfa_token}`)
 						return
 					}
