@@ -144,6 +144,8 @@ const emailSignupVerifyAction = (formValues: EmailSignupVerifyRequest): Action<{
 /**
  * A Container that handles Authorisation
  */
+const queryString = window.location.search
+const urlParams = new URLSearchParams(queryString)
 
 export const AuthContainer = createContainer(() => {
 	const history = useHistory()

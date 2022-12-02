@@ -129,7 +129,7 @@ export const WithdrawPage: React.FC = () => {
 								</FancyButton>
 							</Box>
 						)}
-						{checkCanWithdrawResp && checkCanWithdrawResp.withdrawals_enabled && (
+						{user && checkCanWithdrawResp && checkCanWithdrawResp.withdrawals_enabled && (
 							<WithdrawSups
 								chain={checkCanWithdrawResp.withdrawal_chain}
 								withdrawalContractAddress={checkCanWithdrawResp.withdrawal_contract_address}

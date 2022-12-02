@@ -32,7 +32,7 @@ interface WithdrawSupsFormProps {
 	setError: React.Dispatch<React.SetStateAction<string>>
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
-	user: User | undefined
+	user: User
 }
 
 const UseSignatureMode = true
@@ -69,8 +69,7 @@ export const WithdrawSupsForm = ({
 }: WithdrawSupsFormProps) => {
 	const { account, metaMaskState, supBalanceBSC, supBalanceETH, provider, signer, changeChain, currentChainId } = useWeb3()
 	const [withdrawDisplay, setWithdrawDisplay] = useState<string>("")
-	const { userID } = useAuth()
-	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
+	const userSups = useSubscription<string>({ URI: `/account/${user?.account_id}/sups`, key: HubKey.UserSupsSubscribe, ready: !!user })
 	const { displayMessage } = useSnackbar()
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [supBalance, setSupBalance] = useState<BigNumber>()

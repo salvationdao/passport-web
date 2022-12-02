@@ -42,8 +42,8 @@ export const DepositSups = ({
 	setError,
 }: DepositSupsProps) => {
 	const { metaMaskState, supBalanceBSC, supBalanceETH, provider, sendTransferToPurchaseAddress, account } = useWeb3()
-	const { user, userID } = useAuth()
-	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
+	const { user } = useAuth()
+	const userSups = useSubscription<string>({ URI: `/account/${user?.account_id}/sups`, key: HubKey.UserSupsSubscribe, ready: !!user })
 	const { state, send } = usePassportCommandsUser("/commander")
 
 	const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0))

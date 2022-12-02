@@ -39,8 +39,7 @@ export interface SidebarLayoutProps {
 export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => {
 	const history = useHistory()
 	const { sidebarOpen } = useSidebarState()
-	const { logout, userID } = useAuth()
-	const { user } = useAuth()
+	const { user, logout } = useAuth()
 
 	const isWiderThan1000px = useMediaQuery("(min-width:1000px)")
 
@@ -53,7 +52,7 @@ export const Sidebar: React.FC<SidebarLayoutProps> = ({ onClose, children }) => 
 	const [walletSups, setWalletSups] = useState<string | undefined>()
 	const [walletMsg, setWalletMsg] = useState<string>()
 
-	const userSups = useSubscription<string>({ URI: `/user/${userID}/sups`, key: HubKey.UserSupsSubscribe })
+	const userSups = useSubscription<string>({ URI: `/account/${user?.account_id}/sups`, key: HubKey.UserSupsSubscribe, ready: !!user })
 
 	const [xsynSups, setXsynSups] = useState<BigNumber>(BigNumber.from(0))
 	const [pendingRefund, setPendingRefunds] = useState<BigNumber>(BigNumber.from(0))

@@ -20,7 +20,7 @@ interface WithdrawSupsProps {
 	setError: React.Dispatch<React.SetStateAction<string>>
 	setCurrentTransferHash: React.Dispatch<React.SetStateAction<string>>
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>
-	user: User | undefined
+	user: User
 	state: number
 	send: SendFunc
 }

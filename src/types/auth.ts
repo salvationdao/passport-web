@@ -35,6 +35,7 @@ export interface EmailLoginRequest extends BasicLoginRequest {
 	password?: string
 	session_id?: string
 	auth_type: AuthTypes.Email
+	accepts_marketing?: string
 }
 
 export interface EmailSignupVerifyRequest extends BasicLoginRequest {

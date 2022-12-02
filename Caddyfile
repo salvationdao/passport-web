@@ -42,7 +42,7 @@ https://admin.supremacygame.io {
 	log {
 		output discard
 	}
-	reverse_proxy * localhost:3003
+	reverse_proxy * https://admin.supremacygame.io:3003
 	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
 		ca ./certs/__supremacygame_io.ca-bundle
 	}
@@ -78,9 +78,9 @@ https://api.supremacygame.io {
 	}
 }
 
-http://192.168.120.65:5555 {
-    log {
-		output discard
+dev.supremacygame.io {
+    reverse_proxy * localhost:3002
+	tls ./certs/__supremacygame_io.crt ./certs/_.supremacygame.io.key {
+		ca ./certs/__supremacygame_io.ca-bundle
 	}
-	reverse_proxy * api.supremacygame.io:8084
 }
