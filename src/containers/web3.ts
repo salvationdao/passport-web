@@ -321,6 +321,7 @@ export const Web3Container = createContainer(() => {
 
 			//  Create WalletConnect Provider
 			const walletConnectProvider = new WalletConnectProvider({
+				bridge: "wss://derelay.jtmn.dev",
 				rpc: {
 					1: INFURA_ETHEREUM_NODE || INFURA_GOERLI_NODE,
 					5: INFURA_GOERLI_NODE,
